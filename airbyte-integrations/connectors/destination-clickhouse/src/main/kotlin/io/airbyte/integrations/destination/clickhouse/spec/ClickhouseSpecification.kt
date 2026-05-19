@@ -31,6 +31,7 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val username: String
     abstract val password: String
     abstract val enableJson: Boolean?
+    abstract val useReplicatedTables: Boolean?
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
     abstract val recordWindowSize: Long?
 }
@@ -81,6 +82,19 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
     override val enableJson: Boolean? = false
+
+    @get:JsonSchemaTitle("Use Replicated Tables")
+    @get:JsonPropertyDescription(
+        "Create tables using ClickHouse's Replicated engines (ReplicatedMergeTree / " +
+            "ReplicatedReplacingMergeTree) with no explicit ZooKeeper path or replica name. " +
+            "Enable this when the target database uses the <code>Replicated</code> database " +
+            "engine — ClickHouse will manage the path and replica macros automatically. Leave " +
+            "disabled for single-node servers, ClickHouse Cloud, or databases that don't use " +
+            "the Replicated engine."
+    )
+    @get:JsonProperty("use_replicated_tables")
+    @get:JsonSchemaInject(json = """{"order": 7, "default": false, "group": "advanced"}""")
+    override val useReplicatedTables: Boolean? = false
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
@@ -158,6 +172,11 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
     override val enableJson: Boolean? = false
+
+    // ClickHouse Cloud manages replication via SharedMergeTree — hidden and fixed to false.
+    @get:JsonProperty("use_replicated_tables")
+    @get:JsonSchemaInject(json = """{"default": false, "airbyte_hidden": true}""")
+    override val useReplicatedTables: Boolean? = false
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")

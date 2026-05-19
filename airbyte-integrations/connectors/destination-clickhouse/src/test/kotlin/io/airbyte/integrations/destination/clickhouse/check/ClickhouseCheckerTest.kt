@@ -154,6 +154,7 @@ class ClickhouseCheckerTest {
                 username = username,
                 password = password,
                 enableJson = enableJson,
+                useReplicatedTables = false,
                 tunnelConfig = SshNoTunnelMethod,
                 recordWindowSize = recordWindow,
             )

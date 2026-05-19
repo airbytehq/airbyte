@@ -18,6 +18,7 @@ data class ClickhouseConfiguration(
     val username: String,
     val password: String,
     val enableJson: Boolean,
+    val useReplicatedTables: Boolean,
     val tunnelConfig: SshTunnelMethodConfiguration,
     val recordWindowSize: Long?,
 ) : DestinationConfiguration() {
@@ -51,6 +52,7 @@ class ClickhouseConfigurationFactory :
             username = pojo.username,
             password = pojo.password,
             enableJson = pojo.enableJson ?: false,
+            useReplicatedTables = pojo.useReplicatedTables ?: false,
             tunnelConfig = pojo.getTunnelMethodValue() ?: SshNoTunnelMethod,
             recordWindowSize = pojo.recordWindowSize,
         )
@@ -75,6 +77,10 @@ class ClickhouseConfigurationFactory :
             username = overrides.getOrDefault("username", spec.username),
             enableJson =
                 overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
+            useReplicatedTables =
+                overrides
+                    .getOrDefault("use_replicated_tables", spec.useReplicatedTables.toString())
+                    .toBoolean(),
             tunnelConfig = spec.getTunnelMethodValue() ?: SshNoTunnelMethod,
             recordWindowSize = spec.recordWindowSize,
         )

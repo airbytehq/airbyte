@@ -6,10 +6,17 @@ package io.airbyte.integrations.destination.clickhouse.client
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter
 import com.github.vertical_blank.sqlformatter.languages.Dialect
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
+import io.mockk.every
+import io.mockk.mockk
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -20,7 +27,54 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class ClickhouseSqlGeneratorTest {
-    private val clickhouseSqlGenerator = ClickhouseSqlGenerator()
+    private val clickhouseSqlGenerator = ClickhouseSqlGenerator(testConfig())
+
+    private fun testConfig(useReplicatedTables: Boolean = false) =
+        ClickhouseConfiguration(
+            hostname = "localhost",
+            port = "8123",
+            protocol = "http",
+            database = "default",
+            username = "default",
+            password = "",
+            enableJson = false,
+            useReplicatedTables = useReplicatedTables,
+            tunnelConfig = SshNoTunnelMethod,
+            recordWindowSize = null,
+        )
+
+    private fun mockSchema(importType: io.airbyte.cdk.load.command.ImportType): StreamTableSchema =
+        mockk(relaxed = true) {
+            every { columnSchema } returns
+                mockk(relaxed = true) {
+                    every { finalSchema } returns LinkedHashMap.newLinkedHashMap(0)
+                }
+            every { this@mockk.importType } returns importType
+            every { getPrimaryKey() } returns emptyList()
+            every { getCursor() } returns emptyList()
+        }
+
+    @Test
+    fun `createTable uses plain engines when useReplicatedTables is false`() {
+        val gen = ClickhouseSqlGenerator(testConfig(useReplicatedTables = false))
+        val appendSql = gen.createTable(TableName("ns", "t"), mockSchema(Append), replace = false)
+        val dedupeSql = gen.createTable(TableName("ns", "t"), mockSchema(mockk<Dedupe>(relaxed = true)), replace = false)
+        assertTrue(appendSql.contains("ENGINE = MergeTree()"), appendSql)
+        assertTrue(dedupeSql.contains("ENGINE = ReplacingMergeTree("), dedupeSql)
+        assertTrue(!appendSql.contains("Replicated"))
+        assertTrue(!dedupeSql.contains("Replicated"))
+    }
+
+    @Test
+    fun `createTable uses Replicated engines when useReplicatedTables is true`() {
+        val gen = ClickhouseSqlGenerator(testConfig(useReplicatedTables = true))
+        val appendSql = gen.createTable(TableName("ns", "t"), mockSchema(Append), replace = false)
+        val dedupeSql = gen.createTable(TableName("ns", "t"), mockSchema(mockk<Dedupe>(relaxed = true)), replace = false)
+        assertTrue(appendSql.contains("ENGINE = ReplicatedMergeTree()"), appendSql)
+        assertTrue(dedupeSql.contains("ENGINE = ReplicatedReplacingMergeTree("), dedupeSql)
+        assertTrue(!appendSql.contains("/clickhouse/"), "path-less: $appendSql")
+        assertTrue(!appendSql.contains("{replica}"), "no replica arg: $appendSql")
+    }
 
     @Test
     fun testCreateNamespace() {
