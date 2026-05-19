@@ -7,6 +7,7 @@ import logging
 from dataclasses import dataclass
 from datetime import timedelta
 from time import sleep
+from typing import SupportsFloat, SupportsIndex
 
 import backoff
 from facebook_business import FacebookAdsApi
@@ -18,6 +19,16 @@ from source_facebook_marketing.streams.common import retry_pattern
 
 
 logger = logging.getLogger("airbyte")
+
+
+def _safe_parse_utilization(value: str | SupportsFloat | SupportsIndex | None) -> float:
+    if value is None:
+        return 0.0
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        logger.warning("Could not parse Facebook API utilization value; defaulting to 0.")
+        return 0.0
 
 
 class FacebookAPIException(Exception):
@@ -64,15 +75,15 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         if usage_header_ad_account:
             usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
-            usage = max(usage, float(usage_header_ad_account_loaded.get("acc_id_util_pct", 0)))
+            usage = max(usage, _safe_parse_utilization(usage_header_ad_account_loaded.get("acc_id_util_pct")))
 
         if usage_header_app:
             usage_header_app_loaded = json.loads(usage_header_app)
             usage = max(
                 usage,
-                float(usage_header_app_loaded.get("call_count", 0)),
-                float(usage_header_app_loaded.get("total_time", 0)),
-                float(usage_header_app_loaded.get("total_cputime", 0)),
+                _safe_parse_utilization(usage_header_app_loaded.get("call_count")),
+                _safe_parse_utilization(usage_header_app_loaded.get("total_time")),
+                _safe_parse_utilization(usage_header_app_loaded.get("total_cputime")),
             )
 
         if usage_header_business:
@@ -81,9 +92,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
                 usage = max(
                     usage,
-                    float(usage_limits.get("call_count", 0)),
-                    float(usage_limits.get("total_cputime", 0)),
-                    float(usage_limits.get("total_time", 0)),
+                    _safe_parse_utilization(usage_limits.get("call_count")),
+                    _safe_parse_utilization(usage_limits.get("total_cputime")),
+                    _safe_parse_utilization(usage_limits.get("total_time")),
                 )
                 pause_interval = max(
                     pause_interval,
@@ -142,8 +153,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = self.Throttle(
-                per_application=float(ads_insights_throttle.get("app_id_util_pct", 0)),
-                per_account=float(ads_insights_throttle.get("acc_id_util_pct", 0)),
+                per_application=_safe_parse_utilization(ads_insights_throttle.get("app_id_util_pct")),
+                per_account=_safe_parse_utilization(ads_insights_throttle.get("acc_id_util_pct")),
             )
 
     def _should_restore_default_page_size(self, params):

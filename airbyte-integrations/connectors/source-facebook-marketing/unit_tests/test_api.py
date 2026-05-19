@@ -208,6 +208,10 @@ class TestMyFacebookAdsApi:
                 {},
                 0,
             ),
+            (
+                {"x-app-usage": '{"call_count": "unknown", "total_time": "20.5", "total_cputime": null}'},
+                20.5,
+            ),
         ],
     )
     def test_parse_call_rate_header_handles_string_values(self, fb_api, headers, expected_usage):
@@ -223,6 +227,13 @@ class TestMyFacebookAdsApi:
         assert fb_api._ads_insights_throttle.per_account == 30.0
         assert isinstance(fb_api._ads_insights_throttle.per_application, float)
         assert isinstance(fb_api._ads_insights_throttle.per_account, float)
+
+    def test_update_insights_throttle_limit_handles_unknown_values(self, fb_api, mocker):
+        mock_response = mocker.Mock()
+        mock_response.headers.return_value = {"x-fb-ads-insights-throttle": '{"app_id_util_pct": "12.5", "acc_id_util_pct": "unknown"}'}
+        fb_api._update_insights_throttle_limit(mock_response)
+        assert fb_api._ads_insights_throttle.per_application == 12.5
+        assert fb_api._ads_insights_throttle.per_account == 0.0
 
     def test_find_account(self, api, account_id, requests_mock):
         requests_mock.register_uri(
