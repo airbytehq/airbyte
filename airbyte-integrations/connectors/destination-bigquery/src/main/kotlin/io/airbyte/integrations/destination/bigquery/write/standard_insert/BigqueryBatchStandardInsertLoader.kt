@@ -186,7 +186,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             JobId.newBuilder()
                 .setRandomJob()
                 .setLocation(config.datasetLocation.region)
-                .setProject(bigquery.options.projectId)
+                .setProject(config.jobProjectId)
                 .build()
 
         val formatter: RecordFormatter =
