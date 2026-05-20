@@ -330,9 +330,7 @@ class MsSqlServerDebeziumOperations(
             }
 
         if (!isLsnValid) {
-            return abortCdcSync(
-                "Saved CDC offset is outside the SQL Server CDC retention window"
-            )
+            return abortCdcSync("Saved CDC offset is outside the SQL Server CDC retention window")
         }
 
         val historyNode = stateNode[MSSQL_DB_HISTORY]
