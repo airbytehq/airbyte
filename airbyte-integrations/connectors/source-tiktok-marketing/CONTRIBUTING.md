@@ -92,3 +92,15 @@ trade-off to maintain incremental sync reliability.
 The TikTok Sandbox account has a rate limit of 10 requests per second. If you run CATs in CI while simultaneously testing locally with the same credentials, you will exceed this limit and the credentials may be temporarily restricted — preventing **all** requests from succeeding. The restriction appears to last a couple of hours, and there is evidence that continued request attempts during the restriction period extend the lockout duration. There is no official TikTok documentation on this restriction behavior or its exact duration.
 
 **Why this matters:** Unlike most API rate limits that simply queue or retry, exceeding TikTok's sandbox rate limit can completely lock out the credentials for hours. Never run CI tests and local tests concurrently against the sandbox account. If you experience sudden 100% request failures with sandbox credentials, stop all requests and wait before retrying.
+
+## Incremental Stream Considerations
+
+The TikTok Marketing API supports date-based filtering on report endpoints. The connector uses Python custom components referenced from the manifest.
+
+**Connector type:** Python custom components (hybrid manifest + Python)
+
+**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+
+### Future incremental stream candidates
+
+- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
