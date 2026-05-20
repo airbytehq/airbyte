@@ -81,6 +81,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of accounts via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
+For "top", "largest", or "highest-value" account requests, rank by a financial account value field
+such as ARR, annual recurring revenue, revenue, annual revenue, amount, or value. ARR is often a
+Salesforce custom field, so prefer the customer's org-specific ARR or account value field when
+available. If no better org-specific field is visible, `AnnualRevenue` is the standard Account
+fallback. Do not use `NumberOfEmployees` unless the user asks for employee count, headcount,
+company size, or largest employer.
 
 
 #### Python SDK
@@ -118,6 +124,8 @@ Examples:
   SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50
   SELECT Id, Name, Owner.Name, Owner.Email FROM Account LIMIT 50
   SELECT Id, Name, Parent.Name, Owner.Name FROM Account WHERE Industry = 'Technology' LIMIT 50
+  SELECT Id, Name, AnnualRevenue FROM Account ORDER BY AnnualRevenue DESC LIMIT 10
+  SELECT Id, Name, NumberOfEmployees FROM Account ORDER BY NumberOfEmployees DESC LIMIT 10
 
 Use dot-path traversal (Owner.Name, Parent.Name) to resolve relationship
 fields inline instead of returning raw IDs.
@@ -962,6 +970,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of opportunities via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
+For "top", "largest", or "highest-value" opportunity requests, first choose a
+visible financial opportunity field. Standard candidates include `Amount` for
+total deal value and `ExpectedRevenue` for expected, weighted, or forecast revenue.
 
 
 #### Python SDK
@@ -998,6 +1009,8 @@ To change the limit, provide your own query with a LIMIT clause.
 Examples:
   SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50
   SELECT Id, Name, Amount, Account.Name, Owner.Name FROM Opportunity LIMIT 50
+  SELECT Id, Name, Amount, StageName, Account.Name FROM Opportunity ORDER BY Amount DESC LIMIT 10
+  SELECT Id, Name, ExpectedRevenue, Probability, Amount FROM Opportunity ORDER BY ExpectedRevenue DESC LIMIT 10
   SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign.Name FROM Opportunity WHERE CloseDate = THIS_QUARTER LIMIT 50
 
 Use dot-path traversal (Account.Name, Owner.Name, Campaign.Name) to resolve
