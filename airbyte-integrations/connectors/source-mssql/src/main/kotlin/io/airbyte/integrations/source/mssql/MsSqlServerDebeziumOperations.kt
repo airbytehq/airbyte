@@ -331,7 +331,7 @@ class MsSqlServerDebeziumOperations(
 
         if (!isLsnValid) {
             return abortCdcSync(
-                "Saved LSN '${savedLsn}' is no longer available in SQL Server transaction logs"
+                "Saved CDC offset is outside the SQL Server CDC retention window"
             )
         }
 
@@ -519,16 +519,12 @@ class MsSqlServerDebeziumOperations(
         return when (cdcConfig.invalidCdcCursorPositionBehavior) {
             InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
                 AbortDebeziumWarmStartState(
-                    "Saved offset no longer present on the server, please reset the connection. " +
-                        "To prevent this, increase transaction log retention and/or increase sync frequency. " +
-                        "$reason."
+                    "Saved CDC offset is invalid for the current SQL Server CDC log range. $reason."
                 )
             InvalidCdcCursorPositionBehavior.RESET_SYNC ->
                 ResetDebeziumWarmStartState(
-                    "Saved offset no longer present on the server. " +
-                        "Automatically resetting to current position. " +
-                        "WARNING: Any changes between the saved position and current position will be lost. " +
-                        "$reason."
+                    "Saved CDC offset is invalid for the current SQL Server CDC log range. " +
+                        "Airbyte is resetting to the current position. $reason."
                 )
         }
     }
