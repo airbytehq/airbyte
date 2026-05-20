@@ -45,6 +45,7 @@ The New York Times connector should not run into limitations under normal usage.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.29 | 2026-04-28 | [77357](https://github.com/airbytehq/airbyte/pull/77357) | Update dependencies |
 | 0.2.28 | 2026-04-21 | [76685](https://github.com/airbytehq/airbyte/pull/76685) | Update dependencies |
 | 0.2.27 | 2026-03-24 | [75070](https://github.com/airbytehq/airbyte/pull/75070) | Update dependencies |
 | 0.2.26 | 2026-03-03 | [73042](https://github.com/airbytehq/airbyte/pull/73042) | Update dependencies |

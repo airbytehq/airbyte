@@ -5090,7 +5090,7 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_threads'] or 2 }}"
+  default_concurrency: "{{ config['num_threads'] or 4 }}"
   max_concurrency: 50
 
 api_budget:

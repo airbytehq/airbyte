@@ -56,6 +56,6 @@ class ZipHelper:
                     uri=file_path,
                     last_modified=self._zip_file.last_modified,
                     mime_type=file_extension,
-                    displayed_uri=self._zip_file.uri,  # uri to remote file .zip
+                    displayed_uri=self._zip_file.displayed_uri if self._zip_file.displayed_uri else self._zip_file.uri,
                     blob=self._blob,
                 )
