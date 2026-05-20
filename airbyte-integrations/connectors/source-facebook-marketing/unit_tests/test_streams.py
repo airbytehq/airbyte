@@ -10,6 +10,7 @@ from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
+    AdCreatives,
     AdSets,
     AdsInsights,
     AdsInsightsActionType,
@@ -67,6 +68,14 @@ def test_filter_all_statuses(api, mocker, some_config):
         )._filter_all_statuses()
         == expected
     )
+
+
+def test_ad_creatives_excludes_oversized_fields(api, some_config):
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+
+    assert set(stream.fields_exceptions).isdisjoint(stream.fields())
+    assert "thumbnail_data_url" not in stream.fields()
+    assert "id" in stream.fields()
 
 
 @pytest.mark.parametrize(

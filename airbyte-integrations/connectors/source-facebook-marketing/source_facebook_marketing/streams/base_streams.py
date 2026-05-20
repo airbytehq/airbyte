@@ -202,7 +202,7 @@ class FBMarketingStream(Stream, ABC):
                 self.add_account_id(record, stream_slice["account_id"])
                 yield record
         except FacebookRequestError as exc:
-            raise traced_exception(exc)
+            raise traced_exception(exc, stream_name=self.name)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         if stream_state:
@@ -414,4 +414,4 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
             self._cursor_values[account_id] = max_cursor_value
         except FacebookRequestError as exc:
-            raise traced_exception(exc)
+            raise traced_exception(exc, stream_name=self.name)

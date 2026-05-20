@@ -48,6 +48,7 @@ class AdCreatives(FBMarketingStream):
     """
 
     entity_prefix = "adcreative"
+    fields_exceptions = ["asset_feed_spec", "image_crops", "object_story_spec", "template_url_spec"]
 
     def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
         super().__init__(**kwargs)

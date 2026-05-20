@@ -7,7 +7,7 @@ import logging
 import re
 import sys
 from datetime import timedelta
-from typing import Any
+from typing import Any, Optional
 
 import backoff
 from facebook_business.exceptions import FacebookRequestError
@@ -153,7 +153,7 @@ FACEBOOK_CONFIG_ERRORS_TO_CATCH = [  # list of tuples (code, error_subcode)
 ]
 
 
-def traced_exception(fb_exception: FacebookRequestError):
+def traced_exception(fb_exception: FacebookRequestError, stream_name: Optional[str] = None) -> AirbyteTracedException:
     """Add user-friendly message for FacebookRequestError
 
     Please see ../unit_tests/test_errors.py for full error examples
@@ -199,10 +199,8 @@ def traced_exception(fb_exception: FacebookRequestError):
             )
     elif "reduce the amount of data" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = (
-            "Please reduce the number of fields requested. Go to the schema tab, select your source, "
-            "and unselect the fields you do not need."
-        )
+        stream_context = f" for the {stream_name} stream" if stream_name else ""
+        friendly_msg = f"Facebook Marketing API request includes too many selected fields{stream_context}. Select fewer fields."
     elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Please set the start date of your sync to be within the last 3 years."

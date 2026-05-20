@@ -8,8 +8,12 @@ from typing import Any, Iterable, Mapping
 import pytest
 from facebook_business import FacebookSession
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch
+from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.base_streams import FBMarketingIncrementalStream, FBMarketingStream
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @pytest.fixture(name="mock_batch_responses")
@@ -33,6 +37,37 @@ def batch_fixture(api, mocker):
 class SomeTestStream(FBMarketingStream):
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         yield from []
+
+
+class ErroringTestStream(FBMarketingStream):
+    def list_objects(self, params: Mapping[str, Any], **kwargs: str) -> Iterable[Any]:
+        raise FacebookRequestError(
+            message="Call was not successful",
+            request_context={},
+            http_status=500,
+            http_headers={},
+            body='{"error": {"message": "Please reduce the amount of data you\'re asking for, then retry your request", "code": 1}}',
+        )
+        yield
+
+
+def test_read_records_adds_stream_name_to_reduce_data_error(api, some_config):
+    stream = ErroringTestStream(api=api, account_ids=some_config["account_ids"])
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_slice={"account_id": some_config["account_ids"][0]},
+                stream_state={},
+            )
+        )
+
+    assert (
+        exc_info.value.message
+        == "Facebook Marketing API request includes too many selected fields for the erroring_test_stream stream. Select fewer fields."
+    )
+    assert exc_info.value.failure_type == FailureType.config_error
 
 
 class TestFieldsExceptions:
