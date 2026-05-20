@@ -4,11 +4,16 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import io.mockk.slot
 import io.mockk.verify
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -26,7 +31,6 @@ class MSSQLBulkLoadHandlerTest {
     private lateinit var dataSource: DataSource
     private lateinit var connection: Connection
     private lateinit var preparedStatement: PreparedStatement
-    private lateinit var mssqlQueryBuilder: MSSQLQueryBuilder
 
     private lateinit var bulkLoadHandler: MSSQLBulkLoadHandler
 
@@ -36,7 +40,6 @@ class MSSQLBulkLoadHandlerTest {
         dataSource = mockk(relaxed = true)
         connection = mockk(relaxed = true)
         preparedStatement = mockk(relaxed = true)
-        mssqlQueryBuilder = mockk(relaxed = true)
 
         // Common stubs
         every { dataSource.connection } returns connection
@@ -46,22 +49,50 @@ class MSSQLBulkLoadHandlerTest {
         every { connection.rollback() } just runs
         every { preparedStatement.executeUpdate() } returns 1
 
-        // Instantiate our MSSQLBulkLoadHandler
-        bulkLoadHandler =
-            MSSQLBulkLoadHandler(
-                dataSource = dataSource,
-                schemaName = "dbo",
-                mainTableName = "MyMainTable",
-                bulkUploadDataSource = "MyBlobDataSource",
-                mssqlQueryBuilder = mssqlQueryBuilder
+        bulkLoadHandler = bulkLoadHandler()
+    }
+
+    private fun queryBuilder(hasCdc: Boolean = false): MSSQLQueryBuilder {
+        val columns = linkedMapOf("Id" to FieldType(StringType, true))
+        if (hasCdc) {
+            columns[MSSQLQueryBuilder.AIRBYTE_CDC_DELETED_AT] = FieldType(StringType, true)
+        }
+
+        val stream =
+            DestinationStream(
+                unmappedNamespace = "dbo",
+                unmappedName = "MyMainTable",
+                importType = Append,
+                schema = ObjectType(properties = columns),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+                namespaceMapper = NamespaceMapper(),
             )
+
+        return MSSQLQueryBuilder(defaultSchema = "dbo", stream = stream)
+    }
+
+    private fun bulkLoadHandler(
+        queryBuilder: MSSQLQueryBuilder = queryBuilder()
+    ): MSSQLBulkLoadHandler {
+        return MSSQLBulkLoadHandler(
+            dataSource = dataSource,
+            schemaName = "dbo",
+            mainTableName = "MyMainTable",
+            bulkUploadDataSource = "MyBlobDataSource",
+            mssqlQueryBuilder = queryBuilder
+        )
+    }
+
+    private fun capturedSqlStatements(): List<String> {
+        val sqlStatements = mutableListOf<String>()
+        verify(atLeast = 1) { connection.prepareStatement(capture(sqlStatements)) }
+        return sqlStatements
     }
 
     @Test
     fun `test bulkLoadForAppendOverwrite success`() {
-        // Given
-        every { mssqlQueryBuilder.hasCdc } returns false // No CDC logic
-
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
 
@@ -73,24 +104,22 @@ class MSSQLBulkLoadHandlerTest {
 
         // Then
         // Verify that the prepared statement was created with the correct SQL
-        val sqlSlot = slot<String>()
-        verify { connection.prepareStatement(capture(sqlSlot)) }
-        assertTrue(sqlSlot.captured.contains("BULK INSERT [dbo].[MyMainTable]"))
-        assertTrue(sqlSlot.captured.contains("FROM '$dataFilePath'"))
-        assertTrue(sqlSlot.captured.contains("FORMATFILE = '$formatFilePath'"))
+        val sqlStatements = capturedSqlStatements()
+        val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
+        assertTrue(bulkInsertSql.contains("FROM '$dataFilePath'"))
+        assertTrue(bulkInsertSql.contains("FORMATFILE = '$formatFilePath'"))
+        assertFalse(
+            sqlStatements.any { it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") }
+        )
 
         // Verify that commit was called and rollback was not
         verify(exactly = 1) { connection.commit() }
         verify(exactly = 1) { connection.close() }
         verify(exactly = 0) { connection.rollback() }
-        // Verify that CDC delete is not called
-        verify(exactly = 0) { mssqlQueryBuilder.deleteCdc(connection) }
     }
 
     @Test
     fun `test bulkLoadForAppendOverwrite rollback on SQLException`() {
-        // Given
-        every { mssqlQueryBuilder.hasCdc } returns false
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
 
@@ -111,16 +140,23 @@ class MSSQLBulkLoadHandlerTest {
     @Test
     fun `test bulkLoadForAppendOverwrite with CDC enabled`() {
         // Given
-        every { mssqlQueryBuilder.hasCdc } returns true
+        bulkLoadHandler = bulkLoadHandler(queryBuilder(hasCdc = true))
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
+        val sqlStatements = mutableListOf<String>()
+        every { connection.prepareStatement(capture(sqlStatements)) } returns preparedStatement
 
         // When
         bulkLoadHandler.bulkLoadForAppendOverwrite(dataFilePath, formatFilePath)
 
         // Then
-        // We expect the CDC delete to be called
-        verify { mssqlQueryBuilder.deleteCdc(connection) }
+        assertTrue(
+            sqlStatements.any {
+                it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") &&
+                    it.contains("WHERE [${MSSQLQueryBuilder.AIRBYTE_CDC_DELETED_AT}] is not NULL")
+            },
+            "Expected CDC delete statement to be executed",
+        )
         // And we expect a commit (no rollback)
         verify(exactly = 1) { connection.commit() }
         verify(exactly = 1) { connection.close() }
@@ -129,8 +165,6 @@ class MSSQLBulkLoadHandlerTest {
 
     @Test
     fun `test bulkLoadAndUpsertForDedup success`() {
-        // Given
-        every { mssqlQueryBuilder.hasCdc } returns false
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
         val pkColumns = listOf("Id")
@@ -173,14 +207,13 @@ class MSSQLBulkLoadHandlerTest {
         verify(exactly = 2) { connection.commit() }
         verify(exactly = 1) { connection.close() }
         verify(exactly = 0) { connection.rollback() }
-        // No CDC call
-        verify(exactly = 0) { mssqlQueryBuilder.deleteCdc(connection) }
+        assertFalse(
+            sqlStatements.any { it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") }
+        )
     }
 
     @Test
     fun `test bulkLoadAndUpsertForDedup rollback on SQLException`() {
-        // Given
-        every { mssqlQueryBuilder.hasCdc } returns false
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
         val pkColumns = listOf("Id")
@@ -246,10 +279,10 @@ class MSSQLBulkLoadHandlerTest {
             rowsPerBatch = rowsPerBatch
         )
 
-        val sqlSlot = slot<String>()
-        verify { connection.prepareStatement(capture(sqlSlot)) }
+        val sqlStatements = capturedSqlStatements()
+        val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
         assertTrue(
-            sqlSlot.captured.contains("ROWS_PER_BATCH = 5000"),
+            bulkInsertSql.contains("ROWS_PER_BATCH = 5000"),
             "Expected ROWS_PER_BATCH clause"
         )
     }
@@ -265,10 +298,10 @@ class MSSQLBulkLoadHandlerTest {
             formatFilePath = formatFilePath
         )
 
-        val sqlSlot = slot<String>()
-        verify { connection.prepareStatement(capture(sqlSlot)) }
+        val sqlStatements = capturedSqlStatements()
+        val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
         assertFalse(
-            sqlSlot.captured.contains("ROWS_PER_BATCH"),
+            bulkInsertSql.contains("ROWS_PER_BATCH"),
             "Should not contain ROWS_PER_BATCH clause"
         )
     }
@@ -318,7 +351,7 @@ class MSSQLBulkLoadHandlerTest {
         )
 
         val sqlSlot = mutableListOf<String>()
-        verify { connection.prepareStatement(capture(sqlSlot)) }
+        verify(atLeast = 1) { connection.prepareStatement(capture(sqlSlot)) }
 
         val mergeStatement =
             sqlSlot.find { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") }
@@ -368,8 +401,6 @@ class MSSQLBulkLoadHandlerTest {
 
     @Test
     fun `test bulkLoadAndUpsertForDedup with cursor columns performs dedup`() {
-        // Given
-        every { mssqlQueryBuilder.hasCdc } returns false
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
 
