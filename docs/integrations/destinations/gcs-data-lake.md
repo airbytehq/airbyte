@@ -36,11 +36,10 @@ Follow these steps to set up your GCS storage and Iceberg catalog permissions.
 1. In the Google Cloud Console, navigate to **IAM & Admin** > **Service Accounts**
 2. Click **CREATE SERVICE ACCOUNT**
 3. Give it a name (for example: `airbyte-gcs-data-lake`)
-4. Grant the following roles:
-   - **Storage Admin** - For full GCS bucket access
-   - **BigQuery Data Editor** - For BigLake catalog operations
-   - **BigQuery User** - For BigQuery operations
-   - **Service Usage Consumer** - For using GCP services
+4. Grant the service account the following roles:
+   - **BigLake Editor** (`roles/biglake.editor`) on the project that contains the BigLake catalog. This lets Airbyte create namespaces and tables and update table metadata.
+   - **Storage Object User** (`roles/storage.objectUser`) on the GCS bucket. This lets Airbyte write table data and metadata files.
+   - **Service Usage Consumer** (`roles/serviceusage.serviceUsageConsumer`) on the project. This lets Airbyte consume quota for Google Cloud APIs.
 
 5. Click **CREATE KEY** and choose the **JSON** format
 6. Download the JSON key file
@@ -52,7 +51,11 @@ The rest of the setup process differs depending on the catalog you're using.
 
 #### BigLake
 
-The BigLake catalog is Google Cloud's managed Iceberg catalog service. To use BigLake, you need to have created a BigLake catalog in your GCP project. The service account you created earlier should have the necessary permissions to access this catalog.
+The BigLake catalog is Google Cloud's managed Iceberg REST catalog service. To use BigLake, create a BigLake catalog in your GCP project before configuring the destination. The connector uses the catalog endpoint and `GCSFileIO` to write Apache Iceberg tables to your GCS warehouse location.
+
+Before you create the catalog, make sure billing is enabled for the project and the BigLake API is enabled.
+
+To create and administer a BigLake catalog, a Google Cloud administrator might need broader roles, such as **BigLake Admin** (`roles/biglake.admin`) on the project and **Storage Admin** (`roles/storage.admin`) on the bucket. The Airbyte service account used by this connector doesn't need those administrator roles after the catalog and bucket permissions are in place.
 
 #### Polaris
 
@@ -96,6 +99,7 @@ In Airbyte, configure the following fields:
 | **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
 | **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
 | **Default Namespace**    | No         | Default namespace for tables (for example: `default`, `airbyte_data`)        |
+| **GCS Endpoint**         | No         | Optional custom GCS endpoint URL. Use this only for GCS-compatible emulators |
 
 ### BigLake-specific fields
 
@@ -115,6 +119,51 @@ When **Catalog Type** is set to `Polaris`, configure these additional fields:
 | **Catalog Name**       | Yes        | The name of the catalog in Polaris (for example: `quickstart_catalog`)                 |
 | **Client ID**          | Yes        | The OAuth Client ID for authenticating with the Polaris server                         |
 | **Client Secret**      | Yes        | The OAuth Client Secret for authenticating with the Polaris server                     |
+
+## Reference
+
+Use the following field names when you configure this destination with PyAirbyte, Terraform, or the Airbyte API.
+
+### BigLake configuration example
+
+```json
+{
+  "gcs_bucket_name": "my-data-lake",
+  "service_account_json": "{...}",
+  "gcp_project_id": "my-gcp-project",
+  "gcp_location": "us-central1",
+  "warehouse_location": "gs://my-data-lake/warehouse",
+  "main_branch_name": "main",
+  "namespace": "airbyte_data",
+  "catalog_type": {
+    "catalog_type": "BIGLAKE",
+    "catalog_name": "my-biglake-catalog"
+  }
+}
+```
+
+### Polaris configuration example
+
+```json
+{
+  "gcs_bucket_name": "my-data-lake",
+  "service_account_json": "{...}",
+  "gcp_project_id": "my-gcp-project",
+  "gcp_location": "us-central1",
+  "warehouse_location": "gs://my-data-lake/warehouse",
+  "main_branch_name": "main",
+  "namespace": "airbyte_data",
+  "catalog_type": {
+    "catalog_type": "POLARIS",
+    "server_uri": "https://polaris.example.com/api/catalog",
+    "catalog_name": "quickstart_catalog",
+    "client_id": "your-client-id",
+    "client_secret": "your-client-secret"
+  }
+}
+```
+
+The optional `gcs_endpoint` field isn't shown in these examples. Set it only when testing against a GCS-compatible emulator.
 
 ## Supported sync modes
 
@@ -221,10 +270,10 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13 |
-| 1.0.9   | 2026-04-16 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9.                                                                 |
+| 1.0.10  | 2026-05-20 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13 to support INCOMPLETE stream status handling in speed mode. |
+| 1.0.9   | 2026-04-17 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9.                                                                 |
 | 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution.                |
-| 1.0.7   | 2026-02-04 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
+| 1.0.7   | 2026-02-09 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
 | 1.0.6   | 2026-01-23 | [72300](https://github.com/airbytehq/airbyte/pull/72300)     | Upgrade CDK to 0.2.0                                                                  |
 | 1.0.5   | 2026-01-14 | [71760](https://github.com/airbytehq/airbyte/pull/71760)     | Restore integration tests in CI. Workaround DI error.                                 |
 | 1.0.4   | 2026-01-12 | [71227](https://github.com/airbytehq/airbyte/pull/71227)     | Add speed mode support with PROTOBUF serialization                                    |
