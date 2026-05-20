@@ -22,7 +22,7 @@ data:
   githubIssueLabel: source-incident-io
   icon: icon.svg
   license: ELv2
-  name: Incident
+  name: Incident.io
   releaseDate: 2024-10-03
   releaseStage: alpha
   supportLevel: community

@@ -7,6 +7,12 @@ This destination writes data to Azure Blob Storage.
 The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob Storage. Each stream is written to its own blob under the container,
 as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file_extension>`.
 
+## Network access
+
+If you're using Airbyte Cloud and this destination uses IP-based access controls,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your
+allowlist.
+
 ## Supported sync modes
 
 | Sync mode | Supported? |

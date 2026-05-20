@@ -180,6 +180,21 @@ Classes
         Returns:
             ChargesListResult
 
+<a id="CheckoutSessionsQuery"></a>
+
+`CheckoutSessionsQuery(connector: StripeConnector)`
+:   Query class for CheckoutSessions entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.CheckoutSession`
+    :   Creates a Checkout Session object. You can use it to create a payment page hosted on Stripe that customers can use to complete their purchase.
+        
+        Returns:
+            CheckoutSession
+
 <a id="CustomersQuery"></a>
 
 `CustomersQuery(connector: StripeConnector)`
@@ -338,6 +353,44 @@ Classes
         Returns:
             DisputesListResult
 
+<a id="InvoiceFinalizationsQuery"></a>
+
+`InvoiceFinalizationsQuery(connector: StripeConnector)`
+:   Query class for InvoiceFinalizations entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Invoice`
+    :   Stripe automatically finalizes drafts before sending and attempting payment on invoices. However, if you'd like to finalize a draft invoice manually, you can do so using this method.
+        
+        Args:
+            id: The ID of the invoice to finalize
+            **kwargs: Additional parameters
+        
+        Returns:
+            Invoice
+
+<a id="InvoiceSendsQuery"></a>
+
+`InvoiceSendsQuery(connector: StripeConnector)`
+:   Query class for InvoiceSends entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Invoice`
+    :   Stripe will automatically send invoices to customers according to your subscriptions settings. However, if you'd like to manually send an invoice to your customer out of the normal schedule, you can do so.
+        
+        Args:
+            id: The ID of the invoice to send
+            **kwargs: Additional parameters
+        
+        Returns:
+            Invoice
+
 <a id="InvoicesQuery"></a>
 
 `InvoicesQuery(connector: StripeConnector)`
@@ -471,6 +524,12 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Invoice`
+    :   Creates a draft invoice for a given customer. The invoice remains a draft until you finalize it, which allows you to pay or send the invoice to your customers.
+        
+        Returns:
+            Invoice
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Invoice`
     :   Retrieves the invoice with the given ID
         
@@ -499,6 +558,44 @@ Classes
         Returns:
             InvoicesListResult
 
+<a id="PaymentIntentCancellationsQuery"></a>
+
+`PaymentIntentCancellationsQuery(connector: StripeConnector)`
+:   Query class for PaymentIntentCancellations entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentIntent`
+    :   You can cancel a PaymentIntent object when it's in one of these statuses - requires_payment_method, requires_capture, requires_confirmation, requires_action, or processing.
+        
+        Args:
+            id: The ID of the payment intent to cancel
+            **kwargs: Additional parameters
+        
+        Returns:
+            PaymentIntent
+
+<a id="PaymentIntentConfirmationsQuery"></a>
+
+`PaymentIntentConfirmationsQuery(connector: StripeConnector)`
+:   Query class for PaymentIntentConfirmations entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentIntent`
+    :   Confirm that your customer intends to pay with current or provided payment method. Upon confirmation, the PaymentIntent will attempt to initiate a payment.
+        
+        Args:
+            id: The ID of the payment intent to confirm
+            **kwargs: Additional parameters
+        
+        Returns:
+            PaymentIntent
+
 <a id="PaymentIntentsQuery"></a>
 
 `PaymentIntentsQuery(connector: StripeConnector)`
@@ -519,6 +616,12 @@ Classes
         
         Returns:
             PaymentIntentsApiSearchResult
+
+    `create(self, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentIntent`
+    :   Creates a PaymentIntent object. After the PaymentIntent is created, attach a payment method and confirm to continue the payment.
+        
+        Returns:
+            PaymentIntent
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentIntent`
     :   Retrieves the details of a PaymentIntent that has previously been created.
@@ -544,6 +647,35 @@ Classes
         
         Returns:
             PaymentIntentsListResult
+
+    `update(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentIntent`
+    :   Updates properties on a PaymentIntent object without confirming.
+        
+        Args:
+            id: The ID of the payment intent to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            PaymentIntent
+
+<a id="PaymentMethodAttachmentsQuery"></a>
+
+`PaymentMethodAttachmentsQuery(connector: StripeConnector)`
+:   Query class for PaymentMethodAttachments entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentMethod`
+    :   Attaches a PaymentMethod object to a Customer. To use this PaymentMethod as the default for invoice or subscription payments, set invoice_settings.default_payment_method on the Customer.
+        
+        Args:
+            id: The ID of the payment method to attach
+            **kwargs: Additional parameters
+        
+        Returns:
+            PaymentMethod
 
 <a id="PayoutsQuery"></a>
 
@@ -579,6 +711,21 @@ Classes
         
         Returns:
             PayoutsListResult
+
+<a id="PricesQuery"></a>
+
+`PricesQuery(connector: StripeConnector)`
+:   Query class for Prices entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Price`
+    :   Creates a new price for an existing product. The price can be recurring for use in subscriptions or one-time for use in one-off charges.
+        
+        Returns:
+            Price
 
 <a id="ProductsQuery"></a>
 
@@ -785,55 +932,13 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'StripeAuthConfig'", name: str | None = None, replication_config: "'StripeReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Typed replication settings.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A StripeConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await StripeConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=StripeAuthConfig(api_key="..."),
-            )
-        
-            # With replication config (required for this connector):
-            connector = await StripeConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=StripeAuthConfig(api_key="..."),
-                replication_config=StripeReplicationConfig(account_id="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -846,9 +951,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @StripeConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -857,10 +982,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await StripeConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -1028,6 +1149,22 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Subscription`
+    :   Creates a new subscription on an existing customer. Each customer can have up to 500 active or scheduled subscriptions.
+        
+        Returns:
+            Subscription
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Subscription`
+    :   Cancels a customer's subscription immediately. The customer will not be charged again for the subscription. Any pending invoice items that you've created will still be charged for at the end of the period, unless manually deleted.
+        
+        Args:
+            id: The subscription ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Subscription
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Subscription`
     :   Retrieves the subscription with the given ID
         
@@ -1058,3 +1195,13 @@ Classes
         
         Returns:
             SubscriptionsListResult
+
+    `update(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Subscription`
+    :   Updates an existing subscription on a customer to match the specified parameters. When changing prices or quantities, we optionally prorate the price we charge next month to make up for any price changes.
+        
+        Args:
+            id: The subscription ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Subscription

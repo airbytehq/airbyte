@@ -140,14 +140,28 @@ Classes
 
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[BranchesSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[CommentsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[CommitsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[DirectoryContentSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[DiscussionsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[FileContentSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[IssuesSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[LabelsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[MilestonesSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[OrgRepositoriesSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[OrganizationsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[PrCommentsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ProjectItemsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ProjectsSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[PullRequestsSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ReleasesSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[RepositoriesSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ReviewsSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[StargazersSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[TagsSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerRepositoriesSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerSearchData]
 
     ### Class variables
 
@@ -196,9 +210,135 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CommitsSearchResult"></a>
+
+`CommitsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="DirectoryContentSearchResult"></a>
+
+`DirectoryContentSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="DiscussionsSearchResult"></a>
+
+`DiscussionsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="FileContentSearchResult"></a>
+
+`FileContentSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="LabelsSearchResult"></a>
+
+`LabelsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MilestonesSearchResult"></a>
+
+`MilestonesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="OrgRepositoriesSearchResult"></a>
+
+`OrgRepositoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -232,6 +372,60 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PrCommentsSearchResult"></a>
+
+`PrCommentsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ProjectItemsSearchResult"></a>
+
+`ProjectItemsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ProjectsSearchResult"></a>
+
+`ProjectsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="PullRequestsSearchResult"></a>
 
 `PullRequestsSearchResult(**data: Any)`
@@ -250,9 +444,45 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ReleasesSearchResult"></a>
+
+`ReleasesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="RepositoriesSearchResult"></a>
 
 `RepositoriesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ReviewsSearchResult"></a>
+
+`ReviewsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -340,6 +570,42 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ViewerRepositoriesSearchResult"></a>
+
+`ViewerRepositoriesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ViewerSearchResult"></a>
+
+`ViewerSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="BranchesSearchData"></a>
 
 `BranchesSearchData(**data: Any)`
@@ -361,10 +627,151 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+    `name: str | None`
+    :   Branch name (e.g. `main`, `feature/foo`)
+
+    `prefix: str | None`
+    :   Git ref prefix for the branch (typically `refs/heads/`)
+
 <a id="CommentsSearchData"></a>
 
 `CommentsSearchData(**data: Any)`
 :   Search result data for comments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: str | None`
+    :   Markdown body of the comment
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the comment was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the comment
+
+    `id: str | None`
+    :   GraphQL node ID of the comment
+
+    `is_minimized: bool | None`
+    :   Whether the comment has been hidden/collapsed
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the comment was last updated
+
+    `url: str | None`
+    :   Permalink to the comment on GitHub
+
+<a id="CommitsSearchData"></a>
+
+`CommitsSearchData(**data: Any)`
+:   Search result data for commits entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `abbreviated_oid: str | None`
+    :   Abbreviated Git commit SHA (typically 7 characters)
+
+    `additions: int | None`
+    :   Number of lines added across all files in the commit
+
+    `authored_date: str | None`
+    :   ISO 8601 timestamp when the commit was originally authored
+
+    `changed_files: int | None`
+    :   Number of files changed in the commit
+
+    `committed_date: str | None`
+    :   ISO 8601 timestamp when the commit was applied to its tree
+
+    `deletions: int | None`
+    :   Number of lines deleted across all files in the commit
+
+    `message: str | None`
+    :   Full commit message
+
+    `message_headline: str | None`
+    :   First line of the commit message
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `oid: str | None`
+    :   Full Git commit SHA
+
+    `url: str | None`
+    :   Permalink to the commit on GitHub
+
+<a id="DirectoryContentSearchData"></a>
+
+`DirectoryContentSearchData(**data: Any)`
+:   Search result data for directory_content entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="DiscussionsSearchData"></a>
+
+`DiscussionsSearchData(**data: Any)`
+:   Search result data for discussions entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="FileContentSearchData"></a>
+
+`FileContentSearchData(**data: Any)`
+:   Search result data for file_content entity.
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -435,111 +842,13 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'GithubAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: "'GithubReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Typed replication settings.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A GithubConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await GithubConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=GithubAuthConfig(access_token="..."),
-            )
-        
-            # With replication config (required for this connector):
-            connector = await GithubConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=GithubAuthConfig(access_token="..."),
-                replication_config=GithubReplicationConfig(repositories="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await GithubConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-                replication_config=GithubReplicationConfig(repositories="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: "'GithubReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Typed replication settings. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await GithubConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Github Source",
-                replication_config=GithubReplicationConfig(repositories="..."),
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -552,9 +861,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @GithubConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -563,10 +892,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await GithubConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -664,10 +989,157 @@ Classes
     `repositories: str`
     :   List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for all repositories from organization
 
+    `start_date: str`
+    :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
 <a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `closed_at: str | None`
+    :   ISO 8601 timestamp when the issue was closed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the issue was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the issue
+
+    `id: str | None`
+    :   GraphQL node ID of the issue
+
+    `locked: bool | None`
+    :   Whether the conversation on the issue is locked
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `number: int | None`
+    :   Repository-scoped issue number
+
+    `state: str | None`
+    :   Issue state: `OPEN` or `CLOSED`
+
+    `state_reason: str | None`
+    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+
+    `title: str | None`
+    :   Issue title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the issue was last updated
+
+    `url: str | None`
+    :   Permalink to the issue on GitHub
+
+<a id="LabelsSearchData"></a>
+
+`LabelsSearchData(**data: Any)`
+:   Search result data for labels entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `color: str | None`
+    :   Label color as a 6-character hex string without a leading `#`
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the label was created
+
+    `description: str | None`
+    :   Short description of what the label is used for
+
+    `id: str | None`
+    :   GraphQL node ID of the label
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Label name
+
+    `url: str | None`
+    :   Permalink to the label on GitHub
+
+<a id="MilestonesSearchData"></a>
+
+`MilestonesSearchData(**data: Any)`
+:   Search result data for milestones entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `closed_at: str | None`
+    :   ISO 8601 timestamp when the milestone was closed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the milestone was created
+
+    `description: str | None`
+    :   Milestone description
+
+    `due_on: str | None`
+    :   ISO 8601 timestamp for the milestone's due date, if set
+
+    `id: str | None`
+    :   GraphQL node ID of the milestone
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `number: int | None`
+    :   Repository-scoped milestone number
+
+    `progress_percentage: float | None`
+    :   Percentage of associated issues/PRs that are closed
+
+    `state: str | None`
+    :   Milestone state: `OPEN` or `CLOSED`
+
+    `title: str | None`
+    :   Milestone title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the milestone was last updated
+
+<a id="OrgRepositoriesSearchData"></a>
+
+`OrgRepositoriesSearchData(**data: Any)`
+:   Search result data for org_repositories entity.
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -703,8 +1175,125 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the organization was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the organization
+
+    `description: str | None`
+    :   Short public description of the organization
+
+    `email: str | None`
+    :   Public contact email for the organization, if set
+
+    `id: str | None`
+    :   GraphQL node ID of the organization
+
+    `is_verified: bool | None`
+    :   Whether the organization has a verified domain
+
+    `location: str | None`
+    :   Public location of the organization, if set
+
+    `login: str | None`
+    :   Organization login/handle (unique URL slug)
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the organization
+
+<a id="PrCommentsSearchData"></a>
+
+`PrCommentsSearchData(**data: Any)`
+:   Search result data for pr_comments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ProjectItemsSearchData"></a>
+
+`ProjectItemsSearchData(**data: Any)`
+:   Search result data for project_items entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
+
+`ProjectsSearchData(**data: Any)`
+:   Search result data for projects entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `closed: bool | None`
+    :   Whether the project has been closed
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the project was created
+
+    `id: str | None`
+    :   GraphQL node ID of the project
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `number: int | None`
+    :   Organization- or user-scoped project number
+
+    `public: bool | None`
+    :   Whether the project is publicly visible
+
+    `short_description: str | None`
+    :   Short description displayed on the project summary
+
+    `title: str | None`
+    :   Project title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the project was last updated
+
+    `url: str | None`
+    :   Permalink to the project on GitHub
 
 <a id="PullRequestsSearchData"></a>
 
@@ -724,8 +1313,101 @@ Classes
 
     ### Class variables
 
+    `base_ref_name: str | None`
+    :   Name of the branch being merged into
+
+    `closed_at: str | None`
+    :   ISO 8601 timestamp when the pull request was closed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the pull request was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the pull request
+
+    `head_ref_name: str | None`
+    :   Name of the branch with the proposed changes
+
+    `id: str | None`
+    :   GraphQL node ID of the pull request
+
+    `is_draft: bool | None`
+    :   Whether the pull request is still a draft
+
+    `merged: bool | None`
+    :   Whether the pull request has been merged
+
+    `merged_at: str | None`
+    :   ISO 8601 timestamp when the pull request was merged, if applicable
+
     `model_config`
     :   The type of the None singleton.
+
+    `number: int | None`
+    :   Repository-scoped pull request number
+
+    `state: str | None`
+    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+
+    `title: str | None`
+    :   Pull request title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the pull request was last updated
+
+    `url: str | None`
+    :   Permalink to the pull request on GitHub
+
+<a id="ReleasesSearchData"></a>
+
+`ReleasesSearchData(**data: Any)`
+:   Search result data for releases entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the release was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the release
+
+    `description: str | None`
+    :   Markdown body / release notes
+
+    `id: str | None`
+    :   GraphQL node ID of the release
+
+    `is_draft: bool | None`
+    :   Whether the release is still a draft and not published
+
+    `is_prerelease: bool | None`
+    :   Whether the release is marked as a pre-release
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the release
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the release was published
+
+    `tag_name: str | None`
+    :   Git tag the release points at (e.g. `v1.2.3`)
+
+    `url: str | None`
+    :   Permalink to the release on GitHub
 
 <a id="RepositoriesSearchData"></a>
 
@@ -745,8 +1427,92 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the repository was created
+
+    `description: str | None`
+    :   Short description of the repository
+
+    `fork_count: int | None`
+    :   Number of forks of the repository
+
+    `id: str | None`
+    :   GraphQL node ID of the repository
+
+    `is_archived: bool | None`
+    :   Whether the repository has been archived
+
+    `is_fork: bool | None`
+    :   Whether the repository is a fork of another repository
+
+    `is_private: bool | None`
+    :   Whether the repository is private
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Short repository name (without owner)
+
+    `name_with_owner: str | None`
+    :   Fully-qualified `owner/name` identifier for the repository
+
+    `pushed_at: str | None`
+    :   ISO 8601 timestamp of the most recent push to the repository
+
+    `stargazer_count: int | None`
+    :   Number of users who have starred the repository
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the repository was last updated
+
+    `url: str | None`
+    :   Canonical GitHub URL for the repository
+
+<a id="ReviewsSearchData"></a>
+
+`ReviewsSearchData(**data: Any)`
+:   Search result data for reviews entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: str | None`
+    :   Review body text
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the review was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the review
+
+    `id: str | None`
+    :   GraphQL node ID of the review
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `state: str | None`
+    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+
+    `submitted_at: str | None`
+    :   ISO 8601 timestamp when the review was submitted
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the review was last updated
+
+    `url: str | None`
+    :   Permalink to the review on GitHub
 
 <a id="StargazersSearchData"></a>
 
@@ -769,6 +1535,9 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+    `starred_at: str | None`
+    :   ISO 8601 timestamp when the user starred the repository
+
 <a id="TagsSearchData"></a>
 
 `TagsSearchData(**data: Any)`
@@ -790,6 +1559,12 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+    `name: str | None`
+    :   Tag name (e.g. `v1.2.3`)
+
+    `prefix: str | None`
+    :   Git ref prefix for the tag (typically `refs/tags/`)
+
 <a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
@@ -808,13 +1583,115 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the team was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the team
+
+    `description: str | None`
+    :   Short description of the team
+
+    `id: str | None`
+    :   GraphQL node ID of the team
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the team
+
+    `privacy: str | None`
+    :   Team visibility: `SECRET` or `VISIBLE`
+
+    `slug: str | None`
+    :   URL-friendly slug for the team within its organization
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the team was last updated
+
+    `url: str | None`
+    :   Permalink to the team on GitHub
 
 <a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `company: str | None`
+    :   Public company affiliation of the user, if set
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the user account was created
+
+    `database_id: int | None`
+    :   REST API numeric identifier for the user
+
+    `email: str | None`
+    :   Public email address of the user, if set
+
+    `id: str | None`
+    :   GraphQL node ID of the user
+
+    `is_hireable: bool | None`
+    :   Whether the user has marked themselves as available for hire
+
+    `location: str | None`
+    :   Public location of the user, if set
+
+    `login: str | None`
+    :   User login/handle
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Public display name of the user, if set
+
+    `twitter_username: str | None`
+    :   Public Twitter/X username of the user, if set
+
+    `url: str | None`
+    :   Permalink to the user's profile on GitHub
+
+<a id="ViewerRepositoriesSearchData"></a>
+
+`ViewerRepositoriesSearchData(**data: Any)`
+:   Search result data for viewer_repositories entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ViewerSearchData"></a>
+
+`ViewerSearchData(**data: Any)`
+:   Search result data for viewer entity.
     
     Create a new model by parsing and validating input data from keyword arguments.
     

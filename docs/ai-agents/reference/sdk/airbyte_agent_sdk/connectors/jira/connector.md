@@ -183,6 +183,79 @@ Classes
         Returns:
             IssueFieldsListResult
 
+<a id="IssueLinksQuery"></a>
+
+`IssueLinksQuery(connector: JiraConnector)`
+:   Query class for IssueLinks entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, type: IssueLinksCreateParamsType, inward_issue: IssueLinksCreateParamsInwardissue, outward_issue: IssueLinksCreateParamsOutwardissue, comment: IssueLinksCreateParamsComment | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.jira.models.EmptyResponse`
+    :   Creates a link between two issues. Issue links define relationships such as
+        "blocks", "is blocked by", "relates to", "duplicates", "is duplicated by", "clones", "is cloned by".
+        
+        Common link type names: Blocks, Cloners, Duplicate, Relates.
+        Each type has an inward and outward description (e.g., "blocks" / "is blocked by").
+        
+        
+                Args:
+                    type: The type of link (e.g., Blocks, Duplicate, Relates)
+                    inward_issue: The inward issue (the issue that is affected by the link)
+                    outward_issue: The outward issue (the issue that causes the link)
+                    comment: A comment about the link in Atlassian Document Format (ADF)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    EmptyResponse
+
+<a id="IssueTransitionsQuery"></a>
+
+`IssueTransitionsQuery(connector: JiraConnector)`
+:   Query class for IssueTransitions entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, transition: IssueTransitionsCreateParamsTransition, issue_id_or_key: str, fields: dict[str, Any] | None = None, update: dict[str, Any] | None = None, history_metadata: dict[str, Any] | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Performs a status transition on an issue (e.g., To Do -> In Progress -> Done).
+        This is the primary way to change an issue's workflow status in Jira.
+        
+        To use this endpoint:
+        1. First, GET the available transitions for the issue to find valid transition IDs
+        2. Then POST with the desired transition ID
+        
+        You can optionally include field updates and comments as part of the transition.
+        
+        
+                Args:
+                    transition: The transition to perform
+                    fields: Fields to set during the transition (if required by the transition screen)
+                    update: Additional update operations to perform during the transition
+                    history_metadata: Metadata about the transition for the issue history
+                    issue_id_or_key: The issue ID or key (e.g., "PROJ-123" or "10000")
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `list(self, issue_id_or_key: str, expand: str | None = None, transition_id: str | None = None, skip_remote_only_condition: bool | None = None, include_unavailable_transitions: bool | None = None, sort_by_ops_bar_and_status: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult[list[IssueTransition]]`
+    :   Returns the available transitions for an issue. Transitions define the workflow steps an issue can move through (e.g., To Do -> In Progress -> Done). Use this to discover valid transition IDs before performing a transition.
+        
+        Args:
+            issue_id_or_key: The issue ID or key (e.g., "PROJ-123" or "10000")
+            expand: Comma-separated list of parameters to expand (transitions.fields)
+            transition_id: Filter by transition ID to get details for a specific transition
+            skip_remote_only_condition: Whether to skip conditions that rely on remote data
+            include_unavailable_transitions: Whether to include transitions that are unavailable
+            sort_by_ops_bar_and_status: Whether to sort transitions by OpsBar and status
+            **kwargs: Additional parameters
+        
+        Returns:
+            IssueTransitionsListResult
+
 <a id="IssueWorklogsQuery"></a>
 
 `IssueWorklogsQuery(connector: JiraConnector)`
@@ -226,6 +299,26 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, issue_id_or_key: str, time_spent_seconds: int | None = None, time_spent: str | None = None, started: str | None = None, comment: IssueWorklogsCreateParamsComment | None = None, visibility: IssueWorklogsCreateParamsVisibility | None = None, notify_users: bool | None = None, adjust_estimate: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.jira.models.Worklog`
+    :   Adds a worklog entry to an issue to track time spent.
+        Use timeSpentSeconds or timeSpent (e.g., "3h 30m") to specify time.
+        Optionally include a started datetime and a comment describing the work done.
+        
+        
+                Args:
+                    time_spent_seconds: Time spent in seconds (e.g., 3600 for 1 hour). Provide this or timeSpent.
+                    time_spent: Human-readable time spent (e.g., 3h 30m, 1d 2h). Provide this or timeSpentSeconds.
+                    started: The datetime when the work was started (ISO 8601 format, e.g., "2024-01-15T09:00:00.000+0000"). Defaults to current time.
+                    comment: A comment about the work done in Atlassian Document Format (ADF)
+                    visibility: Restrict worklog visibility to a group or role
+                    issue_id_or_key: The issue ID or key (e.g., "PROJ-123" or "10000")
+                    notify_users: Whether to notify users about the worklog. Default is true.
+                    adjust_estimate: How to adjust the remaining estimate. Values are "new", "leave", "manual", "auto".
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Worklog
 
     `get(self, issue_id_or_key: str, worklog_id: str, expand: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.jira.models.Worklog`
     :   Retrieve a single worklog by its ID
@@ -452,43 +545,13 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'JiraAuthConfig'", name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> airbyte_agent_sdk.connectors.jira.connector.JiraConnector`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A JiraConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await JiraConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=JiraAuthConfig(username="...", password="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -501,9 +564,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @JiraConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -512,10 +595,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await JiraConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 

@@ -19,6 +19,38 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: ArticleAttachmentsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[ArticleAttachmentsSearchData]`
+    :   Search article_attachments records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ArticleAttachmentsSearchFilter):
+        - id: The unique ID of the attachment
+        - url: The API URL of the attachment
+        - article_id: The ID of the article this attachment belongs to
+        - file_name: The name of the attached file
+        - content_type: The MIME type of the attachment
+        - content_url: The URL to download the attachment
+        - size: The size of the attachment in bytes
+        - inline: Whether the attachment is displayed inline
+        - created_at: The time the attachment was created
+        - updated_at: The time the attachment was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ArticleAttachmentsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `download(self, article_id: str, attachment_id: str, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
     :   Downloads the file content of a specific attachment
         
@@ -75,6 +107,44 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ArticlesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[ArticlesSearchData]`
+    :   Search articles records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ArticlesSearchFilter):
+        - id: The unique ID of the article
+        - url: The API URL of the article
+        - html_url: The public URL of the article
+        - title: The title of the article
+        - body: The body content of the article (HTML)
+        - locale: The locale of the article
+        - author_id: The ID of the user who created the article
+        - section_id: The ID of the section the article belongs to
+        - created_at: The time the article was created
+        - updated_at: The time the article was last updated
+        - vote_sum: Sum of upvotes and downvotes
+        - vote_count: Number of votes
+        - label_names: List of label names associated with the article
+        - draft: Whether the article is a draft
+        - promoted: Whether the article is promoted
+        - position: Position of the article in the section
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ArticlesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Article`
     :   Retrieves the details of a specific article
@@ -149,6 +219,37 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: AutomationsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[AutomationsSearchData]`
+    :   Search automations records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AutomationsSearchFilter):
+        - id: Automatically assigned when created
+        - title: The title of the automation
+        - active: Whether the automation is active
+        - position: The position of the automation
+        - conditions: An object that describes the conditions under which the automation will execute
+        - actions: An array of actions
+        - raw_title: The dynamic content placeholder for title
+        - created_at: The time the automation was created
+        - updated_at: The time the automation was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AutomationsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, automation_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Automation`
     :   Returns an automation by its ID
@@ -301,6 +402,35 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: GroupMembershipsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[GroupMembershipsSearchData]`
+    :   Search group_memberships records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (GroupMembershipsSearchFilter):
+        - id: Automatically assigned upon creation
+        - url: The API url of this record
+        - user_id: The id of an agent
+        - group_id: The id of a group
+        - default: If true, tickets assigned directly to the agent will assume this membership's group
+        - created_at: When the group membership was created
+        - updated_at: When the group membership was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            GroupMembershipsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, page: int | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[GroupMembership], GroupMembershipsListResultMeta]`
     :   Returns a list of all group memberships
         
@@ -383,6 +513,39 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: MacrosSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[MacrosSearchData]`
+    :   Search macros records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MacrosSearchFilter):
+        - id: Automatically assigned when the macro is created
+        - url: A URL to access the macro's details
+        - title: The title of the macro
+        - active: Useful for determining if the macro should be displayed
+        - position: The position of the macro
+        - description: The description of the macro
+        - actions: Actions to perform when macro is applied
+        - restriction: Who may access this macro
+        - raw_title: The dynamic content placeholder for title
+        - created_at: The time the macro was created
+        - updated_at: The time the macro was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MacrosSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, macro_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Macro`
     :   Returns a macro by its ID
         
@@ -419,6 +582,37 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: OrganizationMembershipsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[OrganizationMembershipsSearchData]`
+    :   Search organization_memberships records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (OrganizationMembershipsSearchFilter):
+        - id: Automatically assigned when the membership is created
+        - url: The API url of this membership
+        - user_id: The ID of the user for whom this memberships belongs
+        - organization_id: The ID of the organization associated with this user
+        - default: If true, this is the default organization for the user
+        - organization_name: The name of the organization
+        - view_tickets: If true, this user can view tickets from this organization
+        - created_at: When the membership was created
+        - updated_at: When the membership was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            OrganizationMembershipsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `list(self, page: int | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[OrganizationMembership], OrganizationMembershipsListResultMeta]`
     :   Returns a list of all organization memberships
@@ -574,6 +768,37 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: SlaPoliciesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[SlaPoliciesSearchData]`
+    :   Search sla_policies records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SlaPoliciesSearchFilter):
+        - id: Automatically assigned when the SLA policy is created
+        - url: URL of the SLA policy
+        - title: The title of the SLA policy
+        - description: The description of the SLA policy
+        - position: Position of the SLA policy
+        - filter: Filter for the SLA policy
+        - policy_metrics: Array of policy metrics
+        - created_at: When the SLA policy was created
+        - updated_at: When the SLA policy was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SlaPoliciesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, sla_policy_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.SLAPolicy`
     :   Returns an SLA policy by its ID
         
@@ -690,6 +915,26 @@ Classes
         Returns:
             TicketAuditsListResult
 
+<a id="TicketBulkUpdatesQuery"></a>
+
+`TicketBulkUpdatesQuery(connector: ZendeskSupportConnector)`
+:   Query class for TicketBulkUpdates entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, ticket: TicketBulkUpdatesCreateParamsTicket, ids: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.JobStatus`
+    :   Updates multiple tickets at once. Accepts a comma-separated list of ticket IDs and applies the same changes to all of them.
+        
+        Args:
+            ticket: The ticket fields to apply to all specified tickets
+            ids: Comma-separated list of ticket IDs to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            JobStatus
+
 <a id="TicketCommentsQuery"></a>
 
 `TicketCommentsQuery(connector: ZendeskSupportConnector)`
@@ -737,6 +982,17 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, ticket: TicketCommentsCreateParamsTicket, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
+    :   Adds a public reply or internal note to an existing ticket by updating it with a comment object.
+        
+        Args:
+            ticket: The ticket update containing the comment
+            ticket_id: The ID of the ticket to comment on
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
 
     `list(self, ticket_id: str, page: int | None = None, include_inline_images: bool | None = None, sort_order: str | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[TicketComment], TicketCommentsListResultMeta]`
     :   Returns a list of comments for a specific ticket
@@ -1047,6 +1303,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, ticket: TicketsCreateParamsTicket, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
+    :   Creates a new ticket in Zendesk Support
+        
+        Args:
+            ticket: The ticket object to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
+
     `get(self, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
     :   Returns a ticket by its ID
         
@@ -1071,6 +1337,17 @@ Classes
         Returns:
             TicketsListResult
 
+    `update(self, ticket: TicketsUpdateParamsTicket, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
+    :   Updates an existing ticket. Can update status, priority, assignee, add comments, and more.
+        
+        Args:
+            ticket: The ticket fields to update
+            ticket_id: The ID of the ticket to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
+
 <a id="TriggersQuery"></a>
 
 `TriggersQuery(connector: ZendeskSupportConnector)`
@@ -1079,6 +1356,40 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: TriggersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TriggersSearchData]`
+    :   Search triggers records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TriggersSearchFilter):
+        - id: Automatically assigned when created
+        - url: The URL of the trigger
+        - title: The title of the trigger
+        - active: Whether the trigger is active
+        - position: Position of the trigger
+        - description: The description of the trigger
+        - conditions: An object that describes the conditions under which the trigger will execute
+        - actions: An array of actions
+        - raw_title: The dynamic content placeholder for title
+        - category_id: The ID of the category the trigger belongs to
+        - created_at: The time the trigger was created
+        - updated_at: The time the trigger was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TriggersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, trigger_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Trigger`
     :   Returns a trigger by its ID
@@ -1175,6 +1486,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, user: UsersCreateParamsUser, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.User`
+    :   Creates a new end-user, agent, or admin in Zendesk Support
+        
+        Args:
+            user: The user object to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            User
+
     `get(self, user_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.User`
     :   Returns a user by their ID
         
@@ -1197,6 +1518,17 @@ Classes
         
         Returns:
             UsersListResult
+
+    `update(self, user: UsersUpdateParamsUser, user_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.User`
+    :   Updates an existing user in Zendesk Support
+        
+        Args:
+            user: The user fields to update
+            user_id: The ID of the user to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            User
 
 <a id="ViewsQuery"></a>
 
@@ -1286,97 +1618,13 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'ZendeskSupportAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A ZendeskSupportConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await ZendeskSupportConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=ZendeskSupportAuthConfig(access_token="...", refresh_token="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await ZendeskSupportConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await ZendeskSupportConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Zendesk-Support Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -1389,9 +1637,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @ZendeskSupportConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -1400,10 +1668,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await ZendeskSupportConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -1440,7 +1704,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

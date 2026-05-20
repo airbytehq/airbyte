@@ -1132,6 +1132,20 @@ Classes
     `contains: airbyte_agent_sdk.connectors.twilio.types.CallsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="CallsCreateParams"></a>
+
+`CallsCreateParams(*args, **kwargs)`
+:   Parameters for calls.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_sid: str`
+    :   The type of the None singleton.
+
 <a id="CallsEqCondition"></a>
 
 `CallsEqCondition(*args, **kwargs)`
@@ -2129,6 +2143,20 @@ Classes
     `contains: airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="IncomingPhoneNumbersCreateParams"></a>
+
+`IncomingPhoneNumbersCreateParams(*args, **kwargs)`
+:   Parameters for incoming_phone_numbers.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_sid: str`
+    :   The type of the None singleton.
+
 <a id="IncomingPhoneNumbersEqCondition"></a>
 
 `IncomingPhoneNumbersEqCondition(*args, **kwargs)`
@@ -2624,6 +2652,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.twilio.types.MessagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MessagesCreateParams"></a>
+
+`MessagesCreateParams(*args, **kwargs)`
+:   Parameters for messages.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_sid: str`
     :   The type of the None singleton.
 
 <a id="MessagesEqCondition"></a>

@@ -65,6 +65,7 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CompaniesSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[DealsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]
 
     ### Class variables
 
@@ -194,6 +195,45 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`AirbyteSearchResult[TicketsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TicketsSearchResult"></a>
+
+`TicketsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="CRMObject"></a>
 
 `CRMObject(**data: Any)`
@@ -212,37 +252,37 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `archived_at: str | Any | None`
+    `archived_at: str | None`
     :   The type of the None singleton.
 
-    `associations: dict[str, typing.Any] | Any | None`
+    `associations: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_write_trace_id: str | Any | None`
+    `object_write_trace_id: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.hubspot.models.CRMObjectProperties | Any`
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.CRMObjectProperties | None`
     :   The type of the None singleton.
 
-    `properties_with_history: dict[str, typing.Any] | Any | None`
+    `properties_with_history: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CRMObjectProperties"></a>
@@ -263,13 +303,13 @@ Classes
 
     ### Class variables
 
-    `hs_createdate: str | Any | None`
+    `hs_createdate: str | None`
     :   The type of the None singleton.
 
-    `hs_lastmodifieddate: str | Any | None`
+    `hs_lastmodifieddate: str | None`
     :   The type of the None singleton.
 
-    `hs_object_id: str | Any | None`
+    `hs_object_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -296,13 +336,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="CompaniesList"></a>
@@ -326,13 +366,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | Any`
+    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Company] | Any`
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Company] | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="CompaniesListResultMeta"></a>
@@ -356,10 +396,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="CompaniesSearchData"></a>
@@ -398,6 +438,24 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Object containing all property values for the company
 
+    `properties_createdate: str | None`
+    :   Date the company was created
+
+    `properties_domain: str | None`
+    :   Company domain name
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the company
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this company
+
+    `properties_name: str | None`
+    :   Company name
+
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
 
@@ -419,37 +477,37 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `archived_at: str | Any | None`
+    `archived_at: str | None`
     :   The type of the None singleton.
 
-    `associations: dict[str, typing.Any] | Any | None`
+    `associations: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_write_trace_id: str | Any | None`
+    `object_write_trace_id: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.hubspot.models.CompanyProperties | Any`
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.CompanyProperties | None`
     :   The type of the None singleton.
 
-    `properties_with_history: dict[str, typing.Any] | Any | None`
+    `properties_with_history: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CompanyProperties"></a>
@@ -470,22 +528,22 @@ Classes
 
     ### Class variables
 
-    `createdate: str | Any | None`
+    `createdate: str | None`
     :   The type of the None singleton.
 
-    `domain: str | Any | None`
+    `domain: str | None`
     :   The type of the None singleton.
 
-    `hs_lastmodifieddate: str | Any | None`
+    `hs_lastmodifieddate: str | None`
     :   The type of the None singleton.
 
-    `hs_object_id: str | Any | None`
+    `hs_object_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="Contact"></a>
@@ -506,37 +564,37 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `archived_at: str | Any | None`
+    `archived_at: str | None`
     :   The type of the None singleton.
 
-    `associations: dict[str, typing.Any] | Any | None`
+    `associations: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_write_trace_id: str | Any | None`
+    `object_write_trace_id: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.hubspot.models.ContactProperties | Any`
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.ContactProperties | None`
     :   The type of the None singleton.
 
-    `properties_with_history: dict[str, typing.Any] | Any | None`
+    `properties_with_history: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ContactProperties"></a>
@@ -557,22 +615,22 @@ Classes
 
     ### Class variables
 
-    `createdate: str | Any | None`
+    `createdate: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `firstname: str | Any | None`
+    `firstname: str | None`
     :   The type of the None singleton.
 
-    `hs_object_id: str | Any | None`
+    `hs_object_id: str | None`
     :   The type of the None singleton.
 
-    `lastmodifieddate: str | Any | None`
+    `lastmodifieddate: str | None`
     :   The type of the None singleton.
 
-    `lastname: str | Any | None`
+    `lastname: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -599,13 +657,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="ContactsList"></a>
@@ -629,13 +687,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | Any`
+    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Contact] | Any`
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Contact] | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="ContactsListResultMeta"></a>
@@ -659,10 +717,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsSearchData"></a>
@@ -684,16 +742,16 @@ Classes
     ### Class variables
 
     `archived: bool | None`
-    :   Boolean flag indicating whether the contact has been archived or deleted.
+    :   Boolean flag indicating whether the contact has been archived or deleted
 
     `companies: list[typing.Any] | None`
-    :   Associated company records linked to this contact.
+    :   Associated company records linked to this contact
 
     `created_at: str | None`
-    :   Timestamp indicating when the contact was first created in the system.
+    :   Timestamp indicating when the contact was first created in the system
 
     `id: str | None`
-    :   Unique identifier for the contact record.
+    :   Unique identifier for the contact record
 
     `model_config`
     :   The type of the None singleton.
@@ -701,8 +759,32 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Key-value object storing all contact properties and their values.
 
+    `properties_associatedcompanyid: str | None`
+    :   ID of the associated company
+
+    `properties_createdate: str | None`
+    :   Date the contact was created
+
+    `properties_email: str | None`
+    :   Contact email address
+
+    `properties_firstname: str | None`
+    :   Contact first name
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this contact
+
+    `properties_lastmodifieddate: str | None`
+    :   Last modified date of the contact
+
+    `properties_lastname: str | None`
+    :   Contact last name
+
     `updated_at: str | None`
-    :   Timestamp indicating when the contact record was last modified.
+    :   Timestamp indicating when the contact record was last modified
 
 <a id="Deal"></a>
 
@@ -722,37 +804,37 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `archived_at: str | Any | None`
+    `archived_at: str | None`
     :   The type of the None singleton.
 
-    `associations: dict[str, typing.Any] | Any | None`
+    `associations: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_write_trace_id: str | Any | None`
+    `object_write_trace_id: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.hubspot.models.DealProperties | Any`
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.DealProperties | None`
     :   The type of the None singleton.
 
-    `properties_with_history: dict[str, typing.Any] | Any | None`
+    `properties_with_history: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="DealProperties"></a>
@@ -773,31 +855,31 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `closedate: str | Any | None`
+    `closedate: str | None`
     :   The type of the None singleton.
 
-    `createdate: str | Any | None`
+    `createdate: str | None`
     :   The type of the None singleton.
 
-    `dealname: str | Any | None`
+    `dealname: str | None`
     :   The type of the None singleton.
 
-    `dealstage: str | Any | None`
+    `dealstage: str | None`
     :   The type of the None singleton.
 
-    `hs_lastmodifieddate: str | Any | None`
+    `hs_lastmodifieddate: str | None`
     :   The type of the None singleton.
 
-    `hs_object_id: str | Any | None`
+    `hs_object_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pipeline: str | Any | None`
+    `pipeline: str | None`
     :   The type of the None singleton.
 
 <a id="DealsApiSearchResultMeta"></a>
@@ -821,13 +903,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="DealsList"></a>
@@ -851,13 +933,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | Any`
+    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Deal] | Any`
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Deal] | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="DealsListResultMeta"></a>
@@ -881,10 +963,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="DealsSearchData"></a>
@@ -928,6 +1010,33 @@ Classes
 
     `properties: dict[str, typing.Any]`
     :   Key-value object containing all deal properties and custom fields
+
+    `properties_amount: str | None`
+    :   Deal amount
+
+    `properties_closedate: str | None`
+    :   Expected close date of the deal
+
+    `properties_createdate: str | None`
+    :   Date the deal was created
+
+    `properties_dealname: str | None`
+    :   Deal name
+
+    `properties_dealstage: str | None`
+    :   Current deal stage
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the deal
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this deal
+
+    `properties_pipeline: str | None`
+    :   Deal pipeline
 
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
@@ -1033,7 +1142,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `HubspotExecuteResultWithMeta[list[CRMObject], ObjectsListResultMeta](**data: Any)`
@@ -1589,10 +1698,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | Any`
+    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.hubspot.models.CRMObject] | Any`
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.CRMObject] | None`
     :   The type of the None singleton.
 
 <a id="ObjectsListResultMeta"></a>
@@ -1616,10 +1725,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="Paging"></a>
@@ -1643,7 +1752,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: airbyte_agent_sdk.connectors.hubspot.models.PagingNext | Any`
+    `next: airbyte_agent_sdk.connectors.hubspot.models.PagingNext | None`
     :   The type of the None singleton.
 
 <a id="PagingNext"></a>
@@ -1664,10 +1773,10 @@ Classes
 
     ### Class variables
 
-    `after: str | Any`
+    `after: str | None`
     :   Cursor for next page
 
-    `link: str | Any`
+    `link: str | None`
     :   URL for next page
 
     `model_config`
@@ -1691,67 +1800,67 @@ Classes
 
     ### Class variables
 
-    `allows_sensitive_properties: bool | Any`
+    `allows_sensitive_properties: bool | None`
     :   The type of the None singleton.
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `associations: list[airbyte_agent_sdk.connectors.hubspot.models.SchemaAssociationsItem] | Any`
+    `associations: list[airbyte_agent_sdk.connectors.hubspot.models.SchemaAssociationsItem] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `created_by_user_id: int | Any`
+    `created_by_user_id: int | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `fully_qualified_name: str | Any`
+    `fully_qualified_name: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `labels: airbyte_agent_sdk.connectors.hubspot.models.SchemaLabels | Any`
+    `labels: airbyte_agent_sdk.connectors.hubspot.models.SchemaLabels | None`
     :   The type of the None singleton.
 
-    `meta_type: str | Any`
+    `meta_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_type_id: str | Any`
+    `object_type_id: str | None`
     :   The type of the None singleton.
 
-    `primary_display_property: str | Any`
+    `primary_display_property: str | None`
     :   The type of the None singleton.
 
-    `properties: list[airbyte_agent_sdk.connectors.hubspot.models.SchemaPropertiesItem] | Any`
+    `properties: list[airbyte_agent_sdk.connectors.hubspot.models.SchemaPropertiesItem] | None`
     :   The type of the None singleton.
 
-    `required_properties: list[str] | Any`
+    `required_properties: list[str] | None`
     :   The type of the None singleton.
 
-    `restorable: bool | Any`
+    `restorable: bool | None`
     :   The type of the None singleton.
 
-    `searchable_properties: list[str] | Any`
+    `searchable_properties: list[str] | None`
     :   The type of the None singleton.
 
-    `secondary_display_properties: list[str] | Any`
+    `secondary_display_properties: list[str] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `updated_by_user_id: int | Any`
+    `updated_by_user_id: int | None`
     :   The type of the None singleton.
 
 <a id="SchemaAssociationsItem"></a>
@@ -1772,43 +1881,43 @@ Classes
 
     ### Class variables
 
-    `cardinality: str | Any`
+    `cardinality: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `from_object_type_id: str | Any`
+    `from_object_type_id: str | None`
     :   The type of the None singleton.
 
-    `has_user_enforced_max_from_object_ids: bool | Any`
+    `has_user_enforced_max_from_object_ids: bool | None`
     :   The type of the None singleton.
 
-    `has_user_enforced_max_to_object_ids: bool | Any`
+    `has_user_enforced_max_to_object_ids: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `inverse_cardinality: str | Any`
+    `inverse_cardinality: str | None`
     :   The type of the None singleton.
 
-    `max_from_object_ids: int | Any`
+    `max_from_object_ids: int | None`
     :   The type of the None singleton.
 
-    `max_to_object_ids: int | Any`
+    `max_to_object_ids: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `to_object_type_id: str | Any`
+    `to_object_type_id: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="SchemaLabels"></a>
@@ -1832,10 +1941,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `plural: str | Any`
+    `plural: str | None`
     :   The type of the None singleton.
 
-    `singular: str | Any`
+    `singular: str | None`
     :   The type of the None singleton.
 
 <a id="SchemaPropertiesItem"></a>
@@ -1856,73 +1965,73 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `calculated: bool | Any`
+    `calculated: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `created_user_id: str | Any`
+    `created_user_id: str | None`
     :   The type of the None singleton.
 
-    `data_sensitivity: str | Any`
+    `data_sensitivity: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `display_order: int | Any`
+    `display_order: int | None`
     :   The type of the None singleton.
 
-    `external_options: bool | Any`
+    `external_options: bool | None`
     :   The type of the None singleton.
 
-    `field_type: str | Any`
+    `field_type: str | None`
     :   The type of the None singleton.
 
-    `form_field: bool | Any`
+    `form_field: bool | None`
     :   The type of the None singleton.
 
-    `group_name: str | Any`
+    `group_name: str | None`
     :   The type of the None singleton.
 
-    `has_unique_value: bool | Any`
+    `has_unique_value: bool | None`
     :   The type of the None singleton.
 
-    `hidden: bool | Any`
+    `hidden: bool | None`
     :   The type of the None singleton.
 
-    `hubspot_defined: bool | Any`
+    `hubspot_defined: bool | None`
     :   The type of the None singleton.
 
-    `label: str | Any`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modification_metadata: airbyte_agent_sdk.connectors.hubspot.models.SchemaPropertiesItemModificationmetadata | Any`
+    `modification_metadata: airbyte_agent_sdk.connectors.hubspot.models.SchemaPropertiesItemModificationmetadata | None`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `options: list[typing.Any] | Any`
+    `options: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `show_currency_symbol: bool | Any`
+    `show_currency_symbol: bool | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `updated_user_id: str | Any`
+    `updated_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="SchemaPropertiesItemModificationmetadata"></a>
@@ -1943,19 +2052,19 @@ Classes
 
     ### Class variables
 
-    `archivable: bool | Any`
+    `archivable: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `read_only_definition: bool | Any`
+    `read_only_definition: bool | None`
     :   The type of the None singleton.
 
-    `read_only_options: bool | Any`
+    `read_only_options: bool | None`
     :   The type of the None singleton.
 
-    `read_only_value: bool | Any`
+    `read_only_value: bool | None`
     :   The type of the None singleton.
 
 <a id="SchemasList"></a>
@@ -1979,7 +2088,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Schema] | Any`
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Schema] | None`
     :   The type of the None singleton.
 
 <a id="Ticket"></a>
@@ -2000,37 +2109,37 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `archived_at: str | Any | None`
+    `archived_at: str | None`
     :   The type of the None singleton.
 
-    `associations: dict[str, typing.Any] | Any | None`
+    `associations: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_write_trace_id: str | Any | None`
+    `object_write_trace_id: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.hubspot.models.TicketProperties | Any`
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.TicketProperties | None`
     :   The type of the None singleton.
 
-    `properties_with_history: dict[str, typing.Any] | Any | None`
+    `properties_with_history: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="TicketProperties"></a>
@@ -2051,34 +2160,34 @@ Classes
 
     ### Class variables
 
-    `content: str | Any | None`
+    `content: str | None`
     :   The type of the None singleton.
 
-    `createdate: str | Any | None`
+    `createdate: str | None`
     :   The type of the None singleton.
 
-    `hs_lastmodifieddate: str | Any | None`
+    `hs_lastmodifieddate: str | None`
     :   The type of the None singleton.
 
-    `hs_object_id: str | Any | None`
+    `hs_object_id: str | None`
     :   The type of the None singleton.
 
-    `hs_pipeline: str | Any | None`
+    `hs_pipeline: str | None`
     :   The type of the None singleton.
 
-    `hs_pipeline_stage: str | Any | None`
+    `hs_pipeline_stage: str | None`
     :   The type of the None singleton.
 
-    `hs_ticket_category: str | Any | None`
+    `hs_ticket_category: str | None`
     :   The type of the None singleton.
 
-    `hs_ticket_priority: str | Any | None`
+    `hs_ticket_priority: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
 <a id="TicketsApiSearchResultMeta"></a>
@@ -2102,13 +2211,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="TicketsList"></a>
@@ -2132,13 +2241,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | Any`
+    `paging: airbyte_agent_sdk.connectors.hubspot.models.Paging | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Ticket] | Any`
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.Ticket] | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="TicketsListResultMeta"></a>
@@ -2162,8 +2271,77 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
+
+<a id="TicketsSearchData"></a>
+
+`TicketsSearchData(**data: Any)`
+:   Search result data for tickets entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the ticket has been deleted and moved to the recycling bin
+
+    `companies: list[typing.Any] | None`
+    :   Collection of company records associated with the ticket
+
+    `contacts: list[typing.Any] | None`
+    :   Collection of contact records associated with the ticket
+
+    `created_at: str | None`
+    :   Timestamp when the ticket record was originally created
+
+    `id: str | None`
+    :   Unique identifier for the ticket record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the ticket
+
+    `properties_content: str | None`
+    :   Ticket content/description
+
+    `properties_createdate: str | None`
+    :   Date the ticket was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the ticket
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_pipeline: str | None`
+    :   Ticket pipeline
+
+    `properties_hs_pipeline_stage: str | None`
+    :   Current pipeline stage of the ticket
+
+    `properties_hs_ticket_category: str | None`
+    :   Ticket category
+
+    `properties_hs_ticket_priority: str | None`
+    :   Ticket priority level
+
+    `properties_subject: str | None`
+    :   Ticket subject line
+
+    `updated_at: str | None`
+    :   Timestamp when the ticket record was last modified

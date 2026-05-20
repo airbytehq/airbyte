@@ -93,6 +93,7 @@
     "@docusaurus/cssnano-preset": "^3.9.2",
     "@docusaurus/faster": "^3.9.2",
     "@docusaurus/module-type-aliases": "^3.9.2",
+    "@docusaurus/plugin-content-docs": "^3.9.2",
     "@docusaurus/plugin-debug": "^3.9.2",
     "@docusaurus/plugin-rsdoctor": "^3.9.2",
     "@docusaurus/plugin-sitemap": "^3.9.2",

@@ -10,6 +10,48 @@ Slack connector.
 Classes
 -------
 
+<a id="BookmarksQuery"></a>
+
+`BookmarksQuery(connector: SlackConnector)`
+:   Query class for Bookmarks entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel_id: str, title: str, type: str, link: str | None = None, emoji: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.Bookmark`
+    :   Adds a bookmark (link) to a channel. Bookmarks appear in the channel header for easy access.
+        
+        Args:
+            channel_id: Channel ID to add the bookmark to
+            title: Title for the bookmark
+            type: Type of the bookmark (e.g., "link")
+            link: URL to bookmark (required for link type). Must begin with http:// or https://.
+            emoji: Emoji tag to apply to the bookmark (e.g., ":rocket:")
+            **kwargs: Additional parameters
+        
+        Returns:
+            Bookmark
+
+<a id="ChannelArchivesQuery"></a>
+
+`ChannelArchivesQuery(connector: SlackConnector)`
+:   Query class for ChannelArchives entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ChannelArchiveResponse`
+    :   Archives a conversation. Not all types of conversations can be archived.
+        
+        Args:
+            channel: ID of the channel to archive
+            **kwargs: Additional parameters
+        
+        Returns:
+            ChannelArchiveResponse
+
 <a id="ChannelInvitesQuery"></a>
 
 `ChannelInvitesQuery(connector: SlackConnector)`
@@ -30,6 +72,26 @@ Classes
         
         Returns:
             Channel
+
+<a id="ChannelKicksQuery"></a>
+
+`ChannelKicksQuery(connector: SlackConnector)`
+:   Query class for ChannelKicks entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, user: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ChannelKickResponse`
+    :   Removes a user from a public or private channel
+        
+        Args:
+            channel: ID of the channel to remove the user from
+            user: User ID to be removed from the channel
+            **kwargs: Additional parameters
+        
+        Returns:
+            ChannelKickResponse
 
 <a id="ChannelMessagesQuery"></a>
 
@@ -242,6 +304,30 @@ Classes
         Returns:
             Channel
 
+<a id="EphemeralMessagesQuery"></a>
+
+`EphemeralMessagesQuery(connector: SlackConnector)`
+:   Query class for EphemeralMessages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, user: str, text: str, thread_ts: str | None = None, blocks: list[dict[str, Any]] | None = None, mrkdwn: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.EphemeralMessageCreateResponse`
+    :   Sends an ephemeral message to a user in a channel. Ephemeral messages are visible only to the target user and do not persist across sessions.
+        
+        Args:
+            channel: Channel, private group, or IM channel to send the ephemeral message to. Can be an encoded ID or a name.
+            user: ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument.
+            text: Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided.
+            thread_ts: Provide another message's ts value to post this ephemeral message in a thread. The thread must already be active.
+            blocks: Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback.
+            mrkdwn: Whether to render mrkdwn formatting in `text` (default true).
+            **kwargs: Additional parameters
+        
+        Returns:
+            EphemeralMessageCreateResponse
+
 <a id="MessagesQuery"></a>
 
 `MessagesQuery(connector: SlackConnector)`
@@ -251,7 +337,7 @@ Classes
 
     ### Methods
 
-    `create(self, channel: str, text: str, thread_ts: str | None = None, reply_broadcast: bool | None = None, unfurl_links: bool | None = None, unfurl_media: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.CreatedMessage`
+    `create(self, channel: str, text: str, thread_ts: str | None = None, reply_broadcast: bool | None = None, unfurl_links: bool | None = None, unfurl_media: bool | None = None, blocks: list[dict[str, Any]] | None = None, mrkdwn: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.CreatedMessage`
     :   Posts a message to a public channel, private channel, or direct message conversation
         
         Args:
@@ -261,22 +347,56 @@ Classes
             reply_broadcast: Also post reply to channel when replying to a thread
             unfurl_links: Enable unfurling of primarily text-based content
             unfurl_media: Enable unfurling of media content
+            blocks: Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback.
+            mrkdwn: Whether to render mrkdwn formatting in `text` (default true).
             **kwargs: Additional parameters
         
         Returns:
             CreatedMessage
 
-    `update(self, channel: str, ts: str, text: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.CreatedMessage`
+    `delete(self, channel: str, ts: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.MessageDeleteResponse`
+    :   Deletes a message from a channel. When used with a bot token, may only delete messages posted by that bot.
+        
+        Args:
+            channel: Channel ID containing the message to be deleted
+            ts: Timestamp of the message to be deleted
+            **kwargs: Additional parameters
+        
+        Returns:
+            MessageDeleteResponse
+
+    `update(self, channel: str, ts: str, text: str, blocks: list[dict[str, Any]] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.CreatedMessage`
     :   Updates an existing message in a channel
         
         Args:
             channel: Channel ID containing the message
             ts: Timestamp of the message to update
             text: New message text content
+            blocks: Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback.
             **kwargs: Additional parameters
         
         Returns:
             CreatedMessage
+
+<a id="PinsQuery"></a>
+
+`PinsQuery(connector: SlackConnector)`
+:   Query class for Pins entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, timestamp: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.PinAddResponse`
+    :   Pins a message to a particular channel. Both channel and timestamp are required.
+        
+        Args:
+            channel: Channel ID to pin the message to
+            timestamp: Timestamp of the message to pin
+            **kwargs: Additional parameters
+        
+        Returns:
+            PinAddResponse
 
 <a id="ReactionsQuery"></a>
 
@@ -298,6 +418,45 @@ Classes
         
         Returns:
             ReactionAddResponse
+
+    `delete(self, channel: str, timestamp: str, name: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ReactionRemoveResponse`
+    :   Removes a reaction (emoji) from a message
+        
+        Args:
+            channel: Channel ID containing the message
+            timestamp: Timestamp of the message to remove reaction from
+            name: Reaction emoji name to remove (without colons, e.g., "thumbsup")
+            **kwargs: Additional parameters
+        
+        Returns:
+            ReactionRemoveResponse
+
+<a id="ScheduledMessagesQuery"></a>
+
+`ScheduledMessagesQuery(connector: SlackConnector)`
+:   Query class for ScheduledMessages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, text: str, post_at: int, thread_ts: str | None = None, reply_broadcast: bool | None = None, unfurl_links: bool | None = None, unfurl_media: bool | None = None, blocks: list[dict[str, Any]] | None = None, mrkdwn: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ScheduledMessageCreateResponse`
+    :   Schedules a message for delivery to a channel at a specified time in the future. Messages can be scheduled up to 120 days in advance.
+        
+        Args:
+            channel: Channel, private group, or DM channel to send the scheduled message to. Can be an encoded ID or a name.
+            text: Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided.
+            post_at: Unix timestamp representing the future time the message should post to Slack. Must be within 120 days.
+            thread_ts: Provide another message's ts value to make this message a reply. Avoid using a reply's ts value; use its parent instead.
+            reply_broadcast: Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel. Defaults to false.
+            unfurl_links: Pass true to enable unfurling of primarily text-based content.
+            unfurl_media: Pass false to disable unfurling of media content.
+            blocks: Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback.
+            mrkdwn: Whether to render mrkdwn formatting in `text` (default true).
+            **kwargs: Additional parameters
+        
+        Returns:
+            ScheduledMessageCreateResponse
 
 <a id="SlackConnector"></a>
 
@@ -352,111 +511,13 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'SlackAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: "'SlackReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Typed replication settings.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A SlackConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await SlackConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=SlackAuthConfig(bot_key="..."),
-            )
-        
-            # With replication config (required for this connector):
-            connector = await SlackConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=SlackAuthConfig(bot_key="..."),
-                replication_config=SlackReplicationConfig(start_date="...", lookback_window="...", join_channels="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await SlackConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-                replication_config=SlackReplicationConfig(start_date="...", lookback_window="...", join_channels="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: "'SlackReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Typed replication settings. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await SlackConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Slack Source",
-                replication_config=SlackReplicationConfig(start_date="...", lookback_window="...", join_channels="..."),
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -469,9 +530,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @SlackConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -480,10 +561,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await SlackConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -520,7 +597,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

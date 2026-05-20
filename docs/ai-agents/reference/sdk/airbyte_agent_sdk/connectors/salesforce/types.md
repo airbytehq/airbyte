@@ -3517,6 +3517,599 @@ Classes
     `type_: str`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="OpportunityStagesAndCondition"></a>
+
+`OpportunityStagesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesAnyCondition"></a>
+
+`OpportunityStagesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesAnyValueFilter"></a>
+
+`OpportunityStagesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `api_name: Any`
+    :   API name of the stage used in code and integrations
+
+    `created_by_id: Any`
+    :   ID of the user who created this stage
+
+    `created_date: Any`
+    :   Date and time when the stage was created
+
+    `default_probability: Any`
+    :   Default probability percentage for opportunities at this stage
+
+    `description: Any`
+    :   Description of the stage
+
+    `forecast_category: Any`
+    :   Forecast category for opportunities at this stage
+
+    `forecast_category_name: Any`
+    :   Display name of the forecast category
+
+    `id: Any`
+    :   Unique identifier for the opportunity stage record
+
+    `is_active: Any`
+    :   Whether the stage is currently active and can be used
+
+    `is_closed: Any`
+    :   Whether opportunities at this stage are considered closed
+
+    `is_won: Any`
+    :   Whether opportunities at this stage are considered won
+
+    `last_modified_by_id: Any`
+    :   ID of the user who last modified this stage
+
+    `last_modified_date: Any`
+    :   Date and time when the stage was last modified
+
+    `master_label: Any`
+    :   Display label for the stage
+
+    `sort_order: Any`
+    :   Order in which the stage appears in the sales process
+
+    `system_modstamp: Any`
+    :   System timestamp when the record was last modified
+
+<a id="OpportunityStagesContainsCondition"></a>
+
+`OpportunityStagesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesEqCondition"></a>
+
+`OpportunityStagesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesFuzzyCondition"></a>
+
+`OpportunityStagesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesGetParams"></a>
+
+`OpportunityStagesGetParams(*args, **kwargs)`
+:   Parameters for opportunity_stages.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fields: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesGtCondition"></a>
+
+`OpportunityStagesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesGteCondition"></a>
+
+`OpportunityStagesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesInCondition"></a>
+
+`OpportunityStagesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesInFilter"></a>
+
+`OpportunityStagesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `api_name: list[str]`
+    :   API name of the stage used in code and integrations
+
+    `created_by_id: list[str]`
+    :   ID of the user who created this stage
+
+    `created_date: list[str]`
+    :   Date and time when the stage was created
+
+    `default_probability: list[float]`
+    :   Default probability percentage for opportunities at this stage
+
+    `description: list[str]`
+    :   Description of the stage
+
+    `forecast_category: list[str]`
+    :   Forecast category for opportunities at this stage
+
+    `forecast_category_name: list[str]`
+    :   Display name of the forecast category
+
+    `id: list[str]`
+    :   Unique identifier for the opportunity stage record
+
+    `is_active: list[bool]`
+    :   Whether the stage is currently active and can be used
+
+    `is_closed: list[bool]`
+    :   Whether opportunities at this stage are considered closed
+
+    `is_won: list[bool]`
+    :   Whether opportunities at this stage are considered won
+
+    `last_modified_by_id: list[str]`
+    :   ID of the user who last modified this stage
+
+    `last_modified_date: list[str]`
+    :   Date and time when the stage was last modified
+
+    `master_label: list[str]`
+    :   Display label for the stage
+
+    `sort_order: list[int]`
+    :   Order in which the stage appears in the sales process
+
+    `system_modstamp: list[str]`
+    :   System timestamp when the record was last modified
+
+<a id="OpportunityStagesKeywordCondition"></a>
+
+`OpportunityStagesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesLikeCondition"></a>
+
+`OpportunityStagesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesListParams"></a>
+
+`OpportunityStagesListParams(*args, **kwargs)`
+:   Parameters for opportunity_stages.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesLtCondition"></a>
+
+`OpportunityStagesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesLteCondition"></a>
+
+`OpportunityStagesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesNeqCondition"></a>
+
+`OpportunityStagesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesNotCondition"></a>
+
+`OpportunityStagesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesOrCondition"></a>
+
+`OpportunityStagesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesSearchFilter"></a>
+
+`OpportunityStagesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering opportunity_stages search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `api_name: str | None`
+    :   API name of the stage used in code and integrations
+
+    `created_by_id: str | None`
+    :   ID of the user who created this stage
+
+    `created_date: str | None`
+    :   Date and time when the stage was created
+
+    `default_probability: float | None`
+    :   Default probability percentage for opportunities at this stage
+
+    `description: str | None`
+    :   Description of the stage
+
+    `forecast_category: str | None`
+    :   Forecast category for opportunities at this stage
+
+    `forecast_category_name: str | None`
+    :   Display name of the forecast category
+
+    `id: str`
+    :   Unique identifier for the opportunity stage record
+
+    `is_active: bool | None`
+    :   Whether the stage is currently active and can be used
+
+    `is_closed: bool | None`
+    :   Whether opportunities at this stage are considered closed
+
+    `is_won: bool | None`
+    :   Whether opportunities at this stage are considered won
+
+    `last_modified_by_id: str | None`
+    :   ID of the user who last modified this stage
+
+    `last_modified_date: str | None`
+    :   Date and time when the stage was last modified
+
+    `master_label: str | None`
+    :   Display label for the stage
+
+    `sort_order: int | None`
+    :   Order in which the stage appears in the sales process
+
+    `system_modstamp: str | None`
+    :   System timestamp when the record was last modified
+
+<a id="OpportunityStagesSearchQuery"></a>
+
+`OpportunityStagesSearchQuery(*args, **kwargs)`
+:   Search query for opportunity_stages entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesSortFilter"></a>
+
+`OpportunityStagesSortFilter(*args, **kwargs)`
+:   Available fields for sorting opportunity_stages search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `api_name: Literal['asc', 'desc']`
+    :   API name of the stage used in code and integrations
+
+    `created_by_id: Literal['asc', 'desc']`
+    :   ID of the user who created this stage
+
+    `created_date: Literal['asc', 'desc']`
+    :   Date and time when the stage was created
+
+    `default_probability: Literal['asc', 'desc']`
+    :   Default probability percentage for opportunities at this stage
+
+    `description: Literal['asc', 'desc']`
+    :   Description of the stage
+
+    `forecast_category: Literal['asc', 'desc']`
+    :   Forecast category for opportunities at this stage
+
+    `forecast_category_name: Literal['asc', 'desc']`
+    :   Display name of the forecast category
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the opportunity stage record
+
+    `is_active: Literal['asc', 'desc']`
+    :   Whether the stage is currently active and can be used
+
+    `is_closed: Literal['asc', 'desc']`
+    :   Whether opportunities at this stage are considered closed
+
+    `is_won: Literal['asc', 'desc']`
+    :   Whether opportunities at this stage are considered won
+
+    `last_modified_by_id: Literal['asc', 'desc']`
+    :   ID of the user who last modified this stage
+
+    `last_modified_date: Literal['asc', 'desc']`
+    :   Date and time when the stage was last modified
+
+    `master_label: Literal['asc', 'desc']`
+    :   Display label for the stage
+
+    `sort_order: Literal['asc', 'desc']`
+    :   Order in which the stage appears in the sales process
+
+    `system_modstamp: Literal['asc', 'desc']`
+    :   System timestamp when the record was last modified
+
+<a id="OpportunityStagesStringFilter"></a>
+
+`OpportunityStagesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `api_name: str`
+    :   API name of the stage used in code and integrations
+
+    `created_by_id: str`
+    :   ID of the user who created this stage
+
+    `created_date: str`
+    :   Date and time when the stage was created
+
+    `default_probability: str`
+    :   Default probability percentage for opportunities at this stage
+
+    `description: str`
+    :   Description of the stage
+
+    `forecast_category: str`
+    :   Forecast category for opportunities at this stage
+
+    `forecast_category_name: str`
+    :   Display name of the forecast category
+
+    `id: str`
+    :   Unique identifier for the opportunity stage record
+
+    `is_active: str`
+    :   Whether the stage is currently active and can be used
+
+    `is_closed: str`
+    :   Whether opportunities at this stage are considered closed
+
+    `is_won: str`
+    :   Whether opportunities at this stage are considered won
+
+    `last_modified_by_id: str`
+    :   ID of the user who last modified this stage
+
+    `last_modified_date: str`
+    :   Date and time when the stage was last modified
+
+    `master_label: str`
+    :   Display label for the stage
+
+    `sort_order: str`
+    :   Order in which the stage appears in the sales process
+
+    `system_modstamp: str`
+    :   System timestamp when the record was last modified
+
 <a id="QueryListParams"></a>
 
 `QueryListParams(*args, **kwargs)`
@@ -4292,3 +4885,836 @@ Classes
 
     `who_id: str`
     :   ID of the related person (Contact or Lead)
+
+<a id="UsersAndCondition"></a>
+
+`UsersAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="UsersAnyCondition"></a>
+
+`UsersAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.salesforce.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
+
+`UsersAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: Any`
+    :   ID of the account associated with this user (for portal users)
+
+    `alias: Any`
+    :   Short name used to identify the user in list views and reports
+
+    `city: Any`
+    :   City portion of the user's address
+
+    `company_name: Any`
+    :   Name of the user's company
+
+    `contact_id: Any`
+    :   ID of the contact associated with this user (for portal users)
+
+    `country: Any`
+    :   Country portion of the user's address
+
+    `created_by_id: Any`
+    :   ID of the user who created this user record
+
+    `created_date: Any`
+    :   Date and time when the user was created
+
+    `department: Any`
+    :   Department within the organization
+
+    `division: Any`
+    :   Division within the organization
+
+    `email: Any`
+    :   Email address of the user
+
+    `employee_number: Any`
+    :   Employee number or ID assigned by the organization
+
+    `first_name: Any`
+    :   First name of the user
+
+    `id: Any`
+    :   Unique identifier for the user record
+
+    `is_active: Any`
+    :   Whether the user is active and can log in
+
+    `last_login_date: Any`
+    :   Date and time of the user's most recent login
+
+    `last_modified_by_id: Any`
+    :   ID of the user who last modified this user record
+
+    `last_modified_date: Any`
+    :   Date and time when the user was last modified
+
+    `last_name: Any`
+    :   Last name of the user
+
+    `manager_id: Any`
+    :   ID of the user's manager
+
+    `mobile_phone: Any`
+    :   Mobile phone number of the user
+
+    `name: Any`
+    :   Full name of the user
+
+    `phone: Any`
+    :   Business phone number of the user
+
+    `postal_code: Any`
+    :   Postal code portion of the user's address
+
+    `profile_id: Any`
+    :   ID of the user's profile
+
+    `state: Any`
+    :   State or province portion of the user's address
+
+    `street: Any`
+    :   Street address of the user
+
+    `system_modstamp: Any`
+    :   System timestamp when the record was last modified
+
+    `title: Any`
+    :   Job title of the user
+
+    `user_role_id: Any`
+    :   ID of the user's role in the organization
+
+    `user_type: Any`
+    :   Type of user license (e.g., Standard, PowerPartner)
+
+    `username: Any`
+    :   Username for logging into Salesforce (unique across all orgs)
+
+<a id="UsersContainsCondition"></a>
+
+`UsersContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.salesforce.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
+
+`UsersEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.salesforce.types.UsersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UsersFuzzyCondition"></a>
+
+`UsersFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.salesforce.types.UsersStringFilter`
+    :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
+
+`UsersGetParams(*args, **kwargs)`
+:   Parameters for users.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fields: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="UsersGtCondition"></a>
+
+`UsersGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.salesforce.types.UsersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UsersGteCondition"></a>
+
+`UsersGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.salesforce.types.UsersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
+
+`UsersInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.salesforce.types.UsersInFilter`
+    :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
+
+`UsersInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: list[str]`
+    :   ID of the account associated with this user (for portal users)
+
+    `alias: list[str]`
+    :   Short name used to identify the user in list views and reports
+
+    `city: list[str]`
+    :   City portion of the user's address
+
+    `company_name: list[str]`
+    :   Name of the user's company
+
+    `contact_id: list[str]`
+    :   ID of the contact associated with this user (for portal users)
+
+    `country: list[str]`
+    :   Country portion of the user's address
+
+    `created_by_id: list[str]`
+    :   ID of the user who created this user record
+
+    `created_date: list[str]`
+    :   Date and time when the user was created
+
+    `department: list[str]`
+    :   Department within the organization
+
+    `division: list[str]`
+    :   Division within the organization
+
+    `email: list[str]`
+    :   Email address of the user
+
+    `employee_number: list[str]`
+    :   Employee number or ID assigned by the organization
+
+    `first_name: list[str]`
+    :   First name of the user
+
+    `id: list[str]`
+    :   Unique identifier for the user record
+
+    `is_active: list[bool]`
+    :   Whether the user is active and can log in
+
+    `last_login_date: list[str]`
+    :   Date and time of the user's most recent login
+
+    `last_modified_by_id: list[str]`
+    :   ID of the user who last modified this user record
+
+    `last_modified_date: list[str]`
+    :   Date and time when the user was last modified
+
+    `last_name: list[str]`
+    :   Last name of the user
+
+    `manager_id: list[str]`
+    :   ID of the user's manager
+
+    `mobile_phone: list[str]`
+    :   Mobile phone number of the user
+
+    `name: list[str]`
+    :   Full name of the user
+
+    `phone: list[str]`
+    :   Business phone number of the user
+
+    `postal_code: list[str]`
+    :   Postal code portion of the user's address
+
+    `profile_id: list[str]`
+    :   ID of the user's profile
+
+    `state: list[str]`
+    :   State or province portion of the user's address
+
+    `street: list[str]`
+    :   Street address of the user
+
+    `system_modstamp: list[str]`
+    :   System timestamp when the record was last modified
+
+    `title: list[str]`
+    :   Job title of the user
+
+    `user_role_id: list[str]`
+    :   ID of the user's role in the organization
+
+    `user_type: list[str]`
+    :   Type of user license (e.g., Standard, PowerPartner)
+
+    `username: list[str]`
+    :   Username for logging into Salesforce (unique across all orgs)
+
+<a id="UsersKeywordCondition"></a>
+
+`UsersKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.salesforce.types.UsersStringFilter`
+    :   The type of the None singleton.
+
+<a id="UsersLikeCondition"></a>
+
+`UsersLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.salesforce.types.UsersStringFilter`
+    :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
+
+`UsersListParams(*args, **kwargs)`
+:   Parameters for users.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
+<a id="UsersLtCondition"></a>
+
+`UsersLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.salesforce.types.UsersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UsersLteCondition"></a>
+
+`UsersLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.salesforce.types.UsersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UsersNeqCondition"></a>
+
+`UsersNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.salesforce.types.UsersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
+
+`UsersNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition`
+    :   The type of the None singleton.
+
+<a id="UsersOrCondition"></a>
+
+`UsersOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
+
+`UsersSearchFilter(*args, **kwargs)`
+:   Available fields for filtering users search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str | None`
+    :   ID of the account associated with this user (for portal users)
+
+    `alias: str | None`
+    :   Short name used to identify the user in list views and reports
+
+    `city: str | None`
+    :   City portion of the user's address
+
+    `company_name: str | None`
+    :   Name of the user's company
+
+    `contact_id: str | None`
+    :   ID of the contact associated with this user (for portal users)
+
+    `country: str | None`
+    :   Country portion of the user's address
+
+    `created_by_id: str | None`
+    :   ID of the user who created this user record
+
+    `created_date: str | None`
+    :   Date and time when the user was created
+
+    `department: str | None`
+    :   Department within the organization
+
+    `division: str | None`
+    :   Division within the organization
+
+    `email: str | None`
+    :   Email address of the user
+
+    `employee_number: str | None`
+    :   Employee number or ID assigned by the organization
+
+    `first_name: str | None`
+    :   First name of the user
+
+    `id: str`
+    :   Unique identifier for the user record
+
+    `is_active: bool | None`
+    :   Whether the user is active and can log in
+
+    `last_login_date: str | None`
+    :   Date and time of the user's most recent login
+
+    `last_modified_by_id: str | None`
+    :   ID of the user who last modified this user record
+
+    `last_modified_date: str | None`
+    :   Date and time when the user was last modified
+
+    `last_name: str | None`
+    :   Last name of the user
+
+    `manager_id: str | None`
+    :   ID of the user's manager
+
+    `mobile_phone: str | None`
+    :   Mobile phone number of the user
+
+    `name: str | None`
+    :   Full name of the user
+
+    `phone: str | None`
+    :   Business phone number of the user
+
+    `postal_code: str | None`
+    :   Postal code portion of the user's address
+
+    `profile_id: str | None`
+    :   ID of the user's profile
+
+    `state: str | None`
+    :   State or province portion of the user's address
+
+    `street: str | None`
+    :   Street address of the user
+
+    `system_modstamp: str | None`
+    :   System timestamp when the record was last modified
+
+    `title: str | None`
+    :   Job title of the user
+
+    `user_role_id: str | None`
+    :   ID of the user's role in the organization
+
+    `user_type: str | None`
+    :   Type of user license (e.g., Standard, PowerPartner)
+
+    `username: str | None`
+    :   Username for logging into Salesforce (unique across all orgs)
+
+<a id="UsersSearchQuery"></a>
+
+`UsersSearchQuery(*args, **kwargs)`
+:   Search query for users entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.salesforce.types.UsersSortFilter]`
+    :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
+
+`UsersSortFilter(*args, **kwargs)`
+:   Available fields for sorting users search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: Literal['asc', 'desc']`
+    :   ID of the account associated with this user (for portal users)
+
+    `alias: Literal['asc', 'desc']`
+    :   Short name used to identify the user in list views and reports
+
+    `city: Literal['asc', 'desc']`
+    :   City portion of the user's address
+
+    `company_name: Literal['asc', 'desc']`
+    :   Name of the user's company
+
+    `contact_id: Literal['asc', 'desc']`
+    :   ID of the contact associated with this user (for portal users)
+
+    `country: Literal['asc', 'desc']`
+    :   Country portion of the user's address
+
+    `created_by_id: Literal['asc', 'desc']`
+    :   ID of the user who created this user record
+
+    `created_date: Literal['asc', 'desc']`
+    :   Date and time when the user was created
+
+    `department: Literal['asc', 'desc']`
+    :   Department within the organization
+
+    `division: Literal['asc', 'desc']`
+    :   Division within the organization
+
+    `email: Literal['asc', 'desc']`
+    :   Email address of the user
+
+    `employee_number: Literal['asc', 'desc']`
+    :   Employee number or ID assigned by the organization
+
+    `first_name: Literal['asc', 'desc']`
+    :   First name of the user
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the user record
+
+    `is_active: Literal['asc', 'desc']`
+    :   Whether the user is active and can log in
+
+    `last_login_date: Literal['asc', 'desc']`
+    :   Date and time of the user's most recent login
+
+    `last_modified_by_id: Literal['asc', 'desc']`
+    :   ID of the user who last modified this user record
+
+    `last_modified_date: Literal['asc', 'desc']`
+    :   Date and time when the user was last modified
+
+    `last_name: Literal['asc', 'desc']`
+    :   Last name of the user
+
+    `manager_id: Literal['asc', 'desc']`
+    :   ID of the user's manager
+
+    `mobile_phone: Literal['asc', 'desc']`
+    :   Mobile phone number of the user
+
+    `name: Literal['asc', 'desc']`
+    :   Full name of the user
+
+    `phone: Literal['asc', 'desc']`
+    :   Business phone number of the user
+
+    `postal_code: Literal['asc', 'desc']`
+    :   Postal code portion of the user's address
+
+    `profile_id: Literal['asc', 'desc']`
+    :   ID of the user's profile
+
+    `state: Literal['asc', 'desc']`
+    :   State or province portion of the user's address
+
+    `street: Literal['asc', 'desc']`
+    :   Street address of the user
+
+    `system_modstamp: Literal['asc', 'desc']`
+    :   System timestamp when the record was last modified
+
+    `title: Literal['asc', 'desc']`
+    :   Job title of the user
+
+    `user_role_id: Literal['asc', 'desc']`
+    :   ID of the user's role in the organization
+
+    `user_type: Literal['asc', 'desc']`
+    :   Type of user license (e.g., Standard, PowerPartner)
+
+    `username: Literal['asc', 'desc']`
+    :   Username for logging into Salesforce (unique across all orgs)
+
+<a id="UsersStringFilter"></a>
+
+`UsersStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   ID of the account associated with this user (for portal users)
+
+    `alias: str`
+    :   Short name used to identify the user in list views and reports
+
+    `city: str`
+    :   City portion of the user's address
+
+    `company_name: str`
+    :   Name of the user's company
+
+    `contact_id: str`
+    :   ID of the contact associated with this user (for portal users)
+
+    `country: str`
+    :   Country portion of the user's address
+
+    `created_by_id: str`
+    :   ID of the user who created this user record
+
+    `created_date: str`
+    :   Date and time when the user was created
+
+    `department: str`
+    :   Department within the organization
+
+    `division: str`
+    :   Division within the organization
+
+    `email: str`
+    :   Email address of the user
+
+    `employee_number: str`
+    :   Employee number or ID assigned by the organization
+
+    `first_name: str`
+    :   First name of the user
+
+    `id: str`
+    :   Unique identifier for the user record
+
+    `is_active: str`
+    :   Whether the user is active and can log in
+
+    `last_login_date: str`
+    :   Date and time of the user's most recent login
+
+    `last_modified_by_id: str`
+    :   ID of the user who last modified this user record
+
+    `last_modified_date: str`
+    :   Date and time when the user was last modified
+
+    `last_name: str`
+    :   Last name of the user
+
+    `manager_id: str`
+    :   ID of the user's manager
+
+    `mobile_phone: str`
+    :   Mobile phone number of the user
+
+    `name: str`
+    :   Full name of the user
+
+    `phone: str`
+    :   Business phone number of the user
+
+    `postal_code: str`
+    :   Postal code portion of the user's address
+
+    `profile_id: str`
+    :   ID of the user's profile
+
+    `state: str`
+    :   State or province portion of the user's address
+
+    `street: str`
+    :   Street address of the user
+
+    `system_modstamp: str`
+    :   System timestamp when the record was last modified
+
+    `title: str`
+    :   Job title of the user
+
+    `user_role_id: str`
+    :   ID of the user's role in the organization
+
+    `user_type: str`
+    :   Type of user license (e.g., Standard, PowerPartner)
+
+    `username: str`
+    :   Username for logging into Salesforce (unique across all orgs)
