@@ -219,7 +219,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `page[size]` | `integer` | No | Number of results per page (max 10) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -397,7 +397,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `string` | Yes | Filter by channel (email or sms) |
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -693,7 +692,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `filter` | `string` | No | Filter expression for metrics. Allowed fields are integration.name and integration.category. |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -1037,7 +1036,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `page[size]` | `integer` | No | Number of results per page (max 10) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 

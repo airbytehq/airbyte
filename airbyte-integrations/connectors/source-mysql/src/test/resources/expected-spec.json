@@ -403,6 +403,13 @@
         "title": "SSH Tunnel Method",
         "type": "object"
       },
+      "treat_tinyint1_as_integer": {
+        "default": false,
+        "description": "When enabled, TINYINT(1) columns are emitted as integers instead of booleans.",
+        "order": 14,
+        "title": "Treat TINYINT(1) Columns as Integers",
+        "type": "boolean"
+      },
       "username": {
         "description": "The username which is used to access the database.",
         "order": 4,
