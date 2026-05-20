@@ -23,9 +23,7 @@ import org.mockito.Mockito.`when`
 
 class MsSqlSourceOperationsTest {
     @Test
-    @DisplayName(
-        "CDC streams without primary keys should expose CDC fields and incremental append"
-    )
+    @DisplayName("CDC streams without primary keys should expose CDC fields and incremental append")
     fun testCdcPkLessStreamSupportsIncrementalAppend() {
         val config = mock(SourceConfiguration::class.java)
         `when`(config.isCdc()).thenReturn(true)
