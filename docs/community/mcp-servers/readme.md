@@ -1,5 +1,3 @@
-import DocCardList from '@theme/DocCardList';
-
 # MCP servers
 
 Airbyte provides MCP (Model Context Protocol) servers for connecting AI assistants to Airbyte and Airbyte-related context.
@@ -14,4 +12,10 @@ Airbyte provides MCP (Model Context Protocol) servers for connecting AI assistan
 
 ## Other Airbyte MCP servers
 
-<DocCardList />
+<Grid columns="2">
+
+<CardWithIcon title="Knowledge MCP server" description="Provide Airbyte product and developer knowledge to AI agents through semantic search over Airbyte docs, specs, videos, and GitHub content." ctaText="Set up Knowledge MCP server" ctaLink="/community/mcp-servers/airbyte-knowledge-mcp" icon="fa-magnifying-glass" />
+
+<CardWithIcon title="PyAirbyte MCP server" description="Manage Airbyte data replication workflows through MCP-compatible clients, including connector listing, configuration validation, and sync operations." ctaText="Set up PyAirbyte MCP server" ctaLink="/community/mcp-servers/pyairbyte-mcp" icon="fa-python" />
+
+</Grid>
