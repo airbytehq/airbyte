@@ -111,7 +111,7 @@ Expand to see details about Mailchimp connector limitations and troubleshooting
 
 The [Mailchimp Marketing API](https://mailchimp.com/developer/marketing/docs/fundamentals/#api-limits) enforces a limit of 10 simultaneous connections per account. Exceeding this limit returns an HTTP 429 error. This limit applies across all API consumers sharing the same account, including Airbyte syncs, other integrations, and the Mailchimp web application. The API also has a 120-second timeout on individual requests.
 
-The connector includes a **Number of Concurrent Workers** configuration parameter (default: 2, min: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but keep the total number of simultaneous connections across all consumers within Mailchimp's 10-connection limit.
+The connector includes a **Number of concurrent threads** configuration parameter (default: 2, min: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but keep the total number of simultaneous connections across all consumers within Mailchimp's 10-connection limit.
 
 </details>
 

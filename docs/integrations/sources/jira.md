@@ -118,7 +118,7 @@ This connector outputs the following full refresh streams:
 - [Time tracking](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get)
 - [Users](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-search-get)
 - [UsersGroupsDetailed](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get)
-- [Workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get)
+- [Workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflows-search-get)
 - [Workflow schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get)
 - [Workflow statuses](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get)
 - [Workflow status categories](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get)
@@ -177,7 +177,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.2 | 2026-05-15 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication for Atlassian Service Account API tokens |
+| 5.0.1 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication for Atlassian Service Account API tokens |
+| 5.0.0 | 2026-05-19 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
 | 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
 | 4.4.0 | 2026-05-06 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |
 | 4.3.21 | 2026-05-04 | [77751](https://github.com/airbytehq/airbyte/pull/77751) | Add input validation for `domain` field |

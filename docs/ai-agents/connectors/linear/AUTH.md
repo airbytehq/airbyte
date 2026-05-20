@@ -9,7 +9,32 @@ This page documents the authentication and configuration options for the Linear 
 In open source mode, you provide API credentials directly to the connector.
 
 #### OAuth
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `client_id` | `str` | Yes | Your Linear OAuth2 application client ID |
+| `client_secret` | `str` | Yes | Your Linear OAuth2 application client secret |
+| `refresh_token` | `str` | Yes | Your Linear OAuth2 refresh token |
+| `access_token` | `str` | No | Your Linear OAuth2 access token (optional if refresh_token is provided) |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.connectors.linear.models import LinearOauth2AuthConfig
+
+connector = LinearConnector(
+    auth_config=LinearOauth2AuthConfig(
+        client_id="<Your Linear OAuth2 application client ID>",
+        client_secret="<Your Linear OAuth2 application client secret>",
+        refresh_token="<Your Linear OAuth2 refresh token>",
+        access_token="<Your Linear OAuth2 access token (optional if refresh_token is provided)>"
+    )
+)
+```
 
 #### Token
 
@@ -23,10 +48,10 @@ Example request:
 
 ```python
 from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+from airbyte_agent_sdk.connectors.linear.models import LinearLinearApiKeyAuthenticationAuthConfig
 
 connector = LinearConnector(
-    auth_config=LinearAuthConfig(
+    auth_config=LinearLinearApiKeyAuthenticationAuthConfig(
         api_key="<Your Linear API key from Settings > API > Personal API keys>"
     )
 )
@@ -37,10 +62,76 @@ connector = LinearConnector(
 In hosted mode, you first create a connector via the Airbyte Agent API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
 #### OAuth
-This authentication method isn't available for this connector.
+Create a connector with OAuth credentials.
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `client_id` | `str` | Yes | Your Linear OAuth2 application client ID |
+| `client_secret` | `str` | Yes | Your Linear OAuth2 application client secret |
+| `refresh_token` | `str` | Yes | Your Linear OAuth2 refresh token |
+| `access_token` | `str` | No | Your Linear OAuth2 access token (optional if refresh_token is provided) |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_name": "<WORKSPACE_NAME>",
+    "connector_type": "Linear",
+    "name": "My Linear Connector",
+    "credentials": {
+      "client_id": "<Your Linear OAuth2 application client ID>",
+      "client_secret": "<Your Linear OAuth2 application client secret>",
+      "refresh_token": "<Your Linear OAuth2 refresh token>",
+      "access_token": "<Your Linear OAuth2 access token (optional if refresh_token is provided)>"
+    }
+  }'
+```
+
+
 
 #### Bring your own OAuth flow
-This authentication method isn't available for this connector.
+To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own).
+
+##### Step 1: Initiate the OAuth flow
+
+Request a consent URL for your user.
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Linear") |
+| `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_name": "<WORKSPACE_NAME>",
+    "connector_type": "Linear",
+    "redirect_url": "https://yourapp.com/oauth/callback"
+  }'
+```
+
+Redirect your user to the `consent_url` from the response.
+
+##### Step 2: Handle the callback
+
+After the user authorizes access, Airbyte automatically creates the connector and redirects them to your `redirect_url` with a `connector_id` query parameter. You don't need to make a separate API call to create the connector.
+
+```text
+https://yourapp.com/oauth/callback?connector_id=<connector_id>
+```
+
+Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
 
 #### Token
 Create a connector with Token credentials.
