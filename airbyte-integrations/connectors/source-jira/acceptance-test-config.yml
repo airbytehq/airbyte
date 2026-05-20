@@ -31,10 +31,23 @@ acceptance_tests:
         timeout_seconds: 2400
         fail_on_extra_columns: false
       - config_path: "secrets/service_account_config.json"
-        configured_catalog_path: "integration_tests/service_account_configured_catalog.json"
         empty_streams:
+          - name: "boards"
+            bypass_reason: "Service account test token scope does not include this stream."
+          - name: "board_issues"
+            bypass_reason: "Service account test token scope does not include this stream."
+          - name: "issue_security_schemes"
+            bypass_reason: "Service account test token scope does not include this stream."
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
+          - name: "screen_schemes"
+            bypass_reason: "Service account test token scope does not include this stream."
+          - name: "screens"
+            bypass_reason: "Service account test token scope does not include this stream."
+          - name: "sprints"
+            bypass_reason: "Service account test token scope does not include this stream."
+          - name: "sprint_issues"
+            bypass_reason: "Service account test token scope does not include this stream."
         timeout_seconds: 2400
         fail_on_extra_columns: false
   incremental:
