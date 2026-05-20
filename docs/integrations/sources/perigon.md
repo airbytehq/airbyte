@@ -27,6 +27,7 @@ API Reference: https://docs.perigon.io/reference/all-news
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.33 | 2026-04-28 | [77367](https://github.com/airbytehq/airbyte/pull/77367) | Update dependencies |
 | 0.0.32 | 2026-04-21 | [76724](https://github.com/airbytehq/airbyte/pull/76724) | Update dependencies |
 | 0.0.31 | 2026-03-24 | [75400](https://github.com/airbytehq/airbyte/pull/75400) | Update dependencies |
 | 0.0.30 | 2026-02-24 | [73849](https://github.com/airbytehq/airbyte/pull/73849) | Update dependencies |

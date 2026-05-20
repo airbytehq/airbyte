@@ -115,6 +115,7 @@ For accounts in UTC+ timezones, the Instagram API returns `end_time` values at t
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.28 | 2026-04-28 | [77272](https://github.com/airbytehq/airbyte/pull/77272) | Update dependencies |
 | 4.2.27 | 2026-04-21 | [76627](https://github.com/airbytehq/airbyte/pull/76627) | Update dependencies |
 | 4.2.26 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.2.25 | 2026-04-02 | [74721](https://github.com/airbytehq/airbyte/pull/74721) | Handle errors when fetching carousel children media to prevent sync failures |
