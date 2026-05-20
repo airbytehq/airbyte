@@ -43,16 +43,13 @@ definitions:
     - path:
       - account_name
       value: "{{ stream_partition.account.account_name }}"
-    - path:
-      - account_id
-      value: "{{ stream_partition.account.account_id }}"
 
   departments_stream:
     type: DeclarativeStream
     name: departments
     primary_key:
     - - id
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -84,7 +81,7 @@ definitions:
     primary_key:
     - - id
     - - department_id
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -110,8 +107,6 @@ definitions:
         - type: ParentStreamConfig
           parent_key: id
           partition_field: department_id
-          extra_fields:
-          - - account_id
           stream:
             $ref: "#/definitions/departments_stream"
     transformations:
@@ -123,9 +118,6 @@ definitions:
       - path:
         - account_name
         value: "{{ stream_partition.parent_slice.account.account_name }}"
-      - path:
-        - account_id
-        value: "{{ stream_partition.extra_fields.account_id }}"
       - path:
         - team_id
         value: "{{ record.teamId }}"
@@ -142,7 +134,7 @@ definitions:
     primary_key:
     - - employeeId
     - - year
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -166,8 +158,6 @@ definitions:
         - type: ParentStreamConfig
           parent_key: id
           partition_field: employee_id
-          extra_fields:
-          - - account_id
           stream:
             $ref: "#/definitions/employees_stream"
     incremental_sync:
@@ -196,9 +186,6 @@ definitions:
         - account_name
         value: "{{ stream_partition.parent_slice.parent_slice.account.account_name }}"
       - path:
-        - account_id
-        value: "{{ stream_partition.extra_fields.account_id }}"
-      - path:
         - employee_id
         value: "{{ stream_partition.employee_id }}"
       - path:
@@ -213,7 +200,7 @@ definitions:
     name: absentees
     primary_key:
     - - id
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -258,7 +245,7 @@ definitions:
     name: availabilities
     primary_key:
     - - id
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -302,7 +289,7 @@ definitions:
     name: shifts
     primary_key:
     - - id
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -333,7 +320,7 @@ definitions:
     name: users
     primary_key:
     - - id
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -389,7 +376,7 @@ definitions:
     name: timesheet_detail_report
     primary_key:
     - - timesheetId
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -439,7 +426,7 @@ definitions:
     name: schedule_detail_report
     primary_key:
     - - rosterId
-    - - account_id
+    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -494,10 +481,6 @@ definitions:
       type: object
       properties:
         id:
-          type:
-          - "null"
-          - string
-        account_id:
           type:
           - "null"
           - string
@@ -690,10 +673,6 @@ definitions:
           type:
           - "null"
           - string
-        account_id:
-          type:
-          - "null"
-          - string
         account_name:
           type:
           - "null"
@@ -738,10 +717,6 @@ definitions:
                 type:
                 - "null"
                 - integer
-        account_id:
-          type:
-          - "null"
-          - string
         account_name:
           type:
           - "null"
@@ -760,10 +735,6 @@ definitions:
       type: object
       properties:
         id:
-          type:
-          - "null"
-          - string
-        account_id:
           type:
           - "null"
           - string
@@ -987,10 +958,6 @@ definitions:
           type:
           - "null"
           - string
-        account_id:
-          type:
-          - "null"
-          - string
         account_name:
           type:
           - "null"
@@ -1001,10 +968,6 @@ definitions:
       type: object
       properties:
         id:
-          type:
-          - "null"
-          - string
-        account_id:
           type:
           - "null"
           - string
@@ -1102,10 +1065,6 @@ definitions:
       type: object
       properties:
         id:
-          type:
-          - "null"
-          - string
-        account_id:
           type:
           - "null"
           - string
@@ -1239,10 +1198,6 @@ definitions:
           - "null"
           - boolean
         account_name:
-          type:
-          - "null"
-          - string
-        account_id:
           type:
           - "null"
           - string
@@ -1464,10 +1419,6 @@ definitions:
           type:
           - "null"
           - string
-        account_id:
-          type:
-          - "null"
-          - string
         account_name:
           type:
           - "null"
@@ -1570,10 +1521,6 @@ definitions:
           type:
           - "null"
           - string
-        account_id:
-          type:
-          - "null"
-          - string
         account_name:
           type:
           - "null"
@@ -1612,7 +1559,6 @@ spec:
           required:
           - access_token
           - account_name
-          - account_id
           properties:
             access_token:
               type: string
@@ -1627,12 +1573,6 @@ spec:
               description: Account name for tracking purposes.
               minLength: 1
               order: 1
-            account_id:
-              type: string
-              title: Account ID
-              description: Shiftbase Account ID used to uniquely identify records across accounts.
-              minLength: 1
-              order: 2
       start_date:
         type: string
         title: Start Date
