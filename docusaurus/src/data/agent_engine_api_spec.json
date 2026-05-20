@@ -3910,7 +3910,7 @@
             "type": "boolean",
             "title": "Skip Truncation",
             "description": "Disable automatic truncation of long text fields in list/search responses.",
-            "default": false
+            "default": true
           }
         },
         "type": "object",
