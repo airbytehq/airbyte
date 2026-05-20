@@ -9,15 +9,15 @@ The Freshdesk connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Tickets | [List](#tickets-list), [Get](#tickets-get), [Context Store Search](#tickets-context-store-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [Context Store Search](#contacts-context-store-search) |
 | Agents | [List](#agents-list), [Get](#agents-get), [Context Store Search](#agents-context-store-search) |
 | Groups | [List](#groups-list), [Get](#groups-get), [Context Store Search](#groups-context-store-search) |
-| Companies | [List](#companies-list), [Get](#companies-get) |
-| Roles | [List](#roles-list), [Get](#roles-get) |
-| Satisfaction Ratings | [List](#satisfaction-ratings-list) |
-| Surveys | [List](#surveys-list) |
-| Time Entries | [List](#time-entries-list) |
-| Ticket Fields | [List](#ticket-fields-list) |
+| Companies | [List](#companies-list), [Get](#companies-get), [Context Store Search](#companies-context-store-search) |
+| Roles | [List](#roles-list), [Get](#roles-get), [Context Store Search](#roles-context-store-search) |
+| Satisfaction Ratings | [List](#satisfaction-ratings-list), [Context Store Search](#satisfaction-ratings-context-store-search) |
+| Surveys | [List](#surveys-list), [Context Store Search](#surveys-context-store-search) |
+| Time Entries | [List](#time-entries-list), [Context Store Search](#time-entries-context-store-search) |
+| Ticket Fields | [List](#ticket-fields-list), [Context Store Search](#ticket-fields-context-store-search) |
 
 ## Tickets
 
@@ -478,6 +478,102 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `null \| string` |  |
 | `updated_at` | `null \| string` |  |
 
+
+</details>
+
+### Contacts Context Store Search
+
+Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await freshdesk.contacts.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique contact ID |
+| `name` | `string` | Name of the contact |
+| `email` | `string` | Primary email address |
+| `phone` | `string` | Phone number |
+| `mobile` | `string` | Mobile number |
+| `active` | `boolean` | Whether the contact has been verified |
+| `address` | `string` | Address of the contact |
+| `company_id` | `integer` | ID of the primary company |
+| `custom_fields` | `object` | Custom fields associated with the contact |
+| `description` | `string` | Description of the contact |
+| `job_title` | `string` | Job title of the contact |
+| `language` | `string` | Language of the contact |
+| `twitter_id` | `string` | Twitter ID |
+| `unique_external_id` | `string` | External ID of the contact |
+| `time_zone` | `string` | Time zone of the contact |
+| `facebook_id` | `string` | Facebook ID of the contact |
+| `csat_rating` | `integer` | CSAT rating of the contact |
+| `preferred_source` | `string` | Preferred contact source |
+| `created_at` | `string` | Contact creation timestamp |
+| `updated_at` | `string` | Contact last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique contact ID |
+| `data[].name` | `string` | Name of the contact |
+| `data[].email` | `string` | Primary email address |
+| `data[].phone` | `string` | Phone number |
+| `data[].mobile` | `string` | Mobile number |
+| `data[].active` | `boolean` | Whether the contact has been verified |
+| `data[].address` | `string` | Address of the contact |
+| `data[].company_id` | `integer` | ID of the primary company |
+| `data[].custom_fields` | `object` | Custom fields associated with the contact |
+| `data[].description` | `string` | Description of the contact |
+| `data[].job_title` | `string` | Job title of the contact |
+| `data[].language` | `string` | Language of the contact |
+| `data[].twitter_id` | `string` | Twitter ID |
+| `data[].unique_external_id` | `string` | External ID of the contact |
+| `data[].time_zone` | `string` | Time zone of the contact |
+| `data[].facebook_id` | `string` | Facebook ID of the contact |
+| `data[].csat_rating` | `integer` | CSAT rating of the contact |
+| `data[].preferred_source` | `string` | Preferred contact source |
+| `data[].created_at` | `string` | Contact creation timestamp |
+| `data[].updated_at` | `string` | Contact last update timestamp |
 
 </details>
 
@@ -1023,6 +1119,86 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Companies Context Store Search
+
+Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await freshdesk.companies.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique company ID |
+| `name` | `string` | Name of the company |
+| `description` | `string` | Description of the company |
+| `domains` | `array` | Email domains associated with the company |
+| `note` | `string` | Notes about the company |
+| `health_score` | `string` | Health score of the company |
+| `account_tier` | `string` | Account tier of the company |
+| `renewal_date` | `string` | Renewal date |
+| `industry` | `string` | Industry of the company |
+| `custom_fields` | `object` | Custom fields associated with the company |
+| `created_at` | `string` | Company creation timestamp |
+| `updated_at` | `string` | Company last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique company ID |
+| `data[].name` | `string` | Name of the company |
+| `data[].description` | `string` | Description of the company |
+| `data[].domains` | `array` | Email domains associated with the company |
+| `data[].note` | `string` | Notes about the company |
+| `data[].health_score` | `string` | Health score of the company |
+| `data[].account_tier` | `string` | Account tier of the company |
+| `data[].renewal_date` | `string` | Renewal date |
+| `data[].industry` | `string` | Industry of the company |
+| `data[].custom_fields` | `object` | Custom fields associated with the company |
+| `data[].created_at` | `string` | Company creation timestamp |
+| `data[].updated_at` | `string` | Company last update timestamp |
+
+</details>
+
 ## Roles
 
 ### Roles List
@@ -1133,6 +1309,74 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Roles Context Store Search
+
+Search and filter roles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await freshdesk.roles.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "roles",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique role ID |
+| `name` | `string` | Name of the role |
+| `description` | `string` | Description of the role |
+| `default` | `boolean` | Whether this is a default role |
+| `created_at` | `string` | Role creation timestamp |
+| `updated_at` | `string` | Role last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique role ID |
+| `data[].name` | `string` | Name of the role |
+| `data[].description` | `string` | Description of the role |
+| `data[].default` | `boolean` | Whether this is a default role |
+| `data[].created_at` | `string` | Role creation timestamp |
+| `data[].updated_at` | `string` | Role last update timestamp |
+
+</details>
+
 ## Satisfaction Ratings
 
 ### Satisfaction Ratings List
@@ -1194,6 +1438,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Satisfaction Ratings Context Store Search
+
+Search and filter satisfaction ratings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await freshdesk.satisfaction_ratings.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "satisfaction_ratings",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique satisfaction rating ID |
+| `survey_id` | `integer` | ID of the survey |
+| `user_id` | `integer` | ID of the user (requester) |
+| `agent_id` | `integer` | ID of the agent |
+| `group_id` | `integer` | ID of the group |
+| `ticket_id` | `integer` | ID of the ticket |
+| `feedback` | `string` | Feedback text |
+| `ratings` | `object` | Rating values (question_id to rating mapping) |
+| `created_at` | `string` | Rating creation timestamp |
+| `updated_at` | `string` | Rating last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique satisfaction rating ID |
+| `data[].survey_id` | `integer` | ID of the survey |
+| `data[].user_id` | `integer` | ID of the user (requester) |
+| `data[].agent_id` | `integer` | ID of the agent |
+| `data[].group_id` | `integer` | ID of the group |
+| `data[].ticket_id` | `integer` | ID of the ticket |
+| `data[].feedback` | `string` | Feedback text |
+| `data[].ratings` | `object` | Rating values (question_id to rating mapping) |
+| `data[].created_at` | `string` | Rating creation timestamp |
+| `data[].updated_at` | `string` | Rating last update timestamp |
+
+</details>
+
 ## Surveys
 
 ### Surveys List
@@ -1247,6 +1567,74 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next` | `string` |  |
+
+</details>
+
+### Surveys Context Store Search
+
+Search and filter surveys records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await freshdesk.surveys.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "surveys",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique survey ID |
+| `title` | `string` | Title of the survey |
+| `active` | `boolean` | Whether the survey is active |
+| `questions` | `array` | Survey questions |
+| `created_at` | `string` | Survey creation timestamp |
+| `updated_at` | `string` | Survey last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique survey ID |
+| `data[].title` | `string` | Title of the survey |
+| `data[].active` | `boolean` | Whether the survey is active |
+| `data[].questions` | `array` | Survey questions |
+| `data[].created_at` | `string` | Survey creation timestamp |
+| `data[].updated_at` | `string` | Survey last update timestamp |
 
 </details>
 
@@ -1310,6 +1698,86 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next` | `string` |  |
+
+</details>
+
+### Time Entries Context Store Search
+
+Search and filter time entries records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await freshdesk.time_entries.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "time_entries",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique time entry ID |
+| `agent_id` | `integer` | ID of the agent |
+| `ticket_id` | `integer` | ID of the associated ticket |
+| `company_id` | `integer` | ID of the associated company |
+| `billable` | `boolean` | Whether the time entry is billable |
+| `note` | `string` | Description of the time entry |
+| `time_spent` | `string` | Time spent in hh:mm format |
+| `timer_running` | `boolean` | Whether the timer is running |
+| `executed_at` | `string` | Execution timestamp |
+| `start_time` | `string` | Start time of the timer |
+| `created_at` | `string` | Time entry creation timestamp |
+| `updated_at` | `string` | Time entry last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique time entry ID |
+| `data[].agent_id` | `integer` | ID of the agent |
+| `data[].ticket_id` | `integer` | ID of the associated ticket |
+| `data[].company_id` | `integer` | ID of the associated company |
+| `data[].billable` | `boolean` | Whether the time entry is billable |
+| `data[].note` | `string` | Description of the time entry |
+| `data[].time_spent` | `string` | Time spent in hh:mm format |
+| `data[].timer_running` | `boolean` | Whether the timer is running |
+| `data[].executed_at` | `string` | Execution timestamp |
+| `data[].start_time` | `string` | Start time of the timer |
+| `data[].created_at` | `string` | Time entry creation timestamp |
+| `data[].updated_at` | `string` | Time entry last update timestamp |
 
 </details>
 
@@ -1379,6 +1847,98 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next` | `string` |  |
+
+</details>
+
+### Ticket Fields Context Store Search
+
+Search and filter ticket fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await freshdesk.ticket_fields.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_fields",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique ticket field ID |
+| `name` | `string` | Name of the field |
+| `label` | `string` | Display label for agents |
+| `label_for_customers` | `string` | Display label in the customer portal |
+| `description` | `string` | Description of the field |
+| `position` | `integer` | Position of the field in the form |
+| `type` | `string` | Field type (e.g., custom_dropdown, custom_text) |
+| `default` | `boolean` | Whether this is a default (non-custom) field |
+| `required_for_closure` | `boolean` | Whether the field is required for ticket closure |
+| `required_for_agents` | `boolean` | Whether the field is required for agents |
+| `required_for_customers` | `boolean` | Whether the field is required for customers |
+| `customers_can_edit` | `boolean` | Whether customers can edit this field |
+| `displayed_to_customers` | `boolean` | Whether the field is displayed to customers |
+| `portal_cc` | `boolean` | Whether CC is enabled in the portal |
+| `portal_cc_to` | `string` | CC recipients scope (all or company) |
+| `choices` | `object` | Available choices for dropdown fields |
+| `created_at` | `string` | Field creation timestamp |
+| `updated_at` | `string` | Field last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique ticket field ID |
+| `data[].name` | `string` | Name of the field |
+| `data[].label` | `string` | Display label for agents |
+| `data[].label_for_customers` | `string` | Display label in the customer portal |
+| `data[].description` | `string` | Description of the field |
+| `data[].position` | `integer` | Position of the field in the form |
+| `data[].type` | `string` | Field type (e.g., custom_dropdown, custom_text) |
+| `data[].default` | `boolean` | Whether this is a default (non-custom) field |
+| `data[].required_for_closure` | `boolean` | Whether the field is required for ticket closure |
+| `data[].required_for_agents` | `boolean` | Whether the field is required for agents |
+| `data[].required_for_customers` | `boolean` | Whether the field is required for customers |
+| `data[].customers_can_edit` | `boolean` | Whether customers can edit this field |
+| `data[].displayed_to_customers` | `boolean` | Whether the field is displayed to customers |
+| `data[].portal_cc` | `boolean` | Whether CC is enabled in the portal |
+| `data[].portal_cc_to` | `string` | CC recipients scope (all or company) |
+| `data[].choices` | `object` | Available choices for dropdown fields |
+| `data[].created_at` | `string` | Field creation timestamp |
+| `data[].updated_at` | `string` | Field last update timestamp |
 
 </details>
 
