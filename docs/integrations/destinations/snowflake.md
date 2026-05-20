@@ -308,7 +308,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 | `credentials.auth_type` | Yes | Authentication method. Valid values are `Username and Password` and `Key Pair Authentication`. |
 | `credentials.password` | Required for username/password authentication | Password for the Snowflake user. |
 | `credentials.private_key` | Required for key-pair authentication | PEM-formatted PKCS#8 private key. |
-| `credentials.private_key_password` | No | Passphrase for an encrypted private key. Leave empty for an unencrypted private key. |
+| `credentials.private_key_password` | No | Passphrase for an encrypted private key. Leave empty for a private key without encryption. |
 | `cdc_deletion_mode` | No | Whether CDC deletes are propagated as hard deletes or preserved as soft-delete tombstone records. Defaults to `Hard delete`. |
 | `disable_type_dedupe` | No | Writes only the legacy raw table format when enabled. Defaults to `false`. |
 | `raw_data_schema` | No | Schema for Airbyte internal tables. In legacy raw tables mode, raw tables are stored in this schema. Defaults to `airbyte_internal`. |
