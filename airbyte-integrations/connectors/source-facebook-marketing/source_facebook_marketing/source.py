@@ -55,6 +55,7 @@ from source_facebook_marketing.streams import (
     Images,
     Videos,
 )
+from source_facebook_marketing.streams.common import traced_exception
 
 from .utils import validate_end_date, validate_start_date
 
@@ -125,10 +126,10 @@ class SourceFacebookMarketing(AbstractSource):
                     stream.check_breakdowns(account_id=account_id)
 
         except facebook_business.exceptions.FacebookRequestError as e:
-            return False, e._api_error_message
+            return False, traced_exception(e).message
 
         except AirbyteTracedException as e:
-            return False, f"{e.message}. Full error: {e.internal_message}"
+            return False, e.message
 
         except Exception as e:
             return False, f"Unexpected error: {repr(e)}"

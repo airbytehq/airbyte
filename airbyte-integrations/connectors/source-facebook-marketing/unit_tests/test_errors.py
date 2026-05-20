@@ -60,7 +60,7 @@ ad_creative_response = {
 CONFIG_ERRORS = [
     (
         "error_400_validating_access_token_session_expired",
-        "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
+        "The Facebook Marketing access token has expired or is invalid. Re-authenticate this source in Airbyte, or provide a new valid access token with the required permissions.",
         {
             "status_code": 400,
             "json": {
@@ -75,7 +75,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_validating_access_token_user_changed_their_password",
-        "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
+        "The Facebook Marketing access token has expired or is invalid. Re-authenticate this source in Airbyte, or provide a new valid access token with the required permissions.",
         {
             "status_code": 400,
             "json": {
@@ -90,7 +90,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_validating_access_token_not_authorized_application",
-        "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
+        "The Facebook Marketing access token has expired or is invalid. Re-authenticate this source in Airbyte, or provide a new valid access token with the required permissions.",
         {
             "status_code": 400,
             "json": {
@@ -703,7 +703,8 @@ def test_traced_exception_with_api_error():
 
     assert isinstance(result, AirbyteTracedException)
     assert (
-        result.message == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+        result.message
+        == "The Facebook Marketing access token has expired or is invalid. Re-authenticate this source in Airbyte, or provide a new valid access token with the required permissions."
     )
     assert result.failure_type == FailureType.config_error
 
