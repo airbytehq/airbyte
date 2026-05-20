@@ -44,7 +44,7 @@ data:
           the `service_sid` field on `roles` records is renamed to `chat_service_sid`.
           Users of the `services` and `roles` streams should refresh the source schema and
           clear data for those streams after upgrading.
-        upgradeDeadline: "2026-06-01"
+        upgradeDeadline: "2026-05-30"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
