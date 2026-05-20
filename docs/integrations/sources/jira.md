@@ -23,6 +23,7 @@ Choose how you want Airbyte to authenticate to Jira.
 
 - To use OAuth 2.0, authorize Airbyte to access your Jira site. If you configure a custom OAuth app, see Atlassian's [OAuth 2.0 (3LO) documentation](https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/). The connector requests the scopes it needs, including `offline_access`, `read:workflow:jira`, and `manage:jira-configuration`.
 - To use an API token, create an Atlassian API token without scopes by following Atlassian's [API token instructions](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). API token authentication uses HTTP Basic authentication with your Atlassian account email and Jira site hostname.
+- To use a Service Account token, create an Atlassian Service Account API token with scopes by following Atlassian's [Service Account API token instructions](https://support.atlassian.com/user-management/docs/manage-api-tokens-for-service-accounts/).
 
 ### Step 2: Set up the Jira connector in Airbyte
 
@@ -59,7 +60,44 @@ Choose how you want Airbyte to authenticate to Jira.
 
 Atlassian Service Account API tokens must use Atlassian's Platform API Gateway. To use one in Airbyte, set **Authentication** to **Service Account** and enter the **Domain** for your Jira site. The connector resolves the Cloud ID from the domain, routes Jira requests through `https://api.atlassian.com/ex/jira/{cloudId}/`, and authenticates with a Bearer token.
 
-The token must include the Jira scopes and project permissions required for the streams you sync.
+Service Account API tokens use the same Jira OAuth scopes as OAuth 2.0 credentials. Select these scopes when creating the token:
+
+```text
+read:jira-work
+read:jql:jira
+read:group:jira
+read:project-role:jira
+read:issue-details:jira
+read:status:jira
+read:jira-user
+read:user:jira
+read:avatar:jira
+read:webhook:jira
+read:project-category:jira
+read:screenable-field:jira
+read:screen-field:jira
+read:board-scope:jira-software
+read:project:jira
+read:sprint:jira-software
+read:application-role:jira
+read:field-configuration:jira
+read:notification-scheme:jira
+read:issue-security-scheme:jira
+read:issue-security-level:jira
+read:issue-type-scheme:jira
+read:issue-type-screen-scheme:jira
+read:permission-scheme:jira
+read:screen:jira
+read:screen-scheme:jira
+read:screen-tab:jira
+read:workflow:jira
+read:workflow-scheme:jira
+read:project.email:jira
+read:custom-field-contextual-configuration:jira
+manage:jira-configuration
+```
+
+The service account must also have Jira app access and the project permissions required for the streams you sync. To sync all workflow records, the service account needs the **Administer Jira** global permission.
 
 ## Supported sync modes
 
@@ -171,12 +209,13 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Field | Required | Description |
 | :--- | :---: | :--- |
-| `credentials.auth_type` | Yes | Authentication method. Valid values are `API Token` and `OAuth2.0`. |
+| `credentials.auth_type` | Yes | Authentication method. Valid values are `API Token`, `OAuth2.0`, and `Service Account`. |
 | `credentials.email` | Required for API token authentication | Atlassian account email used with the API token. |
 | `credentials.api_token` | Required for API token authentication | Atlassian API token. Use an API token without scopes. |
 | `credentials.client_id` | Required for OAuth 2.0 authentication | Client ID of your Atlassian OAuth app. |
 | `credentials.client_secret` | Required for OAuth 2.0 authentication | Client secret of your Atlassian OAuth app. |
 | `credentials.refresh_token` | Required for OAuth 2.0 authentication | Refresh token returned by the Atlassian OAuth flow. |
+| `credentials.service_account_token` | Required for Service Account authentication | Atlassian Service Account API token with the required Jira scopes. |
 | `domain` | Yes | Jira site hostname, for example `airbyteio.atlassian.net`. Don't include `https://` or a path. |
 | `projects` | No | List of Jira project keys to replicate. Leave empty to replicate all projects the authenticated user can access. |
 | `start_date` | No | UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Applies to the Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues streams. If unset, defaults to two years before the first sync. |
