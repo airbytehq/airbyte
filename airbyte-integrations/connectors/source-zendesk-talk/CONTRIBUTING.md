@@ -8,7 +8,7 @@ Zendesk Talk's OAuth implementation issues single-use refresh tokens. Every time
 
 ## Incremental Stream Considerations
 
-The Zendesk Talk API supports incremental exports for high-volume call-related endpoints (phone_numbers via incremental, call_legs). The connector already uses `DatetimeBasedCursor` for `call_legs` and `phone_numbers` streams. The remaining FR parent streams are stats/overview endpoints and config lookups (addresses, greetings, IVR menus, etc.) that return aggregate data or small config sets without date-based filtering.
+The Zendesk Talk API supports incremental exports for high-volume call-related endpoints. The connector already uses `DatetimeBasedCursor` for `call_legs` and `calls` streams. The remaining FR parent streams are stats/overview endpoints and config lookups (addresses, greetings, IVR menus, etc.) that return aggregate data or small config sets without date-based filtering.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|

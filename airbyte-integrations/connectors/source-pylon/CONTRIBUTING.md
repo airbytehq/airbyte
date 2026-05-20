@@ -13,7 +13,7 @@ The Pylon API supports cursor-based pagination on list endpoints. The `issues` s
 | contacts | medium | top-level parent | none | none | deferred_no_api_support | No documented date filter on list endpoint |
 | custom_fields | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | issue_statuses | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
-| issues | medium | top-level parent | created_at | created_at | incremental |  |
+| issues | medium | top-level parent | updated_at | updated_at | incremental | Uses `DatetimeBasedCursor`; state migrated from `created_at` to `updated_at` |
 | knowledge_bases | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | tags | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | teams | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |

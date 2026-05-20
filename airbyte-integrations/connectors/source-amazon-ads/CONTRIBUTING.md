@@ -22,32 +22,32 @@ The Amazon Ads API uses report-based data access for most metrics. The `profiles
 |---|---|---|---|---|---|---|
 | profiles | small | top-level parent | none | none | deferred_no_api_support | Config-style; lists advertising profiles, no date filter |
 | profiles_filtered | small | top-level parent | none | none | deferred_no_api_support | Filtered variant of profiles endpoint |
-| sponsored_brands_v3_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_brands_v3_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_adgroups_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_adgroups_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_asins_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_asins_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_campaigns_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_campaigns_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_productads_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_productads_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_targets_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_display_targets_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_adgroups_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_adgroups_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_asins_keywords_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_asins_keywords_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_asins_targets_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_asins_targets_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_campaigns_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_campaigns_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_keywords_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_keywords_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_productads_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_productads_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_targets_report_stream | medium | top-level parent | unknown | unknown | incremental |  |
-| sponsored_products_targets_report_stream_daily | medium | top-level parent | unknown | unknown | incremental |  |
+| sponsored_brands_v3_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_brands_v3_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_display_adgroups_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_display_adgroups_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_display_asins_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_display_asins_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_display_campaigns_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_display_campaigns_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_display_productads_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_display_productads_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_display_targets_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_display_targets_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_products_adgroups_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_products_adgroups_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_products_asins_keywords_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_products_asins_keywords_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_products_asins_targets_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_products_asins_targets_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_products_campaigns_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_products_campaigns_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_products_keywords_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_products_keywords_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_products_productads_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_products_productads_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
+| sponsored_products_targets_report_stream | medium | top-level parent | reportDate | reportDate | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor` |
+| sponsored_products_targets_report_stream_daily | medium | top-level parent | date | date | incremental | `DatetimeBasedCursor` via `incremental_sync_report_datetime_cursor_daily` |
 | attribution_report_performance_adgroup | medium | child of profiles_filtered | none | none | deferred_child |  |
 | attribution_report_performance_campaign | medium | child of profiles_filtered | none | none | deferred_child |  |
 | attribution_report_performance_creative | medium | child of profiles_filtered | none | none | deferred_child |  |

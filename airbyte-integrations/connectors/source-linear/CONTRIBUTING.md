@@ -8,22 +8,22 @@ The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: 
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
-| attachments | medium | top-level parent | unknown | unknown | incremental |  |
-| comments | medium | top-level parent | unknown | unknown | incremental |  |
-| customer_needs | medium | top-level parent | unknown | unknown | incremental |  |
+| attachments | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| comments | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| customer_needs | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | customer_statuses | small | top-level parent | none | none | deferred_no_api_support | Config-style enum lookup; no `updatedAt` filter |
 | customer_tiers | small | top-level parent | none | none | deferred_no_api_support | Config-style enum lookup; no `updatedAt` filter |
-| customers | medium | top-level parent | unknown | unknown | incremental |  |
-| cycles | medium | top-level parent | unknown | unknown | incremental |  |
-| issue_labels | medium | top-level parent | unknown | unknown | incremental |  |
+| customers | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| cycles | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| issue_labels | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | issue_relations | medium | top-level parent | none | none | deferred_no_api_support | No documented `updatedAt` filter in GraphQL schema. Verify via introspection. |
-| issues | medium | top-level parent | unknown | unknown | incremental |  |
-| project_milestones | medium | top-level parent | unknown | unknown | incremental |  |
+| issues | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| project_milestones | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | project_statuses | small | top-level parent | none | none | deferred_no_api_support | Config-style enum lookup; no `updatedAt` filter |
-| projects | medium | top-level parent | unknown | unknown | incremental |  |
-| teams | medium | top-level parent | unknown | unknown | incremental |  |
-| users | medium | top-level parent | unknown | unknown | incremental |  |
-| workflow_states | medium | top-level parent | unknown | unknown | incremental |  |
+| projects | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| teams | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| users | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| workflow_states | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 
 ### Deferred streams
 
