@@ -280,6 +280,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
 | 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
 | 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
 | 2.9.34-rc.1 | 2026-04-29 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
