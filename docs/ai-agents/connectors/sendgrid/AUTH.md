@@ -34,7 +34,7 @@ connector = SendgridConnector(
 
 ### Hosted execution
 
-In hosted mode, you first create a connector via the Airbyte API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+In hosted mode, you first create a connector via the Airbyte Agent API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
 #### OAuth
 This authentication method isn't available for this connector.
@@ -83,10 +83,94 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 After creating the connector, execute operations using either the Python SDK or API.
 If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
 
+
 **Python SDK**
 
-```python
-from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector, AirbyteAuthConfig
+The `connect()` factory returns a fully typed `SendgridConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+
+connector = connect("sendgrid", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@SendgridConnector.tool_utils
+async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+
+connector = connect("sendgrid", workspace_name="<your_workspace_name>")
+
+@tool
+@SendgridConnector.tool_utils
+async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Sendgrid connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+
+connector = connect("sendgrid", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@SendgridConnector.tool_utils(framework="openai_agents")
+async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Sendgrid connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Sendgrid Assistant", tools=[sendgrid_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+
+connector = connect("sendgrid", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Sendgrid Agent")
+
+@mcp.tool
+@SendgridConnector.tool_utils
+async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Sendgrid connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = SendgridConnector(
     auth_config=AirbyteAuthConfig(
@@ -97,10 +181,91 @@ connector = SendgridConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @SendgridConnector.tool_utils
 async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = SendgridConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@SendgridConnector.tool_utils
+async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Sendgrid connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = SendgridConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@SendgridConnector.tool_utils(framework="openai_agents")
+async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Sendgrid connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Sendgrid Assistant", tools=[sendgrid_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = SendgridConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Sendgrid Agent")
+
+@mcp.tool
+@SendgridConnector.tool_utils
+async def sendgrid_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Sendgrid connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
 **API**

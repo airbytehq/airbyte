@@ -354,6 +354,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.5.5 | 2026-04-22 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
 | 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
 | 6.5.3 | 2026-04-21 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
 | 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |
