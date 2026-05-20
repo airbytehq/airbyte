@@ -98,29 +98,23 @@ internal class DestinationMessageTest {
     }
 
     @Test
-    fun testIncompleteStatusConvertsToTypedMessage() {
-        // INCOMPLETE reaches the destination directly in SPEED mode (the orchestrator filters
-        // it out in STDIO mode). The factory must surface a typed message so the bookkeeping
-        // router can mark the stream end-of-stream-but-not-completed and the sync winds down
-        // cleanly with the failure attributed to the source.
+    fun testIgnoreIncompleteStatus() {
+        // INCOMPLETE must not enter the pipeline — drop it at deserialization time,
+        // matching what the orchestrator already does in STDIO mode. The source will
+        // exit non-zero and the orchestrator will shut down the destination.
         val converted = assertDoesNotThrow {
             convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
         }
-        assertTrue(
-            converted is DestinationRecordStreamIncomplete,
-            "Expected DestinationRecordStreamIncomplete, got ${converted::class.simpleName}",
-        )
+        assertEquals(Ignored, converted)
     }
 
     @Test
-    fun testFileIncompleteStatusConvertsToTypedMessage() {
+    fun testIgnoreIncompleteStatusFileTransfer() {
+        // Same behavior for file transfer mode.
         val converted = assertDoesNotThrow {
             convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
         }
-        assertTrue(
-            converted is DestinationFileStreamIncomplete,
-            "Expected DestinationFileStreamIncomplete, got ${converted::class.simpleName}",
-        )
+        assertEquals(Ignored, converted)
     }
 
     @ParameterizedTest

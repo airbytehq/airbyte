@@ -1468,7 +1468,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 60
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 100
 
 schemas:

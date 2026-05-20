@@ -17,7 +17,7 @@ This authentication method isn't available for this connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Granola Enterprise API key generated from Settings \> Workspaces \> API tab |
+| `api_key` | `str` | Yes | Granola API key. For a personal key, open the Granola desktop app and go to Settings \> Connectors \> API keys \> Create new key. For an Enterprise API key, go to Settings \> API \> Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings \> Workspace \> General before personal keys can be created. |
 
 Example request:
 
@@ -27,7 +27,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 ```
@@ -50,7 +50,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Granola Enterprise API key generated from Settings \> Workspaces \> API tab |
+| `api_key` | `str` | Yes | Granola API key. For a personal key, open the Granola desktop app and go to Settings \> Connectors \> API keys \> Create new key. For an Enterprise API key, go to Settings \> API \> Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings \> Workspace \> General before personal keys can be created. |
 
 Example request:
 
@@ -64,7 +64,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     "connector_type": "Granola",
     "name": "My Granola Connector",
     "credentials": {
-      "api_key": "<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+      "api_key": "<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     }
   }'
 ```
