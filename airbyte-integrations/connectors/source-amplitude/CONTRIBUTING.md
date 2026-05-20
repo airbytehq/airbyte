@@ -22,6 +22,6 @@ The Amplitude API supports incremental data export via the Export API with date-
 
 **Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review. The connector's primary high-volume streams appear to already support incremental sync.
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.

@@ -74,7 +74,7 @@ The Harvest API supports `updated_since` filtering on most high-volume endpoints
 | invoice_payments | medium | child | updated_at | updated_at | incremental |  |
 | project_assignments | medium | child | updated_at | updated_at | incremental |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (2 streams):** `company`, `project_budget` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Child streams (2 streams):** `billable_rates`, `cost_rates` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate whether these can be made incremental independently or via `incremental_dependency`.

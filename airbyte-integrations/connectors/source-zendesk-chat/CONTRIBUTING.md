@@ -21,6 +21,6 @@ The Zendesk Chat (Zopim) API supports incremental exports for high-volume endpoi
 | skills | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | triggers | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (8 streams):** `accounts`, `departments`, `goals`, `roles`, `routing_settings`, `shortcuts`, `skills`, `triggers` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

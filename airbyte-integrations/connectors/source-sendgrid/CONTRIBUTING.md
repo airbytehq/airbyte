@@ -28,6 +28,6 @@ The SendGrid API supports `start_time`/`end_time` filtering on suppression endpo
 | suppression_groups | small | top-level parent | none | none | deferred_no_api_support | ASM groups; config-style lookup |
 | templates | small | top-level parent | none | none | deferred_no_api_support | Email templates; config-style lookup |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (9 streams):** `campaigns`, `contacts`, `lists`, `segments`, `singlesend_stats`, `singlesends`, `stats_automations`, `suppression_groups`, `templates` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

@@ -11,6 +11,6 @@ The Granola API connector has 2 streams: `notes` (incremental with `created_at` 
 | notes | medium | top-level parent | created_at | created_at | incremental |  |
 | detailed_notes | medium | child | none | none | deferred_child |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **Child streams (1 streams):** `detailed_notes` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

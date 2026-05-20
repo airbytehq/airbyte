@@ -26,6 +26,6 @@ The Zendesk Talk API supports incremental exports for high-volume call-related e
 | ivrs | small | top-level parent | none | none | deferred_no_api_support | Config-style; IVR trees |
 | phone_numbers | small | top-level parent | none | none | deferred_no_api_support | Config-style; provisioned numbers |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (11 streams):** `account_overview`, `addresses`, `agents_activity`, `agents_overview`, `current_queue_activity`, `greeting_categories`, `greetings`, `ivr_menus`, `ivr_routes`, `ivrs`, `phone_numbers` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

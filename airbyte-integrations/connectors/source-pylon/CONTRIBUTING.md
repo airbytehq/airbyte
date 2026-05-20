@@ -24,7 +24,7 @@ The Pylon API supports cursor-based pagination on list endpoints. The `issues` s
 | issue_threads | medium | child | none | none | deferred_child |  |
 | knowledge_base_articles | medium | child | none | none | deferred_child |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (11 streams):** `accounts`, `activity_types`, `contacts`, `custom_fields`, `issue_statuses`, `knowledge_bases`, `tags`, `teams`, `ticket_forms`, `user_roles`, `users` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Child streams (3 streams):** `issue_messages`, `issue_threads`, `knowledge_base_articles` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

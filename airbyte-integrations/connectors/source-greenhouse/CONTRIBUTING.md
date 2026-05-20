@@ -45,7 +45,7 @@ The Greenhouse Harvest API supports `updated_after` filtering on high-volume end
 | jobs_stages | medium | child | updated_at | updated_at | incremental |  |
 | user_permissions | medium | child | none | none | deferred_child |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (15 streams):** `close_reasons`, `custom_fields`, `degrees`, `demographics_answer_options`, `demographics_question_sets`, `demographics_questions`, `departments`, `disciplines`, `offices`, `prospect_pools`, `rejection_reasons`, `schools`, `sources`, `tags`, `user_roles` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Child streams (6 streams):** `activity_feed`, `approvals`, `demographics_answers_answer_options`, `demographics_question_sets_questions`, `jobs_openings`, `user_permissions` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate whether these can be made incremental independently or via `incremental_dependency`.

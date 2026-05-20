@@ -14,6 +14,6 @@ The Sentry API supports date-based filtering on events and issues endpoints, whi
 | projects | medium | top-level parent | dateCreated | dateCreated | incremental |  |
 | releases | medium | top-level parent | dateCreated | dateCreated | incremental |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (1 streams):** `project_detail` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

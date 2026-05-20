@@ -40,6 +40,6 @@ The Chargebee API supports `updated_at` filtering via `updated_at[after]` parame
 | quote_line_group | medium | child | none | none | deferred_child |  |
 | subscription_with_scheduled_changes | medium | child | none | none | deferred_child |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **Child streams (4 streams):** `attached_item`, `contact`, `quote_line_group`, `subscription_with_scheduled_changes` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

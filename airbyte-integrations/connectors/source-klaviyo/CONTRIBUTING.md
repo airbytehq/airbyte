@@ -64,6 +64,6 @@ The Klaviyo API supports cursor-based pagination and `filter` parameters with `g
 | flow_series_reports | medium | child | date | date | incremental |  |
 | lists_detailed | medium | child | updated | updated | incremental |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (1 streams):** `metrics_for_reporting` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

@@ -152,6 +152,6 @@ The Amazon Seller Partner API uses an asynchronous report generation model. Most
 | get_v2_settlement_report_data_flat_file | medium | child | dataEndTime | dataEndTime | incremental |  |
 | order_items | medium | child of orders | LastUpdateDate | LastUpdateDate | incremental |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (8 streams):** `get_brand_analytics_alternate_purchase_report`, `get_brand_analytics_item_comparison_report`, `get_brand_analytics_market_basket_report`, `get_brand_analytics_repeat_purchase_report`, `get_brand_analytics_search_terms_report`, `get_vendor_forecasting_fresh_report`, `get_vendor_forecasting_retail_report`, `get_vendor_inventory_report` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

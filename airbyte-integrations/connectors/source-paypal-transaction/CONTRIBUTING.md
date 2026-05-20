@@ -16,7 +16,7 @@ The PayPal API supports date-based filtering on transaction search (`start_date`
 | transactions | medium | top-level parent | transaction_updated_date | transaction_updated_date | incremental |  |
 | show_product_details | medium | child | none | none | deferred_child |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (1 streams):** `list_products` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Created-at only (1 streams):** `search_invoices` — these endpoints support `created` filtering but the resources are mutable, making `created_at`-only filtering insufficient for true incremental sync.

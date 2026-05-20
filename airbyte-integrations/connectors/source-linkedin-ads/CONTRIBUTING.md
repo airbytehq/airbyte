@@ -126,7 +126,7 @@ The LinkedIn Marketing API supports date-based filtering on analytics and campai
 | lead_form_responses | medium | child | none | none | deferred_child |  |
 | lead_forms | medium | child | none | none | deferred_child |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (1 streams):** `accounts` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Child streams (2 streams):** `lead_form_responses`, `lead_forms` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

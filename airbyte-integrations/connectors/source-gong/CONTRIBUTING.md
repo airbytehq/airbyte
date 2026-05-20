@@ -15,6 +15,6 @@ The Gong API exposes incremental filtering via `fromDateTime` on the calls and s
 | users | small | top-level parent | none | none | deferred_no_api_support | No date filter on list endpoint |
 | callTranscripts | medium | child | started | started | incremental |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (2 streams):** `scorecards`, `users` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

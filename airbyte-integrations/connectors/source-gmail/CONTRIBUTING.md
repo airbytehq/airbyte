@@ -17,7 +17,7 @@ The Gmail API uses a query-based filtering system (`q` parameter) that supports 
 | messages_details | medium | child | none | none | deferred_child |  |
 | threads_details | medium | child | none | none | deferred_child |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (5 streams):** `drafts`, `labels`, `messages`, `profile`, `threads` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Child streams (3 streams):** `labels_details`, `messages_details`, `threads_details` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate whether these can be made incremental independently or via `incremental_dependency`.

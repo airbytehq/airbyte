@@ -14,6 +14,6 @@ The Confluence Cloud REST API uses cursor-based pagination. The `audit` endpoint
 | pages | large | top-level parent | none | none | deferred_no_api_support | No date filter on list endpoint |
 | space | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (5 streams):** `audit`, `blog_posts`, `group`, `pages`, `space` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

@@ -29,6 +29,6 @@ The Snapchat Marketing API supports date-based filtering on stats endpoints and 
 | media | medium | child | updated_at | updated_at | incremental |  |
 | segments | medium | child | updated_at | updated_at | incremental |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **Child streams (4 streams):** `adaccounts_stats_lifetime`, `ads_stats_lifetime`, `adsquads_stats_lifetime`, `campaigns_stats_lifetime` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.

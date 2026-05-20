@@ -38,6 +38,6 @@ The Intercom API supports cursor-based pagination and `updated_at`-style filteri
 | company_segments | medium | child | updated_at | updated_at | incremental |  |
 | conversation_parts | medium | child | updated_at | updated_at | incremental |  |
 
-### Deferred streams
+### Future incremental stream candidates
 
 - **No API date filter (5 streams):** `admins`, `company_attributes`, `contact_attributes`, `tags`, `teams` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
