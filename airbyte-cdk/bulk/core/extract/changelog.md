@@ -9,6 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |---------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.7   | 2026-05-11 | [78022](https://github.com/airbytehq/airbyte/pull/78022) | Put Partitions Creator factory under concurrency control to prevent a case of uncontrolled db queries going over the limit.                          |
 | 1.1.6   | 2026-04-24 | [76961](https://github.com/airbytehq/airbyte/pull/76961) | `JdbcSourceConfiguration.namespaces` is optional: an empty set means discover across all accessible schemas/catalogs.                                |
 | 1.1.5   | 2026-04-22 | [76898](https://github.com/airbytehq/airbyte/pull/76898) | Catalog validation failure messages now include an actionable remediation sentence.                                                                  |
 | 1.1.4   | 2026-04-20 | [76481](https://github.com/airbytehq/airbyte/pull/76481) | Bump bulk-cdk-core-base to 1.0.3 to pick up AIRBYTE_EDITION feature flag fix.                                                                        |
