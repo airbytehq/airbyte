@@ -31,8 +31,7 @@ acceptance_tests:
         timeout_seconds: 2400
         fail_on_extra_columns: false
       - config_path: "secrets/service_account_config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
+        configured_catalog_path: "integration_tests/service_account_configured_catalog.json"
         empty_streams:
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
