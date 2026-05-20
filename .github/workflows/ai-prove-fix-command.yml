@@ -115,7 +115,100 @@ jobs:
               before_evidence:
                 type: array
                 items:
-                  $ref: "#/$defs/evidence"
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    type:
+                      type: string
+                      enum: [code, log, api_response, sync_result, test_result, ci_result, version_info, link, other]
+                      description: Kind of evidence captured.
+                    label:
+                      type: string
+                      description: Concise label for this evidence item.
+                    excerpt:
+                      type: string
+                      description: >-
+                        Exact collected evidence only: copy a real log line, status field/value,
+                        stack trace frame, code snippet, test output, CI output, or API response field.
+                        Do not put generated summaries or conclusions here.
+                    interpretation:
+                      type: string
+                      description: Brief commentary explaining what the excerpt proves. Empty string if self-explanatory.
+                    supports_claim:
+                      type: string
+                      enum: [before_failure, before_baseline, after_success, after_failure, regression_check, setup, cleanup]
+                      description: Which part of the prove-fix argument this evidence supports.
+                    references:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum: [airbyte_cloud_connection, airbyte_cloud_job, github_code, github_pr, github_check, sentry_issue, sentry_event, link, devin_session, mcp_tool_output]
+                          label:
+                            type: string
+                          workspace_id:
+                            type: string
+                          connection_id:
+                            type: string
+                          job_id:
+                            type: string
+                          attempt_number:
+                            type: integer
+                          repository:
+                            type: string
+                          git_ref:
+                            type: string
+                          file_path:
+                            type: string
+                          line_start:
+                            type: integer
+                          line_end:
+                            type: integer
+                          pr_number:
+                            type: integer
+                          check_name:
+                            type: string
+                          run_url:
+                            type: string
+                          organization:
+                            type: string
+                          project:
+                            type: string
+                          issue_id:
+                            type: string
+                          event_id:
+                            type: string
+                          url:
+                            type: string
+                          tool_name:
+                            type: string
+                        required:
+                          - type
+                          - label
+                          - workspace_id
+                          - connection_id
+                          - job_id
+                          - attempt_number
+                          - repository
+                          - git_ref
+                          - file_path
+                          - line_start
+                          - line_end
+                          - pr_number
+                          - check_name
+                          - run_url
+                          - organization
+                          - project
+                          - issue_id
+                          - event_id
+                          - url
+                          - tool_name
+                      description: Structured pointers to the exact evidence source.
+                  required: [type, label, excerpt, interpretation, supports_claim, references]
                 description: >-
                   Evidence collected before applying the fix or from the known failing baseline.
                   Use exact excerpts only: failed logs, API fields, stack traces, CI output, or
@@ -123,7 +216,100 @@ jobs:
               after_evidence:
                 type: array
                 items:
-                  $ref: "#/$defs/evidence"
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    type:
+                      type: string
+                      enum: [code, log, api_response, sync_result, test_result, ci_result, version_info, link, other]
+                      description: Kind of evidence captured.
+                    label:
+                      type: string
+                      description: Concise label for this evidence item.
+                    excerpt:
+                      type: string
+                      description: >-
+                        Exact collected evidence only: copy a real log line, status field/value,
+                        stack trace frame, code snippet, test output, CI output, or API response field.
+                        Do not put generated summaries or conclusions here.
+                    interpretation:
+                      type: string
+                      description: Brief commentary explaining what the excerpt proves. Empty string if self-explanatory.
+                    supports_claim:
+                      type: string
+                      enum: [before_failure, before_baseline, after_success, after_failure, regression_check, setup, cleanup]
+                      description: Which part of the prove-fix argument this evidence supports.
+                    references:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum: [airbyte_cloud_connection, airbyte_cloud_job, github_code, github_pr, github_check, sentry_issue, sentry_event, link, devin_session, mcp_tool_output]
+                          label:
+                            type: string
+                          workspace_id:
+                            type: string
+                          connection_id:
+                            type: string
+                          job_id:
+                            type: string
+                          attempt_number:
+                            type: integer
+                          repository:
+                            type: string
+                          git_ref:
+                            type: string
+                          file_path:
+                            type: string
+                          line_start:
+                            type: integer
+                          line_end:
+                            type: integer
+                          pr_number:
+                            type: integer
+                          check_name:
+                            type: string
+                          run_url:
+                            type: string
+                          organization:
+                            type: string
+                          project:
+                            type: string
+                          issue_id:
+                            type: string
+                          event_id:
+                            type: string
+                          url:
+                            type: string
+                          tool_name:
+                            type: string
+                        required:
+                          - type
+                          - label
+                          - workspace_id
+                          - connection_id
+                          - job_id
+                          - attempt_number
+                          - repository
+                          - git_ref
+                          - file_path
+                          - line_start
+                          - line_end
+                          - pr_number
+                          - check_name
+                          - run_url
+                          - organization
+                          - project
+                          - issue_id
+                          - event_id
+                          - url
+                          - tool_name
+                      description: Structured pointers to the exact evidence source.
+                  required: [type, label, excerpt, interpretation, supports_claim, references]
                 description: >-
                   Evidence collected after applying the fix/pre-release or from post-fix validation.
                   Use exact excerpts only: successful sync status, changed log lines, passing tests,
@@ -181,101 +367,3 @@ jobs:
               - tested_cases
               - cleanup_status
               - remaining_gaps
-            $defs:
-              evidence:
-                type: object
-                additionalProperties: false
-                properties:
-                  type:
-                    type: string
-                    enum: [code, log, api_response, sync_result, test_result, ci_result, version_info, link, other]
-                    description: Kind of evidence captured.
-                  label:
-                    type: string
-                    description: Concise label for this evidence item.
-                  excerpt:
-                    type: string
-                    description: >-
-                      Exact collected evidence only: copy a real log line, status field/value,
-                      stack trace frame, code snippet, test output, CI output, or API response field.
-                      Do not put generated summaries or conclusions here.
-                  interpretation:
-                    type: string
-                    description: Brief commentary explaining what the excerpt proves. Empty string if self-explanatory.
-                  supports_claim:
-                    type: string
-                    enum: [before_failure, before_baseline, after_success, after_failure, regression_check, setup, cleanup]
-                    description: Which part of the prove-fix argument this evidence supports.
-                  references:
-                    type: array
-                    minItems: 1
-                    items:
-                      $ref: "#/$defs/reference"
-                    description: Structured pointers to the exact evidence source.
-                required: [type, label, excerpt, interpretation, supports_claim, references]
-              reference:
-                type: object
-                additionalProperties: false
-                properties:
-                  type:
-                    type: string
-                    enum: [airbyte_cloud_connection, airbyte_cloud_job, github_code, github_pr, github_check, sentry_issue, sentry_event, link, devin_session, mcp_tool_output]
-                  label:
-                    type: string
-                  workspace_id:
-                    type: string
-                  connection_id:
-                    type: string
-                  job_id:
-                    type: string
-                  attempt_number:
-                    type: integer
-                  repository:
-                    type: string
-                  git_ref:
-                    type: string
-                  file_path:
-                    type: string
-                  line_start:
-                    type: integer
-                  line_end:
-                    type: integer
-                  pr_number:
-                    type: integer
-                  check_name:
-                    type: string
-                  run_url:
-                    type: string
-                  organization:
-                    type: string
-                  project:
-                    type: string
-                  issue_id:
-                    type: string
-                  event_id:
-                    type: string
-                  url:
-                    type: string
-                  tool_name:
-                    type: string
-                required:
-                  - type
-                  - label
-                  - workspace_id
-                  - connection_id
-                  - job_id
-                  - attempt_number
-                  - repository
-                  - git_ref
-                  - file_path
-                  - line_start
-                  - line_end
-                  - pr_number
-                  - check_name
-                  - run_url
-                  - organization
-                  - project
-                  - issue_id
-                  - event_id
-                  - url
-                  - tool_name
