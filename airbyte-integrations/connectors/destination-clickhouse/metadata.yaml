@@ -43,12 +43,6 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
-      testSecrets:
-        - name: destination_clickhouse_component_test_instance
-          fileName: test-instance.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
   supportsRefreshes: true
   externalDocumentationUrls:
     - title: ClickHouse documentation
