@@ -8,6 +8,15 @@ from unittest.mock import Mock, patch
 
 from source_s3.v4 import Config, SourceS3, SourceS3StreamReader
 
+from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
+from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
+from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+
 
 _V3_FIELDS = ["dataset", "format", "path_pattern", "provider", "schema"]
 TEST_FILES_FOLDER = Path(__file__).resolve().parent.parent.joinpath("sample_files")
@@ -52,3 +61,31 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_v3_nested_fields_are_not_required(self) -> None:
         spec = self._source.spec()
         assert not spec.connectionSpecification["properties"]["provider"]["required"]
+
+
+def test_airbyte_cdk_limits_concurrent_partition_generators() -> None:
+    stream = Mock(spec=AbstractStream)
+    stream.name = "stream"
+    stream.block_simultaneous_read = ""
+    stream.as_airbyte_stream.return_value = AirbyteStream(
+        name="stream",
+        json_schema={},
+        supported_sync_modes=[SyncMode.full_refresh],
+    )
+    thread_pool_manager = Mock(spec=ThreadPoolManager)
+    handler = ConcurrentReadProcessor(
+        [stream],
+        Mock(spec=PartitionEnqueuer),
+        thread_pool_manager,
+        Mock(),
+        Mock(spec=SliceLogger),
+        Mock(spec=MessageRepository),
+        Mock(spec=PartitionReader),
+        max_concurrent_partition_generators=1,
+    )
+    handler._streams_currently_generating_partitions.append("active_stream")
+
+    status_message = handler.start_next_partition_generator()
+
+    assert status_message is None
+    thread_pool_manager.submit.assert_not_called()
