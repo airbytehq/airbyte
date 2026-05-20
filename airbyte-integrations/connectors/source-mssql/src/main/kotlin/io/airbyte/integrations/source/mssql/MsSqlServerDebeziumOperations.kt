@@ -36,6 +36,7 @@ import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.PartiallyOrdered
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.isGreater
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.debezium.connector.sqlserver.Lsn
@@ -217,14 +218,14 @@ class MsSqlServerDebeziumOperations(
         offset: DebeziumOffset,
         schemaHistory: DebeziumSchemaHistory?
     ): JsonNode {
-        // Sanitize offset before saving to state to fix heartbeat corruption
         val sanitizedOffset = sanitizeOffset(offset)
+        val refreshedOffset = refreshIdleOffset(sanitizedOffset)
 
         val stateNode: ObjectNode = Jsons.objectNode()
         // Serialize offset.
         val offsetNode: JsonNode =
             Jsons.objectNode().apply {
-                for ((k, v) in sanitizedOffset.wrapped) {
+                for ((k, v) in refreshedOffset.wrapped) {
                     put(Jsons.writeValueAsString(k), Jsons.writeValueAsString(v))
                 }
             }
@@ -253,6 +254,43 @@ class MsSqlServerDebeziumOperations(
             }
         }
         return Jsons.objectNode().apply { set<JsonNode>(MSSQL_STATE, stateNode) }
+    }
+
+    internal fun advanceIdleOffset(
+        offset: DebeziumOffset,
+        startingOffset: DebeziumOffset,
+        upperBound: MsSqlServerCdcPosition,
+    ): DebeziumOffset {
+        if (offset.wrapped.size != 1 || startingOffset.wrapped.size != 1) {
+            return offset
+        }
+        val startingPosition = position(startingOffset)
+        val offsetPosition = position(offset)
+        if (offsetPosition != startingPosition || !upperBound.isGreater(offsetPosition)) {
+            return offset
+        }
+        if (startingOffset.wrapped.values.first() != offset.wrapped.values.first()) {
+            return offset
+        }
+
+        val advancedOffset =
+            DebeziumOffset(
+                offset.wrapped.mapValues { (_, value) ->
+                    (value as ObjectNode).deepCopy().apply {
+                        put("commit_lsn", upperBound.lsn)
+                        put("change_lsn", "NULL")
+                        put("event_serial_no", 0)
+                    }
+                }
+            )
+        log.info { "Advancing idle MSSQL CDC offset from $offsetPosition to $upperBound." }
+        return advancedOffset
+    }
+
+    private fun refreshIdleOffset(offset: DebeziumOffset): DebeziumOffset {
+        val startingOffset = lastLoadedOffset ?: return offset
+        val upperBound = syncUpperBoundPosition ?: return offset
+        return advanceIdleOffset(offset, startingOffset, upperBound)
     }
 
     override fun deserializeState(opaqueStateValue: JsonNode): DebeziumWarmStartState {
@@ -376,6 +414,8 @@ class MsSqlServerDebeziumOperations(
 
     // Track the last loaded offset to detect heartbeat corruption
     @Volatile private var lastLoadedOffset: DebeziumOffset? = null
+
+    @Volatile private var syncUpperBoundPosition: MsSqlServerCdcPosition? = null
 
     /**
      * Sanitizes the offset before saving to state to fix heartbeat-induced corruption. SQL Server
@@ -573,6 +613,7 @@ class MsSqlServerDebeziumOperations(
 
     override fun generateColdStartOffset(): DebeziumOffset {
         val currentLsn = getCurrentMaxLsn()
+        syncUpperBoundPosition = MsSqlServerCdcPosition(currentLsn.toString())
         val databaseName = configuration.databaseName
 
         // Create offset structure that matches SQL Server Debezium connector format
