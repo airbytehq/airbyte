@@ -15,8 +15,8 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 @responses.activate
 def test_application_roles_stream_401_error(config, caplog):
-    config["credentials"]["domain"] = "test-application.atlassian.net"
-    responses.add(responses.GET, f"https://{config['credentials']['domain']}/rest/api/3/applicationrole", status=401)
+    config["domain"] = "test-application.atlassian.net"
+    responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole", status=401)
 
     stream = find_stream("application_roles", config)
 
@@ -31,7 +31,7 @@ def test_application_roles_stream_401_error(config, caplog):
 def test_application_roles_stream(config, application_roles_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/applicationrole",
+        f"https://{config['domain']}/rest/api/3/applicationrole",
         json=application_roles_response,
     )
 
@@ -44,9 +44,7 @@ def test_application_roles_stream(config, application_roles_response):
 
 @responses.activate
 def test_application_roles_stream_http_error(config, application_roles_response):
-    responses.add(
-        responses.GET, f"https://{config['credentials']['domain']}/rest/api/3/applicationrole", json={"error": "not found"}, status=404
-    )
+    responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole", json={"error": "not found"}, status=404)
 
     stream = find_stream("application_roles", config)
     with pytest.raises(AirbyteTracedException, match="Not found. The requested resource was not found on the server"):
@@ -57,7 +55,7 @@ def test_application_roles_stream_http_error(config, application_roles_response)
 def test_boards_stream(config, boards_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board?maxResults=50",
+        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
         json=boards_response,
     )
 
@@ -70,13 +68,11 @@ def test_boards_stream(config, boards_response):
 
 @responses.activate
 def test_board_stream_forbidden(config, boards_response, caplog):
-    config["credentials"]["domain"] = "test-boards.atlassian.net"
+    config["domain"] = "test-boards.atlassian.net"
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board?maxResults=50",
-        json={
-            "error": f"403 Client Error: Forbidden for url: https://{config['credentials']['domain']}/rest/agile/1.0/board?maxResults=50"
-        },
+        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
+        json={"error": f"403 Client Error: Forbidden for url: https://{config['domain']}/rest/agile/1.0/board?maxResults=50"},
         status=403,
     )
     stream = find_stream("boards", config)
@@ -89,7 +85,7 @@ def test_board_stream_forbidden(config, boards_response, caplog):
 def test_dashboards_stream(config, dashboards_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/dashboard",
+        f"https://{config['domain']}/rest/api/3/dashboard",
         json=dashboards_response,
     )
 
@@ -113,7 +109,7 @@ def test_filters_stream(config, mock_filter_response):
 def test_groups_stream(config, groups_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/group/bulk?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/group/bulk?maxResults=50",
         json=groups_response,
     )
 
@@ -137,7 +133,7 @@ def test_issues_fields_stream(config, mock_fields_response):
 def test_issues_field_configurations_stream(config, issues_field_configurations_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/fieldconfiguration?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/fieldconfiguration?maxResults=50",
         json=issues_field_configurations_response,
     )
 
@@ -152,7 +148,7 @@ def test_issues_field_configurations_stream(config, issues_field_configurations_
 def test_issues_link_types_stream(config, issues_link_types_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issueLinkType",
+        f"https://{config['domain']}/rest/api/3/issueLinkType",
         json=issues_link_types_response,
     )
 
@@ -167,7 +163,7 @@ def test_issues_link_types_stream(config, issues_link_types_response):
 def test_issues_navigator_settings_stream(config, issues_navigator_settings_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/settings/columns",
+        f"https://{config['domain']}/rest/api/3/settings/columns",
         json=issues_navigator_settings_response,
     )
 
@@ -182,7 +178,7 @@ def test_issues_navigator_settings_stream(config, issues_navigator_settings_resp
 def test_issue_notification_schemas_stream(config, issue_notification_schemas_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/notificationscheme?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/notificationscheme?maxResults=50",
         json=issue_notification_schemas_response,
     )
 
@@ -197,7 +193,7 @@ def test_issue_notification_schemas_stream(config, issue_notification_schemas_re
 def test_issue_properties_stream(config, issue_properties_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/priority/search?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/priority/search?maxResults=50",
         json=issue_properties_response,
     )
 
@@ -212,7 +208,7 @@ def test_issue_properties_stream(config, issue_properties_response):
 def test_issue_resolutions_stream(config, issue_resolutions_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/resolution/search?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/resolution/search?maxResults=50",
         json=issue_resolutions_response,
     )
 
@@ -227,7 +223,7 @@ def test_issue_resolutions_stream(config, issue_resolutions_response):
 def test_issue_security_schemes_stream(config, issue_security_schemes_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issuesecurityschemes",
+        f"https://{config['domain']}/rest/api/3/issuesecurityschemes",
         json=issue_security_schemes_response,
     )
 
@@ -242,7 +238,7 @@ def test_issue_security_schemes_stream(config, issue_security_schemes_response):
 def test_issue_type_schemes_stream(config, issue_type_schemes_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issuetypescheme?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issuetypescheme?maxResults=50",
         json=issue_type_schemes_response,
     )
 
@@ -257,7 +253,7 @@ def test_issue_type_schemes_stream(config, issue_type_schemes_response):
 def test_jira_settings_stream(config, jira_settings_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/application-properties",
+        f"https://{config['domain']}/rest/api/3/application-properties",
         json=jira_settings_response,
     )
 
@@ -272,18 +268,18 @@ def test_jira_settings_stream(config, jira_settings_response):
 def test_board_issues_stream(config, mock_board_response, board_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/agile/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json=board_issues_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json={"errorMessages": ["This board has no columns with a mapped status."], "errors": {}},
         status=500,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/agile/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json={},
     )
 
@@ -298,7 +294,7 @@ def test_board_issues_stream(config, mock_board_response, board_issues_response)
 def test_filter_sharing_stream(config, mock_filter_response, filter_sharing_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/filter/1/permission",
+        f"https://{config['domain']}/rest/api/3/filter/1/permission",
         json=filter_sharing_response,
     )
 
@@ -322,7 +318,7 @@ def test_projects_stream(config, mock_projects_responses):
 def test_projects_avatars_stream(config, mock_non_deleted_projects_responses, projects_avatars_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/project/1/avatars",
+        f"https://{config['domain']}/rest/api/3/project/1/avatars",
         json=projects_avatars_response,
     )
 
@@ -337,7 +333,7 @@ def test_projects_avatars_stream(config, mock_non_deleted_projects_responses, pr
 def test_projects_categories_stream(config, projects_categories_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/projectCategory",
+        f"https://{config['domain']}/rest/api/3/projectCategory",
         json=projects_categories_response,
     )
 
@@ -361,12 +357,12 @@ def test_screens_stream(config, mock_screen_response):
 def test_screen_tabs_stream(config, mock_screen_response, screen_tabs_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/screens/1/tabs",
+        f"https://{config['domain']}/rest/api/3/screens/1/tabs",
         json=screen_tabs_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/screens/2/tabs",
+        f"https://{config['domain']}/rest/api/3/screens/2/tabs",
         json={},
     )
 
@@ -393,18 +389,18 @@ def test_sprints_stream(config, mock_board_response, mock_sprints_response):
 def test_board_does_not_support_sprints(config, mock_board_response, sprints_response, caplog):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board/1/sprint?maxResults=50",
+        f"https://{config['domain']}/rest/agile/1.0/board/1/sprint?maxResults=50",
         json=sprints_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board/2/sprint?maxResults=50",
+        f"https://{config['domain']}/rest/agile/1.0/board/2/sprint?maxResults=50",
         json={"errorMessages": ["The board does not support sprints"], "errors": {}},
         status=400,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
+        f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
         json=sprints_response,
     )
     stream = find_stream("sprints", config)
@@ -422,7 +418,7 @@ def test_board_does_not_support_sprints(config, mock_board_response, sprints_res
 def test_sprint_issues_stream(config, mock_board_response, mock_fields_response, mock_sprints_response, sprints_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/agile/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/agile/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json=sprints_issues_response,
     )
 
@@ -440,7 +436,7 @@ def test_sprint_issues_stream(config, mock_board_response, mock_fields_response,
 def test_time_tracking_stream(config, time_tracking_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/configuration/timetracking/list",
+        f"https://{config['domain']}/rest/api/3/configuration/timetracking/list",
         json=time_tracking_response,
     )
 
@@ -464,12 +460,12 @@ def test_users_stream(config, mock_users_response):
 def test_users_groups_detailed_stream(config, mock_users_response, users_groups_detailed_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/user?accountId=1&expand=groups%2CapplicationRoles",
+        f"https://{config['domain']}/rest/api/3/user?accountId=1&expand=groups%2CapplicationRoles",
         json=users_groups_detailed_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/user?accountId=2&expand=groups%2CapplicationRoles",
+        f"https://{config['domain']}/rest/api/3/user?accountId=2&expand=groups%2CapplicationRoles",
         json=users_groups_detailed_response,
     )
 
@@ -484,7 +480,7 @@ def test_users_groups_detailed_stream(config, mock_users_response, users_groups_
 def test_workflows_stream(config, workflows_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/workflow/search?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/workflow/search?maxResults=50",
         json=workflows_response,
     )
 
@@ -499,7 +495,7 @@ def test_workflows_stream(config, workflows_response):
 def test_workflow_schemas_stream(config, workflow_schemas_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/workflowscheme?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/workflowscheme?maxResults=50",
         json=workflow_schemas_response,
     )
 
@@ -514,7 +510,7 @@ def test_workflow_schemas_stream(config, workflow_schemas_response):
 def test_workflow_statuses_stream(config, workflow_statuses_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/status",
+        f"https://{config['domain']}/rest/api/3/status",
         json=workflow_statuses_response,
     )
 
@@ -529,7 +525,7 @@ def test_workflow_statuses_stream(config, workflow_statuses_response):
 def test_workflow_status_categories_stream(config, workflow_status_categories_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/statuscategory",
+        f"https://{config['domain']}/rest/api/3/statuscategory",
         json=workflow_status_categories_response,
     )
 
@@ -544,17 +540,17 @@ def test_workflow_status_categories_stream(config, workflow_status_categories_re
 def test_avatars_stream(config, avatars_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/avatar/issuetype/system",
+        f"https://{config['domain']}/rest/api/3/avatar/issuetype/system",
         json=avatars_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/avatar/project/system",
+        f"https://{config['domain']}/rest/api/3/avatar/project/system",
         json={},
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/avatar/user/system",
+        f"https://{config['domain']}/rest/api/3/avatar/user/system",
         json={},
     )
 
@@ -570,7 +566,7 @@ def test_avatars_stream_should_retry(config, caplog):
     for slice in ["issuetype", "project", "user"]:
         responses.add(
             responses.GET,
-            f"https://{config['credentials']['domain']}/rest/api/3/avatar/{slice}/system",
+            f"https://{config['domain']}/rest/api/3/avatar/{slice}/system",
             json={"errorMessages": ["The error message"], "errors": {}},
             status=400,
         )
@@ -600,7 +596,7 @@ def test_declarative_issues_stream(config, mock_projects_responses_additional_pr
 def test_python_issue_comments_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_comments_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issue/10627/comment?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/10627/comment?maxResults=50",
         json=issue_comments_response,
     )
 
@@ -624,7 +620,7 @@ def test_issue_custom_field_contexts_stream(config, mock_fields_response, mock_i
 def test_project_permissions_stream(config, mock_non_deleted_projects_responses, project_permissions_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/project/Project1/securitylevel",
+        f"https://{config['domain']}/rest/api/3/project/Project1/securitylevel",
         json=project_permissions_response,
     )
 
@@ -667,7 +663,7 @@ def test_project_email_stream(config, mock_non_deleted_projects_responses, mock_
 def test_project_components_stream(config, mock_non_deleted_projects_responses, project_components_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/project/Project1/component?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/Project1/component?maxResults=50",
         json=project_components_response,
     )
 
@@ -685,7 +681,7 @@ def test_project_components_stream(config, mock_non_deleted_projects_responses, 
 def test_permissions_stream(config, permissions_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/permissions",
+        f"https://{config['domain']}/rest/api/3/permissions",
         json=permissions_response,
     )
 
@@ -703,12 +699,12 @@ def test_permissions_stream(config, permissions_response):
 def test_labels_stream(config, labels_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/label?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/label?maxResults=50",
         json=labels_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/label?maxResults=50&startAt=2",
+        f"https://{config['domain']}/rest/api/3/label?maxResults=50&startAt=2",
         json={},
     )
 
@@ -726,7 +722,7 @@ def test_labels_stream(config, labels_response):
 def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_worklogs_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issue/10627/worklog?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/10627/worklog?maxResults=50",
         json=issue_worklogs_response,
     )
 
@@ -741,7 +737,7 @@ def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_resp
 def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_votes_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issue/TESTKEY13-1/watchers",
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers",
         json=issue_votes_response,
     )
 
@@ -756,7 +752,7 @@ def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_resp
 def test_issue_votes_stream_slice(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_votes_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issue/TESTKEY13-1/votes",
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/votes",
         json=issue_votes_response,
     )
 
@@ -771,7 +767,7 @@ def test_issue_votes_stream_slice(config, mock_projects_responses, mock_issues_r
 def test_issue_remote_links_stream_(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_remote_links_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/issue/TESTKEY13-1/remotelink",
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/remotelink",
         json=issue_remote_links_response,
     )
 
@@ -786,7 +782,7 @@ def test_issue_remote_links_stream_(config, mock_projects_responses, mock_issues
 def test_project_versions_stream(config, mock_non_deleted_projects_responses, projects_versions_response):
     responses.add(
         responses.GET,
-        f"https://{config['credentials']['domain']}/rest/api/3/project/Project1/version?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/Project1/version?maxResults=50",
         json=projects_versions_response,
     )
 

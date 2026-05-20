@@ -13,7 +13,7 @@ from conftest import find_stream, read_full_refresh
 @responses.activate
 def test_pagination_users(config):
     domain = "domain.com"
-    config["credentials"]["domain"] = domain
+    config["domain"] = domain
     responses_json = [
         (HTTPStatus.OK, {}, json.dumps([{"self": "user1"}, {"self": "user2"}])),
         (HTTPStatus.OK, {}, json.dumps([{"self": "user3"}, {"self": "user4"}])),
