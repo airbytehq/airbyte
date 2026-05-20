@@ -14744,6 +14744,7 @@ spec:
         validation_strategy:
           type: CustomValidationStrategy
           class_name: source_declarative_manifest.components.ValidateJiraDomain
+        skip_condition: "{{ not config.get('domain') }}"
   connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Jira Spec
