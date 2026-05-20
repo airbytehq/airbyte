@@ -37,6 +37,10 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 7. **Start Date (Optional)** is the earliest date for data that will be synced. If a date is not specified, all data from the last 2 years will be synced.
 8. Click Set up source.
 
+## Configuration
+
+You can set **Number of concurrent threads** to control how many worker threads Airbyte uses during the sync. Valid values are `1` through `50`. The default is `20`.
+
 ## Supported sync modes
 
 The Workday REST source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):

@@ -125,6 +125,14 @@
         "title": "Include Closed Fulfillment Orders",
         "description": "If enabled, the `Fulfillment Orders` stream includes closed fulfillment orders. Shopify excludes closed orders by default.",
         "default": false
+      },
+      "lookback_window_in_days": {
+        "type": "integer",
+        "title": "Lookback Window (in Days)",
+        "description": "If set to a positive number, during each incremental sync the connector will re-fetch records from the past N days before the saved state. This helps capture records that may have been missed due to race conditions or late-arriving data. The default value of 0 means no lookback and preserves existing behavior.",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 30
       }
     }
   },

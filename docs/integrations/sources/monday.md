@@ -86,6 +86,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.8 | 2026-04-28 | [77302](https://github.com/airbytehq/airbyte/pull/77302) | Update dependencies |
 | 2.5.7 | 2026-04-21 | [76675](https://github.com/airbytehq/airbyte/pull/76675) | Update dependencies |
 | 2.5.6 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 2.5.5 | 2026-03-17 | [74325](https://github.com/airbytehq/airbyte/pull/74325) | Migrate to scopes object array format |

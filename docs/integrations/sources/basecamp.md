@@ -85,6 +85,7 @@ The `todos` and `messages` streams use Basecamp's `projects/recordings.json` end
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.37 | 2026-04-28 | [77177](https://github.com/airbytehq/airbyte/pull/77177) | Update dependencies |
 | 0.0.36 | 2026-04-21 | [76843](https://github.com/airbytehq/airbyte/pull/76843) | Bump SDM base image to stable 7.17.2 |
 | 0.0.35 | 2026-03-31 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
 | 0.0.34 | 2026-03-31 | [75892](https://github.com/airbytehq/airbyte/pull/75892) | Update dependencies |
