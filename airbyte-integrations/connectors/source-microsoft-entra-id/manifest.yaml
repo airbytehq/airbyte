@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 5.16.0
 
 type: DeclarativeSource
 
@@ -50,6 +50,101 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
+    users_expanded:
+      type: DeclarativeStream
+      name: users_expanded
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_parameters:
+            $select: "businessPhones,displayName,givenName,id,preferredLanguage,surname,userPrincipalName,jobTitle,mail,mobilePhone,officeLocation"
+            $expand: memberOf
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - memberOf_names
+              value: "{{ ', '.join(record.get('memberOf', []) | map(attribute='displayName') | list) }}"
+            - path:
+                - roles
+              value: "{{ ', '.join(record.get('memberOf', []) | selectattr('roleTemplateId', 'defined') | map(attribute='displayName') | list) }}"
+            - path:
+                - groups
+              value: "{{ ', '.join(record.get('memberOf', []) | rejectattr('roleTemplateId', 'defined') | map(attribute='displayName') | list) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users_expanded"
+    user_member_groups:
+      type: DeclarativeStream
+      name: user_member_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{ stream_slice.user_id }}/memberOf
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_slice.user_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_member_groups"
     groups:
       type: DeclarativeStream
       name: groups
@@ -346,6 +441,8 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/users_expanded"
+  - $ref: "#/definitions/streams/user_member_groups"
   - $ref: "#/definitions/streams/groups"
   - $ref: "#/definitions/streams/applications"
   - $ref: "#/definitions/streams/user_owned_deleted_items"
@@ -392,6 +489,8 @@ spec:
 metadata:
   autoImportSchema:
     users: true
+    users_expanded: true
+    user_member_groups: true
     groups: true
     applications: true
     user_owned_deleted_items: true
@@ -505,6 +604,157 @@ schemas:
           - string
           - "null"
       userPrincipalName:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users_expanded:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      businessPhones:
+        type:
+          - array
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      givenName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      preferredLanguage:
+        type:
+          - string
+          - "null"
+      surname:
+        type:
+          - string
+          - "null"
+      userPrincipalName:
+        type:
+          - string
+          - "null"
+      jobTitle:
+        type:
+          - string
+          - "null"
+      mail:
+        type:
+          - string
+          - "null"
+      mobilePhone:
+        type:
+          - string
+          - "null"
+      officeLocation:
+        type:
+          - string
+          - "null"
+      memberOf:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            "@odata.type":
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            deletedDateTime:
+              type:
+                - string
+                - "null"
+            roleTemplateId:
+              type:
+                - string
+                - "null"
+            mailEnabled:
+              type:
+                - boolean
+                - "null"
+            securityEnabled:
+              type:
+                - boolean
+                - "null"
+      memberOf_names:
+        type:
+          - string
+          - "null"
+      roles:
+        type:
+          - string
+          - "null"
+      groups:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  user_member_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "@odata.type":
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      user_id:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      mailEnabled:
+        type:
+          - boolean
+          - "null"
+      mailNickname:
+        type:
+          - string
+          - "null"
+      securityEnabled:
+        type:
+          - boolean
+          - "null"
+      mail:
+        type:
+          - string
+          - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      deletedDateTime:
         type:
           - string
           - "null"
