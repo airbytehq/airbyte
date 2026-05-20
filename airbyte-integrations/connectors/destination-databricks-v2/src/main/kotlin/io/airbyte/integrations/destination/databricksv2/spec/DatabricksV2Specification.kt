@@ -19,14 +19,6 @@ import jakarta.inject.Singleton
 
 @Singleton
 open class DatabricksV2Specification : ConfigurationSpecification() {
-    @get:JsonSchemaTitle("Agree to the Databricks JDBC Driver Terms & Conditions")
-    @get:JsonPropertyDescription(
-        """You must agree to the Databricks JDBC Driver <a href="https://databricks.com/jdbc-odbc-driver-license">Terms & Conditions</a> to use this connector."""
-    )
-    @get:JsonProperty("accept_terms")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 10, "default": false}""")
-    val acceptTerms: Boolean = false
-
     @get:JsonSchemaTitle("Server Hostname")
     @get:JsonPropertyDescription("Databricks Cluster Server Hostname.")
     @get:JsonProperty("hostname")
@@ -82,6 +74,14 @@ open class DatabricksV2Specification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9, "default": true}""")
     @Suppress("RedundantNullableReturnType")
     val purgeStagingData: Boolean? = true
+
+    @get:JsonSchemaTitle("v2 Agree to the Databricks JDBC Driver Terms & Conditions")
+    @get:JsonPropertyDescription(
+        """You must agree to the Databricks JDBC Driver <a href="https://databricks.com/jdbc-odbc-driver-license">Terms & Conditions</a> to use this connector.""",
+    )
+    @get:JsonProperty("accept_terms")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 10, "default": false}""")
+    val acceptTerms: Boolean = false
 }
 
 @JsonTypeInfo(
