@@ -1,0 +1,169 @@
+name: AI Ready Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "Git ref (passed by slash command dispatcher)"
+        required: false
+        type: string
+      comment-id:
+        description: "The comment-id of the slash command. Used to resolve the issue or PR."
+        required: true
+        type: string
+      pr:
+        description: "PR number, if triggered from a PR"
+        required: false
+        type: string
+
+run-name: "AI Ready for #${{ inputs.pr || inputs.comment-id }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  ai-ready:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,oncall,airbyte-internal-issues"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Apply ready label
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          COMMENT_ID: ${{ inputs.comment-id }}
+          PR_NUMBER: ${{ inputs.pr }}
+          READY_LABEL: hyd-ready
+        with:
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          script: |
+            const readyLabel = process.env.READY_LABEL;
+            const allowedLinkedIssueRepos = new Set([
+              'airbytehq/oncall',
+              'airbytehq/airbyte-internal-issues',
+            ]);
+
+            const addLabel = async (owner, repo, issue_number) => {
+              const existing = await github.rest.issues.listLabelsOnIssue({
+                owner,
+                repo,
+                issue_number,
+              });
+              const hadLabel = existing.data.some((label) => label.name === readyLabel);
+
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: [readyLabel],
+              });
+              return {
+                ref: `${owner}/${repo}#${issue_number}`,
+                status: hadLabel ? 'already labeled' : 'labeled',
+              };
+            };
+
+            const comment = await github.rest.issues.getComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: Number(process.env.COMMENT_ID),
+            });
+
+            const issueNumber = Number(comment.data.issue_url.split('/').pop());
+            const labeled = new Map();
+            const markLabeled = async (owner, repo, issueNumber) => {
+              const result = await addLabel(owner, repo, issueNumber);
+              labeled.set(result.ref, result.status);
+            };
+
+            await markLabeled(context.repo.owner, context.repo.repo, issueNumber);
+
+            const currentIssue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+
+            const bodies = [
+              comment.data.body || '',
+              currentIssue.data.body || '',
+            ];
+
+            if (process.env.PR_NUMBER) {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: Number(process.env.PR_NUMBER),
+              });
+              bodies.push(pr.data.body || '');
+
+              const linkedIssuesQuery = `
+                query($owner: String!, $repo: String!, $pr: Int!) {
+                  repository(owner: $owner, name: $repo) {
+                    pullRequest(number: $pr) {
+                      closingIssuesReferences(first: 20) {
+                        nodes {
+                          number
+                          repository {
+                            nameWithOwner
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+              const linkedIssues = await github.graphql(linkedIssuesQuery, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pr: Number(process.env.PR_NUMBER),
+              });
+
+              for (const issue of linkedIssues.repository.pullRequest.closingIssuesReferences.nodes) {
+                if (!allowedLinkedIssueRepos.has(issue.repository.nameWithOwner)) {
+                  continue;
+                }
+
+                const [owner, repo] = issue.repository.nameWithOwner.split('/');
+                await markLabeled(owner, repo, issue.number);
+              }
+            }
+
+            const issueRefPattern = /(?:https:\/\/github\.com\/(airbytehq)\/(oncall|airbyte-internal-issues)\/issues\/|(?:^|[\s(])airbytehq\/(oncall|airbyte-internal-issues)#)(\d+)/g;
+
+            for (const body of bodies) {
+              for (const match of body.matchAll(issueRefPattern)) {
+                const owner = match[1] || 'airbytehq';
+                const repo = match[2] || match[3];
+                const issueNumber = Number(match[4]);
+
+                if (!allowedLinkedIssueRepos.has(`${owner}/${repo}`)) {
+                  continue;
+                }
+
+                await markLabeled(owner, repo, issueNumber);
+              }
+            }
+
+            const labeledItems = [...labeled.entries()]
+              .sort(([left], [right]) => left.localeCompare(right))
+              .map(([ref, status]) => `${ref} (${status})`);
+
+            core.summary
+              .addHeading('AI Ready')
+              .addRaw(`Applied \`${readyLabel}\` to:\n\n`)
+              .addList(labeledItems)
+              .write();
