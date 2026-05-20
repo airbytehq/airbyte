@@ -25,18 +25,18 @@ allowlist.
 
 ## Configuration
 
-| Parameter                                    |  Type   | Notes                                                                                                                                                                     |
-| :------------------------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Azure Blob Storage Endpoint Domain Name     | string  | This is Azure Blob Storage endpoint domain name. Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one.                |
-| Azure Blob Storage Container Name           | string  | A name of the Azure Blob Storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
-| Azure Blob Storage Account Name             | string  | The account's name of the Azure Blob Storage.                                                                                                                             |
-| Azure Blob Storage Account Key               | string  | Azure Blob Storage account key. If this is set, the `Shared Access Signature`, `Azure Tenant ID`, `Azure Client ID`, and `Azure Client Secret` fields must not be set. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`.                                     |
-| Shared Access Signature                     | string  | Azure Blob Storage shared access signature (SAS). If this is set, the `Azure Blob Storage Account Key`, `Azure Tenant ID`, `Azure Client ID`, and `Azure Client Secret` fields must not be set. Example: `sv=2025-01-01&ss=b&srt=co&sp=abcdefghijk&se=2026-01-31T07:00:00Z&st=2025-01-31T20:30:29Z&spr=https&sig=YWJjZGVmZ2hpamthYmNkZWZnaGlqa2FiY2RlZmdoaWp%3D`.                  |
-| Azure Tenant ID                             | string  | Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication. If this is set, `Azure Client ID` and `Azure Client Secret` must also be set. Example: `12345678-1234-1234-1234-123456789012`.                                                      |
-| Azure Client ID                             | string  | Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication. If this is set, `Azure Tenant ID` and `Azure Client Secret` must also be set. Example: `87654321-4321-4321-4321-210987654321`.                                                       |
-| Azure Client Secret                         | string  | Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication. If this is set, `Azure Tenant ID` and `Azure Client ID` must also be set.                                                                                                        |
-| Azure Blob Storage Target Blob Size (MB)    | integer | How large each blob should be, in megabytes. Example: 500. After a blob exceeds this size, the connector will start writing to a new blob, and increment the part number. |
-| Format                                       | object  | Format specific configuration. See below for details.                                                                                                                     |
+| Parameter                                 | Type    | Notes                                                                                                                                                                                                      |
+| :---------------------------------------- | :------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Azure Blob Storage Endpoint Domain Name  | string  | Azure Blob Storage endpoint domain name. Leave the default value, `blob.core.windows.net`, to use the standard Azure public cloud endpoint.                                                                 |
+| Azure Blob Storage Container Name        | string  | Name of an existing Azure Blob Storage container. Create this container before you configure the destination.                                                                                                |
+| Azure Blob Storage Account Name          | string  | Name of the Azure Storage account.                                                                                                                                                                         |
+| Azure Blob Storage Account Key           | string  | Azure Blob Storage account key. If this is set, the `Shared Access Signature`, `Azure Tenant ID`, `Azure Client ID`, and `Azure Client Secret` fields must not be set.                                     |
+| Shared Access Signature                  | string  | Azure Blob Storage shared access signature (SAS). If this is set, the `Azure Blob Storage Account Key`, `Azure Tenant ID`, `Azure Client ID`, and `Azure Client Secret` fields must not be set.            |
+| Azure Tenant ID                          | string  | Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication. If this is set, `Azure Client ID` and `Azure Client Secret` must also be set.                                           |
+| Azure Client ID                          | string  | Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication. If this is set, `Azure Tenant ID` and `Azure Client Secret` must also be set.                                           |
+| Azure Client Secret                      | string  | Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication. If this is set, `Azure Tenant ID` and `Azure Client ID` must also be set.                                           |
+| Azure Blob Storage Target Blob Size (MB) | integer | How large each blob should be, in megabytes. Example: `500`. After a blob exceeds this size, the connector starts writing to a new blob and increments the part number. Enter `0` to disable this behavior. |
+| Format                                   | object  | Format-specific configuration. See [Output Schema](#output-schema) for details.                                                                                                                            |
 
 ## Output Schema
 
@@ -113,31 +113,44 @@ With root level flattening, the output JSONL is:
 
 ### Requirements
 
-1. Create an AzureBlobStorage account.
-2. Check if it works under [https://portal.azure.com/](https://portal.azure.com/) -&gt; "Storage browser".
+1. Create an [Azure Storage account](https://learn.microsoft.com/azure/storage/common/storage-account-create?tabs=azure-portal).
+2. Create the Azure Blob Storage container where Airbyte should write files.
+3. Create credentials for one supported authentication method:
+   - A shared access signature (SAS)
+   - An Azure Entra ID service principal
+   - An Azure Blob Storage account key
+4. Verify that you can access the container in the [Azure portal](https://portal.azure.com/) by using **Storage browser**.
 
 ### Setup guide
 
-- Fill up AzureBlobStorage info
-  - **Azure Blob Storage Endpoint Domain Name**
-    - Leave the default value \(or leave it empty if running the container from the command line\) to use the Microsoft endpoint, or specify your own.
-  - **Azure Blob Storage Container Name**
-    - If the container does not exist, it will be created automatically. If left empty, a container named `airbytecontainer` with a timestamp suffix will be created.
-  - **Azure Blob Storage Account Name**
-    - See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
-  - **Authentication** - you must use exactly one of these:
-    - **Shared Access Signature** (recommended)
-      - See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
-    - **Azure Entra ID (Service Principal)**
-      - Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
-      - See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
-    - **Azure Blob Storage Account Key**
-      - Corresponding key to the above user.
-  - **Format**
-    - Data format that will be use for a migrated data representation in blob.
-- Make sure your user has access to Azure from the machine running Airbyte.
-  - This depends on your networking setup.
-  - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
+1. For **Azure Blob Storage Endpoint Domain Name**, keep the default value unless you use a custom Azure Storage endpoint.
+2. For **Azure Blob Storage Container Name**, enter the name of the container you created.
+3. For **Azure Blob Storage Account Name**, enter the storage account name.
+4. For **Authentication**, choose exactly one method:
+   - **Shared Access Signature**: Use a SAS scoped to the target container. The SAS must allow Airbyte to list blobs, read blob metadata, create and write blobs, and delete blobs.
+   - **Azure Entra ID (Service Principal)**: Enter the Azure tenant ID, client ID, and client secret for a service principal. Assign the service principal the [Storage Blob Data Contributor](https://learn.microsoft.com/azure/storage/blobs/assign-azure-role-data-access?tabs=azure-cli) role on the target container or storage account.
+   - **Azure Blob Storage Account Key**: Enter an access key for the storage account.
+5. For **Azure Blob Storage Target Blob Size (MB)**, use the default unless you need smaller or larger output blobs.
+6. For **Format**, choose the output file format and flattening behavior.
+7. Make sure the machine running Airbyte can reach your Azure Blob Storage endpoint. If you're using Airbyte Cloud with IP-based access controls, see [Network access](#network-access).
+8. Use **Check connection** in the Airbyte UI to verify that Airbyte can write, list, read metadata for, and delete a test blob in the container.
+
+## Reference
+
+Use this reference when you configure the connector with PyAirbyte, Terraform, or the Airbyte API. For the Airbyte UI, use the field names in [Configuration](#configuration).
+
+| Field | Type | Required | Description |
+| :---- | :--- | :------- | :---------- |
+| `azure_blob_storage_endpoint_domain_name` | string | No | Azure Blob Storage endpoint domain name. Defaults to `blob.core.windows.net`. |
+| `azure_blob_storage_account_name` | string | Yes | Name of the Azure Storage account. |
+| `azure_blob_storage_container_name` | string | Yes | Name of the existing Azure Blob Storage container. |
+| `shared_access_signature` | string | No | SAS token for Azure Blob Storage. Set this only if you don't set `azure_blob_storage_account_key`, `azure_tenant_id`, `azure_client_id`, or `azure_client_secret`. |
+| `azure_blob_storage_account_key` | string | No | Azure Blob Storage account key. Set this only if you don't set `shared_access_signature`, `azure_tenant_id`, `azure_client_id`, or `azure_client_secret`. |
+| `azure_tenant_id` | string | No | Azure Entra ID tenant ID. For Entra ID authentication, set this with `azure_client_id` and `azure_client_secret`. |
+| `azure_client_id` | string | No | Azure Entra ID client ID. For Entra ID authentication, set this with `azure_tenant_id` and `azure_client_secret`. |
+| `azure_client_secret` | string | No | Azure Entra ID client secret. For Entra ID authentication, set this with `azure_tenant_id` and `azure_client_id`. |
+| `azure_blob_storage_spill_size` | integer | No | Maximum target blob size in megabytes before Airbyte writes to a new blob. Defaults to `500`. |
+| `format` | object | Yes | Output format. Set `format_type` to `CSV` or `JSONL`. |
 
 ## Namespace support
 
@@ -150,7 +163,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.7 | 2026-05-19 | [78243](https://github.com/airbytehq/airbyte/pull/78243) | Upgrade CDK to 1.0.13 |
+| 1.1.7 | 2026-05-20 | [78243](https://github.com/airbytehq/airbyte/pull/78243) | Prevent overwrite syncs from deleting old files when a source stream fails mid-sync in speed mode. |
 | 1.1.6 | 2026-01-26 | [72355](https://github.com/airbytehq/airbyte/pull/72355) | Fix sync failures for sources with empty schemas by upgrading CDK to 0.2.1 |
 | 1.1.5 | 2026-01-20 | [72301](https://github.com/airbytehq/airbyte/pull/72301) | Upgrade CDK to 0.2.0 |
 | 1.1.4 | 2025-11-05 | [69127](https://github.com/airbytehq/airbyte/pull/69127) | Upgrade to Bulk CDK 0.1.61. |
