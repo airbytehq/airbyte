@@ -1,10 +1,10 @@
-# Contributing to source-pinterest
+# Contributing to source-twilio
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
+The Twilio REST API supports `DateCreated` filtering on many resource list endpoints. The connector uses Python custom components referenced from the manifest.
 
 **Connector type:** Python custom components (hybrid manifest + Python)
 

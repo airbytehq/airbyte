@@ -1,14 +1,14 @@
-# Contributing to source-pinterest
+# Contributing to source-orb
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
+The Orb API supports cursor-based pagination. The connector uses Python custom components (`SubscriptionUsagePartitionRouter`) referenced from the manifest.
 
 **Connector type:** Python custom components (hybrid manifest + Python)
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+**Analysis status:** Streams are Python-defined via custom components with a custom partition router for subscription usage. Full stream-by-stream analysis requires Python code review.
 
 ### Deferred streams
 

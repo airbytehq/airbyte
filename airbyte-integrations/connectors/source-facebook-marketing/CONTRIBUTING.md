@@ -1,14 +1,14 @@
-# Contributing to source-pinterest
+# Contributing to source-facebook-marketing
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
+The Facebook Marketing API supports date-based filtering via `time_range` and `filtering` parameters. The connector is a Python CDK connector with classes like `FBMarketingIncrementalStream` and `FBMarketingReversedIncrementalStream` providing incremental patterns.
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Connector type:** Python CDK
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+**Analysis status:** Pure Python CDK connector with sophisticated incremental patterns already in place. Full stream-by-stream analysis requires Python code review.
 
 ### Deferred streams
 

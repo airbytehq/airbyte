@@ -1,14 +1,14 @@
-# Contributing to source-pinterest
+# Contributing to source-github
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
+The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting. The connector is a Python CDK connector with stream classes extending `GithubStream`.
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Connector type:** Python CDK
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+**Analysis status:** Pure Python CDK connector. Full stream-by-stream analysis requires Python code review.
 
 ### Deferred streams
 

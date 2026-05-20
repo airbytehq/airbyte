@@ -1,14 +1,14 @@
-# Contributing to source-pinterest
+# Contributing to source-shopify
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
+The Shopify REST API supports `updated_at_min` filtering on most resource endpoints. The connector is a Python CDK connector with `IncrementalShopifyStream`, `IncrementalShopifySubstream`, and `IncrementalShopifyNestedStream` classes providing layered incremental patterns.
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Connector type:** Python CDK
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+**Analysis status:** Pure Python CDK connector with comprehensive incremental patterns. Full stream-by-stream analysis requires Python code review.
 
 ### Deferred streams
 
