@@ -67,8 +67,8 @@ Ensure your ClickHouse database is accessible from Airbyte.
 
 | Airbyte deployment | Clickhouse deployment | Do this                                                                                                                                                                                           |
 | ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloud              | Cloud                 | Whitelist Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) in your ClickHouse Cloud settings.                                                                             |
-| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                                                                       |
+| Cloud              | Cloud                 | Add Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) to the allowlist in your ClickHouse Cloud settings.                                                                  |
+| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                         |
 | Self-managed       | Cloud                 | Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings.                                                                                                                   |
 | Self-managed       | Self-managed          | Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them. |
 

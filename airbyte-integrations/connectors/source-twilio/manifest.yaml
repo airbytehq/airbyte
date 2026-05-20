@@ -163,7 +163,7 @@ definitions:
         - "%Y-%m-%d"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: P1D
-      step: P1Y
+      step: "{{ config.get('slice_step_duration', 'P1M') }}"
       lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
@@ -216,12 +216,30 @@ definitions:
 
   alerts_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/base_requester/error_handler"
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 400
+              error_message_contains: "Invalid page and pageSize combination"
+              error_message: >-
+                Twilio Alerts request exceeds the 10,000-result pagination limit. Decrease Slice Step Duration in the source configuration to sync fewer Alert records per slice.
+            - $ref: "#/definitions/base_requester/error_handler/response_filters/0"
+            - $ref: "#/definitions/base_requester/error_handler/response_filters/1"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_generated
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
-      step: P1Y
+      step: "{{ config.get('slice_step_duration', 'P1M') }}"
       lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
@@ -822,7 +840,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 40
 
 spec:
@@ -871,15 +889,31 @@ spec:
         order: 4
         title: Lookback window
         type: integer
-      num_worker:
+      num_workers:
         type: integer
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 3
-        examples: [1, 2, 3]
+        default: 6
+        examples: [1, 6, 40]
         order: 5
         description: The number of worker threads to use for the sync.
+      slice_step_duration:
+        type: string
+        title: Slice Step Duration
+        description: The time window size for each data slice when syncing incremental streams. Smaller windows may help avoid timeouts for accounts with large data volumes.
+        default: P1M
+        enum:
+          - P1D
+          - P1W
+          - P1M
+          - P1Y
+        enum_labels:
+          P1D: 1 Day
+          P1W: 1 Week
+          P1M: 1 Month
+          P1Y: 1 Year
+        order: 6
 
 schemas:
   accounts:
@@ -3837,8 +3871,8 @@ schemas:
           - "null"
           - number
       start_date:
-        description: The start date and time of the usage record period.
-        format: date-time
+        description: The start date of the usage record period.
+        format: date
         type:
           - "null"
           - string

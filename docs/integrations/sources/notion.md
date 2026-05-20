@@ -84,7 +84,7 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 - **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after setting up your public integration.
 <!-- /env:oss -->
 
-6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
+6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. During incremental syncs, only data generated after this date is replicated. If left blank, the start date defaults to two years before the current date.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -122,6 +122,9 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.8-rc.2 | 2026-05-19 | [78274](https://github.com/airbytehq/airbyte/pull/78274) | Increase `default_concurrency` to 6 for concurrency tuning iteration 2 |
+| 4.0.8-rc.1 | 2026-05-18 | [78149](https://github.com/airbytehq/airbyte/pull/78149) | Start concurrency tuning rollout |
+| 4.0.7 | 2026-04-28 | [77340](https://github.com/airbytehq/airbyte/pull/77340) | Update dependencies |
 | 4.0.6 | 2026-04-21 | [76681](https://github.com/airbytehq/airbyte/pull/76681) | Update dependencies |
 | 4.0.5 | 2026-04-01 | [75577](https://github.com/airbytehq/airbyte/pull/75577) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 4.0.4 | 2026-03-31 | [75747](https://github.com/airbytehq/airbyte/pull/75747) | Update dependencies |
