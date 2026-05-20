@@ -2,11 +2,12 @@
 
 ## Upgrading to 5.0.0
 
-Atlassian is removing the `GET /rest/api/3/workflow/search` endpoint on June 1, 2026 (see Atlassian's [CHANGE-2567](https://developer.atlassian.com/cloud/jira/platform/changelog/#CHANGE-2567)). This version of the source-jira connector migrates the `workflows` stream to the replacement endpoint `GET /rest/api/3/workflows/search`, which returns a different response shape.
+Atlassian is removing the `GET /rest/api/3/workflow/search` endpoint on June 1, 2026 (see Atlassian's [CHANGE-2569](https://developer.atlassian.com/cloud/jira/platform/changelog/#CHANGE-2569)). This version of the source-jira connector migrates the `workflows` stream to the replacement endpoint `GET /rest/api/3/workflows/search`, which returns a different response shape.
 
 ### What changed
 
 - The primary key of the `workflows` stream changed from `[entityId, name]` to `[id]`.
+- The replacement endpoint returns global and project workflows. The deprecated endpoint returned published classic workflows and didn't return next-gen workflows.
 - Record-level field changes:
   - `id` is now a top-level UUID string (previously an object `{ entityId, name }`).
   - `name` is now a top-level string (previously nested inside `id`).
