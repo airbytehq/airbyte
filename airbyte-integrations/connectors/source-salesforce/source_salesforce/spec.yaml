@@ -124,6 +124,11 @@ advanced_auth:
   predicate_value: Client
   oauth_config_specification:
     oauth_connector_input_specification:
+      scopes:
+        - scope: "api"
+        - scope: "web"
+        - scope: "refresh_token"
+        - scope: "lightning"
       consent_url: "https://{% if is_sandbox %}test{% else %}login{% endif %}.salesforce.com/services/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}"
       access_token_url: "https://{% if is_sandbox %}test{% else %}login{% endif %}.salesforce.com/services/oauth2/token"
       access_token_headers:
