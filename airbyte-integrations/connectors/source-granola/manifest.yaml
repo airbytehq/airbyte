@@ -4,7 +4,24 @@ type: DeclarativeSource
 
 description: >-
   Granola is an AI-powered meeting notes tool. This connector reads meeting
-  notes from your Granola workspace using the Granola Enterprise API.
+  notes from your Granola workspace using the Granola API.
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 6
+
+# Granola API rate limits (per workspace):
+# https://docs.granola.ai/api-reference/changelog
+# Burst: 25 requests per 5-second window
+# Sustained: 5 requests/second (300/minute)
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 25
+          interval: PT5S
+      matchers: []
 
 check:
   type: CheckStream
@@ -126,8 +143,11 @@ spec:
         type: string
         title: API Key
         description: >-
-          Your Granola Enterprise API key. Generate one from Settings >
-          Workspaces > API in your Granola workspace.
+          Your Granola API key. For a personal key, open the Granola desktop app
+          and go to Settings > Connectors > API keys > Create new key. For an
+          Enterprise API key, go to Settings > API > Create new key. On Enterprise
+          plans, workspace admins must enable "Allow personal API keys" in
+          Settings > Workspace > General before personal keys can be created.
         airbyte_secret: true
         order: 0
       start_date:

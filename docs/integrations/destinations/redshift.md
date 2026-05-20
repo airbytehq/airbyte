@@ -62,7 +62,9 @@ and deduping queries on final table are executed over using provided SSH Tunnel 
    activate AWS Redshift cluster if you don't have one ready.
 4. (Optional)
    [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/)
-   connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\).
+   connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\). If you're
+   using Airbyte Cloud, add Airbyte's
+   [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 5. [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket. S3 staging is required for the Redshift destination.
 

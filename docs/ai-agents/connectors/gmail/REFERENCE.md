@@ -238,7 +238,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages Create
 
 Sends a new email message. The message should be provided as a base64url-encoded
-RFC 2822 formatted string in the 'raw' field.
+RFC 2822 formatted string in the 'raw' field. Build the complete MIME message
+first, including headers such as To and Subject plus a blank line before the
+body, then base64url-encode that message before calling this operation.
 
 
 #### Python SDK
@@ -271,7 +273,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `raw` | `string` | Yes | The entire email message in RFC 2822 format, base64url encoded |
+| `raw` | `string` | Yes | Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before sending. |
 | `threadId` | `string` | No | The thread ID to reply to (for threading replies in a conversation) |
 
 
@@ -403,6 +405,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `id` | `string` | Unique identifier for the message |
 | `threadId` | `string` | Identifier of the thread this message belongs to |
+| `labelIds` | `array` | Labels applied to the message |
+| `snippet` | `string` | Short snippet of the message text |
+| `historyId` | `string` | Mailbox history record identifier for the message |
+| `internalDate` | `string` | Internal message creation timestamp in epoch milliseconds |
+| `sizeEstimate` | `integer` | Estimated size of the message in bytes |
+| `payload` | `object` | Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers. |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -416,6 +424,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].id` | `string` | Unique identifier for the message |
 | `data[].threadId` | `string` | Identifier of the thread this message belongs to |
+| `data[].labelIds` | `array` | Labels applied to the message |
+| `data[].snippet` | `string` | Short snippet of the message text |
+| `data[].historyId` | `string` | Mailbox history record identifier for the message |
+| `data[].internalDate` | `string` | Internal message creation timestamp in epoch milliseconds |
+| `data[].sizeEstimate` | `integer` | Estimated size of the message in bytes |
+| `data[].payload` | `object` | Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers. |
 
 </details>
 
@@ -854,8 +868,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `message` | `object` | Yes | The draft message content |
-| `message.raw` | `string` | Yes | The draft message in RFC 2822 format, base64url encoded |
+| `message` | `object` | Yes | The draft message content encoded in Gmail raw message format |
+| `message.raw` | `string` | Yes | Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before creating or updating the draft. |
 | `message.threadId` | `string` | No | The thread ID for the draft (for threading in a conversation) |
 
 
@@ -959,8 +973,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `message` | `object` | Yes | The draft message content |
-| `message.raw` | `string` | Yes | The draft message in RFC 2822 format, base64url encoded |
+| `message` | `object` | Yes | The draft message content encoded in Gmail raw message format |
+| `message.raw` | `string` | Yes | Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before creating or updating the draft. |
 | `message.threadId` | `string` | No | The thread ID for the draft (for threading in a conversation) |
 | `draftId` | `string` | Yes | The ID of the draft to update |
 
