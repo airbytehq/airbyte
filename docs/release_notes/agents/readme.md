@@ -17,7 +17,7 @@ API
 
 Connectors
 
-- Context Store search now supports date ranges with both lower and upper bounds, and keyword search works on array-valued fields such as Gong call context and participants.
+- Agents can now search connected data more reliably when you filter by date range or search fields with multiple values, such as participants on a Gong call.
 - Zendesk Support now exposes eight more entities in Context Store search: articles, article attachments, automations, group memberships, macros, organization memberships, SLA policies, and triggers.
 - Zoho CRM is temporarily hidden from the Airbyte Agents connector list while it is unavailable.
 
