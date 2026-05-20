@@ -66,6 +66,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.3.49 | 2026-04-28 | [77376](https://github.com/airbytehq/airbyte/pull/77376) | Update dependencies |
 | 1.3.48 | 2026-04-21 | [76720](https://github.com/airbytehq/airbyte/pull/76720) | Update dependencies |
 | 1.3.47 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.3.46 | 2026-03-24 | [75379](https://github.com/airbytehq/airbyte/pull/75379) | Update dependencies |

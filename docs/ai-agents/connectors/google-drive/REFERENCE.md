@@ -1477,9 +1477,7 @@ Lists the changes for a user or shared drive
 #### Python SDK
 
 ```python
-await google_drive.changes.list(
-    page_token="<str>"
-)
+await google_drive.changes.list()
 ```
 
 #### API
@@ -1490,10 +1488,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "changes",
-    "action": "list",
-    "params": {
-        "pageToken": "<str>"
-    }
+    "action": "list"
 }'
 ```
 
@@ -1502,7 +1497,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `pageToken` | `string` | Yes | Token for the page of changes to retrieve (from changes.getStartPageToken or previous response) |
+| `pageToken` | `string` | No | Token for the page of changes to retrieve (from changes.getStartPageToken or previous response) |
 | `pageSize` | `integer` | No | Maximum number of changes to return (1-1000) |
 | `driveId` | `string` | No | The shared drive from which changes are returned |
 | `includeItemsFromAllDrives` | `boolean` | No | Whether to include changes from all drives |
