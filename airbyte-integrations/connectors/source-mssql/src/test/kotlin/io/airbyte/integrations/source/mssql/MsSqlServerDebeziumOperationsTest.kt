@@ -34,7 +34,8 @@ class MsSqlServerDebeziumOperationsTest {
                 incrementalReplicationConfiguration =
                     CdcIncrementalConfiguration(
                         initialWaitingSeconds = Duration.ofSeconds(5),
-                        invalidCdcCursorPositionBehavior = InvalidCdcCursorPositionBehavior.FAIL_SYNC,
+                        invalidCdcCursorPositionBehavior =
+                            InvalidCdcCursorPositionBehavior.FAIL_SYNC,
                         initialLoadTimeout = Duration.ofHours(1),
                         pollIntervalMs = 1000,
                     ),
@@ -64,8 +65,7 @@ class MsSqlServerDebeziumOperationsTest {
     @Test
     fun leavesProgressedOffsetUnchanged() {
         val startingOffset = offset("0000002b:000003e0:0025", "NULL", 0)
-        val progressedOffset =
-            offset("0000002b:000003e0:0026", "0000002b:000003e0:0024", 1)
+        val progressedOffset = offset("0000002b:000003e0:0026", "0000002b:000003e0:0024", 1)
 
         val actual =
             operations.advanceIdleOffset(
