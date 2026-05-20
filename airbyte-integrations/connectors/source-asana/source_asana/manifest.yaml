@@ -125,6 +125,21 @@ definitions:
           workspace: "{{ stream_slice['workspace_gid'] }}"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: modified_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: modified_since
+        inject_into: request_parameter
     $parameters:
       path: "/projects"
 
@@ -2651,6 +2666,17 @@ spec:
                 title: Personal Access Token
                 description: Asana Personal Access Token (generate yours <a href="https://app.asana.com/0/developer-console">here</a>).
                 airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Only projects
+          modified after this date will be replicated during incremental syncs.
+          If not set, all data will be replicated.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2020-01-01T00:00:00Z"
+        order: 1
       test_mode:
         type: boolean
         title: Test Mode
