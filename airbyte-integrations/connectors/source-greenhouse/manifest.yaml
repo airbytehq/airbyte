@@ -1802,8 +1802,17 @@ streams:
 # against the documented 5 req/sec ceiling.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
-  max_concurrency: 16
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 8
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT10S
+      matchers: []
 
 spec:
   type: Spec
@@ -1822,6 +1831,22 @@ spec:
         title: API Key
         airbyte_secret: true
         order: 0
+      num_workers:
+        type: integer
+        title: Number of concurrent threads
+        description: >-
+          The number of worker threads to use for syncing. The default is tuned
+          against Greenhouse's documented limit of 50 requests per 10 seconds.
+          Increase this only if your Greenhouse account can support higher API
+          usage, or lower it if you see rate-limit errors.
+        minimum: 1
+        maximum: 8
+        default: 2
+        examples:
+          - 1
+          - 2
+          - 3
+        order: 1
     additionalProperties: true
 
 metadata:

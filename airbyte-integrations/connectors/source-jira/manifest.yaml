@@ -14632,8 +14632,6 @@ check:
   type: CheckStream
   stream_names:
   - projects
-  - users
-  - issues
 
 # Defining a value here is difficult because the Jira API documentation mentions "REST API rate limits are not published because the computation logic is evolving continuously to maximize reliability and performance for customers" regarding the API budget. Hence, we will need to empirically validate the values that are set here.
 concurrency_level:
@@ -14668,6 +14666,21 @@ spec:
                 path: ["credentials", "email"]
                 value: "{{ config['email'] }}"
             condition: "{{ not config.get('credentials', {}).get('email') and config.get('email') }}"
+      - type: ConfigMigration
+        description: Normalize domain by stripping protocol prefix and trailing slashes
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["domain"]
+                value: "{{ config.get('domain', '').split('://', 1)[-1].rstrip('/') }}"
+            condition: "{{ config.get('domain') and ('://' in config.get('domain', '') or config.get('domain', '').endswith('/')) }}"
+    validations:
+      - type: DpathValidator
+        field_path: ["domain"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateJiraDomain
   connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Jira Spec
