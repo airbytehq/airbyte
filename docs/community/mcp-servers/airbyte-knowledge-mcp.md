@@ -1,8 +1,12 @@
+---
+sidebar_label: Knowledge MCP server
+---
+
 # Airbyte knowledge MCP server
 
 The Airbyte knowledge MCP server connects AI agents to comprehensive sources of information about Airbyte. It provides semantic search over Airbyte's documentation, website, OpenAPI specs, YouTube content, and GitHub issues, discussions, and pull requests.
 
-When you're working with an AI agent on tasks that involve Airbyte, the MCP server gives your agent up-to-date context about Airbyte's features, APIs, and best practices without leaving your development environment.
+Use it to provide Airbyte knowledge to agents. It is not the primary interface agents should use to work with data. The [Agent MCP](/ai-agents/interfaces/mcp/) is the primary way agents use Airbyte to work with data.
 
 ## When to use it
 
@@ -13,7 +17,7 @@ The Airbyte knowledge MCP is helpful when your AI agent is:
 - Troubleshooting sync errors or connection issues
 - Learning about Airbyte's architecture or deployment options
 
-Any time an agent performs a task that requires interacting with Airbyte, the MCP server can provide relevant context.
+Any time an agent performs a task that requires Airbyte product or developer context, the MCP server can provide relevant knowledge.
 
 ## Connecting to the MCP server
 

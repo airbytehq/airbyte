@@ -68,6 +68,33 @@ Each Google Ads API developer token is assigned an access level and "permissible
 3. On the Set up the source page, select Google Ads from the Source type dropdown.
 4. Enter a name for the Google Ads connector.
 5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
+
+##### Optional: use your own Google OAuth app in Airbyte Cloud
+
+Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app and Google Ads developer token, create OAuth override credentials.
+
+Create the override first, then click **Sign in with Google**.
+
+Use the Airbyte API to create OAuth override credentials for the workspace or organization. For the workspace endpoint, see [Create OAuth override credentials for a workspace and source type](https://reference.airbyte.com/reference/workspaceoauthcredentials). For the organization endpoint, see [Create OAuth override credentials for an organization and source type](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials).
+
+For Google Ads, set `actorType` to `source`, set `name` to `google-ads`, and include your Google OAuth app credentials and Google Ads developer token in `configuration.credentials`.
+
+```json
+{
+  "actorType": "source",
+  "name": "google-ads",
+  "configuration": {
+    "credentials": {
+      "client_id": "<your-google-oauth-client-id>",
+      "client_secret": "<your-google-oauth-client-secret>",
+      "developer_token": "<your-google-ads-developer-token>"
+    }
+  }
+}
+```
+
+After you create the override, click **Sign in with Google** and authorize the source. The authorization server must issue the refresh token for the same Google OAuth app credentials that Airbyte uses to refresh it. If you change the OAuth app credentials, authorize the source again.
+
 <FieldAnchor field="customer_id">
 6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 
