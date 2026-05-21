@@ -39,7 +39,8 @@ This page contains the setup guide and reference information for the PostHog sou
 - [Projects](https://posthog.com/docs/api/projects)
 - [Annotations](https://posthog.com/docs/api/annotations)
 - [Cohorts](https://posthog.com/docs/api/cohorts)
-- [Events](https://posthog.com/docs/api/events) \(Incremental\)
+- [Events](https://posthog.com/docs/api/events) \(Incremental\) - uses deprecated endpoint, consider using `events_v2`
+- [Events V2](https://posthog.com/docs/api/queries) \(Incremental\) - recommended; uses PostHog Query API
 - [FeatureFlags](https://posthog.com/docs/api/feature-flags)
 - [Insights](https://posthog.com/docs/api/insights)
 - [Persons](https://posthog.com/docs/api/people)
@@ -71,6 +72,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 1.2.0 | 2025-02-13 | [73333](https://github.com/airbytehq/airbyte/pull/73333) | Add `events_v2` stream using PostHog Query API (recommended over deprecated `events` endpoint); add optional `project_id` config for project-scoped API keys |
 | 1.1.25 | 2025-02-01 | [53032](https://github.com/airbytehq/airbyte/pull/53032) | Update dependencies |
 | 1.1.24 | 2025-01-25 | [52536](https://github.com/airbytehq/airbyte/pull/52536) | Update dependencies |
 | 1.1.23 | 2025-01-18 | [51856](https://github.com/airbytehq/airbyte/pull/51856) | Update dependencies |
