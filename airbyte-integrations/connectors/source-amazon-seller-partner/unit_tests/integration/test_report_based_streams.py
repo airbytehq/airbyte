@@ -357,6 +357,37 @@ class TestFullRefresh:
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
+    def test_given_marketplace_registration_error_when_read_then_config_error(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            response_with_status(
+                status_code=HTTPStatus.BAD_REQUEST,
+                body={
+                    "errors": [
+                        {
+                            "code": "InvalidInput",
+                            "message": "Marketplace [ATVPDKIKX0DER] not registered in marketplace.",
+                        }
+                    ]
+                },
+            ),
+        )
+
+        output = self._read(stream_name, config())
+
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert (
+            output.errors[0].trace.error.message
+            == "Merchant account is not registered in the selected marketplace."
+        )
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
     def test_given_report_status_cancelled_when_read_then_stream_skipped_with_no_records(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
