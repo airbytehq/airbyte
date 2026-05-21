@@ -195,13 +195,9 @@ properties:
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
 9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as
    INDIVIDUAL or HOUSEHOLD.
-10. **Campaign Statuses (Optional)**: Lists campaign status values to include in custom report
-    results. Include ARCHIVED to report on archived campaigns.
-11. **Ad Group Statuses (Optional)**: Lists ad group status values to include in custom report
-    results. Include ARCHIVED to report on archived ad groups.
-12. **Ad Statuses (Optional)**: Lists ad status values to include in custom report results. Include
-    ARCHIVED to report on archived ads.
-13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
+10. **Status (Optional)**: Lists status values to include in custom report results. Include
+    ARCHIVED to report on archived entities.
+11. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
 For more detailed information and guidelines on creating custom reports, please refer to the
@@ -222,7 +218,7 @@ details, see the [Pinterest rate limits documentation](https://developers.pinter
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.2.0-rc.1 | 2026-05-21 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added optional custom report status filters so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |
+| 2.2.0-rc.1 | 2026-05-21 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added an optional custom report status filter so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |
 | 2.1.28-rc.1 | 2026-05-18 | [76952](https://github.com/airbytehq/airbyte/pull/76952) | Concurrency tuning (Path A): bump `default_concurrency` default to 4 via the `num_threads` fallback. No user-visible spec changes. |
 | 2.1.27 | 2026-04-07 | [75485](https://github.com/airbytehq/airbyte/pull/75485) | Add maxLength validation to account_id field to reject values longer than 18 characters at config time |
 | 2.1.26 | 2026-03-17 | [74453](https://github.com/airbytehq/airbyte/pull/74453) | Update dependencies |
