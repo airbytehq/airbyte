@@ -60,6 +60,17 @@ Choose how you want Airbyte to authenticate to Jira.
 
 Atlassian Service Account API tokens must use Atlassian's Platform API Gateway. To use one in Airbyte, set **Authentication** to **Service Account** and enter the **Domain** for your Jira site. The connector resolves the Cloud ID from the domain, routes Jira requests through `https://api.atlassian.com/ex/jira/{cloudId}/`, and authenticates with a Bearer token.
 
+To create a Service Account API token:
+
+1. Go to [admin.atlassian.com](https://admin.atlassian.com/).
+2. Go to **Directory** > **Service accounts**.
+3. Create a service account, or choose an existing service account.
+4. Under **Credentials**, click **Create credential**.
+5. Select **API token**.
+6. Set a token name and expiration date. The maximum expiration is 365 days.
+7. Add the required scopes. You can paste the full comma-separated scope list into scope search to filter the list.
+8. Select the scopes, click **Next**, and create the token.
+
 Service Account API tokens use the same Jira OAuth scopes as OAuth 2.0 credentials. Select these scopes when creating the token:
 
 ```text
@@ -76,6 +87,7 @@ read:webhook:jira
 read:project-category:jira
 read:screenable-field:jira
 read:screen-field:jira
+offline_access
 read:board-scope:jira-software
 read:project:jira
 read:sprint:jira-software
@@ -95,6 +107,12 @@ read:workflow-scheme:jira
 read:project.email:jira
 read:custom-field-contextual-configuration:jira
 manage:jira-configuration
+```
+
+You can paste this comma-separated scope list into Atlassian's scope search:
+
+```text
+read:jira-work,read:jql:jira,read:group:jira,read:project-role:jira,read:issue-details:jira,read:status:jira,read:jira-user,read:user:jira,read:avatar:jira,read:webhook:jira,read:project-category:jira,read:screenable-field:jira,read:screen-field:jira,offline_access,read:board-scope:jira-software,read:project:jira,read:sprint:jira-software,read:application-role:jira,read:field-configuration:jira,read:notification-scheme:jira,read:issue-security-scheme:jira,read:issue-security-level:jira,read:issue-type-scheme:jira,read:issue-type-screen-scheme:jira,read:permission-scheme:jira,read:screen:jira,read:screen-scheme:jira,read:screen-tab:jira,read:workflow:jira,read:workflow-scheme:jira,read:project.email:jira,read:custom-field-contextual-configuration:jira,manage:jira-configuration
 ```
 
 The service account must also have Jira app access and the project permissions required for the streams you sync. To sync all workflow records, the service account needs the **Administer Jira** global permission.
