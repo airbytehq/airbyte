@@ -24,7 +24,10 @@ class PostgresSourceExceptionClassifierTest {
                 ),
             )
 
-        assertEquals(ConfigError("Postgres TLS certificate is expired."), handler.classify(exception))
+        assertEquals(
+            ConfigError("Postgres TLS certificate is expired."),
+            handler.classify(exception)
+        )
 
         val traceMessage = handler.handle(exception)
         assertEquals(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR, traceMessage.failureType)
