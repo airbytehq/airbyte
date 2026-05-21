@@ -1,5 +1,5 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
-# for more information about how to configure these tests
+# for more information about configuring these tests
 connector_image: airbyte/source-ticktick:dev
 acceptance_tests:
   spec:
