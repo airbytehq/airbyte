@@ -26,7 +26,7 @@
 
 #### 🤔 What happens if this PR is merged
 
-Checking the checkbox will allow the PR to merge, but it does not stop the active rollout by itself. The rollout worker is not notified just because another PR publishes a GA version; it only notices a superseding default version later if this rollout itself finalizes as promoted.
+Checking the checkbox will allow the PR to merge, but it does not necessarily stop the active rollout by itself. The result of merging depends on the connector version and rollout metadata that are published.
 
 Expected outcomes by type of version number change:
 
@@ -42,7 +42,7 @@ The merged PR may publish a GA version, but the active rollout is not stopped im
 
 During an active RC rollout, `registryOverrides.cloud.dockerImageTag` and `registryOverrides.oss.dockerImageTag` usually pin non-rollout registry consumers to the pre-RC stable version. Older registry generation depended on those overrides to prevent the RC from becoming default. The newer `airbyte-ops registry compile` path is semver-aware, so `-rc` versions are not eligible as GA/default/latest versions. It also skips GA versions whose metadata still has progressive rollout enabled. If this PR removes those overrides and disables progressive rollout, the newly published GA version can become the registry default for eligible non-pinned actors.
 
-If the active rollout later finalizes as promoted, the rollout worker polls the platform default version and compares it to this rollout's RC stem. For example, `1.2.3-rc.1` is expected to become `1.2.3`. If the default is a different GA version, the rollout is marked `CANCELED` as superseded. If the default matches the RC stem, the rollout can complete as promoted.
+If the active rollout is later promoted, the platform verifies that the default version matches this rollout's RC stem. For example, `1.2.3-rc.1` is expected to become `1.2.3`. If the default is a different GA version, the rollout is marked `CANCELED` as superseded. If the default matches the RC stem, the rollout can complete as promoted.
 
 </details>
 
