@@ -128,7 +128,7 @@ For programmatic configuration, use these parameter names:
 | `auth_token` | Yes | Auth Token used as the HTTP Basic authentication password. |
 | `start_date` | Yes | Date and time in `YYYY-MM-DDTHH:MM:SSZ` format. Records before this date aren't replicated. |
 | `lookback_window` | No | Number of minutes before the last cursor value to re-fetch on each incremental sync. Defaults to `0`. |
-| `num_worker` | No | Number of concurrent threads to use during a sync. Valid values are `1` through `40`. Defaults to `3`. |
+| `num_workers` | No | Number of concurrent threads to use during a sync. Valid values are `1` through `40`. Defaults to `3`. |
 | `slice_step_duration` | No | Time window size for each incremental stream slice. Valid values are `P1D`, `P1W`, `P1M`, and `P1Y`. Defaults to `P1M`. |
 
 ## Changelog
@@ -138,6 +138,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.17.11 | 2026-05-21 | [78322](https://github.com/airbytehq/airbyte/pull/78322) | Revert concurrency tuning rollout |
 | 0.17.10 | 2026-05-12 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
 | 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
 | 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
