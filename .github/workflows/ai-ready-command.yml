@@ -37,24 +37,33 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte,oncall,airbyte-internal-issues"
+          repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
+      - name: Require PR context
+        if: inputs.pr == ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > `/ai-ready` can only be run on a pull request. Please run it from a PR comment.
+
+      - name: Stop if not running on a PR
+        if: inputs.pr == ''
+        run: exit 1
+
       - name: Apply ready label
+        if: inputs.pr != ''
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
-          COMMENT_ID: ${{ inputs.comment-id }}
           PR_NUMBER: ${{ inputs.pr }}
           READY_LABEL: hyd-ready
         with:
           github-token: ${{ steps.get-app-token.outputs.token }}
           script: |
             const readyLabel = process.env.READY_LABEL;
-            const allowedLinkedIssueRepos = new Set([
-              'airbytehq/oncall',
-              'airbytehq/airbyte-internal-issues',
-            ]);
 
             const addLabel = async (owner, repo, issue_number) => {
               const existing = await github.rest.issues.listLabelsOnIssue({
@@ -76,94 +85,16 @@ jobs:
               };
             };
 
-            const comment = await github.rest.issues.getComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: Number(process.env.COMMENT_ID),
-            });
+            const result = await addLabel(
+              context.repo.owner,
+              context.repo.repo,
+              Number(process.env.PR_NUMBER),
+            );
 
-            const issueNumber = Number(comment.data.issue_url.split('/').pop());
-            const labeled = new Map();
-            const markLabeled = async (owner, repo, issueNumber) => {
-              const result = await addLabel(owner, repo, issueNumber);
-              labeled.set(result.ref, result.status);
-            };
-
-            await markLabeled(context.repo.owner, context.repo.repo, issueNumber);
-
-            const currentIssue = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-            });
-
-            const bodies = [
-              comment.data.body || '',
-              currentIssue.data.body || '',
-            ];
-
-            if (process.env.PR_NUMBER) {
-              const pr = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: Number(process.env.PR_NUMBER),
-              });
-              bodies.push(pr.data.body || '');
-
-              const linkedIssuesQuery = `
-                query($owner: String!, $repo: String!, $pr: Int!) {
-                  repository(owner: $owner, name: $repo) {
-                    pullRequest(number: $pr) {
-                      closingIssuesReferences(first: 20) {
-                        nodes {
-                          number
-                          repository {
-                            nameWithOwner
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              `;
-              const linkedIssues = await github.graphql(linkedIssuesQuery, {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pr: Number(process.env.PR_NUMBER),
-              });
-
-              for (const issue of linkedIssues.repository.pullRequest.closingIssuesReferences.nodes) {
-                if (!allowedLinkedIssueRepos.has(issue.repository.nameWithOwner)) {
-                  continue;
-                }
-
-                const [owner, repo] = issue.repository.nameWithOwner.split('/');
-                await markLabeled(owner, repo, issue.number);
-              }
-            }
-
-            const issueRefPattern = /(?:https:\/\/github\.com\/(airbytehq)\/(oncall|airbyte-internal-issues)\/issues\/|(?:^|[\s(])airbytehq\/(oncall|airbyte-internal-issues)#)(\d+)/g;
-
-            for (const body of bodies) {
-              for (const match of body.matchAll(issueRefPattern)) {
-                const owner = match[1] || 'airbytehq';
-                const repo = match[2] || match[3];
-                const issueNumber = Number(match[4]);
-
-                if (!allowedLinkedIssueRepos.has(`${owner}/${repo}`)) {
-                  continue;
-                }
-
-                await markLabeled(owner, repo, issueNumber);
-              }
-            }
-
-            const labeledItems = [...labeled.entries()]
-              .sort(([left], [right]) => left.localeCompare(right))
-              .map(([ref, status]) => `${ref} (${status})`);
+            const labeledItem = `${result.ref} (${result.status})`;
 
             core.summary
               .addHeading('AI Ready')
               .addRaw(`Applied \`${readyLabel}\` to:\n\n`)
-              .addList(labeledItems)
+              .addList([labeledItem])
               .write();
