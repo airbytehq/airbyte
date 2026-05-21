@@ -355,6 +355,34 @@ class TestFullRefresh:
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert message_on_access_forbidden in output.errors[0].trace.error.message
 
+    @pytest.mark.parametrize(("stream_name", "data_format"), (("GET_AFN_INVENTORY_DATA", "csv"), ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv")))
+    @HttpMocker()
+    def test_given_seller_not_registered_for_marketplace_when_read_then_config_error(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            build_response(
+                {
+                    "errors": [
+                        {
+                            "code": "InvalidInput",
+                            "message": "Merchant ABCDEFGHIJKLMN is not registered in marketplace A2VIGQ35RCS4UG",
+                        }
+                    ]
+                },
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        output = self._read(stream_name, config(), expecting_exception=True)
+
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert output.errors[0].trace.error.message == "Amazon Seller account is not registered in the configured marketplace."
+
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
     def test_given_report_status_cancelled_when_read_then_stream_skipped_with_no_records(
