@@ -3,10 +3,12 @@
 #
 
 import logging
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests_mock as rm
+import yaml
 from source_facebook_pages.source import SourceFacebookPages
 
 from airbyte_cdk.models import (
@@ -14,6 +16,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
 )
 
@@ -22,6 +25,7 @@ CONFIG = {"page_id": "1", "access_token": "token"}
 ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
 PAGE_URL = "https://graph.facebook.com/v24.0/1"
 FEED_URL = "https://graph.facebook.com/v24.0/1/feed"
+MANIFEST_PATH = Path(__file__).parents[1] / "source_facebook_pages" / "manifest.yaml"
 
 
 def _make_catalog(stream_name, selected_fields):
@@ -112,6 +116,31 @@ def test_without_catalog_at_init_requests_all_fields():
         raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
         assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
-        assert (
-            len(requested_fields) > 3
-        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        assert len(requested_fields) > 3, (
+            f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        )
+
+
+def test_facebook_app_approval_error_is_config_error():
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
+
+    assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
+    assert response_filter["failure_type"] == FailureType.config_error.value
+    assert response_filter["error_message"] == "Facebook app lacks approval for one or more requested Page fields."
+
+
+def test_page_stream_does_not_request_live_videos_by_default():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(PAGE_URL, json={"id": "1", "name": "Test Page"})
+
+        source = SourceFacebookPages(config=CONFIG)
+        catalog = _make_catalog("page", ["id"])
+        logger = logging.getLogger("test")
+        list(source.read(logger, CONFIG, catalog))
+
+        raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
+        assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
+        requested_fields = raw_fields.split(",")
+        assert "live_videos" not in requested_fields
