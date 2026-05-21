@@ -20,6 +20,11 @@ on:
         description: "PR number, if triggered from a PR"
         required: false
         type: string
+      dry-run:
+        description: "If 'true', evaluate only -- do not approve or merge"
+        required: false
+        default: ""
+        type: string
 
 run-name: "AI Ready for #${{ inputs.pr || inputs.comment-id }}"
 
@@ -67,4 +72,5 @@ jobs:
     with:
       pr: ${{ inputs.pr }}
       comment-id: ${{ inputs.comment-id }}
+      dry-run: ${{ inputs.dry-run }}
     secrets: inherit
