@@ -32,7 +32,7 @@ from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
 from source_s3.v4.config import Config
-from source_s3.v4.cursor import Cursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
@@ -221,7 +221,7 @@ class SourceS3(FileBasedSource):
             stream_reader=stream_reader,
             availability_strategy=SourceS3AvailabilityStrategy(stream_reader),
             spec_class=Config,
-            cursor_cls=Cursor,
+            cursor_cls=FileBasedConcurrentCursor,
             # This is needed early. (We also will provide it again later.)
             catalog=configured_catalog,
             # These will be provided later, after we have wrapped proper error handling.
