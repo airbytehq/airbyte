@@ -14,8 +14,7 @@ import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.TimeZone
-import java.util.UUID
+import java.util.*
 import java.util.zip.GZIPOutputStream
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -23,7 +22,7 @@ import org.apache.commons.csv.CSVPrinter
 private val logger = KotlinLogging.logger {}
 
 internal val CSV_FORMAT: CSVFormat = CSVFormat.DEFAULT
-internal const val DEFAULT_FLUSH_LIMIT = 1_000_000
+internal const val DEFAULT_FLUSH_LIMIT = 100_000_000
 private const val STAGING_FILE_EXTENSION = ".csv.gz"
 private const val DATE_FORMAT = "yyyy_MM_dd"
 private const val UTC = "UTC"

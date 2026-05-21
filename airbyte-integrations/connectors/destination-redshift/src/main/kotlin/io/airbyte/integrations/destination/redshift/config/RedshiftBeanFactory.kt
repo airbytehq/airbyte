@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.redshift.connect.S3Connect
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 import software.amazon.awssdk.services.s3.S3Client
 
 /** Micronaut Factory for creating and wiring Redshift destination beans. */
@@ -54,11 +55,16 @@ class RedshiftBeanFactory {
      * Redshift loads data via S3 staging + COPY, which has fixed per-invocation overhead. Larger
      * batches amortize this cost better. 200 MB per aggregate with 1 GB total across all streams
      * balances throughput against memory usage.
+     *
+     * maxRecordsPerAgg is very high so that we always hit the flush limits based on Bytes metric
      */
     @Singleton
     fun aggregatePublishingConfig(): AggregatePublishingConfig =
         AggregatePublishingConfig(
-            maxEstBytesPerAgg = 200_000_000L,
+            maxRecordsPerAgg = 10_000_000_000_000L,
+            maxEstBytesPerAgg = 250_000_000L,
             maxEstBytesAllAggregates = 1_000_000_000L,
+            stalenessDeadlinePerAgg = 10.minutes,
+            maxBufferedAggregates = 10,
         )
 }
