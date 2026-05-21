@@ -995,6 +995,10 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
       password: "{{ config['api_key'] }}"
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+
 streams:
   - type: DeclarativeStream
     name: applications

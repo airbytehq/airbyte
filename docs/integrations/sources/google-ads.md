@@ -68,6 +68,33 @@ Each Google Ads API developer token is assigned an access level and "permissible
 3. On the Set up the source page, select Google Ads from the Source type dropdown.
 4. Enter a name for the Google Ads connector.
 5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
+
+##### Optional: use your own Google OAuth app in Airbyte Cloud
+
+Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app and Google Ads developer token, create OAuth override credentials.
+
+Create the override first, then click **Sign in with Google**.
+
+Use the Airbyte API to create OAuth override credentials for the workspace or organization. For the workspace endpoint, see [Create OAuth override credentials for a workspace and source type](https://reference.airbyte.com/reference/workspaceoauthcredentials). For the organization endpoint, see [Create OAuth override credentials for an organization and source type](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials).
+
+For Google Ads, set `actorType` to `source`, set `name` to `google-ads`, and include your Google OAuth app credentials and Google Ads developer token in `configuration.credentials`.
+
+```json
+{
+  "actorType": "source",
+  "name": "google-ads",
+  "configuration": {
+    "credentials": {
+      "client_id": "<your-google-oauth-client-id>",
+      "client_secret": "<your-google-oauth-client-secret>",
+      "developer_token": "<your-google-ads-developer-token>"
+    }
+  }
+}
+```
+
+After you create the override, click **Sign in with Google** and authorize the source. The authorization server must issue the refresh token for the same Google OAuth app credentials that Airbyte uses to refresh it. If you change the OAuth app credentials, authorize the source again.
+
 <FieldAnchor field="customer_id">
 6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 
@@ -351,6 +378,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |
 | 4.2.6-rc.3 | 2026-05-07 | [77835](https://github.com/airbytehq/airbyte/pull/77835) | Update CDK to pre-release with runtime cap on concurrent partition generators to fix thread pool starvation deadlock |
 | 4.2.6-rc.2 | 2026-05-01 | [77663](https://github.com/airbytehq/airbyte/pull/77663) | Mount `TimeoutHTTPAdapter` on parent-stream sessions (`customer_client`, `customer_client_non_manager`, `accessible_accounts`) so the 5-minute HTTP socket timeout also covers parent-record fetches |
 | 4.2.6-rc.1 | 2026-04-28 | [77514](https://github.com/airbytehq/airbyte/pull/77514) | Update CDK to pre-release with stderr heartbeat diagnostics and concurrent-source deadlock fix |
