@@ -6,10 +6,14 @@ package io.airbyte.integrations.destination.clickhouse.client
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter
 import com.github.vertical_blank.sqlformatter.languages.Dialect
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -158,6 +162,37 @@ class ClickhouseSqlGeneratorTest {
 
         val actualSql = clickhouseSqlGenerator.copyTable(columnNames, sourceTable, targetTable)
         Assertions.assertEquals(expectedSql, actualSql)
+    }
+
+    @Test
+    fun `test createTable falls back to extracted_at version for nullable cursor`() {
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = TableName("namespace", "table")),
+                columnSchema =
+                    ColumnSchema(
+                        inputSchema = emptyMap(),
+                        inputToFinalColumnNames =
+                            mapOf("order_id" to "order_id", "updated_at" to "updated_at"),
+                        finalSchema =
+                            mapOf(
+                                "order_id" to ColumnType(ClickhouseSqlTypes.INT64, false),
+                                "updated_at" to
+                                    ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
+                            ),
+                    ),
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("order_id")),
+                        cursor = listOf("updated_at"),
+                    ),
+            )
+
+        val sql =
+            clickhouseSqlGenerator.createTable(TableName("namespace", "table"), tableSchema, false)
+
+        assertTrue(sql.contains("`updated_at` Nullable(DateTime64(3))"))
+        assertTrue(sql.contains("ENGINE = ReplacingMergeTree(_airbyte_extracted_at)"))
     }
 
     companion object {

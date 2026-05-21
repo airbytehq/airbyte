@@ -26,7 +26,5 @@ object ClickhouseSqlTypes {
 
 // Warning: if any munging changes the name of the CDC column name this will break.
 // Currently, that is not the case.
-fun isValidVersionColumn(name: String, type: String) =
-    // CDC cursors cannot be used as a version column since they are null
-    // during the initial CDC snapshot.
-    name != CDC_CURSOR_COLUMN && VALID_VERSION_COLUMN_TYPES.contains(type)
+fun isValidVersionColumn(name: String, type: String, nullable: Boolean) =
+    !nullable && name != CDC_CURSOR_COLUMN && VALID_VERSION_COLUMN_TYPES.contains(type)
