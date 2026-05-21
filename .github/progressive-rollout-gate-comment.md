@@ -42,7 +42,8 @@ The active rollout is not stopped immediately by the merge.
 
 - If this PR removes the stable-version `registryOverrides` and disables progressive rollout, the published GA version can become the default for eligible non-pinned actors.
 - If this PR leaves stable-version `registryOverrides` in place or leaves progressive rollout enabled, non-rollout registry consumers should continue to see the pre-RC stable version.
-- Actors already pinned by the active rollout remain pinned until that rollout finalizes or is canceled.
+- Actors already pinned by the active rollout remain pinned; publishing the GA version does not immediately unpin them, even when the GA version matches the RC stem.
+- If the rollout later finalizes as promoted and the platform default matches the RC stem, the rollout succeeds and unpins actors. If the platform default does not match the RC stem, the rollout is canceled as superseded.
 
 </details>
 
