@@ -109,6 +109,11 @@ airbyte:
             group: Postgres Debezium Connection Error
             output: Database connection error when performing CDC reads, will retry.
 
+          - pattern: (?i).*(certificate_expired|certificate has expired|certificate expired).*
+            input-example: "javax.net.ssl.SSLHandshakeException: (certificate_expired) Received fatal alert: certificate_expired"
+            error: config
+            output: Postgres TLS certificate is expired.
+
           - pattern: .*cannot read from logical replication slot.*
             input-example: 'org.postgresql.util.PSQLException: ERROR: cannot read from logical replication slot "airbyte_slot"'
             error: config
