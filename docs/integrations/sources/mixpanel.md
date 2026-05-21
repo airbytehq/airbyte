@@ -32,7 +32,7 @@ The connector also supports [Project Secret](https://developer.mixpanel.com/refe
 13. For **Date slicing window**, enter the number of days per request window. The default is 30 days. Reduce this value if you encounter memory issues due to large volumes of data per window.
 14. For **Page Size**, enter the number of records to fetch per request for the Engage stream. The default is 1000.
 15. For **Export Lookback Window**, enter the number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This helps avoid missed data due to delays in event recording. The default is 0 seconds.
-16. For **Number of concurrent workers**, enter the number of worker threads for the sync. The default is 3. Higher values may improve performance but are constrained by your Mixpanel plan's [rate limits](https://developer.mixpanel.com/reference/rate-limits).
+16. For **Number of concurrent threads**, enter the number of worker threads for the sync. The default is 3. Higher values may improve performance but are constrained by your Mixpanel plan's [rate limits](https://developer.mixpanel.com/reference/rate-limits).
 17. Click **Set up source**.
 
 ## Supported sync modes
@@ -71,7 +71,7 @@ Mixpanel enforces separate rate limits for different API endpoints:
 - **Query API** (Cohorts, Engage, Funnels, Revenue, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
 - **Raw Data Export API** (Export): 100 concurrent queries, 60 queries per hour, 3 queries per second.
 
-Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent workers** settings to tune performance within your plan's limits.
+Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits.
 
 ## CHANGELOG
 
