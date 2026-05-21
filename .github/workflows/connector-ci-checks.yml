@@ -200,7 +200,7 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
           FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
-          IS_UP_TO_DATE_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login == 'octavia-bot-hoard[bot]' && (startsWith(github.head_ref, 'up-to-date/') || contains(github.event.pull_request.labels.*.name, 'up-to-date')) }}
+          IS_UP_TO_DATE_PR: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'up-to-date/') || contains(github.event.pull_request.labels.*.name, 'up-to-date')) }}
         run: |
           set -euo pipefail
 
@@ -332,7 +332,7 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
           FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
-          IS_UP_TO_DATE_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login == 'octavia-bot-hoard[bot]' && (startsWith(github.head_ref, 'up-to-date/') || contains(github.event.pull_request.labels.*.name, 'up-to-date')) }}
+          IS_UP_TO_DATE_PR: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'up-to-date/') || contains(github.event.pull_request.labels.*.name, 'up-to-date')) }}
         run: |
           set -euo pipefail
 
