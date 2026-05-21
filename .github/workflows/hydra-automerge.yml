@@ -236,192 +236,129 @@ jobs:
           > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
 
       # ── Devin AI evaluation ────────────────────────────────────────
-      - name: Create Devin session with structured output
+      - name: Checkout code
         if: >
           steps.pre-check.outputs.state == 'OPEN'
           && steps.validate-paths.outputs.valid == 'true'
           && steps.verify-checks.outputs.ready == 'true'
-        id: create-session
-        env:
-          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
-          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Devin auto-merge evaluation
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.verify-checks.outputs.ready == 'true'
+        id: devin
+        uses: aaronsteers/devin-action@main
+        with:
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          issue-number: ${{ inputs.pr }}
+          max-acu-limit: "2"
+          wait-for-stopped-status: "true"
+          wait-minutes-max: "10"
+          structured-output-required: "true"
+          start-message: "**Auto-merge evaluation** starting..."
+          tags: |
+            auto-merge-eval
+            hyd-ready
+          prompt-text: |
+            Analyze this pull request and classify it by filling out the structured output schema:
+            https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
+
+            Review the PR diff, changed files, and PR comments. Each field in the schema has a description explaining exactly what to check and when to set pass to true or false.
+
+            Important:
+            - For allowed_scopes, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
+            - Be precise and conservative: when in doubt, set pass to false.
+            - Do NOT create any files, branches, or PRs. Do NOT write any code. Only analyze.
+          structured-output-schema: |
+            type: object
+            properties:
+              preconditions:
+                type: object
+                description: "Safety and readiness checks for the PR."
+                properties:
+                  no_breaking_changes:
+                    type: object
+                    description: "Set pass to true ONLY if the PR does not introduce any breaking changes. A breaking change includes: major version bumps, removed or renamed public APIs, changed function signatures, removed configuration options, backward-incompatible schema changes, or anything that would require downstream consumers to modify their code or configuration."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                  ai_review_passed:
+                    type: object
+                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                required: [no_breaking_changes, ai_review_passed]
+              allowed_scopes:
+                type: object
+                description: "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else."
+                properties:
+                  docs_only_change:
+                    type: object
+                    description: "Set pass to true ONLY if every file changed in the PR is a documentation file (markdown, rst, mdx, or files under docs/ directories). If even one non-documentation file is changed, set pass to false."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                  comment_only_change:
+                    type: object
+                    description: "Set pass to true ONLY if the entire diff consists exclusively of code comment additions, removals, or modifications (e.g. Python # comments, Java/Kotlin // or /* */ comments, YAML # comments). No functional code, imports, or logic may be added, removed, or changed. If any non-comment line is modified, set pass to false."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                  dependency_version_bump:
+                    type: object
+                    description: "Set pass to true ONLY if the PR exclusively bumps dependency versions (e.g. changes to pyproject.toml, setup.py, build.gradle, package.json version pins, or lockfiles) without any other functional code changes. The version bump must be a patch or minor version increment, NOT a major version bump. If the PR includes any other changes beyond the version bump and its lockfile updates, set pass to false."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                  metadata_only_change:
+                    type: object
+                    description: "Set pass to true ONLY if every file changed in the PR is a connector metadata file such as metadata.yaml, icon.svg, or similar non-code connector configuration files. If any source code, test, or documentation file is changed, set pass to false."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change]
+            required: [preconditions, allowed_scopes]
+
+      - name: Check for structured output
+        if: steps.devin.outputs.session-id
+        id: check-output
         run: |
-          set -euo pipefail
-
-          PROMPT="Analyze this pull request and classify it by filling out the structured output schema:
-          https://github.com/airbytehq/airbyte/pull/${PR_NUMBER}
-
-          Review the PR diff, changed files, and PR comments. Each field in the schema has a description explaining exactly what to check and when to set pass to true or false.
-
-          Important:
-          - For allowed_scopes, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
-          - Be precise and conservative: when in doubt, set pass to false.
-          - Do NOT create any files, branches, or PRs. Do NOT write any code. Only analyze."
-
-          SCHEMA='{
-            "type": "object",
-            "properties": {
-              "preconditions": {
-                "type": "object",
-                "description": "Safety and readiness checks for the PR.",
-                "properties": {
-                  "no_breaking_changes": {
-                    "type": "object",
-                    "description": "Set pass to true ONLY if the PR does not introduce any breaking changes. A breaking change includes: major version bumps, removed or renamed public APIs, changed function signatures, removed configuration options, backward-incompatible schema changes, or anything that would require downstream consumers to modify their code or configuration.",
-                    "properties": {
-                      "pass": { "type": "boolean" },
-                      "reasoning": { "type": "string" }
-                    },
-                    "required": ["pass", "reasoning"]
-                  },
-                  "ai_review_passed": {
-                    "type": "object",
-                    "description": "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '"'"'<!-- pr_ai_review_result: APPROVE'"'"' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false.",
-                    "properties": {
-                      "pass": { "type": "boolean" },
-                      "reasoning": { "type": "string" }
-                    },
-                    "required": ["pass", "reasoning"]
-                  }
-                },
-                "required": ["no_breaking_changes", "ai_review_passed"]
-              },
-              "allowed_scopes": {
-                "type": "object",
-                "description": "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else.",
-                "properties": {
-                  "docs_only_change": {
-                    "type": "object",
-                    "description": "Set pass to true ONLY if every file changed in the PR is a documentation file (markdown, rst, mdx, or files under docs/ directories). If even one non-documentation file is changed, set pass to false.",
-                    "properties": {
-                      "pass": { "type": "boolean" },
-                      "reasoning": { "type": "string" }
-                    },
-                    "required": ["pass", "reasoning"]
-                  },
-                  "comment_only_change": {
-                    "type": "object",
-                    "description": "Set pass to true ONLY if the entire diff consists exclusively of code comment additions, removals, or modifications (e.g. Python # comments, Java/Kotlin // or /* */ comments, YAML # comments). No functional code, imports, or logic may be added, removed, or changed. If any non-comment line is modified, set pass to false.",
-                    "properties": {
-                      "pass": { "type": "boolean" },
-                      "reasoning": { "type": "string" }
-                    },
-                    "required": ["pass", "reasoning"]
-                  },
-                  "dependency_version_bump": {
-                    "type": "object",
-                    "description": "Set pass to true ONLY if the PR exclusively bumps dependency versions (e.g. changes to pyproject.toml, setup.py, build.gradle, package.json version pins, or lockfiles) without any other functional code changes. The version bump must be a patch or minor version increment, NOT a major version bump. If the PR includes any other changes beyond the version bump and its lockfile updates, set pass to false.",
-                    "properties": {
-                      "pass": { "type": "boolean" },
-                      "reasoning": { "type": "string" }
-                    },
-                    "required": ["pass", "reasoning"]
-                  },
-                  "metadata_only_change": {
-                    "type": "object",
-                    "description": "Set pass to true ONLY if every file changed in the PR is a connector metadata file such as metadata.yaml, icon.svg, or similar non-code connector configuration files. If any source code, test, or documentation file is changed, set pass to false.",
-                    "properties": {
-                      "pass": { "type": "boolean" },
-                      "reasoning": { "type": "string" }
-                    },
-                    "required": ["pass", "reasoning"]
-                  }
-                },
-                "required": ["docs_only_change", "comment_only_change", "dependency_version_bump", "metadata_only_change"]
-              }
-            },
-            "required": ["preconditions", "allowed_scopes"]
-          }'
-
-          RESPONSE=$(curl -sf -X POST \
-            "https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions" \
-            -H "Authorization: Bearer $DEVIN_API_KEY" \
-            -H "Content-Type: application/json" \
-            --data "$(jq -n \
-              --arg prompt "$PROMPT" \
-              --arg title "Auto-merge eval: PR #${PR_NUMBER}" \
-              --argjson schema "$SCHEMA" \
-              '{
-                "prompt": $prompt,
-                "title": $title,
-                "max_acu_limit": 2,
-                "tags": ["auto-merge-eval", "hyd-ready"],
-                "structured_output_required": true,
-                "structured_output_schema": $schema
-              }')")
-
-          SESSION_ID=$(echo "$RESPONSE" | jq -r '.session_id')
-          SESSION_URL=$(echo "$RESPONSE" | jq -r '.url')
-
-          echo "session_id=$SESSION_ID" | tee -a "$GITHUB_OUTPUT"
-          echo "session_url=$SESSION_URL" | tee -a "$GITHUB_OUTPUT"
-          echo "::notice::Devin session created: $SESSION_URL"
-
-      - name: Poll for structured output
-        if: steps.create-session.outputs.session_id
-        id: poll
-        env:
-          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
-          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
-          SESSION_ID: ${{ steps.create-session.outputs.session_id }}
-        run: |
-          set -euo pipefail
-
-          POLL_INTERVAL=15
-          MAX_WAIT=600
-          elapsed=0
-
-          while true; do
-            RESPONSE=$(curl -sf \
-              "https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions/$SESSION_ID" \
-              -H "Authorization: Bearer $DEVIN_API_KEY")
-
-            STATUS=$(echo "$RESPONSE" | jq -r '.status')
-            HAS_OUTPUT=$(echo "$RESPONSE" | jq -e '.structured_output != null' 2>/dev/null && echo "yes" || echo "no")
-
-            echo "[${elapsed}s] status=$STATUS structured_output=$HAS_OUTPUT"
-
-            if [[ "$HAS_OUTPUT" == "yes" ]]; then
-              echo "Structured output received."
-              STRUCTURED_OUTPUT=$(echo "$RESPONSE" | jq -c '.structured_output')
-              echo "structured_output=$STRUCTURED_OUTPUT" >> "$GITHUB_OUTPUT"
-              echo "success=true" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-
-            if [[ "$STATUS" == "exit" || "$STATUS" == "error" ]]; then
-              echo "::error::Devin session ended ($STATUS) without producing structured output."
-              echo "success=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-
-            if [[ "$elapsed" -ge "$MAX_WAIT" ]]; then
-              echo "::error::Timed out after ${MAX_WAIT}s waiting for Devin structured output."
-              echo "success=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-
-            sleep "$POLL_INTERVAL"
-            elapsed=$((elapsed + POLL_INTERVAL))
-          done
-
-      - name: Terminate Devin session
-        if: always() && steps.create-session.outputs.session_id
-        env:
-          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
-          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
-          SESSION_ID: ${{ steps.create-session.outputs.session_id }}
-        run: |
-          curl -sf -X DELETE \
-            "https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions/$SESSION_ID" \
-            -H "Authorization: Bearer $DEVIN_API_KEY" > /dev/null 2>&1 || true
+          if [[ -n '${{ steps.devin.outputs.structured-output }}' ]]; then
+            echo "success=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Devin session completed but did not produce structured output."
+            echo "success=false" >> "$GITHUB_OUTPUT"
+          fi
 
       # ── Evaluate structured output ─────────────────────────────────
       - name: Evaluate auto-merge gates
-        if: steps.poll.outputs.success == 'true'
+        if: steps.check-output.outputs.success == 'true'
         id: evaluate
         env:
-          STRUCTURED_OUTPUT: ${{ steps.poll.outputs.structured_output }}
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
         run: |
           set -euo pipefail
 
@@ -466,12 +403,12 @@ jobs:
 
       # ── Post results ───────────────────────────────────────────────
       - name: Build evaluation report
-        if: steps.poll.outputs.success == 'true'
+        if: steps.check-output.outputs.success == 'true'
         id: report
         env:
-          STRUCTURED_OUTPUT: ${{ steps.poll.outputs.structured_output }}
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
           EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
-          SESSION_URL: ${{ steps.create-session.outputs.session_url }}
+          SESSION_URL: ${{ steps.devin.outputs.session-url }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
           set -euo pipefail
@@ -554,8 +491,8 @@ jobs:
         run: |
           gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "$EVAL_COMMENT"
 
-      - name: Update command comment on Devin error/timeout
-        if: steps.poll.outputs.success == 'false' && inputs.comment-id
+      - name: Update command comment on Devin error
+        if: steps.check-output.outputs.success == 'false' && inputs.comment-id
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
@@ -563,19 +500,19 @@ jobs:
           body: |
             > **Auto-merge evaluation: ERROR**
             >
-            > The Devin AI evaluation session did not produce structured output (timeout or session error).
+            > The Devin AI evaluation session did not produce structured output.
             >
-            > [Devin session](${{ steps.create-session.outputs.session_url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-      - name: Post new comment on Devin error/timeout (no command comment)
-        if: steps.poll.outputs.success == 'false' && !inputs.comment-id
+      - name: Post new comment on Devin error (no command comment)
+        if: steps.check-output.outputs.success == 'false' && !inputs.comment-id
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-          SESSION_URL: ${{ steps.create-session.outputs.session_url }}
+          SESSION_URL: ${{ steps.devin.outputs.session-url }}
         run: |
           gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "## Auto-merge evaluation: **ERROR**
 
-          The Devin AI evaluation session did not produce structured output (timeout or session error).
+          The Devin AI evaluation session did not produce structured output.
 
           > [Devin session](${SESSION_URL}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
 
