@@ -31,3 +31,15 @@ Monday.com's `items_page`/`next_items_page` pagination cursors expire after 60 m
 The connector handles this by triggering `RESET_PAGINATION`, which restarts pagination from the beginning of the current stream. This means all records fetched before the expiration are re-read. See [Monday.com community discussion](https://developer-community.monday.com/api-apps-framework-4/cursor-used-for-pagination-expires-alternate-way-to-paginate-4083) for API context.
 
 **Why this matters:** For large boards, cursor expiration can cause repeated full re-reads if processing consistently takes longer than an hour. Each reset restarts from page 1, so syncs may never complete for very large boards if the processing time per page exceeds the cursor TTL.
+
+## Incremental Stream Considerations
+
+The Monday.com GraphQL API supports filtering by `updated_at` on boards and items. The connector uses Python custom components referenced from the manifest.
+
+**Connector type:** Python custom components (hybrid manifest + Python)
+
+**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+
+### Future incremental stream candidates
+
+- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
