@@ -124,47 +124,45 @@ def test_custom_streams(test_config):
 
 
 @pytest.mark.parametrize(
-    "status,expected_status_filters",
+    "status_fields",
     [
-        pytest.param(None, {}, id="omitted"),
+        pytest.param({}, id="omitted"),
         pytest.param(
-            ["ACTIVE", "PAUSED", "ARCHIVED"],
             {
-                "campaign_statuses": ["RUNNING", "PAUSED", "ARCHIVED"],
-                "ad_group_statuses": ["RUNNING", "PAUSED", "ARCHIVED"],
-                "ad_statuses": ["APPROVED", "PAUSED", "ARCHIVED"],
+                "campaign_statuses": ["RUNNING", "ARCHIVED"],
+                "ad_group_statuses": ["PAUSED", "ARCHIVED"],
+                "ad_statuses": ["APPROVED", "ARCHIVED"],
             },
-            id="active_paused_archived",
+            id="configured",
         ),
     ],
 )
 @freeze_time("2026-05-21 12:00:00+00:00")
-def test_custom_reports_status_filters(requests_mock, test_config, status, expected_status_filters):
+def test_custom_reports_status_filters(requests_mock, test_config, status_fields):
     report_download_url = "https://download.report/custom"
     report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
-    custom_report = {
-        "name": "ad_performance_report",
-        "level": "PIN_PROMOTION",
-        "granularity": "DAY",
-        "columns": [
-            "ADVERTISER_ID",
-            "AD_ACCOUNT_ID",
-            "AD_ID",
-            "PIN_PROMOTION_ID",
-            "SPEND_IN_DOLLAR",
-        ],
-        "click_window_days": 30,
-        "engagement_window_days": 30,
-        "view_window_days": 30,
-        "conversion_report_time": "TIME_OF_AD_ACTION",
-        "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
-        "start_date": "2026-05-20",
-    }
-    if status is not None:
-        custom_report["status"] = status
-
     config = copy.deepcopy(test_config)
-    config["custom_reports"] = [custom_report]
+    config["custom_reports"] = [
+        {
+            "name": "ad_performance_report",
+            "level": "PIN_PROMOTION",
+            "granularity": "DAY",
+            "columns": [
+                "ADVERTISER_ID",
+                "AD_ACCOUNT_ID",
+                "AD_ID",
+                "PIN_PROMOTION_ID",
+                "SPEND_IN_DOLLAR",
+            ],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-20",
+            **status_fields,
+        }
+    ]
     expected_body = {
         "start_date": "2026-05-20",
         "end_date": "2026-05-21",
@@ -182,7 +180,7 @@ def test_custom_reports_status_filters(requests_mock, test_config, status, expec
             "PIN_PROMOTION_ID",
             "SPEND_IN_DOLLAR",
         ],
-        **expected_status_filters,
+        **status_fields,
     }
 
     def match_json_body(request):
