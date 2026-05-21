@@ -6,8 +6,8 @@ import copy
 import json
 import os
 
-from freezegun import freeze_time
 import pytest
+from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -198,9 +198,6 @@ def test_custom_reports_status_filters(requests_mock, test_config, status_fields
     requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
     requests_mock.get(report_download_url, json={"ad_id": [{"spend": 1}]})
 
-    records = [
-        record.record.data
-        for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental).records
-    ]
+    records = [record.record.data for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental).records]
 
     assert records == [{"spend": 1}]
