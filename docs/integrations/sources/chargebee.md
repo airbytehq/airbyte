@@ -28,7 +28,7 @@ All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date is replicated.
 7. For **API Key**, enter your [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth).
 8. For **Product Catalog**, select your Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). The connector defaults to Product Catalog 2.0.
-9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 5. Higher values increase throughput but consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
+9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 6. Higher values increase throughput but consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
 10. Click **Set up source**.
 
 <HideInUI>
@@ -107,6 +107,7 @@ Some streams are only available on a specific Product Catalog version. If you at
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.36-rc.2 | 2026-05-20 | [78300](https://github.com/airbytehq/airbyte/pull/78300) | Raise `default_concurrency` to 6 after Phase 1 monitoring of 0.10.36-rc.1 showed no rate-limit signal and faster high-volume sync averages excluding a stable-precedent multi-attempt outlier |
 | 0.10.36-rc.1 | 2026-05-18 | [74345](https://github.com/airbytehq/airbyte/pull/74345) | Raise `default_concurrency` to 5 (Path B tuning calibrated to the Chargebee Starter tier, 150 req/min = 2.5 req/sec); bump `num_workers` minimum to 2 and default to 5; add `subscription_tier` spec field (enum `starter`/`performance`/`enterprise`, default `starter`); record original Starter and tier-aware `HTTPAPIBudget` shapes as YAML comments for activation in a follow-up GA RC; enable progressive rollout |
 | 0.10.35 | 2026-04-28 | [77207](https://github.com/airbytehq/airbyte/pull/77207) | Update dependencies |
 | 0.10.34 | 2026-04-21 | [75795](https://github.com/airbytehq/airbyte/pull/75795) | Update dependencies |
