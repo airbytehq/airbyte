@@ -6,7 +6,9 @@ Amazon SP API report streams do not return standard JSON REST responses. Instead
 
 For CSV reports, the column headers can be localized per marketplace. For example, seller feedback reports return different column names depending on the seller's marketplace ID, and some marketplaces use different date formats in their CSV output.
 
-**Why this matters:** A single connector handles three fundamentally different response formats behind the scenes. Adding a new report stream requires knowing which format that report uses and selecting the correct decoder. CSV reports may also need marketplace-specific date parsing logic.
+Report streams also support the connector-level `report_stream_lookback_window_in_days` option. The lookback is applied to each report stream's `DatetimeBasedCursor`, so incremental report syncs re-request prior windows while preserving the stored cursor checkpoint.
+
+**Why this matters:** A single connector handles three fundamentally different response formats behind the scenes. Adding a new report stream requires knowing which format that report uses and selecting the correct decoder. CSV reports may also need marketplace-specific date parsing logic. Incremental report streams should include the shared lookback window if they can receive delayed updates from Amazon.
 
 ## 2. Reactive Token Invalidation on 403 Errors
 
