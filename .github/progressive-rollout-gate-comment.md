@@ -38,11 +38,11 @@ No new connector version should be released, and the active rollout should conti
 
 <details><summary>If the connector version changes from RC to non-RC (GA) version...</summary>
 
-The merged PR may publish a GA version, but the active rollout is not stopped immediately by the merge.
+The active rollout is not stopped immediately by the merge.
 
-During an active RC rollout, `registryOverrides.cloud.dockerImageTag` and `registryOverrides.oss.dockerImageTag` usually pin non-rollout registry consumers to the pre-RC stable version. Older registry generation depended on those overrides to prevent the RC from becoming default. The newer `airbyte-ops registry compile` path is semver-aware, so `-rc` versions are not eligible as GA/default/latest versions. It also skips GA versions whose metadata still has progressive rollout enabled. If this PR removes those overrides and disables progressive rollout, the newly published GA version can become the registry default for eligible non-pinned actors.
-
-If the active rollout is later promoted, the platform verifies that the default version matches this rollout's RC stem. For example, `1.2.3-rc.1` is expected to become `1.2.3`. If the default is a different GA version, the rollout is marked `CANCELED` as superseded. If the default matches the RC stem, the rollout can complete as promoted.
+- If this PR removes the stable-version `registryOverrides` and disables progressive rollout, the published GA version can become the default for eligible non-pinned actors.
+- If this PR leaves stable-version `registryOverrides` in place or leaves progressive rollout enabled, non-rollout registry consumers should continue to see the pre-RC stable version.
+- Actors already pinned by the active rollout remain pinned until that rollout finalizes or is canceled.
 
 </details>
 
