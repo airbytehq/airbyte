@@ -1,5 +1,5 @@
 version: 4.3.0
-type: DeclarativeSource
+type: HYD39InvalidSource
 check:
   type: CheckStream
   stream_names:
