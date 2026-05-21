@@ -381,10 +381,7 @@ class TestFullRefresh:
         output = self._read(stream_name, config())
 
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
-        assert (
-            output.errors[0].trace.error.message
-            == "Merchant account is not registered in the selected marketplace."
-        )
+        assert output.errors[0].trace.error.message == "Merchant account is not registered in the selected marketplace."
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
