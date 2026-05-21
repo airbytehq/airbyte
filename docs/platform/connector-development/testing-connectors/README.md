@@ -18,7 +18,7 @@ To run Connector Acceptance tests locally, you must provide connector configurat
 Connector tests are automatically and remotely triggered on your branch according to the changes made in your branch.
 **Passing tests are required to merge a connector pull request.**
 
-Automated `up-to-date/*` dependency update pull requests for community connectors have one exception: if Airbyte's CI can successfully check Google Secret Manager and finds no sandbox or test credentials for the connector, integration tests and standard connector tests are allowed to be non-blocking. This exception only applies to bot-created `up-to-date/*` pull requests. For all other connector pull requests, available connector tests must pass before merge.
+Automated `up-to-date/*` dependency update pull requests for community connectors have one exception: if Airbyte's CI can successfully fetch connector secrets and finds no sandbox or test credentials, integration tests and non-Java container tests are allowed to be non-blocking. This exception only applies to pull requests opened by `octavia-bot-hoard[bot]` from an `up-to-date/*` branch or with the `up-to-date` label. Unit tests remain blocking. For all other connector pull requests, available connector tests must pass before merge.
 
 ## Connector specific tests
 
