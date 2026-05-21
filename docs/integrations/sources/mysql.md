@@ -180,42 +180,42 @@ Any database or table encoding combination of charset and collation is supported
 <details>
     <summary>MySQL Data Type Mapping</summary>
 
-| MySQL Type                                | Resulting Type         | Notes                                                                                                          |
-| :---------------------------------------- | :--------------------- | :------------------------------------------------------------------------------------------------------------- |
-| `bit(1)`                                  | boolean                |                                                                                                                |
-| `bit(>1)`                                 | base64 binary string   |                                                                                                                |
-| `boolean`                                 | boolean                |                                                                                                                |
-| `tinyint(1)`                              | boolean                |                                                                                                                |
-| `tinyint(>1)`                             | integer                |                                                                                                                |
-| `tinyint(>=1) unsigned`                   | integer                |                                                                                                                |
-| `smallint`                                | integer                |                                                                                                                |
-| `mediumint`                               | integer                |                                                                                                                |
-| `int`                                     | integer                |                                                                                                                |
-| `bigint`                                  | integer                |                                                                                                                |
-| `float`                                   | number                 |                                                                                                                |
-| `double`                                  | number                 |                                                                                                                |
-| `decimal`                                 | number                 |                                                                                                                |
-| `binary`                                  | string                 |                                                                                                                |
-| `blob`                                    | string                 |                                                                                                                |
-| `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH.     |
-| `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
-| `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
-| `year`                                    | integer                | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
-| `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
-| `tinyblob`                                | base64 binary string   |                                                                                                                |
-| `blob`                                    | base64 binary string   |                                                                                                                |
-| `mediumblob`                              | base64 binary string   |                                                                                                                |
-| `longblob`                                | base64 binary string   |                                                                                                                |
-| `binary`                                  | base64 binary string   |                                                                                                                |
-| `varbinary`                               | base64 binary string   |                                                                                                                |
-| `tinytext`                                | string                 |                                                                                                                |
-| `text`                                    | string                 |                                                                                                                |
-| `mediumtext`                              | string                 |                                                                                                                |
-| `longtext`                                | string                 |                                                                                                                |
-| `json`                                    | serialized json string | E.g. `{"a": 10, "b": 15}`                                                                                      |
-| `enum`                                    | string                 |                                                                                                                |
-| `set`                                     | string                 | E.g. `blue,green,yellow`                                                                                       |
-| `geometry`                                | base64 binary string   |                                                                                                                |
+| MySQL Type                                | Resulting Type         | Notes                                                                                                                            |
+| :---------------------------------------- | :--------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
+| `bit(1)`                                  | boolean                |                                                                                                                                  |
+| `bit(>1)`                                 | base64 binary string   |                                                                                                                                  |
+| `boolean`                                 | boolean                |                                                                                                                                  |
+| `tinyint(1)`                              | boolean                |                                                                                                                                  |
+| `tinyint(>1)`                             | integer                |                                                                                                                                  |
+| `tinyint(>=1) unsigned`                   | integer                |                                                                                                                                  |
+| `smallint`                                | integer                |                                                                                                                                  |
+| `mediumint`                               | integer                |                                                                                                                                  |
+| `int`                                     | integer                |                                                                                                                                  |
+| `bigint`                                  | integer                |                                                                                                                                  |
+| `float`                                   | number                 |                                                                                                                                  |
+| `double`                                  | number                 |                                                                                                                                  |
+| `decimal`                                 | number                 |                                                                                                                                  |
+| `binary`                                  | string                 |                                                                                                                                  |
+| `blob`                                    | string                 |                                                                                                                                  |
+| `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to Unix Epoch (1970-01-01).     |
+| `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to Unix Epoch (1970-01-01). |
+| `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                                         |
+| `year`                                    | integer                | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                                         |
+| `char`, `varchar` with non-binary charset | string                 |                                                                                                                                  |
+| `tinyblob`                                | base64 binary string   |                                                                                                                                  |
+| `blob`                                    | base64 binary string   |                                                                                                                                  |
+| `mediumblob`                              | base64 binary string   |                                                                                                                                  |
+| `longblob`                                | base64 binary string   |                                                                                                                                  |
+| `binary`                                  | base64 binary string   |                                                                                                                                  |
+| `varbinary`                               | base64 binary string   |                                                                                                                                  |
+| `tinytext`                                | string                 |                                                                                                                                  |
+| `text`                                    | string                 |                                                                                                                                  |
+| `mediumtext`                              | string                 |                                                                                                                                  |
+| `longtext`                                | string                 |                                                                                                                                  |
+| `json`                                    | serialized json string | E.g. `{"a": 10, "b": 15}`                                                                                                        |
+| `enum`                                    | string                 |                                                                                                                                  |
+| `set`                                     | string                 | E.g. `blue,green,yellow`                                                                                                         |
+| `geometry`                                | base64 binary string   |                                                                                                                                  |
 
 </details>
 
