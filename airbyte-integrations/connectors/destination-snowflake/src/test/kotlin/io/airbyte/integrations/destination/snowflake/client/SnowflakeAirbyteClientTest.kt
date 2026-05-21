@@ -609,8 +609,7 @@ internal class SnowflakeAirbyteClientTest {
         every {
             sqlGenerator.alterTable(
                 tableName = tableName,
-                addedColumns =
-                    mapOf(SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true)),
+                addedColumns = mapOf(SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true)),
                 deletedColumns = emptyMap(),
                 modifiedColumns = emptyMap(),
             )
@@ -626,8 +625,7 @@ internal class SnowflakeAirbyteClientTest {
         verify(exactly = 1) {
             sqlGenerator.alterTable(
                 tableName = tableName,
-                addedColumns =
-                    mapOf(SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true)),
+                addedColumns = mapOf(SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true)),
                 deletedColumns = emptyMap(),
                 modifiedColumns = emptyMap(),
             )

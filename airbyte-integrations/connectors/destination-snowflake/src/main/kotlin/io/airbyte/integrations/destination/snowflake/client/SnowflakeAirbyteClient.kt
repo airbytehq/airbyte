@@ -206,7 +206,8 @@ class SnowflakeAirbyteClient(
 
     private fun ensureMetaColumnsExist(tableName: TableName) {
         val existingColumns = describeTable(tableName).keys
-        val missingMetaColumns = columnManager.getMetaColumns().filterKeys { it !in existingColumns }
+        val missingMetaColumns =
+            columnManager.getMetaColumns().filterKeys { it !in existingColumns }
 
         if (missingMetaColumns.isNotEmpty()) {
             log.info {
