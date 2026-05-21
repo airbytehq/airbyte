@@ -22,7 +22,6 @@ import org.apache.commons.csv.CSVPrinter
 private val logger = KotlinLogging.logger {}
 
 internal val CSV_FORMAT: CSVFormat = CSVFormat.DEFAULT
-internal const val DEFAULT_FLUSH_LIMIT = 100_000_000
 private const val STAGING_FILE_EXTENSION = ".csv.gz"
 private const val DATE_FORMAT = "yyyy_MM_dd"
 private const val UTC = "UTC"
@@ -44,7 +43,6 @@ class RedshiftInsertBuffer(
     val columns: List<String>,
     private val redshiftClient: RedshiftAirbyteClient,
     private val configuration: RedshiftConfiguration,
-    private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
     private val formatter = RedshiftSchemaRecordFormatter(columns)
@@ -63,8 +61,7 @@ class RedshiftInsertBuffer(
      * Adds a record to the current CSV batch.
      *
      * On the first call, initializes the gzip CSV buffer and writes a header row containing column
-     * names. Subsequent calls format the record and append it as a CSV row. The CSV printer is
-     * flushed every [flushLimit] records to manage memory.
+     * names. Subsequent calls format the record and append it as a CSV row.
      */
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (byteBuffer == null) {
@@ -73,10 +70,6 @@ class RedshiftInsertBuffer(
 
         csvPrinter!!.printRecord(formatter.format(recordFields))
         recordCount++
-
-        if (recordCount % flushLimit == 0) {
-            csvPrinter!!.flush()
-        }
     }
 
     /**
