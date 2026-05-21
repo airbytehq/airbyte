@@ -97,7 +97,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Upgrading to 1.0.0
 
-Version `1.0.0` moves the `services` and `roles` streams from Twilio's deprecated Programmable Chat API to the Conversations API. If your connections sync either stream, refresh the source schema and clear data for those streams after upgrading. For the full list of schema changes and migration steps, see the [Twilio migration guide](./twilio-migrations.md#upgrading-to-100).
+Version `1.0.0` moves the `services` and `roles` streams from the deprecated Programmable Chat API to the Conversations API. If your connections sync either stream, refresh the source schema and clear data for those streams after upgrading. For the full list of schema changes and migration steps, see the [migration guide](./twilio-migrations.md#upgrading-to-100).
 
 ## Performance considerations
 
