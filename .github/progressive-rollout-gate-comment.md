@@ -48,7 +48,9 @@ The active rollout is not stopped immediately by the merge.
 
 <details><summary>If the connector version increments to a higher `-rc` version...</summary>
 
-After this PR is merged, it may publish a new release candidate and replace the active RC marker. When the new RC is registered, the platform cancels any existing non-terminal rollout for this connector. After that, when the new rollout is started through the normal rollout flow, actors pinned by the previous rollout are moved to the new RC.
+After this PR is merged, the new RC may be published and registered, replacing the active RC marker. When the new RC is registered, the platform cancels any existing non-terminal rollout for this connector without unpinning actors.
+
+After merging, you still need to start the new rollout. During start, pinned actors from the previous rollout can be moved to the new RC.
 
 </details>
 
