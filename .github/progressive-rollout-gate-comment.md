@@ -26,7 +26,7 @@
 
 #### 🤔 What happens if this PR is merged
 
-Checking the checkbox will allow the PR to merge, but it does not necessarily stop the active rollout by itself. The result of merging depends on the connector version and rollout metadata that are published.
+Checking the checkbox will allow the PR to merge, but it does not necessarily stop the active rollout by itself. The result of the PR merging depends on what connector version is published.
 
 Expected outcomes by type of version number change:
 
