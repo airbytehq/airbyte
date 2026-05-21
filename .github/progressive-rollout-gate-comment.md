@@ -48,10 +48,7 @@ After merging, you still need to start the new rollout. During start, pinned act
 
 This PR should not be merged while the RC rollout is active. First finalize the active rollout as successful or cancel it.
 
-- If the rollout is finalized as successful, the platform triggers a promotion workflow that strips the `-rc` suffix, removes stable-version `registryOverrides`, disables progressive rollout, merges that promotion, and unpins actors.
-- If this PR is merged anyway, it should remove stable-version `registryOverrides` and disable progressive rollout so the published GA version becomes the default for eligible non-pinned actors.
-- The active rollout is not stopped immediately by the merge, and actors already pinned by the rollout remain pinned until the rollout later finalizes or is canceled.
-- If the rollout later finalizes as promoted and the platform default no longer matches the rollout's RC version stem, the rollout is canceled as superseded.
+If the rollout is finalized as successful, the platform triggers a promotion workflow that strips the `-rc` suffix, removes stable-version `registryOverrides`, disables progressive rollout, merges that promotion, and unpins actors.
 
 </details>
 
