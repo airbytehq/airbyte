@@ -29,7 +29,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  ai-ready:
+  validate:
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as GitHub App
@@ -60,3 +60,11 @@ jobs:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ inputs.pr }}
         run: gh issue edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hyd-ready
+
+  hydra-automerge:
+    needs: validate
+    uses: ./.github/workflows/hydra-automerge.yml
+    with:
+      pr: ${{ inputs.pr }}
+      comment-id: ${{ inputs.comment-id }}
+    secrets: inherit

@@ -1,5 +1,5 @@
 name: "Hydra: Auto-merge (AI-gated)"
-# Triggered when the 'hyd-ready' label is added to a PR.
+# Triggered via the /ai-ready slash command or when the 'hyd-ready' label is added.
 # Kicks off a Devin AI session with structured output to evaluate whether
 # the PR is safe to auto-merge, then evaluates the result deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
@@ -8,22 +8,47 @@ name: "Hydra: Auto-merge (AI-gated)"
 # Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
 
 on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo (owner/repo)"
+        required: false
+      gitref:
+        description: "Git ref"
+        required: false
+      pr:
+        description: "PR number"
+        required: true
+      comment-id:
+        description: "Comment ID (from slash command dispatcher)"
+        required: false
+  workflow_call:
+    inputs:
+      pr:
+        description: "PR number"
+        required: true
+        type: string
+      comment-id:
+        description: "Comment ID"
+        required: false
+        type: string
   pull_request_target:
     types: [labeled]
 
-run-name: "Auto-merge eval for PR #${{ github.event.pull_request.number }}"
+run-name: "Auto-merge eval for PR #${{ inputs.pr || github.event.pull_request.number }}"
 
 # All repo operations use GitHub App tokens, not GITHUB_TOKEN.
 permissions: {}
 
 jobs:
   evaluate-and-merge:
-    name: "Evaluate PR #${{ github.event.pull_request.number }}"
-    if: github.event.label.name == 'hyd-ready' && github.event.pull_request.state == 'open'
+    name: "Evaluate PR #${{ inputs.pr || github.event.pull_request.number }}"
+    if: >
+      inputs.pr != ''
+      || (github.event.label.name == 'hyd-ready' && github.event.pull_request.state == 'open')
     runs-on: ubuntu-24.04
     env:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
     steps:
       # ── Authentication ──────────────────────────────────────────────
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
@@ -41,11 +66,13 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
-          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title)
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
+          title=$(echo "$pr_json" | jq -r '.title')
           echo "state=$state" | tee -a "$GITHUB_OUTPUT"
           echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
+          echo "title=$title" | tee -a "$GITHUB_OUTPUT"
           if [[ "$state" != "OPEN" ]]; then
             echo "::warning::PR #$PR_NUMBER is no longer open (state=$state). Skipping."
           fi
@@ -523,7 +550,7 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
-              echo "::notice::Merged PR #${PR_NUMBER}: ${PR_TITLE}"
+              echo "::notice::Merged PR #${PR_NUMBER}: ${{ steps.pre-check.outputs.title }}"
               exit 0
             fi
             echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
