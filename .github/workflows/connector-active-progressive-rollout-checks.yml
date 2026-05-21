@@ -195,15 +195,15 @@ jobs:
             retool_url="${retool_base_url}?actorDefinitionId=${actor_definition_id}"
           fi
           active_rollout='[.rollouts[]? | select(.state | IN("initialized", "workflow_started", "in_progress", "paused", "finalizing", "errored"))][0] // {}'
-          updated_by_name="$(jq -r "(${active_rollout}).updated_by_user_name // empty" <<< "${ROLLOUT_STATUS_JSON}")"
-          updated_by_email="$(jq -r "(${active_rollout}).updated_by_user_email // empty" <<< "${ROLLOUT_STATUS_JSON}")"
-          updated_by_display="unknown"
-          if [[ -n "${updated_by_name}" && -n "${updated_by_email}" ]]; then
-            updated_by_display="${updated_by_name} <${updated_by_email}>"
-          elif [[ -n "${updated_by_email}" ]]; then
-            updated_by_display="${updated_by_email}"
-          elif [[ -n "${updated_by_name}" ]]; then
-            updated_by_display="${updated_by_name}"
+          created_or_updated_by_name="$(jq -r "(${active_rollout}).created_or_updated_by_user_name // empty" <<< "${ROLLOUT_STATUS_JSON}")"
+          created_or_updated_by_email="$(jq -r "(${active_rollout}).created_or_updated_by_user_email // empty" <<< "${ROLLOUT_STATUS_JSON}")"
+          created_or_updated_by_display="unknown"
+          if [[ -n "${created_or_updated_by_name}" && -n "${created_or_updated_by_email}" ]]; then
+            created_or_updated_by_display="${created_or_updated_by_name} <${created_or_updated_by_email}>"
+          elif [[ -n "${created_or_updated_by_email}" ]]; then
+            created_or_updated_by_display="${created_or_updated_by_email}"
+          elif [[ -n "${created_or_updated_by_name}" ]]; then
+            created_or_updated_by_display="${created_or_updated_by_name}"
           fi
           has_active_rollout="$(jq -r '.has_active_rollout' <<< "${ROLLOUT_STATUS_JSON}")"
           has_master_rc_marker="false"
@@ -217,7 +217,7 @@ jobs:
           echo "has-active-rollout=${has_active_rollout}" | tee -a "${GITHUB_OUTPUT}"
           echo "has-master-rc-marker=${has_master_rc_marker}" | tee -a "${GITHUB_OUTPUT}"
           echo "requires-ack=${requires_ack}" | tee -a "${GITHUB_OUTPUT}"
-          echo "rollout-updated-by=${updated_by_display}" | tee -a "${GITHUB_OUTPUT}"
+          echo "rollout-created-or-updated-by=${created_or_updated_by_display}" | tee -a "${GITHUB_OUTPUT}"
           echo "retool-url=${retool_url}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Detect rollout bypass checkbox
@@ -391,7 +391,7 @@ jobs:
             rollout_state: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].state || 'none' }}
             master_version: ${{ steps.master-version.outputs.version }}
             master_rc_marker: ${{ contains(steps.master-version.outputs.version, '-rc.') }}
-            rollout_updated_by: ${{ steps.rollout-gate-state.outputs.rollout-updated-by }}
+            rollout_created_or_updated_by: ${{ steps.rollout-gate-state.outputs.rollout-created-or-updated-by }}
             retool_url: ${{ steps.rollout-gate-state.outputs.retool-url }}
             bypass_ack_checked: ${{ steps.bypass-state.outputs.approved }}
             ack_checkbox_text: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}

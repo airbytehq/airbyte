@@ -11,7 +11,7 @@
 
 - Rollout version: `{{ .rollout_docker_image_tag }}`
 - Rollout state: `{{ .rollout_state }}`
-- Rollout started or last updated by: `{{ .rollout_updated_by }}`
+- Rollout created or last updated by: `{{ .rollout_created_or_updated_by }}`
 - [Open Connector Rollout Manager in Retool]({{ .retool_url }}) to clean up or close out this rollout if appropriate.
 
 ### Version on `master` Branch: `{{ .master_version }}`
