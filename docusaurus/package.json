@@ -7,7 +7,7 @@
     "pnpm": "9.4.0"
   },
   "engines": {
-    "node": ">=20 <22"
+    "node": ">=20"
   },
   "scripts": {
     "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
