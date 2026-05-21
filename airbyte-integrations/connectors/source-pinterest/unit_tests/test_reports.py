@@ -124,22 +124,26 @@ def test_custom_streams(test_config):
 
 
 @pytest.mark.parametrize(
-    "status,expected_status_filters",
+    "status_filters,expected_status_filters",
     [
         pytest.param(None, {}, id="omitted"),
         pytest.param(
-            ["ACTIVE", "PAUSED", "ARCHIVED"],
             {
-                "campaign_statuses": ["RUNNING", "PAUSED", "ARCHIVED"],
-                "ad_group_statuses": ["RUNNING", "PAUSED", "ARCHIVED"],
-                "ad_statuses": ["APPROVED", "PAUSED", "ARCHIVED"],
+                "campaign_statuses": ["PAUSED", "ARCHIVED"],
+                "ad_group_statuses": ["COMPLETED", "ARCHIVED"],
+                "ad_statuses": ["APPROVED", "ARCHIVED"],
             },
-            id="active_paused_archived",
+            {
+                "campaign_statuses": ["PAUSED", "ARCHIVED"],
+                "ad_group_statuses": ["COMPLETED", "ARCHIVED"],
+                "ad_statuses": ["APPROVED", "ARCHIVED"],
+            },
+            id="configured",
         ),
     ],
 )
 @freeze_time("2026-05-21 12:00:00+00:00")
-def test_custom_reports_status_filters(requests_mock, test_config, status, expected_status_filters):
+def test_custom_reports_status_filters(requests_mock, test_config, status_filters, expected_status_filters):
     report_download_url = "https://download.report/custom"
     report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
     custom_report = {
@@ -160,8 +164,8 @@ def test_custom_reports_status_filters(requests_mock, test_config, status, expec
         "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
         "start_date": "2026-05-20",
     }
-    if status is not None:
-        custom_report["status"] = status
+    if status_filters is not None:
+        custom_report.update(status_filters)
 
     config = copy.deepcopy(test_config)
     config["custom_reports"] = [custom_report]
