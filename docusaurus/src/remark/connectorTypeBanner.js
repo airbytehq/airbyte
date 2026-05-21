@@ -1,17 +1,8 @@
 const { toAttributes } = require("../helpers/objects");
+const {
+  loadEnabledAgentConnectorSlugs,
+} = require("../scripts/agent-connector-availability");
 const { isDocsPage } = require("./utils");
-
-let agentConnectorSlugs = null;
-
-function loadAgentConnectorSlugs() {
-  if (agentConnectorSlugs !== null) return agentConnectorSlugs;
-  try {
-    agentConnectorSlugs = require("../data/agent_connectors.json");
-  } catch {
-    agentConnectorSlugs = [];
-  }
-  return agentConnectorSlugs;
-}
 
 /**
  * Extract the connector slug from a DR connector page path.
@@ -35,7 +26,7 @@ const plugin = () => {
     const slug = getSourceSlug(vfile);
     if (!slug) return;
 
-    const slugs = loadAgentConnectorSlugs();
+    const slugs = loadEnabledAgentConnectorSlugs();
     if (!slugs.includes(slug)) return;
 
     const connectorName = slug

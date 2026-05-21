@@ -8,15 +8,20 @@
  * - remark/utils.js - needs: dockerRepository, name, is_oss, is_cloud,
  *                     iconUrl, supportLevel, documentationUrl
  * - sidebar-connectors.js - needs: docUrl, supportLevel, dockerRepository
+ * - agentConnectors.js, connectorTypeBanner.js, docusaurus.config.ts - need enabled agent connector slugs
  *
  * This avoids network timeouts during the build process by fetching data once upfront.
  * The cache file is cleaned up after the build completes (see cleanup-cache.js).
  */
+const {
+  prepareAgentConnectorAvailability,
+} = require("./agent-connector-availability");
 const { fetchRegistry } = require("./fetch-registry");
 
 async function main() {
   try {
     await fetchRegistry();
+    await prepareAgentConnectorAvailability();
   } catch (error) {
     console.error("Error preparing registry cache:", error);
     process.exit(1);
