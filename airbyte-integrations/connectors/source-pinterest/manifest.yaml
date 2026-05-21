@@ -563,8 +563,8 @@ definitions:
               value,
               campaign_statuses,
             ]
-          value: "{{ components_values['campaign_statuses'] }}"
-          condition: "{{ components_values.get('campaign_statuses') is not none }}"
+          value: "{{ (['RUNNING'] if 'ACTIVE' in components_values['status'] else []) + (['PAUSED'] if 'PAUSED' in components_values['status'] else []) + (['ARCHIVED'] if 'ARCHIVED' in components_values['status'] else []) }}"
+          condition: "{{ components_values.get('status') is not none and components_values.get('status') | length > 0 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -575,8 +575,8 @@ definitions:
               value,
               ad_group_statuses,
             ]
-          value: "{{ components_values['ad_group_statuses'] }}"
-          condition: "{{ components_values.get('ad_group_statuses') is not none }}"
+          value: "{{ (['RUNNING'] if 'ACTIVE' in components_values['status'] else []) + (['PAUSED'] if 'PAUSED' in components_values['status'] else []) + (['ARCHIVED'] if 'ARCHIVED' in components_values['status'] else []) }}"
+          condition: "{{ components_values.get('status') is not none and components_values.get('status') | length > 0 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -587,8 +587,8 @@ definitions:
               value,
               ad_statuses,
             ]
-          value: "{{ components_values['ad_statuses'] }}"
-          condition: "{{ components_values.get('ad_statuses') is not none }}"
+          value: "{{ (['APPROVED'] if 'ACTIVE' in components_values['status'] else []) + (['PAUSED'] if 'PAUSED' in components_values['status'] else []) + (['ARCHIVED'] if 'ARCHIVED' in components_values['status'] else []) }}"
+          condition: "{{ components_values.get('status') is not none and components_values.get('status') | length > 0 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -4986,57 +4986,15 @@ spec:
                 description: "An enumeration."
                 enum: ["INDIVIDUAL", "HOUSEHOLD"]
               order: 8
-            campaign_statuses:
-              title: "Campaign statuses"
-              description: "List of campaign status values for filtering custom report rows."
+            status:
+              title: "Status"
+              description: "List of status values for filtering custom report rows. Include ARCHIVED to report on archived entities."
               type: [array, "null"]
               items:
                 type: string
-                enum:
-                  - "RUNNING"
-                  - "PAUSED"
-                  - "NOT_STARTED"
-                  - "COMPLETED"
-                  - "ADVERTISER_DISABLED"
-                  - "ARCHIVED"
-                  - "DRAFT"
-                  - "DELETED_DRAFT"
+                enum: ["ACTIVE", "PAUSED", "ARCHIVED"]
               uniqueItems: true
               order: 9
-            ad_group_statuses:
-              title: "Ad group statuses"
-              description: "List of ad group status values for filtering custom report rows."
-              type: [array, "null"]
-              items:
-                type: string
-                enum:
-                  - "RUNNING"
-                  - "PAUSED"
-                  - "NOT_STARTED"
-                  - "COMPLETED"
-                  - "ADVERTISER_DISABLED"
-                  - "ARCHIVED"
-                  - "DRAFT"
-                  - "DELETED_DRAFT"
-              uniqueItems: true
-              order: 10
-            ad_statuses:
-              title: "Ad statuses"
-              description: "List of ad status values for filtering custom report rows."
-              type: [array, "null"]
-              items:
-                type: string
-                enum:
-                  - "APPROVED"
-                  - "PAUSED"
-                  - "PENDING"
-                  - "REJECTED"
-                  - "ADVERTISER_DISABLED"
-                  - "ARCHIVED"
-                  - "DRAFT"
-                  - "DELETED_DRAFT"
-              uniqueItems: true
-              order: 11
             start_date:
               type: string
               title: "Start Date"
@@ -5045,7 +5003,7 @@ spec:
               pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
               pattern_descriptor: "YYYY-MM-DD"
               examples: ["2022-07-28"]
-              order: 12
+              order: 10
       account_id:
         type: string
         title: "Account ID"
