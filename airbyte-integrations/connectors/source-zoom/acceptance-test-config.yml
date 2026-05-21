@@ -4,7 +4,7 @@ connector_image: airbyte/source-zoom:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "HYD39_missing_manifest.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

@@ -14147,7 +14147,7 @@ check:
   stream_names:
   - "users"
   type: CheckStream
-type: DeclarativeSource
+type: HYD39InvalidSource
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/zoom
