@@ -8,10 +8,10 @@ The Amazon-Seller-Partner connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Orders | [List](#orders-list), [Get](#orders-get), [Search](#orders-search) |
-| Order Items | [List](#order-items-list), [Search](#order-items-search) |
-| List Financial Event Groups | [List](#list-financial-event-groups-list), [Search](#list-financial-event-groups-search) |
-| List Financial Events | [List](#list-financial-events-list), [Search](#list-financial-events-search) |
+| Orders | [List](#orders-list), [Get](#orders-get), [Context Store Search](#orders-context-store-search) |
+| Order Items | [List](#order-items-list), [Context Store Search](#order-items-context-store-search) |
+| List Financial Event Groups | [List](#list-financial-event-groups-list), [Context Store Search](#list-financial-event-groups-context-store-search) |
+| List Financial Events | [List](#list-financial-events-list), [Context Store Search](#list-financial-events-context-store-search) |
 | Catalog Items | [List](#catalog-items-list), [Get](#catalog-items-get) |
 | Reports | [List](#reports-list), [Get](#reports-get) |
 
@@ -49,13 +49,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `MarketplaceIds` | `string` | Yes | A list of MarketplaceId values. Used to select orders placed in the specified marketplaces. |
-| `CreatedAfter` | `string` | No | A date used for selecting orders created after the specified date (ISO 8601 format). Required if LastUpdatedAfter is not set. |
-| `CreatedBefore` | `string` | No | A date used for selecting orders created before the specified date (ISO 8601 format). |
-| `LastUpdatedAfter` | `string` | No | A date used for selecting orders that were last updated after the specified date (ISO 8601 format). |
-| `LastUpdatedBefore` | `string` | No | A date used for selecting orders that were last updated before the specified date (ISO 8601 format). |
-| `OrderStatuses` | `string` | No | Filter by order status values. |
-| `MaxResultsPerPage` | `integer` | No | Maximum number of results to return per page. |
+| `MarketplaceIds` | `string` | Yes | A list of MarketplaceId values. Used to select orders placed in the specified marketplaces. This is auto-injected from the configured seller region — do not ask the user for a marketplace ID. Each Amazon marketplace has a unique ID (e.g. ATVPDKIKX0DER for US, A1PA6795UKMFR9 for DE). The correct ID is resolved automatically from the region setting (US, CA, MX, BR, DE, FR, IT, ES, UK, IN, JP, AU, SG, etc.). |
+| `CreatedAfter` | `string` | No | A date used for selecting orders created after the specified date. Must be in ISO 8601 date-time format (e.g. 2024-01-15T00:00:00Z). Required if LastUpdatedAfter is not specified — the API requires at least one of CreatedAfter or LastUpdatedAfter. Use this to scope orders by creation date. For example, to get orders from the last 30 days, set this to a date 30 days ago. |
+| `CreatedBefore` | `string` | No | A date used for selecting orders created before the specified date. Must be in ISO 8601 date-time format (e.g. 2024-02-15T23:59:59Z). Use together with CreatedAfter to define a creation date range. If omitted, defaults to now. |
+| `LastUpdatedAfter` | `string` | No | A date used for selecting orders that were last updated after the specified date. Must be in ISO 8601 date-time format (e.g. 2024-01-15T00:00:00Z). Required if CreatedAfter is not specified — the API requires at least one of these. Use this when you want orders that changed recently (e.g. status updates, shipment changes). |
+| `LastUpdatedBefore` | `string` | No | A date used for selecting orders that were last updated before the specified date. Must be in ISO 8601 date-time format (e.g. 2024-02-15T23:59:59Z). Use together with LastUpdatedAfter to define an update date range. If omitted, defaults to now. |
+| `OrderStatuses` | `string` | No | Filter by order status values. Comma-separated list of statuses: Pending, Unshipped, PartiallyShipped, Shipped, Canceled, Unfulfillable, InvoiceUnconfirmed, PendingAvailability. Example: "Shipped,Unshipped". |
+| `MaxResultsPerPage` | `integer` | No | Maximum number of results to return per page (1-100, default 100). |
 | `NextToken` | `string` | No | A string token returned in a previous response for pagination. |
 
 
@@ -141,17 +141,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `orderId` | `string` | Yes | An Amazon order identifier in 3-7-7 format. |
+| `orderId` | `string` | Yes | An Amazon order identifier in 3-7-7 format (e.g. 111-2222222-3333333). This is the AmazonOrderId returned by the list orders endpoint. |
 
 
-### Orders Search
+### Orders Context Store Search
 
 Search and filter orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await amazon_seller_partner.orders.search(
+await amazon_seller_partner.orders.context_store_search(
     query={"filter": {"eq": {"AmazonOrderId": "<str>"}}}
 )
 ```
@@ -164,7 +164,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "orders",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"AmazonOrderId": "<str>"}}}
     }
@@ -302,7 +302,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `orderId` | `string` | Yes | An Amazon order identifier in 3-7-7 format. |
+| `orderId` | `string` | Yes | An Amazon order identifier in 3-7-7 format (e.g. 111-2222222-3333333). This is the AmazonOrderId returned by the list orders endpoint. |
 | `NextToken` | `string` | No | A string token returned in a previous response for pagination. |
 
 
@@ -356,14 +356,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Order Items Search
+### Order Items Context Store Search
 
 Search and filter order items records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await amazon_seller_partner.order_items.search(
+await amazon_seller_partner.order_items.context_store_search(
     query={"filter": {"eq": {"ASIN": "<str>"}}}
 )
 ```
@@ -376,7 +376,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "order_items",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ASIN": "<str>"}}}
     }
@@ -515,9 +515,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `FinancialEventGroupStartedAfter` | `string` | No | Return groups opened after this date (ISO 8601 format). |
-| `FinancialEventGroupStartedBefore` | `string` | No | Return groups opened before this date (ISO 8601 format). |
-| `MaxResultsPerPage` | `integer` | No | Maximum number of results to return per page. |
+| `FinancialEventGroupStartedAfter` | `string` | No | Return groups that started after this date. Must be in ISO 8601 date-time format (e.g. 2024-01-01T00:00:00Z). Use this to scope results to a specific time period. For example, to see settlements from the last 90 days, set this to 90 days ago. |
+| `FinancialEventGroupStartedBefore` | `string` | No | Return groups that started before this date. Must be in ISO 8601 date-time format (e.g. 2024-03-31T23:59:59Z). Use together with FinancialEventGroupStartedAfter to define a date range. If omitted, defaults to now. |
+| `MaxResultsPerPage` | `integer` | No | Maximum number of results to return per page (1-100, default 100). |
 | `NextToken` | `string` | No | A string token returned in a previous response for pagination. |
 
 
@@ -549,14 +549,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### List Financial Event Groups Search
+### List Financial Event Groups Context Store Search
 
 Search and filter list financial event groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await amazon_seller_partner.list_financial_event_groups.search(
+await amazon_seller_partner.list_financial_event_groups.context_store_search(
     query={"filter": {"eq": {"AccountTail": "<str>"}}}
 )
 ```
@@ -569,7 +569,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "list_financial_event_groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"AccountTail": "<str>"}}}
     }
@@ -656,9 +656,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `PostedAfter` | `string` | No | Return events posted after this date (ISO 8601 format). |
-| `PostedBefore` | `string` | No | Return events posted before this date (ISO 8601 format). |
-| `MaxResultsPerPage` | `integer` | No | Maximum number of results to return per page. |
+| `PostedAfter` | `string` | No | Return events posted after this date. Must be in ISO 8601 date-time format (e.g. 2024-01-01T00:00:00Z). Recommended for scoping results to a manageable date range. For recent activity, set this to 30 days ago. |
+| `PostedBefore` | `string` | No | Return events posted before this date. Must be in ISO 8601 date-time format (e.g. 2024-01-31T23:59:59Z). Use together with PostedAfter to define a date range. If omitted, defaults to now. |
+| `MaxResultsPerPage` | `integer` | No | Maximum number of results to return per page (1-100, default 100). |
 | `NextToken` | `string` | No | A string token returned in a previous response for pagination. |
 
 
@@ -714,14 +714,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### List Financial Events Search
+### List Financial Events Context Store Search
 
 Search and filter list financial events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await amazon_seller_partner.list_financial_events.search(
+await amazon_seller_partner.list_financial_events.context_store_search(
     query={"filter": {"eq": {"AdhocDisbursementEventList": []}}}
 )
 ```
@@ -734,7 +734,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "list_financial_events",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"AdhocDisbursementEventList": []}}}
     }
@@ -874,12 +874,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `marketplaceIds` | `string` | Yes | A marketplace identifier. |
-| `keywords` | `string` | No | Keywords to search for in the Amazon catalog. |
-| `identifiers` | `string` | No | Product identifiers to search for (ASIN, EAN, UPC, etc.). |
-| `identifiersType` | `"ASIN" \| "EAN" \| "GTIN" \| "ISBN" \| "JAN" \| "MINSAN" \| "SKU" \| "UPC"` | No | Type of identifiers (required when identifiers is set). |
-| `includedData` | `string` | No | Data sets to include in the response. |
-| `pageSize` | `integer` | No | Number of items to return per page. |
+| `marketplaceIds` | `string` | Yes | A marketplace identifier. This is auto-injected from the configured seller region — do not ask the user for a marketplace ID. Each Amazon marketplace has a unique ID (e.g. ATVPDKIKX0DER for US, A1PA6795UKMFR9 for DE). The correct ID is resolved automatically from the region setting. |
+| `keywords` | `string` | No | Keywords to search for in the Amazon catalog. Use this for text-based product search. Cannot be used together with identifiers — provide one or the other. |
+| `identifiers` | `string` | No | Product identifiers to search for (ASIN, EAN, UPC, etc.). When using this parameter, identifiersType must also be set. Cannot be used together with keywords — provide one or the other. |
+| `identifiersType` | `"ASIN" \| "EAN" \| "GTIN" \| "ISBN" \| "JAN" \| "MINSAN" \| "SKU" \| "UPC"` | No | Type of product identifiers being searched. Required when identifiers is set. Valid values: ASIN, EAN, GTIN, ISBN, JAN, MINSAN, SKU, UPC. |
+| `includedData` | `string` | No | Comma-separated list of data sets to include in the response. Default is "summaries" (brand, title, classification). Other options: identifiers, images, productTypes, salesRanks, dimensions, relationships, vendorDetails. |
+| `pageSize` | `integer` | No | Number of items to return per page (1-20, default 10). |
 | `pageToken` | `string` | No | Token for pagination returned by a previous request. |
 
 
@@ -946,9 +946,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `asin` | `string` | Yes | The Amazon Standard Identification Number (ASIN) of the item. |
-| `marketplaceIds` | `string` | Yes | A marketplace identifier. |
-| `includedData` | `string` | No | Data sets to include in the response. |
+| `asin` | `string` | Yes | The Amazon Standard Identification Number (ASIN) of the item. ASINs are 10-character alphanumeric unique identifiers (e.g. B08N5WRWNW). You can find ASINs from order items (the ASIN field) or from catalog search results. |
+| `marketplaceIds` | `string` | Yes | A marketplace identifier. This is auto-injected from the configured seller region — do not ask the user for a marketplace ID. The correct ID is resolved automatically from the region setting. |
+| `includedData` | `string` | No | Comma-separated list of data sets to include in the response. Default is "summaries" (brand, title, classification). Other options: identifiers, images, productTypes, salesRanks, dimensions, relationships, vendorDetails. |
 
 
 <details>
@@ -1002,12 +1002,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `reportTypes` | `string` | No | A list of report types used to filter reports. |
-| `processingStatuses` | `string` | No | A list of processing statuses used to filter reports. |
-| `marketplaceIds` | `string` | No | A list of marketplace identifiers used to filter reports. |
-| `pageSize` | `integer` | No | Maximum number of reports to return per page. |
-| `createdSince` | `string` | No | Earliest report creation date and time (ISO 8601 format). |
-| `createdUntil` | `string` | No | Latest report creation date and time (ISO 8601 format). |
+| `reportTypes` | `string` | No | A comma-separated list of report types to filter by. Common report types include GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL (orders), GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA (FBA removals), GET_MERCHANT_LISTINGS_ALL_DATA (listings). See SP-API docs for full list. |
+| `processingStatuses` | `string` | No | A comma-separated list of processing statuses to filter by. Valid values: IN_QUEUE, IN_PROGRESS, DONE, CANCELLED, FATAL. Use "DONE" to find completed reports ready for download. |
+| `marketplaceIds` | `string` | No | A list of marketplace identifiers used to filter reports. This is auto-injected from the configured seller region — do not ask the user for a marketplace ID. The correct ID is resolved automatically from the region setting. |
+| `pageSize` | `integer` | No | Maximum number of reports to return per page (1-100, default 10). |
+| `createdSince` | `string` | No | Earliest report creation date and time. Must be in ISO 8601 date-time format (e.g. 2024-01-01T00:00:00Z). Use together with createdUntil to define a date range for when reports were created. |
+| `createdUntil` | `string` | No | Latest report creation date and time. Must be in ISO 8601 date-time format (e.g. 2024-01-31T23:59:59Z). Use together with createdSince to define a date range. If omitted, defaults to now. |
 | `nextToken` | `string` | No | A string token returned in a previous response for pagination. |
 
 
@@ -1071,7 +1071,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `reportId` | `string` | Yes | The identifier for the report. |
+| `reportId` | `string` | Yes | The identifier for the report. Obtain this from the list reports endpoint. The reportId is a unique string identifier assigned when a report is created. |
 
 
 <details>
