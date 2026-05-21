@@ -48,7 +48,7 @@ The active rollout is not stopped immediately by the merge.
 
 <details><summary>If the connector version increments to a higher `-rc` version...</summary>
 
-The merged PR may publish a new release candidate and replace the active RC marker. The active rollout is not stopped just because the RC marker changes; it must still be explicitly finalized, canceled, or superseded during its own promote finalization path. Actors already pinned by the active rollout remain pinned until that rollout finalizes or is canceled.
+The merged PR may publish a new release candidate and replace the active RC marker. When the new RC is registered, the platform cancels any existing non-terminal rollout for this connector. If the new rollout is started with pin migration enabled, actors pinned by the previous rollout are moved to the new RC.
 
 </details>
 
