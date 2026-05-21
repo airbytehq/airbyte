@@ -1,0 +1,537 @@
+name: "Hydra: Auto-merge (AI-gated)"
+# Triggered when the 'hyd-ready' label is added to a PR.
+# Kicks off a Devin AI session with structured output to evaluate whether
+# the PR is safe to auto-merge, then evaluates the result deterministically:
+#   pass = ALL(preconditions) AND ANY(allowed_scopes)
+#
+# Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
+# Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+run-name: "Auto-merge eval for PR #${{ github.event.pull_request.number }}"
+
+# All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+permissions: {}
+
+jobs:
+  evaluate-and-merge:
+    name: "Evaluate PR #${{ github.event.pull_request.number }}"
+    if: github.event.label.name == 'hyd-ready' && github.event.pull_request.state == 'open'
+    runs-on: ubuntu-24.04
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+    steps:
+      # ── Authentication ──────────────────────────────────────────────
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-hoard-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      # ── Pre-checks ─────────────────────────────────────────────────
+      - name: Check PR is still open and not a draft
+        id: pre-check
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft)
+          state=$(echo "$pr_json" | jq -r '.state')
+          is_draft=$(echo "$pr_json" | jq -r '.isDraft')
+          echo "state=$state" | tee -a "$GITHUB_OUTPUT"
+          echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
+          if [[ "$state" != "OPEN" ]]; then
+            echo "::warning::PR #$PR_NUMBER is no longer open (state=$state). Skipping."
+          fi
+
+      - name: Validate connector-only file paths
+        if: steps.pre-check.outputs.state == 'OPEN'
+        id: validate-paths
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -e
+          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
+          valid=true
+          while IFS= read -r file; do
+            case "$file" in
+              airbyte-integrations/connectors/*) ;;
+              docs/integrations/sources/*) ;;
+              docs/integrations/destinations/*) ;;
+              docs/ai-agents/connectors/*) ;;
+              docs/developers/pyairbyte/*) ;;
+              docusaurus/src/data/*) ;;
+              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
+            esac
+          done < /tmp/changed-files.txt
+          echo "valid=$valid" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Post comment if path validation fails
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'false'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "$(cat <<'EOF'
+          ## Auto-merge evaluation: **SKIPPED**
+
+          This PR modifies files outside the allowed connector paths. Auto-merge is only available for PRs that exclusively touch connector-related files.
+
+          > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )"
+
+      - name: Fetch required checks for master branch
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        id: required-checks
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const { data: rules } = await github.request(
+              'GET /repos/{owner}/{repo}/rules/branches/{branch}',
+              { owner: 'airbytehq', repo: 'airbyte', branch: 'master' }
+            );
+            const checks = [];
+            for (const rule of rules) {
+              if (rule.type === 'required_status_checks') {
+                for (const check of (rule.parameters?.required_status_checks || [])) {
+                  checks.push(check.context);
+                }
+              }
+            }
+            core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
+            core.setOutput('checks', JSON.stringify(checks));
+
+      - name: Verify required status checks pass
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        id: verify-checks
+        uses: actions/github-script@v7
+        env:
+          REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const prNum = Number(process.env.PR_NUMBER);
+            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
+            });
+            const sha = pr.head.sha;
+
+            const statuses = await github.paginate(
+              github.rest.repos.listCommitStatusesForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
+            );
+            const successStatuses = new Set(
+              statuses.filter(s => s.state === 'success').map(s => s.context)
+            );
+
+            const checkRuns = await github.paginate(
+              github.rest.checks.listForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
+              (response) => response.data
+            );
+            const successChecks = new Set(
+              checkRuns
+                .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
+                .map(cr => cr.name)
+            );
+
+            const allPassing = new Set([...successStatuses, ...successChecks]);
+            const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+
+            if (missing.length > 0) {
+              core.info(`Missing checks: ${missing.join(', ')}`);
+              core.setOutput('ready', 'false');
+              core.setOutput('missing', missing.join(', '));
+            } else {
+              core.info('All required checks passing');
+              core.setOutput('ready', 'true');
+              core.setOutput('missing', '');
+            }
+
+      - name: Post comment if required checks are not passing
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true' && steps.verify-checks.outputs.ready == 'false'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          MISSING_CHECKS: ${{ steps.verify-checks.outputs.missing }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "$(cat <<EOF
+          ## Auto-merge evaluation: **BLOCKED**
+
+          Required status checks are not passing. Missing: \`${MISSING_CHECKS}\`
+
+          The \`hyd-ready\` label has been kept. The evaluation will re-run when the label is re-applied or can be retried manually.
+
+          > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )"
+
+      # ── Devin AI evaluation ────────────────────────────────────────
+      - name: Create Devin session with structured output
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.verify-checks.outputs.ready == 'true'
+        id: create-session
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+        run: |
+          set -euo pipefail
+
+          PROMPT="Analyze this pull request and classify it by filling out the structured output schema:
+          https://github.com/airbytehq/airbyte/pull/${PR_NUMBER}
+
+          Review the PR diff, changed files, and PR comments. Each field in the schema has a description explaining exactly what to check and when to set pass to true or false.
+
+          Important:
+          - For allowed_scopes, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
+          - Be precise and conservative: when in doubt, set pass to false.
+          - Do NOT create any files, branches, or PRs. Do NOT write any code. Only analyze."
+
+          SCHEMA='{
+            "type": "object",
+            "properties": {
+              "preconditions": {
+                "type": "object",
+                "description": "Safety and readiness checks for the PR.",
+                "properties": {
+                  "no_breaking_changes": {
+                    "type": "object",
+                    "description": "Set pass to true ONLY if the PR does not introduce any breaking changes. A breaking change includes: major version bumps, removed or renamed public APIs, changed function signatures, removed configuration options, backward-incompatible schema changes, or anything that would require downstream consumers to modify their code or configuration.",
+                    "properties": {
+                      "pass": { "type": "boolean" },
+                      "reasoning": { "type": "string" }
+                    },
+                    "required": ["pass", "reasoning"]
+                  },
+                  "ai_review_passed": {
+                    "type": "object",
+                    "description": "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '"'"'<!-- pr_ai_review_result: APPROVE'"'"' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false.",
+                    "properties": {
+                      "pass": { "type": "boolean" },
+                      "reasoning": { "type": "string" }
+                    },
+                    "required": ["pass", "reasoning"]
+                  }
+                },
+                "required": ["no_breaking_changes", "ai_review_passed"]
+              },
+              "allowed_scopes": {
+                "type": "object",
+                "description": "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else.",
+                "properties": {
+                  "docs_only_change": {
+                    "type": "object",
+                    "description": "Set pass to true ONLY if every file changed in the PR is a documentation file (markdown, rst, mdx, or files under docs/ directories). If even one non-documentation file is changed, set pass to false.",
+                    "properties": {
+                      "pass": { "type": "boolean" },
+                      "reasoning": { "type": "string" }
+                    },
+                    "required": ["pass", "reasoning"]
+                  },
+                  "comment_only_change": {
+                    "type": "object",
+                    "description": "Set pass to true ONLY if the entire diff consists exclusively of code comment additions, removals, or modifications (e.g. Python # comments, Java/Kotlin // or /* */ comments, YAML # comments). No functional code, imports, or logic may be added, removed, or changed. If any non-comment line is modified, set pass to false.",
+                    "properties": {
+                      "pass": { "type": "boolean" },
+                      "reasoning": { "type": "string" }
+                    },
+                    "required": ["pass", "reasoning"]
+                  },
+                  "dependency_version_bump": {
+                    "type": "object",
+                    "description": "Set pass to true ONLY if the PR exclusively bumps dependency versions (e.g. changes to pyproject.toml, setup.py, build.gradle, package.json version pins, or lockfiles) without any other functional code changes. The version bump must be a patch or minor version increment, NOT a major version bump. If the PR includes any other changes beyond the version bump and its lockfile updates, set pass to false.",
+                    "properties": {
+                      "pass": { "type": "boolean" },
+                      "reasoning": { "type": "string" }
+                    },
+                    "required": ["pass", "reasoning"]
+                  },
+                  "metadata_only_change": {
+                    "type": "object",
+                    "description": "Set pass to true ONLY if every file changed in the PR is a connector metadata file such as metadata.yaml, icon.svg, or similar non-code connector configuration files. If any source code, test, or documentation file is changed, set pass to false.",
+                    "properties": {
+                      "pass": { "type": "boolean" },
+                      "reasoning": { "type": "string" }
+                    },
+                    "required": ["pass", "reasoning"]
+                  }
+                },
+                "required": ["docs_only_change", "comment_only_change", "dependency_version_bump", "metadata_only_change"]
+              }
+            },
+            "required": ["preconditions", "allowed_scopes"]
+          }'
+
+          RESPONSE=$(curl -sf -X POST \
+            "https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions" \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            --data "$(jq -n \
+              --arg prompt "$PROMPT" \
+              --arg title "Auto-merge eval: PR #${PR_NUMBER}" \
+              --argjson schema "$SCHEMA" \
+              '{
+                "prompt": $prompt,
+                "title": $title,
+                "max_acu_limit": 2,
+                "tags": ["auto-merge-eval", "hyd-ready"],
+                "structured_output_required": true,
+                "structured_output_schema": $schema
+              }')")
+
+          SESSION_ID=$(echo "$RESPONSE" | jq -r '.session_id')
+          SESSION_URL=$(echo "$RESPONSE" | jq -r '.url')
+
+          echo "session_id=$SESSION_ID" | tee -a "$GITHUB_OUTPUT"
+          echo "session_url=$SESSION_URL" | tee -a "$GITHUB_OUTPUT"
+          echo "::notice::Devin session created: $SESSION_URL"
+
+      - name: Poll for structured output
+        if: steps.create-session.outputs.session_id
+        id: poll
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+          SESSION_ID: ${{ steps.create-session.outputs.session_id }}
+        run: |
+          set -euo pipefail
+
+          POLL_INTERVAL=15
+          MAX_WAIT=600
+          elapsed=0
+
+          while true; do
+            RESPONSE=$(curl -sf \
+              "https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions/$SESSION_ID" \
+              -H "Authorization: Bearer $DEVIN_API_KEY")
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.status')
+            HAS_OUTPUT=$(echo "$RESPONSE" | jq -e '.structured_output != null' 2>/dev/null && echo "yes" || echo "no")
+
+            echo "[${elapsed}s] status=$STATUS structured_output=$HAS_OUTPUT"
+
+            if [[ "$HAS_OUTPUT" == "yes" ]]; then
+              echo "Structured output received."
+              STRUCTURED_OUTPUT=$(echo "$RESPONSE" | jq -c '.structured_output')
+              echo "structured_output=$STRUCTURED_OUTPUT" >> "$GITHUB_OUTPUT"
+              echo "success=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [[ "$STATUS" == "exit" || "$STATUS" == "error" ]]; then
+              echo "::error::Devin session ended ($STATUS) without producing structured output."
+              echo "success=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [[ "$elapsed" -ge "$MAX_WAIT" ]]; then
+              echo "::error::Timed out after ${MAX_WAIT}s waiting for Devin structured output."
+              echo "success=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            sleep "$POLL_INTERVAL"
+            elapsed=$((elapsed + POLL_INTERVAL))
+          done
+
+      - name: Terminate Devin session
+        if: always() && steps.create-session.outputs.session_id
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+          SESSION_ID: ${{ steps.create-session.outputs.session_id }}
+        run: |
+          curl -sf -X DELETE \
+            "https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions/$SESSION_ID" \
+            -H "Authorization: Bearer $DEVIN_API_KEY" > /dev/null 2>&1 || true
+
+      # ── Evaluate structured output ─────────────────────────────────
+      - name: Evaluate auto-merge gates
+        if: steps.poll.outputs.success == 'true'
+        id: evaluate
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.poll.outputs.structured_output }}
+        run: |
+          set -euo pipefail
+
+          echo "::group::Structured output"
+          echo "$STRUCTURED_OUTPUT" | jq .
+          echo "::endgroup::"
+
+          # Preconditions: ALL must be true
+          no_breaking=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.pass')
+          ai_review=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.pass')
+
+          if [[ "$no_breaking" == "true" && "$ai_review" == "true" ]]; then
+            preconditions_pass="true"
+          else
+            preconditions_pass="false"
+          fi
+
+          # Allowed scopes: ANY must be true
+          docs_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.docs_only_change.pass')
+          comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.comment_only_change.pass')
+          dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.dependency_version_bump.pass')
+          metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.metadata_only_change.pass')
+
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" ]]; then
+            scope_pass="true"
+          else
+            scope_pass="false"
+          fi
+
+          # Final decision
+          if [[ "$preconditions_pass" == "true" && "$scope_pass" == "true" ]]; then
+            result="PASS"
+          else
+            result="FAIL"
+          fi
+
+          echo "preconditions_pass=$preconditions_pass" | tee -a "$GITHUB_OUTPUT"
+          echo "scope_pass=$scope_pass" | tee -a "$GITHUB_OUTPUT"
+          echo "result=$result" | tee -a "$GITHUB_OUTPUT"
+
+          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, scope=$scope_pass)"
+
+      # ── Post PR comment with results ───────────────────────────────
+      - name: Build evaluation report
+        if: steps.poll.outputs.success == 'true'
+        id: report
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.poll.outputs.structured_output }}
+          EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
+          SESSION_URL: ${{ steps.create-session.outputs.session_url }}
+        run: |
+          set -euo pipefail
+
+          # Helper: emit a checkbox line with reasoning
+          checkbox() {
+            local pass="$1" label="$2" reasoning="$3"
+            if [[ "$pass" == "true" ]]; then
+              echo "- :white_check_mark: **${label}** -- ${reasoning}"
+            else
+              echo "- :x: **${label}** -- ${reasoning}"
+            fi
+          }
+
+          {
+            echo "## Auto-merge evaluation: **${EVAL_RESULT}**"
+            echo ""
+            echo "### Preconditions (all must pass)"
+            checkbox \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.pass')" \
+              "No breaking changes" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.reasoning')"
+            checkbox \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.pass')" \
+              "AI review passed" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.reasoning')"
+            echo ""
+            echo "### Allowed scopes (at least one must pass)"
+            checkbox \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.docs_only_change.pass')" \
+              "Docs-only change" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.docs_only_change.reasoning')"
+            checkbox \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.comment_only_change.pass')" \
+              "Comment-only change" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.comment_only_change.reasoning')"
+            checkbox \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.dependency_version_bump.pass')" \
+              "Dependency version bump" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.dependency_version_bump.reasoning')"
+            checkbox \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.metadata_only_change.pass')" \
+              "Metadata-only change" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.metadata_only_change.reasoning')"
+            echo ""
+            echo "> [Devin session](${SESSION_URL}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } > /tmp/eval-comment.md
+
+          # Store for next step
+          {
+            echo "comment<<EVAL_EOF"
+            cat /tmp/eval-comment.md
+            echo "EVAL_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post evaluation comment on PR
+        if: steps.report.outputs.comment
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          EVAL_COMMENT: ${{ steps.report.outputs.comment }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "$EVAL_COMMENT"
+
+      - name: Post comment on Devin error/timeout
+        if: steps.poll.outputs.success == 'false'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          SESSION_URL: ${{ steps.create-session.outputs.session_url }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "$(cat <<EOF
+          ## Auto-merge evaluation: **ERROR**
+
+          The Devin AI evaluation session did not produce structured output (timeout or session error).
+          The \`hyd-ready\` label has been kept -- re-apply or retry manually.
+
+          > [Devin session](${SESSION_URL}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )"
+
+      # ── Merge (if evaluation passed) ───────────────────────────────
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: steps.evaluate.outputs.result == 'PASS'
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      - name: Mark draft PR as ready for review
+        if: steps.evaluate.outputs.result == 'PASS' && steps.pre-check.outputs.is_draft == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
+
+      - name: Approve PR with admin bot
+        if: steps.evaluate.outputs.result == 'PASS'
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "$PR_NUMBER"
+          --repo airbytehq/airbyte
+          --approve
+          --body "Auto-approved by AI-gated auto-merge evaluation."
+
+      - name: Squash merge PR
+        if: steps.evaluate.outputs.result == 'PASS' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
+              echo "::notice::Merged PR #${PR_NUMBER}: ${PR_TITLE}"
+              exit 0
+            fi
+            echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
+            sleep 60
+          done
+          echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
+          exit 1
+
+      - name: Dry-run notice
+        if: steps.evaluate.outputs.result == 'PASS' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
+        run: echo "::notice::DRY RUN -- would merge PR #${PR_NUMBER}"
