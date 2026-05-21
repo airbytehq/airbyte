@@ -48,7 +48,7 @@ After merging, you still need to start the new rollout. During start, pinned act
 
 This PR should not be merged while the RC rollout is active. First finalize the active rollout as successful or cancel it.
 
-If the rollout is finalized as successful, the platform triggers a promotion workflow that strips the `-rc` suffix, removes stable-version `registryOverrides`, disables progressive rollout, merges that promotion, and unpins actors.
+When you finalize an RC rollout as successful, the platform triggers a promotion workflow that strips the `-rc` suffix, removes stable-version `registryOverrides`, disables progressive rollout, force-merges that promotion, and unpins actors.
 
 </details>
 
