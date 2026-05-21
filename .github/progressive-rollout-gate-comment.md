@@ -42,7 +42,7 @@ The active rollout is not stopped immediately by the merge.
 
 - This PR should remove the stable-version `registryOverrides` and disable progressive rollout so the published GA version becomes the default for eligible non-pinned actors.
 - Actors already pinned by the active rollout remain pinned; publishing the GA version does not immediately unpin them.
-- If the rollout later finalizes as promoted and the platform default matches this version, the rollout succeeds and unpins actors.
+- The matching version stem matters when the rollout later finalizes: if the rollout is promoted and the platform default is this version, the rollout succeeds and unpins actors.
 
 </details>
 
@@ -52,7 +52,7 @@ The active rollout is not stopped immediately by the merge.
 
 - This PR should remove the stable-version `registryOverrides` and disable progressive rollout so the published GA version becomes the default for eligible non-pinned actors.
 - Actors already pinned by the active rollout remain pinned; publishing a distinct GA version does not immediately unpin them.
-- If the rollout later finalizes as promoted and the platform default is still this distinct GA version, the rollout is canceled as superseded.
+- The distinct version matters when the rollout later finalizes: if the rollout is promoted and the platform default is still this distinct GA version, the rollout is canceled as superseded.
 
 </details>
 
