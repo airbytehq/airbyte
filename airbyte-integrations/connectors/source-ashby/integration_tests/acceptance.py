@@ -13,3 +13,7 @@ pytest_plugins = ("connector_acceptance_test.plugin",)
 def connector_setup():
     """This fixture is a placeholder for external resources that acceptance test might require."""
     yield
+
+
+def test_hyd39_no_creds_path_blocks_only_when_policy_is_wrong():
+    pytest.fail("HYD39 intentional integration failure - no-creds path")
