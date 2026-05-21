@@ -5,17 +5,28 @@
 package io.airbyte.integrations.destination.snowflake.client
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_EXTRACTED_AT
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_GENERATION_ID
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_META
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_RAW_ID
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
 import io.mockk.every
@@ -539,6 +550,91 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
+    fun `ensureSchemaMatches adds missing meta columns before matching user schema`() {
+        val tableName = TableName("namespace", "name")
+        val stream = destinationStream(tableName, mapOf("COL1" to ColumnType("VARCHAR", true)))
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val stageResultSet = mockk<ResultSet>(relaxed = true)
+        val alterResultSet = mockk<ResultSet>(relaxed = true)
+        val describeResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true andThen true andThen true andThen true andThen false
+                every { getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD) } returns
+                    SNOWFLAKE_AB_RAW_ID andThen
+                    SNOWFLAKE_AB_EXTRACTED_AT andThen
+                    SNOWFLAKE_AB_META andThen
+                    "COL1"
+                every { getString(DESCRIBE_TABLE_COLUMN_TYPE_FIELD) } returns
+                    """{"type":"VARCHAR","nullable":false}""" andThen
+                    """{"type":"TIMESTAMP_TZ","nullable":false}""" andThen
+                    """{"type":"VARIANT","nullable":false}""" andThen
+                    """{"type":"VARCHAR","nullable":true}"""
+            }
+        val columnsResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true andThen false
+                every { getString("name") } returns "COL1"
+                every { getString("type") } returns "VARCHAR"
+                every { getString("null?") } returns "Y"
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns
+                    stageResultSet andThen
+                    describeResultSet andThen
+                    alterResultSet andThen
+                    columnsResultSet
+                every { close() } just Runs
+            }
+        val connection =
+            mockk<Connection> {
+                every { createStatement() } returns statement
+                every { close() } just Runs
+            }
+        val metaColumns =
+            linkedMapOf(
+                SNOWFLAKE_AB_RAW_ID to ColumnType("VARCHAR", false),
+                SNOWFLAKE_AB_EXTRACTED_AT to ColumnType("TIMESTAMP_TZ", false),
+                SNOWFLAKE_AB_META to ColumnType("VARIANT", false),
+                SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true),
+            )
+
+        every { dataSource.connection } returns connection
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns false
+        every { columnManager.getMetaColumns() } returns metaColumns
+        every { columnManager.getMetaColumnNames() } returns metaColumns.keys
+        every { sqlGenerator.showColumns(tableName) } returns "SHOW COLUMNS"
+        every { sqlGenerator.describeTable(tableName.namespace, tableName.name) } returns
+            "DESCRIBE TABLE"
+        every {
+            sqlGenerator.alterTable(
+                tableName = tableName,
+                addedColumns =
+                    mapOf(SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true)),
+                deletedColumns = emptyMap(),
+                modifiedColumns = emptyMap(),
+            )
+        } returns
+            setOf(
+                """ALTER TABLE "TEST_DATABASE"."namespace"."name" ADD COLUMN "_AIRBYTE_GENERATION_ID" NUMBER;""",
+            )
+        every { sqlGenerator.alterTable(tableName, emptyMap(), emptyMap(), emptyMap()) } returns
+            emptySet()
+
+        runBlocking { client.ensureSchemaMatches(stream, tableName, columnNameMapping) }
+
+        verify(exactly = 1) {
+            sqlGenerator.alterTable(
+                tableName = tableName,
+                addedColumns =
+                    mapOf(SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true)),
+                deletedColumns = emptyMap(),
+                modifiedColumns = emptyMap(),
+            )
+        }
+    }
+
+    @Test
     fun `getColumnsFromDb should return correct column definitions`() {
         val tableName = TableName("test_namespace", "test_table")
         val resultSet = mockk<ResultSet>()
@@ -772,4 +868,31 @@ internal class SnowflakeAirbyteClientTest {
             assertTrue(exception.cause is SnowflakeSQLException)
         }
     }
+
+    private fun destinationStream(
+        tableName: TableName,
+        finalSchema: Map<String, ColumnType>
+    ): DestinationStream =
+        DestinationStream(
+            unmappedNamespace = tableName.namespace,
+            unmappedName = tableName.name,
+            generationId = 1,
+            minimumGenerationId = 0,
+            syncId = 1,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                    columnSchema =
+                        ColumnSchema(
+                            inputToFinalColumnNames = finalSchema.keys.associateBy { it },
+                            finalSchema = finalSchema,
+                            inputSchema =
+                                finalSchema.keys.associateWith {
+                                    FieldType(StringType, nullable = true)
+                                },
+                        ),
+                    importType = Append,
+                ),
+        )
 }

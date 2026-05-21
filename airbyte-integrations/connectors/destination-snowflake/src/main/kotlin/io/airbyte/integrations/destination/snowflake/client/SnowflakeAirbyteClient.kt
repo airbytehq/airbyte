@@ -200,7 +200,27 @@ class SnowflakeAirbyteClient(
         if (snowflakeConfiguration.legacyRawTablesOnly) {
             return
         }
+        ensureMetaColumnsExist(tableName)
         super.ensureSchemaMatches(stream, tableName, columnNameMapping)
+    }
+
+    private fun ensureMetaColumnsExist(tableName: TableName) {
+        val existingColumns = describeTable(tableName).keys
+        val missingMetaColumns = columnManager.getMetaColumns().filterKeys { it !in existingColumns }
+
+        if (missingMetaColumns.isNotEmpty()) {
+            log.info {
+                "Adding missing meta columns to ${tableName.toPrettyString()}: ${missingMetaColumns.keys}"
+            }
+            sqlGenerator
+                .alterTable(
+                    tableName,
+                    addedColumns = missingMetaColumns,
+                    deletedColumns = emptyMap(),
+                    modifiedColumns = emptyMap(),
+                )
+                .forEach { execute(it) }
+        }
     }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
