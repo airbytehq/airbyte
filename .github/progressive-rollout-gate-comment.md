@@ -38,21 +38,20 @@ No new connector version should be released, and the active rollout should conti
 
 <details><summary>If the connector version changes to the active RC's version stem...</summary>
 
-The active rollout is not stopped immediately by the merge.
+This PR should not be merged while the RC rollout is active. First finalize the active rollout as successful or cancel it.
 
-- This PR should remove the stable-version `registryOverrides` and disable progressive rollout so the published GA version becomes the default for eligible non-pinned actors.
-- Actors already pinned by the active rollout remain pinned; publishing the GA version does not immediately unpin them.
-- The matching version stem matters when the rollout later finalizes: if the rollout is promoted and the platform default is this version, the rollout succeeds and unpins actors.
+- If the rollout is finalized as successful, the platform triggers a promotion workflow that strips the `-rc` suffix, removes stable-version `registryOverrides`, disables progressive rollout, merges that promotion, and unpins actors.
+- If this PR is merged instead, the active rollout is not stopped immediately and actors already pinned by the rollout remain pinned until the rollout later finalizes or is canceled.
 
 </details>
 
 <details><summary>If the connector version changes from RC to a new (distinct) GA version...</summary>
 
-The active rollout is not stopped immediately by the merge.
+This PR should not be merged while the RC rollout is active. First finalize or cancel the active rollout.
 
-- This PR should remove the stable-version `registryOverrides` and disable progressive rollout so the published GA version becomes the default for eligible non-pinned actors.
-- Actors already pinned by the active rollout remain pinned; publishing a distinct GA version does not immediately unpin them.
-- The distinct version matters when the rollout later finalizes: if the rollout is promoted and the platform default is still this distinct GA version, the rollout is canceled as superseded.
+- If this PR is merged anyway, it should remove stable-version `registryOverrides` and disable progressive rollout so the published GA version becomes the default for eligible non-pinned actors.
+- The active rollout is not stopped immediately by the merge, and actors already pinned by the rollout remain pinned until the rollout later finalizes or is canceled.
+- If the rollout later finalizes as promoted and the platform default is still this distinct GA version, the rollout is canceled as superseded.
 
 </details>
 
