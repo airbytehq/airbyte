@@ -239,11 +239,19 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
     streamState: DefaultJdbcStreamState,
     val cursor: EmittedField,
     val cursorLowerBound: JsonNode,
-    val isLowerBoundIncluded: Boolean, // always false
+    val isLowerBoundIncluded: Boolean,
     val cursorCutoffTime: JsonNode? = null,
 ) :
     MsSqlServerJdbcPartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<DefaultJdbcStreamState> {
+
+    private val cursorLowerBoundClause: WhereClauseLeafNode
+        get() =
+            if (isLowerBoundIncluded) {
+                GreaterOrEqual(cursor, cursorLowerBound)
+            } else {
+                Greater(cursor, cursorLowerBound)
+            }
 
     override val completeState: OpaqueStateValue
         get() =
@@ -279,7 +287,7 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
             return SelectQuerySpec(
                 SelectColumns(stream.fields),
                 from,
-                Where(And(Greater(cursor, cursorLowerBound), LesserOrEqual(cursor, upperBound)))
+                Where(And(cursorLowerBoundClause, LesserOrEqual(cursor, upperBound)))
             )
         }
 }

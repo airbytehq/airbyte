@@ -344,6 +344,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Jsons.valueToTree(expectedLowerBound),
             (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
         )
+        assertTrue(jdbcPartition.isLowerBoundIncluded)
     }
 
     @Test
@@ -375,6 +376,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Jsons.valueToTree("2025-01-20T10:30:45.123000"),
             (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
         )
+        assertTrue(jdbcPartition.isLowerBoundIncluded)
     }
 
     @Test
@@ -909,6 +911,9 @@ class MsSqlServerJdbcPartitionFactoryTest {
             partition is MsSqlServerJdbcNonResumableCursorIncrementalPartition,
             "Views in cursor-incremental phase must use the non-resumable cursor partition " +
                 "to avoid TABLESAMPLE on views."
+        )
+        assertTrue(
+            (partition as MsSqlServerJdbcNonResumableCursorIncrementalPartition).isLowerBoundIncluded
         )
     }
 }

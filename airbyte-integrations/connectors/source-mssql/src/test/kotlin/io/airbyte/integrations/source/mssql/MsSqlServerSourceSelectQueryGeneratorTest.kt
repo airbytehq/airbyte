@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
+import io.airbyte.cdk.read.GreaterOrEqual
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
 import io.airbyte.cdk.read.Or
@@ -121,6 +122,27 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 """SELECT TOP 500 [content], [last_modified] FROM """ +
                     """[dbo].[documents] """ +
                     """WHERE ([last_modified] > ?) AND ([last_modified] <= ?) ORDER BY [last_modified]""",
+                lb to DoubleFieldType,
+                ub to DoubleFieldType,
+            )
+    }
+
+    @Test
+    fun testSelectForInclusiveCursorBasedIncrementalSync() {
+        val c = EmittedField("last_modified", DoubleFieldType)
+        val lb = Jsons.numberNode(1.5)
+        val ub = Jsons.numberNode(3.5)
+        SelectQuerySpec(
+                SelectColumns(listOf(EmittedField("content", StringFieldType), c)),
+                From("documents", "dbo"),
+                Where(And(listOf(GreaterOrEqual(c, lb), LesserOrEqual(c, ub)))),
+                OrderBy(listOf(c)),
+                Limit(500),
+            )
+            .assertSqlEquals(
+                """SELECT TOP 500 [content], [last_modified] FROM """ +
+                    """[dbo].[documents] """ +
+                    """WHERE ([last_modified] >= ?) AND ([last_modified] <= ?) ORDER BY [last_modified]""",
                 lb to DoubleFieldType,
                 ub to DoubleFieldType,
             )
