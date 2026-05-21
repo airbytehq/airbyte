@@ -913,7 +913,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 "to avoid TABLESAMPLE on views."
         )
         assertTrue(
-            (partition as MsSqlServerJdbcNonResumableCursorIncrementalPartition).isLowerBoundIncluded
+            (partition as MsSqlServerJdbcNonResumableCursorIncrementalPartition)
+                .isLowerBoundIncluded
         )
     }
 }
