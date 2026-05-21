@@ -36,6 +36,14 @@ No new connector version should be released, and the active rollout should conti
 
 </details>
 
+<details><summary>If the connector version increments to a higher `-rc` version...</summary>
+
+After this PR is merged, the new RC will be published and registered, replacing the active RC marker. When the new RC is registered, the platform cancels any existing non-terminal rollout for this connector without unpinning actors.
+
+After merging, you still need to start the new rollout. During start, pinned actors from the previous rollout can be moved to the new RC.
+
+</details>
+
 <details><summary>If the connector version changes from RC to non-RC (GA) version...</summary>
 
 This PR should not be merged while the RC rollout is active. First finalize the active rollout as successful or cancel it.
@@ -44,14 +52,6 @@ This PR should not be merged while the RC rollout is active. First finalize the 
 - If this PR is merged anyway, it should remove stable-version `registryOverrides` and disable progressive rollout so the published GA version becomes the default for eligible non-pinned actors.
 - The active rollout is not stopped immediately by the merge, and actors already pinned by the rollout remain pinned until the rollout later finalizes or is canceled.
 - If the rollout later finalizes as promoted and the platform default no longer matches the rollout's RC version stem, the rollout is canceled as superseded.
-
-</details>
-
-<details><summary>If the connector version increments to a higher `-rc` version...</summary>
-
-After this PR is merged, the new RC will be published and registered, replacing the active RC marker. When the new RC is registered, the platform cancels any existing non-terminal rollout for this connector without unpinning actors.
-
-After merging, you still need to start the new rollout. During start, pinned actors from the previous rollout can be moved to the new RC.
 
 </details>
 
