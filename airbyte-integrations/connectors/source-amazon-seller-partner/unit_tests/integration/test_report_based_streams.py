@@ -355,7 +355,9 @@ class TestFullRefresh:
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert message_on_access_forbidden in output.errors[0].trace.error.message
 
-    @pytest.mark.parametrize(("stream_name", "data_format"), (("GET_AFN_INVENTORY_DATA", "csv"), ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv")))
+    @pytest.mark.parametrize(
+        ("stream_name", "data_format"), (("GET_AFN_INVENTORY_DATA", "csv"), ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"))
+    )
     @HttpMocker()
     def test_given_seller_not_registered_for_marketplace_when_read_then_config_error(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
