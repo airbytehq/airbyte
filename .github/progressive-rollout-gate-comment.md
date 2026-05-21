@@ -36,14 +36,25 @@ No new connector version should be released, and the active rollout should conti
 
 </details>
 
-<details><summary>If the connector version changes from RC to non-RC (GA) version...</summary>
+<details><summary>If the connector version changes to the active RC's version stem...</summary>
 
 The active rollout is not stopped immediately by the merge.
 
 - If this PR removes the stable-version `registryOverrides` and disables progressive rollout, the published GA version can become the default for eligible non-pinned actors.
 - If this PR leaves stable-version `registryOverrides` in place or leaves progressive rollout enabled, non-rollout registry consumers should continue to see the pre-RC stable version.
-- Actors already pinned by the active rollout remain pinned; publishing the GA version does not immediately unpin them, even when the GA version matches the RC stem.
-- If the rollout later finalizes as promoted and the platform default matches the RC stem, the rollout succeeds and unpins actors. If the platform default does not match the RC stem, the rollout is canceled as superseded.
+- Actors already pinned by the active rollout remain pinned; publishing the GA version does not immediately unpin them.
+- If the rollout later finalizes as promoted and the platform default matches this version, the rollout succeeds and unpins actors.
+
+</details>
+
+<details><summary>If the connector version changes from RC to a new (distinct) GA version...</summary>
+
+The active rollout is not stopped immediately by the merge.
+
+- If this PR removes the stable-version `registryOverrides` and disables progressive rollout, the published GA version can become the default for eligible non-pinned actors.
+- If this PR leaves stable-version `registryOverrides` in place or leaves progressive rollout enabled, non-rollout registry consumers should continue to see the pre-RC stable version.
+- Actors already pinned by the active rollout remain pinned; publishing a distinct GA version does not immediately unpin them.
+- If the rollout later finalizes as promoted and the platform default is still this distinct GA version, the rollout is canceled as superseded.
 
 </details>
 
