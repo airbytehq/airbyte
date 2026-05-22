@@ -168,14 +168,10 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
                 stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
 
-        private val shouldDecorateRecordData: Boolean =
-            feed is Stream &&
-                (isTriggerBasedCdc || precedingGlobalFeed?.streams?.contains(stream) == true)
-
         private val defaultRecordData: ObjectNode =
             Jsons.objectNode().also { recordData: ObjectNode ->
                 stream.schema.forEach { recordData.putNull(it.id) }
-                if (shouldDecorateRecordData) {
+                if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
                     metaFieldDecorator.decorateRecordData(
                         timestamp = outputDataChannel.recordEmittedAt.atOffset(ZoneOffset.UTC),
                         globalStateValue =
@@ -238,7 +234,7 @@ sealed class FeedBootstrap<T : Feed>(
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(
-                    recordData.toProtobuf(recordFields, defaultRecordData, valueVBuilder)
+                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder)
                 )
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
@@ -252,7 +248,7 @@ sealed class FeedBootstrap<T : Feed>(
                     rm.addChanges(c)
                 }
                 acceptWithChanges(
-                    recordData.toProtobuf(recordFields, defaultRecordData, valueVBuilder),
+                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder),
                     rm
                 )
             }
@@ -294,17 +290,6 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
                 stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
 
-        private val shouldDecorateRecordData: Boolean =
-            feed is Stream &&
-                (isTriggerBasedCdc || precedingGlobalFeed?.streams?.contains(stream) == true)
-
-        private val recordFields =
-            if (shouldDecorateRecordData) {
-                stream.schema
-            } else {
-                stream.schema - metaFieldDecorator.globalMetaFields
-            }
-
         private val defaultRecordData: AirbyteRecordMessageProtobuf.Builder =
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.name)
@@ -317,7 +302,7 @@ sealed class FeedBootstrap<T : Feed>(
                 }
                 .also { builder ->
                     val decoratingFields: NativeRecordPayload = mutableMapOf()
-                    if (shouldDecorateRecordData) {
+                    if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
                         metaFieldDecorator.decorateRecordData(
                             timestamp =
                                 socketProtobufOutputConsumer.recordEmittedAt.atOffset(
@@ -338,7 +323,7 @@ sealed class FeedBootstrap<T : Feed>(
                     // the sorted order of fields is used to determine the field position on the
                     // other side.
                     val encoder = AirbyteValueProtobufEncoder()
-                    recordFields
+                    stream.schema
                         .sortedBy { it.id }
                         .forEach { field ->
                             val decodedValueForProto =

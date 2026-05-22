@@ -22,16 +22,10 @@ import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.output.sockets.SocketDataChannel
-import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
-import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import java.io.ByteArrayOutputStream
-import java.io.OutputStream
 import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -265,60 +259,6 @@ class FeedBootstrapTest {
         Assertions.assertTrue(data.get("_ab_cdc_deleted_at").isNull)
     }
 
-    @Test
-    fun testSocketProtobufNoPkFullRefreshStreamDoesNotInheritGlobalCdcDecorators() {
-        val fullRefreshStream =
-            Stream(
-                id =
-                    StreamIdentifier.from(
-                        StreamDescriptor().withName("purchases_view").withNamespace("ns")
-                    ),
-                schema =
-                    setOf(
-                        CommonMetaField.CDC_UPDATED_AT,
-                        k,
-                        v,
-                    ),
-                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
-                configuredPrimaryKey = null,
-                configuredCursor = null,
-            )
-        val stateManager =
-            StateManager(Global(emptyList()), initialStreamStates = mapOf(fullRefreshStream to null))
-        val bootstrap =
-            FeedBootstrap.create(
-                outputConsumer,
-                metaFieldDecorator,
-                stateManager,
-                fullRefreshStream,
-                DataChannelFormat.PROTOBUF,
-                DataChannelMedium.SOCKET,
-                bufferSize,
-                clock,
-            )
-        val outputStream = ByteArrayOutputStream()
-        val protobufConsumer =
-            SocketProtobufOutputConsumer(
-                TestSocketDataChannel(outputStream),
-                clock,
-                bufferSize,
-                emptyMap(),
-            )
-        val consumer = bootstrap.streamProtoRecordConsumers(protobufConsumer).values.first()
-
-        consumer.accept(STREAM_RECORD_INPUT_DATA, changes = null)
-        consumer.close()
-
-        val actualMessage =
-            AirbyteMessageProtobuf.parseDelimitedFrom(outputStream.toByteArray().inputStream())
-        val actualRecord = actualMessage.record
-        val protoDecoder = AirbyteValueProtobufDecoder()
-        Assertions.assertEquals("purchases_view", actualRecord.streamName)
-        Assertions.assertEquals(2.toBigInteger(), protoDecoder.decode(actualRecord.getData(0)))
-        Assertions.assertEquals("bar", protoDecoder.decode(actualRecord.getData(1)))
-        Assertions.assertEquals(2, actualRecord.dataCount)
-    }
-
     companion object {
         const val GLOBAL_RECORD_DATA_JSON =
             """{"k":1,"v":"foo","_ab_cdc_lsn":123,"_ab_cdc_updated_at":"2024-03-01T01:02:03.456789","_ab_cdc_deleted_at":null}"""
@@ -343,21 +283,5 @@ class FeedBootstrapTest {
             """{"k":2,"v":"bar","_ab_cdc_lsn":{},"_ab_cdc_updated_at":"2069-04-20T00:00:00.000000Z","_ab_cdc_deleted_at":null}"""
         const val RESET_STATE =
             """{"type":"GLOBAL","global":{"shared_state":[],"stream_states":[{"stream_descriptor":{"name":"tbl","namespace":"ns"},"stream_state":{}}]},"sourceStats":{"recordCount":0.0}}"""
-    }
-
-    class TestSocketDataChannel(outputStream: OutputStream) : SocketDataChannel {
-        override suspend fun initialize() {}
-
-        override fun shutdown() {}
-
-        override val status: SocketDataChannel.SocketStatus =
-            SocketDataChannel.SocketStatus.SOCKET_READY
-        override var isBound: Boolean = false
-        override var outputStream: OutputStream? = outputStream
-        override val isAvailable: Boolean = true
-
-        override fun bind() {}
-
-        override fun unbind() {}
     }
 }
