@@ -232,3 +232,40 @@ def test_complete_oauth_output_specification_contains_refresh_and_access_token()
     output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
     assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
     assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"
+
+
+@pytest.mark.parametrize(
+    "backoff_time_in_seconds,jitter_range_in_seconds,expected_low,expected_high",
+    [
+        pytest.param(60.0, 15.0, 45.0, 75.0, id="default_60s_pm_15s"),
+        pytest.param(60.0, 0.0, 60.0, 60.0, id="zero_jitter_falls_back_to_constant"),
+        pytest.param(10.0, 30.0, 0.0, 40.0, id="jitter_larger_than_base_clamps_to_zero"),
+        pytest.param(0.0, 5.0, 0.0, 5.0, id="zero_base_with_jitter"),
+    ],
+)
+def test_jittered_constant_backoff_strategy_bounds(
+    backoff_time_in_seconds, jitter_range_in_seconds, expected_low, expected_high, components_module
+):
+    """The jittered backoff must always return a value in `[max(0, base - jitter), base + jitter]`."""
+    strategy = components_module.JitteredConstantBackoffStrategy(
+        backoff_time_in_seconds=backoff_time_in_seconds,
+        jitter_range_in_seconds=jitter_range_in_seconds,
+    )
+    samples = [strategy.backoff_time(response_or_exception=None, attempt_count=1) for _ in range(2000)]
+    assert all(expected_low <= s <= expected_high for s in samples), (
+        f"sample out of [{expected_low}, {expected_high}] for base={backoff_time_in_seconds}, jitter={jitter_range_in_seconds}"
+    )
+
+
+def test_jittered_constant_backoff_strategy_desynchronizes_workers(components_module):
+    """Two independent instances must produce different samples in the same window
+    (this is what de-synchronizes worker wake-ups during a rate-limit storm).
+    """
+    strategy_a = components_module.JitteredConstantBackoffStrategy(backoff_time_in_seconds=60, jitter_range_in_seconds=15)
+    strategy_b = components_module.JitteredConstantBackoffStrategy(backoff_time_in_seconds=60, jitter_range_in_seconds=15)
+
+    samples_a = [strategy_a.backoff_time(None, 1) for _ in range(50)]
+    samples_b = [strategy_b.backoff_time(None, 1) for _ in range(50)]
+    # The chance of all 50 samples being identical with a 30s-wide uniform distribution is
+    # astronomically low; if it happens, our jitter is broken.
+    assert samples_a != samples_b

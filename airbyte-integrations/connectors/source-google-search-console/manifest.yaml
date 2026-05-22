@@ -324,8 +324,10 @@ definitions:
   search_analytics_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
-      - type: ConstantBackoffStrategy
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.JitteredConstantBackoffStrategy
         backoff_time_in_seconds: 60
+        jitter_range_in_seconds: 15
     response_filters:
       - type: HttpResponseFilter
         action: RATE_LIMITED
