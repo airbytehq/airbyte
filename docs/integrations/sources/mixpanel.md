@@ -55,7 +55,6 @@ Incremental syncs may return duplicate records for the state date because the Mi
 | [Export](https://developer.mixpanel.com/reference/raw-event-export) | Incremental | User-defined (see below) |
 | [Engage](https://developer.mixpanel.com/reference/engage-query) | Incremental | `distinct_id` |
 | [Funnels](https://developer.mixpanel.com/reference/funnels-query) | Incremental | `funnel_id`, `date` |
-| [Revenue](https://developer.mixpanel.com/reference/engage-query) | Incremental | `date` |
 | [Annotations](https://developer.mixpanel.com/reference/list-all-annotations-for-project) | Full Refresh | `id` |
 | [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) | Incremental | `id` |
 | [Cohort Members](https://developer.mixpanel.com/reference/engage-query) | Incremental | `distinct_id`, `cohort_id` |
@@ -68,7 +67,7 @@ The Export stream has no default primary key. Mixpanel recommends using `insert_
 
 Mixpanel enforces separate rate limits for different API endpoints:
 
-- **Query API** (Cohorts, Engage, Funnels, Revenue, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
+- **Query API** (Cohorts, Engage, Funnels, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
 - **Raw Data Export API** (Export): 100 concurrent queries, 60 queries per hour, 3 queries per second.
 
 Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits.
@@ -80,6 +79,7 @@ Syncing large date windows may take longer due to these rate limits. You can adj
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2026-05-19 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 3.6.2 | 2026-04-02 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
