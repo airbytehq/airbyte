@@ -116,9 +116,9 @@ def test_without_catalog_at_init_requests_all_fields():
         raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
         assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
-        assert (
-            len(requested_fields) > 3
-        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        assert len(requested_fields) > 3, (
+            f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        )
 
 
 def test_facebook_app_approval_error_is_config_error():
@@ -127,7 +127,7 @@ def test_facebook_app_approval_error_is_config_error():
 
     assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
     assert response_filter["failure_type"] == FailureType.config_error.value
-    assert response_filter["error_message"] == "Facebook app lacks approval for one or more requested Page fields."
+    assert response_filter["error_message"] == "Facebook app is not approved for requested Page fields."
 
 
 def test_page_stream_does_not_request_live_videos_by_default():

@@ -16,7 +16,7 @@ definitions:
         - action: FAIL
           error_message_contains: This application has not been approved to use this API
           failure_type: config_error
-          error_message: Facebook app lacks approval for one or more requested Page fields.
+          error_message: Facebook app is not approved for requested Page fields.
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
