@@ -2,6 +2,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Mixpanel Migration Guide
 
+## Connector upgrade guide
+
+<MigrationGuide />
+
 ## Upgrading to 4.0.0
 
 This release removes the `Revenue` stream because Mixpanel no longer provides a documented or working revenue Query API endpoint.
@@ -25,10 +29,6 @@ To gracefully handle these changes for your existing connections, we highly reco
 :::note
 To add start date filtering for the `Cohorts`, `CohortMembers`, and `Engage` streams, the default retrieval range has been updated from all existing records to only include records created within the past year if start date not provided.
 :::
-
-## Connector upgrade guide
-
-<MigrationGuide />
 
 ## Upgrading to 2.0.0
 
