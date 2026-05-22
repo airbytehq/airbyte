@@ -17,7 +17,7 @@ Interzoid is an AI-powered API platform providing data quality, data matching, a
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

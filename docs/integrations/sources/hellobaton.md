@@ -51,7 +51,7 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

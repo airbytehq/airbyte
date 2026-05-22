@@ -70,7 +70,7 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

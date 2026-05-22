@@ -47,7 +47,7 @@ Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harnes
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
