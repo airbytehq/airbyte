@@ -51,11 +51,11 @@ This connector supports the following entities and actions. For more details, se
 | Events | [List](./REFERENCE.md#events-list), [Create](./REFERENCE.md#events-create), [Get](./REFERENCE.md#events-get), [Update](./REFERENCE.md#events-update), [Delete](./REFERENCE.md#events-delete), [API Search](./REFERENCE.md#events-api_search) |
 | Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Delete](./REFERENCE.md#campaigns-delete), [API Search](./REFERENCE.md#campaigns-api_search) |
 | Cases | [List](./REFERENCE.md#cases-list), [Create](./REFERENCE.md#cases-create), [Get](./REFERENCE.md#cases-get), [Update](./REFERENCE.md#cases-update), [Delete](./REFERENCE.md#cases-delete), [API Search](./REFERENCE.md#cases-api_search) |
-| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [API Search](./REFERENCE.md#notes-api_search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [API Search](./REFERENCE.md#notes-api_search) |
 | Content Versions | [List](./REFERENCE.md#content-versions-list), [Get](./REFERENCE.md#content-versions-get), [Download](./REFERENCE.md#content-versions-download) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
 | Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search) |
 | Opportunity Stages | [List](./REFERENCE.md#opportunity-stages-list), [Get](./REFERENCE.md#opportunity-stages-get), [Context Store Search](./REFERENCE.md#opportunity-stages-context-store-search) |
 | Query | [List](./REFERENCE.md#query-list) |
 
@@ -377,4 +377,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 1.1.0
+**Connector version:** 1.2.0

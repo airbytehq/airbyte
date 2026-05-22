@@ -17,11 +17,11 @@ The Salesforce connector supports the following entities and actions.
 | Events | [List](#events-list), [Create](#events-create), [Get](#events-get), [Update](#events-update), [Delete](#events-delete), [API Search](#events-api-search) |
 | Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [API Search](#campaigns-api-search) |
 | Cases | [List](#cases-list), [Create](#cases-create), [Get](#cases-get), [Update](#cases-update), [Delete](#cases-delete), [API Search](#cases-api-search) |
-| Notes | [List](#notes-list), [Get](#notes-get), [API Search](#notes-api-search) |
+| Notes | [List](#notes-list), [Create](#notes-create), [Get](#notes-get), [Update](#notes-update), [Delete](#notes-delete), [API Search](#notes-api-search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Reports | [List](#reports-list), [Get](#reports-get) |
-| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Users | [List](#users-list), [Create](#users-create), [Get](#users-get), [Update](#users-update), [Context Store Search](#users-context-store-search) |
 | Opportunity Stages | [List](#opportunity-stages-list), [Get](#opportunity-stages-get), [Context Store Search](#opportunity-stages-context-store-search) |
 | Query | [List](#query-list) |
 
@@ -3924,6 +3924,69 @@ instead of returning raw IDs.
 
 </details>
 
+### Notes Create
+
+Create a classic Salesforce Note attached to a parent record (Account, Contact,
+Lead, Opportunity, Case, custom object, etc.). `Title` and `ParentId` are required.
+
+
+#### Python SDK
+
+```python
+await salesforce.notes.create(
+    title="<str>",
+    body="<str>",
+    parent_id="<str>",
+    is_private=True,
+    owner_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "create",
+    "params": {
+        "Title": "<str>",
+        "Body": "<str>",
+        "ParentId": "<str>",
+        "IsPrivate": True,
+        "OwnerId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `Title` | `string` | Yes | Note title, up to 80 characters. |
+| `Body` | `string` | No | Note body content (up to ~32,000 characters). |
+| `ParentId` | `string` | Yes | Id of the parent record this note is attached to (Account, Contact, Lead, Opportunity, Case, custom object, etc.). |
+| `IsPrivate` | `boolean` | No | When true, the note is visible only to its owner and admins. |
+| `OwnerId` | `string` | No |  |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `success` | `boolean` |  |
+| `errors` | `array<object>` |  |
+
+
+</details>
+
 ### Notes Get
 
 Get a single note by ID. Returns all accessible fields by default.
@@ -3977,6 +4040,88 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 
 
 </details>
+
+### Notes Update
+
+Update a note
+
+#### Python SDK
+
+```python
+await salesforce.notes.update(
+    title="<str>",
+    body="<str>",
+    is_private=True,
+    owner_id="<str>",
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "update",
+    "params": {
+        "Title": "<str>",
+        "Body": "<str>",
+        "IsPrivate": True,
+        "OwnerId": "<str>",
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `Title` | `string` | No | Note title, up to 80 characters. |
+| `Body` | `string` | No | Note body content (up to ~32,000 characters). |
+| `IsPrivate` | `boolean` | No | When true, the note is visible only to its owner and admins. |
+| `OwnerId` | `string` | No |  |
+| `id` | `string` | Yes |  |
+
+
+### Notes Delete
+
+Delete a note
+
+#### Python SDK
+
+```python
+await salesforce.notes.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes |  |
+
 
 ### Notes API Search
 
@@ -4548,6 +4693,105 @@ relationship fields inline instead of returning raw IDs.
 
 </details>
 
+### Users Create
+
+Create a Salesforce User. Consumes a paid user-license seat. Requires the
+"Manage Internal Users" permission on the running OAuth identity.
+
+
+#### Python SDK
+
+```python
+await salesforce.users.create(
+    username="<str>",
+    first_name="<str>",
+    last_name="<str>",
+    email="<str>",
+    alias="<str>",
+    profile_id="<str>",
+    user_role_id="<str>",
+    manager_id="<str>",
+    time_zone_sid_key="<str>",
+    locale_sid_key="<str>",
+    email_encoding_key="<str>",
+    language_locale_key="<str>",
+    is_active=True,
+    title="<str>",
+    department="<str>",
+    phone="<str>",
+    mobile_phone="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "create",
+    "params": {
+        "Username": "<str>",
+        "FirstName": "<str>",
+        "LastName": "<str>",
+        "Email": "<str>",
+        "Alias": "<str>",
+        "ProfileId": "<str>",
+        "UserRoleId": "<str>",
+        "ManagerId": "<str>",
+        "TimeZoneSidKey": "<str>",
+        "LocaleSidKey": "<str>",
+        "EmailEncodingKey": "<str>",
+        "LanguageLocaleKey": "<str>",
+        "IsActive": True,
+        "Title": "<str>",
+        "Department": "<str>",
+        "Phone": "<str>",
+        "MobilePhone": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `Username` | `string` | Yes | Login name (email-format, must be unique across all Salesforce orgs). |
+| `FirstName` | `string` | No |  |
+| `LastName` | `string` | Yes |  |
+| `Email` | `string` | Yes |  |
+| `Alias` | `string` | Yes | 1-8 character alias. |
+| `ProfileId` | `string` | Yes | Salesforce profile that determines the user's base permissions. |
+| `UserRoleId` | `string` | No |  |
+| `ManagerId` | `string` | No |  |
+| `TimeZoneSidKey` | `string` | Yes | e.g., "America/Los_Angeles". |
+| `LocaleSidKey` | `string` | Yes | e.g., "en_US". |
+| `EmailEncodingKey` | `string` | Yes | e.g., "UTF-8". |
+| `LanguageLocaleKey` | `string` | Yes | e.g., "en_US". |
+| `IsActive` | `boolean` | No | Set to false to deactivate the user (Salesforce does not support delete). |
+| `Title` | `string` | No |  |
+| `Department` | `string` | No |  |
+| `Phone` | `string` | No |  |
+| `MobilePhone` | `string` | No |  |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `success` | `boolean` |  |
+| `errors` | `array<object>` |  |
+
+
+</details>
+
 ### Users Get
 
 Get a single user by ID. Returns all accessible fields by default.
@@ -4601,6 +4845,94 @@ Example: "Id,Name,Email,Username,IsActive,ProfileId,UserRoleId"
 
 
 </details>
+
+### Users Update
+
+Update a Salesforce User. To deactivate a user (Salesforce does not allow
+delete), send `\{ "IsActive": false \}`.
+
+
+#### Python SDK
+
+```python
+await salesforce.users.update(
+    username="<str>",
+    first_name="<str>",
+    last_name="<str>",
+    email="<str>",
+    alias="<str>",
+    profile_id="<str>",
+    user_role_id="<str>",
+    manager_id="<str>",
+    time_zone_sid_key="<str>",
+    locale_sid_key="<str>",
+    email_encoding_key="<str>",
+    language_locale_key="<str>",
+    is_active=True,
+    title="<str>",
+    department="<str>",
+    phone="<str>",
+    mobile_phone="<str>",
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "update",
+    "params": {
+        "Username": "<str>",
+        "FirstName": "<str>",
+        "LastName": "<str>",
+        "Email": "<str>",
+        "Alias": "<str>",
+        "ProfileId": "<str>",
+        "UserRoleId": "<str>",
+        "ManagerId": "<str>",
+        "TimeZoneSidKey": "<str>",
+        "LocaleSidKey": "<str>",
+        "EmailEncodingKey": "<str>",
+        "LanguageLocaleKey": "<str>",
+        "IsActive": True,
+        "Title": "<str>",
+        "Department": "<str>",
+        "Phone": "<str>",
+        "MobilePhone": "<str>",
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `Username` | `string` | No | Login name (email-format, must be unique across all Salesforce orgs). |
+| `FirstName` | `string` | No |  |
+| `LastName` | `string` | No |  |
+| `Email` | `string` | No |  |
+| `Alias` | `string` | No | 1-8 character alias. |
+| `ProfileId` | `string` | No | Salesforce profile that determines the user's base permissions. |
+| `UserRoleId` | `string` | No |  |
+| `ManagerId` | `string` | No |  |
+| `TimeZoneSidKey` | `string` | No | e.g., "America/Los_Angeles". |
+| `LocaleSidKey` | `string` | No | e.g., "en_US". |
+| `EmailEncodingKey` | `string` | No | e.g., "UTF-8". |
+| `LanguageLocaleKey` | `string` | No | e.g., "en_US". |
+| `IsActive` | `boolean` | No | Set to false to deactivate the user (Salesforce does not support delete). |
+| `Title` | `string` | No |  |
+| `Department` | `string` | No |  |
+| `Phone` | `string` | No |  |
+| `MobilePhone` | `string` | No |  |
+| `id` | `string` | Yes |  |
+
 
 ### Users Context Store Search
 
