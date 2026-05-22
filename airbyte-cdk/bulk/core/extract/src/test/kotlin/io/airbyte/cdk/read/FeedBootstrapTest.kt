@@ -284,7 +284,10 @@ class FeedBootstrapTest {
                 configuredCursor = null,
             )
         val stateManager =
-            StateManager(Global(emptyList()), initialStreamStates = mapOf(fullRefreshStream to null))
+            StateManager(
+                Global(emptyList()),
+                initialStreamStates = mapOf(fullRefreshStream to null)
+            )
         val bootstrap =
             FeedBootstrap.create(
                 outputConsumer,
