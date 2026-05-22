@@ -50,10 +50,6 @@ Incremental syncs may return duplicate records for the state date because the Mi
 
 ### Supported streams
 
-:::note
-Version `4.0.0` removes the `Revenue` stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. If an existing connection syncs `Revenue`, follow the [Mixpanel migration guide](/integrations/sources/mixpanel-migrations) before upgrading.
-:::
-
 | Stream | Sync mode | Primary key |
 | --- | --- | --- |
 | [Export](https://developer.mixpanel.com/reference/raw-event-export) | Incremental | User-defined (see below) |
