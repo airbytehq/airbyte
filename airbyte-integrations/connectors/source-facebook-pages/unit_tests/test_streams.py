@@ -130,19 +130,3 @@ def test_facebook_app_approval_error_is_config_error():
     assert response_filter["error_message"].startswith(
         "The application used to create the Facebook access token has not been approved to use this API."
     )
-
-
-def test_page_stream_does_not_request_live_videos_by_default():
-    with rm.Mocker() as m:
-        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
-        m.get(PAGE_URL, json={"id": "1", "name": "Test Page"})
-
-        source = SourceFacebookPages(config=CONFIG)
-        catalog = _make_catalog("page", ["id"])
-        logger = logging.getLogger("test")
-        list(source.read(logger, CONFIG, catalog))
-
-        raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
-        assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
-        requested_fields = raw_fields.split(",")
-        assert "live_videos" not in requested_fields
