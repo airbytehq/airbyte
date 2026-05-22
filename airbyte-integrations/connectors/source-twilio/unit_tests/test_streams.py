@@ -217,7 +217,7 @@ class TestIncrementalTwilioStream:
                     "state": {"date_sent": "2022-11-15 00:00:00Z"},
                     "states": [
                         {
-                            "partition": {"parent_slice": {}, "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
                             "cursor": {"date_sent": "2022-01-01 00:00:00Z"},
                         }
                     ],
