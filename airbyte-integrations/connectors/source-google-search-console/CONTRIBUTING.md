@@ -56,3 +56,15 @@ enable this setting.
 uses `byPage` or `search_analytics_site_report_by_site` which uses `byProperty`) will fail with a 400
 error for some customers. The error looks like a connector bug but is actually a Google API limitation
 based on the customer's property type. This config option is the escape hatch.
+
+## Incremental Stream Considerations
+
+The Google Search Console API supports date-based filtering via `startDate`/`endDate` parameters. The connector uses Python custom components referenced from the manifest.
+
+**Connector type:** Python custom components (hybrid manifest + Python)
+
+**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+
+### Future incremental stream candidates
+
+- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
