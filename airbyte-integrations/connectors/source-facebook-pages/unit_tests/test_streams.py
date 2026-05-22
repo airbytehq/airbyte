@@ -116,9 +116,9 @@ def test_without_catalog_at_init_requests_all_fields():
         raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
         assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
-        assert len(requested_fields) > 3, (
-            f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
-        )
+        assert (
+            len(requested_fields) > 3
+        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
 
 
 def test_facebook_app_approval_error_is_config_error():
