@@ -252,9 +252,9 @@ def test_jittered_constant_backoff_strategy_bounds(
         jitter_range_in_seconds=jitter_range_in_seconds,
     )
     samples = [strategy.backoff_time(response_or_exception=None, attempt_count=1) for _ in range(2000)]
-    assert all(expected_low <= s <= expected_high for s in samples), (
-        f"sample out of [{expected_low}, {expected_high}] for base={backoff_time_in_seconds}, jitter={jitter_range_in_seconds}"
-    )
+    assert all(
+        expected_low <= s <= expected_high for s in samples
+    ), f"sample out of [{expected_low}, {expected_high}] for base={backoff_time_in_seconds}, jitter={jitter_range_in_seconds}"
 
 
 def test_jittered_constant_backoff_strategy_desynchronizes_workers(components_module):
