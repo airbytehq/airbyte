@@ -18,7 +18,6 @@ DBT Source Connector provides streams with your DBT projects, repositories, user
 | `users` | `id` | DefaultPaginator | ✅ |  ❌  |
 | `environments` | `id` | DefaultPaginator | ✅ |  ❌  |
 
-
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.

@@ -51,6 +51,7 @@ The maximum sync speed is limited by the number of requests per second per API k
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

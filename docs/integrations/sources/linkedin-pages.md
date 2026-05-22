@@ -104,7 +104,7 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
    * Click **Request access token** and once generated, **save your Refresh token**
 
 6. **Use the `client_id`, `client_secret` and `refresh_token`** from Steps 2 and 5 to autorize the LinkedIn Pages connector within the Airbyte UI.
-   * As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
+   - As mentioned earlier, you can also simply use the Access token auth method for 60-day access.
 
 ## IP allow list
 

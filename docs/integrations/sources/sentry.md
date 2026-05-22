@@ -64,6 +64,7 @@ Please be aware: this also means that any change older than 90 days will not be 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
