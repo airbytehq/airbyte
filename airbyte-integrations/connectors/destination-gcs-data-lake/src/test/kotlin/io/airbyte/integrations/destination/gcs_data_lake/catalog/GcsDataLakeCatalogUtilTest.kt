@@ -76,7 +76,8 @@ class GcsDataLakeCatalogUtilTest {
     }
 
     private fun gcsConfiguration(
-        catalogConfiguration: io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfig =
+        catalogConfiguration:
+            io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfig =
             PolarisCatalogConfiguration(
                 serverUri = "http://polaris:8181",
                 catalogName = "catalog",

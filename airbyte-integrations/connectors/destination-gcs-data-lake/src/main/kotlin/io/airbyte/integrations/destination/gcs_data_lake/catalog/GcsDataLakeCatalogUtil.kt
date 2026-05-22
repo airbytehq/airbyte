@@ -221,9 +221,8 @@ private fun GcsDataLakeConfiguration.configureFileIO() {
                 val token = googleCredentials.accessToken
                 AccessToken(
                     token.tokenValue,
-                    token.expirationTime ?: Date(
-                        System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1)
-                    )
+                    token.expirationTime
+                        ?: Date(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1))
                 )
             }
         )
