@@ -19,7 +19,11 @@ class RedshiftSchemaDumper(spec: ConfigurationSpecification) : SchemaDumper {
     private val airbyteClient = RedshiftTestConfigProvider.airbyteClientFrom(spec)
 
     override suspend fun discoverSchema(namespace: String?, name: String): FullTableSchema {
-        val tableName = TableName(namespace ?: config.schema, name)
+        val tableName =
+            TableName(
+                (namespace ?: config.schema).lowercase(),
+                name.lowercase(),
+            )
         val tableSchema = airbyteClient.discoverSchema(tableName)
         return FullTableSchema(tableSchema)
     }
