@@ -60,6 +60,14 @@ On Airbyte Cloud, only secured connections to your MSSQL instance are supported 
 configuration. You may either configure your connection using one of the supported SSL Methods or by
 using an SSH Tunnel.
 
+### Inclusive lower bounds for incremental sync
+
+For streams which use incremental sync, **Use inclusive lower-bounds for incremental sync** ensures
+that each new sync operations is _inclusive_ of the latest-seen cursor key. Keep this disabled only
+if you are confident your cursor key is monotonically increasing, with no ties between records.
+Timestamp cursor keys are truncated to 6 decimal places (micro-second precision), and you should
+always enable this field if two records can arrive with sub-microsecond update times.
+
 ## Authentication with Microsoft Entra ID
 
 This connector supports [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/) (formerly Azure Active Directory) authentication using a service principal, as an alternative to SQL Server username and password authentication. This is the recommended authentication mode for Azure SQL Database and Azure SQL Managed Instance.
@@ -469,7 +477,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.8       | 2026-05-21 | [78346](https://github.com/airbytehq/airbyte/pull/78346)                                                          | Use inclusive lower bounds for cursor-based incremental syncs.                                                                                  |
+| 4.4.8       | 2026-05-21 | [78346](https://github.com/airbytehq/airbyte/pull/78346)                                                          | Add an opt-in inclusive lower-bound option for cursor-based incremental syncs.                                                                  |
 | 4.4.7       | 2026-05-12 | [78033](https://github.com/airbytehq/airbyte/pull/78033)                                                          | Re-release the Java connector base image revert after the 4.4.6 publish failure.                                                               |
 | 4.4.6       | 2026-05-07 | [77856](https://github.com/airbytehq/airbyte/pull/77856)                                                          | Revert the Java connector base image to resolve connection issues and remove registry rollback overrides.                                       |
 | 4.4.5       | 2026-05-07 | [77843](https://github.com/airbytehq/airbyte/pull/77843)                                                          | Roll back source mssql to 4.4.3 to investigate a potential connection issue.                                                                    |

@@ -28,6 +28,7 @@ import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.From
+import io.airbyte.cdk.read.Greater
 import io.airbyte.cdk.read.GreaterOrEqual
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.ResourceAcquirer
@@ -44,6 +45,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.OffsetDateTime
 import java.util.Base64
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -86,6 +88,13 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val msSqlServerJdbcPartitionFactory =
             MsSqlServerJdbcPartitionFactory(
                 sharedState,
+                selectQueryGenerator,
+                config,
+                metadataQuerierFactory
+            )
+        val msSqlServerInclusiveLowerBoundJdbcPartitionFactory =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState(useInclusiveLowerBounds = true),
                 selectQueryGenerator,
                 config,
                 metadataQuerierFactory
@@ -155,6 +164,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
 
         private fun sharedState(
             global: Boolean = false,
+            useInclusiveLowerBounds: Boolean = false,
         ): DefaultJdbcSharedState {
 
             val configSpec =
@@ -168,7 +178,11 @@ class MsSqlServerJdbcPartitionFactoryTest {
             if (global) {
                 configSpec.setIncrementalValue(Cdc())
             } else {
-                configSpec.setIncrementalValue(UserDefinedCursor())
+                configSpec.setIncrementalValue(
+                    UserDefinedCursor().also {
+                        it.useInclusiveLowerBounds = useInclusiveLowerBounds
+                    }
+                )
             }
             val configFactory = MsSqlServerSourceConfigurationFactory()
             val configuration = configFactory.make(configSpec)
@@ -267,8 +281,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 "id"
               ],
               "stream_namespace": "dbo",
-              "cursor_record_count": 1 
-              } 
+              "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -336,8 +350,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     "created_at"
                   ],
                   "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -349,6 +363,38 @@ class MsSqlServerJdbcPartitionFactoryTest {
 
         assertEquals(
             Jsons.valueToTree(expectedLowerBound),
+            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+        )
+        assertFalse(jdbcPartition.isLowerBoundIncluded)
+    }
+
+    @Test
+    fun testResumeFromCompletedCursorBasedReadUsesInclusiveLowerBoundWhenEnabled() {
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+                  "cursor": "2025-01-20T10:30:45.1234567",
+                  "version": 3,
+                  "state_type": "cursor_based",
+                  "stream_name": "timestamp_table",
+                  "cursor_field": [
+                    "created_at"
+                  ],
+                  "stream_namespace": "dbo",
+                  "cursor_record_count": 1
+              }
+        """.trimIndent()
+            )
+
+        val jdbcPartition =
+            msSqlServerInclusiveLowerBoundJdbcPartitionFactory.create(
+                streamFeedBootstrap(timestampStream, incomingStateValue)
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        assertEquals(
+            Jsons.valueToTree("2025-01-20T10:30:45.123456Z"),
             (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
         )
         assertTrue(jdbcPartition.isLowerBoundIncluded)
@@ -368,8 +414,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     "datetime_col"
                   ],
                   "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -383,7 +429,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Jsons.valueToTree("2025-01-20T10:30:45.123000"),
             (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
         )
-        assertTrue(jdbcPartition.isLowerBoundIncluded)
+        assertFalse(jdbcPartition.isLowerBoundIncluded)
     }
 
     @Test
@@ -463,8 +509,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     "binary_col"
                   ],
                   "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -907,6 +953,80 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val factoryWithMockedQuerier =
             MsSqlServerJdbcPartitionFactory(
                 sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerierFactory
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream, stateValue))
+
+        assertTrue(
+            partition is MsSqlServerJdbcNonResumableCursorIncrementalPartition,
+            "Views in cursor-incremental phase must use the non-resumable cursor partition " +
+                "to avoid TABLESAMPLE on views."
+        )
+        assertFalse(
+            (partition as MsSqlServerJdbcNonResumableCursorIncrementalPartition)
+                .isLowerBoundIncluded
+        )
+        val upperBound = Jsons.readTree("\"2026-04-20T00:00:00.000000\"")
+        val streamState = partition.streamState
+        streamState.cursorUpperBound = upperBound
+        assertEquals(
+            SelectQuerySpec(
+                SelectColumns(viewStream.fields),
+                From(viewStream.name, viewStream.namespace),
+                Where(
+                    And(
+                        Greater(fieldName, Jsons.readTree("\"2026-04-19T15:05:22.349252\"")),
+                        LesserOrEqual(fieldName, upperBound)
+                    )
+                )
+            ),
+            partition.nonResumableQuerySpec
+        )
+    }
+
+    @Test
+    fun testViewInCursorIncrementalPhaseUsesInclusiveLowerBoundWhenEnabled() {
+        val viewStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("view_test_table")
+                    ),
+                schema = setOf(fieldId, fieldName),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldName,
+            )
+
+        val stateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+            {
+              "version": 3,
+              "state_type": "cursor_based",
+              "cursor_field": ["name"],
+              "cursor": "2026-04-19T15:05:22.349252",
+              "cursor_record_count": 1
+            }
+            """
+            )
+
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(viewStream.id) } returns
+            TableName(name = "view_test_table", schema = "dbo", type = "VIEW")
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns fieldId.id
+
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState(useInclusiveLowerBounds = true),
                 selectQueryGenerator,
                 config,
                 mockMetadataQuerierFactory

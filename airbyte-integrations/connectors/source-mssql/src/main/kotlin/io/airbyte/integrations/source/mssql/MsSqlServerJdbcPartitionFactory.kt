@@ -394,7 +394,7 @@ open class MsSqlServerJdbcPartitionFactory(
                     streamState,
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
-                    isLowerBoundIncluded = true, // ties are included
+                    isLowerBoundIncluded = useInclusiveLowerBounds(),
                     cursorCutoffTime = getCursorCutoffTime(cursor)
                 )
             }
@@ -403,11 +403,18 @@ open class MsSqlServerJdbcPartitionFactory(
                 streamState,
                 cursor,
                 cursorLowerBound = cursorCheckpoint,
-                isLowerBoundIncluded = true, // ties are included
+                isLowerBoundIncluded = useInclusiveLowerBounds(),
                 cursorUpperBound = streamState.cursorUpperBound,
                 cursorCutoffTime = getCursorCutoffTime(cursor),
             )
         }
+    }
+
+    private fun useInclusiveLowerBounds(): Boolean {
+        val config = sharedState.configuration as MsSqlServerSourceConfiguration
+        val incrementalConfig = config.incrementalReplicationConfiguration
+        return incrementalConfig is UserDefinedCursorIncrementalConfiguration &&
+            incrementalConfig.useInclusiveLowerBounds
     }
 
     private fun handleFullRefreshWithoutPk(

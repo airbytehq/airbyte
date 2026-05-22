@@ -138,8 +138,10 @@ fun MsSqlServerAuthentication.toDebeziumDatabaseProperties(): Map<String, String
 fun MsSqlServerAuthentication.toDebeziumDriverProperties(): Map<String, String> =
     toJdbcProperties().filterKeys { it !in DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS }
 
-data class UserDefinedCursorIncrementalConfiguration(val excludeTodaysData: Boolean = false) :
-    IncrementalConfiguration
+data class UserDefinedCursorIncrementalConfiguration(
+    val excludeTodaysData: Boolean = false,
+    val useInclusiveLowerBounds: Boolean = false,
+) : IncrementalConfiguration
 
 data class CdcIncrementalConfiguration(
     val initialWaitingSeconds: Duration,
@@ -176,7 +178,8 @@ constructor(
             when (incrementalSpec) {
                 is UserDefinedCursor -> {
                     UserDefinedCursorIncrementalConfiguration(
-                        excludeTodaysData = incrementalSpec.excludeTodaysData ?: false
+                        excludeTodaysData = incrementalSpec.excludeTodaysData ?: false,
+                        useInclusiveLowerBounds = incrementalSpec.useInclusiveLowerBounds ?: false,
                     )
                 }
                 is Cdc -> {

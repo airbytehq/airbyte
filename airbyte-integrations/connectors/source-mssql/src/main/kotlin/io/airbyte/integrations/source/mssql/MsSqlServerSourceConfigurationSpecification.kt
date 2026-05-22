@@ -334,6 +334,20 @@ class UserDefinedCursor : IncrementalConfigurationSpecification {
     @JsonSchemaDefault("false")
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
     var excludeTodaysData: Boolean? = false
+
+    @JsonProperty("use_inclusive_lower_bounds")
+    @JsonSchemaTitle("Use inclusive lower-bounds for incremental sync")
+    @JsonPropertyDescription(
+        "For streams which use incremental sync, this option ensures that each new sync operations " +
+            "is _inclusive_ of the latest-seen cursor key. Keep this disabled only if you are " +
+            "confident your cursor key is monotonically increasing, with no ties between records. " +
+            "Timestamp cursor keys are truncated to 6 decimal places (micro-second precision), " +
+            "and you should always enable this field if two records can arrive with " +
+            "sub-microsecond update times."
+    )
+    @JsonSchemaDefault("false")
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
+    var useInclusiveLowerBounds: Boolean? = false
 }
 
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")

@@ -85,6 +85,36 @@ class MsSqlServerSourceConfigurationSpecificationTest {
             replicationMethod is UserDefinedCursor,
             replicationMethod::class.toString()
         )
+        Assertions.assertEquals(
+            false,
+            (replicationMethod as UserDefinedCursor).useInclusiveLowerBounds
+        )
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_STANDARD_INCLUSIVE)
+    fun testUseInclusiveLowerBounds() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val replicationMethod: IncrementalConfigurationSpecification = pojo.getIncrementalValue()
+        Assertions.assertTrue(
+            replicationMethod is UserDefinedCursor,
+            replicationMethod::class.toString()
+        )
+        Assertions.assertEquals(
+            true,
+            (replicationMethod as UserDefinedCursor).useInclusiveLowerBounds
+        )
+
+        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
+        val incrementalConfig = config.incrementalReplicationConfiguration
+        Assertions.assertTrue(
+            incrementalConfig is UserDefinedCursorIncrementalConfiguration,
+            incrementalConfig::class.toString(),
+        )
+        Assertions.assertEquals(
+            true,
+            (incrementalConfig as UserDefinedCursorIncrementalConfiguration).useInclusiveLowerBounds
+        )
     }
 
     /** Verifies that CDC replication method is correctly parsed. */
@@ -254,6 +284,25 @@ class MsSqlServerSourceConfigurationSpecificationTest {
   },
   "replication_method": {
     "method": "STANDARD"
+  }
+}
+"""
+
+        const val CONFIG_JSON_STANDARD_INCLUSIVE: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "schemas": ["dbo"],
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "STANDARD",
+    "use_inclusive_lower_bounds": true
   }
 }
 """
