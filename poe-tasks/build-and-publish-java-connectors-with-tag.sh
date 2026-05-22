@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script builds and optionally publishes Java connector Docker images.
-# Usage: ./build-and-publish-java-connectors-with-tag.sh --name <name> --with-semver-suffix [none | preview | rc] [--publish]
+# Usage: ./build-and-publish-java-connectors-with-tag.sh --name <name> --with-semver-suffix [none | preview | hotfix | rc] [--publish]
 #
 # Flag descriptions:
 #   --name <name>:    Specifies the connector name (e.g., destination-bigquery).
@@ -9,6 +9,7 @@
 #   --with-semver-suffix:   Specifies the semver suffix mode:
 #                     - none: Builds with the exact version from metadata.yaml.
 #                     - preview: Builds with a preview tag (version-preview.githash).
+#                     - hotfix: Builds with a hotfix tag (version-hotfix.MMDD.githash).
 #                     - rc: Builds with an RC tag (version-rc1).
 #                     Defaults to preview if not specified.
 #
@@ -102,11 +103,14 @@ else
     preview)
       docker_tag=$(generate_dev_tag "$base_tag")
       ;;
+    hotfix)
+      docker_tag=$(generate_hotfix_tag "$base_tag")
+      ;;
     rc)
       docker_tag=$(generate_rc_tag "$base_tag")
       ;;
     *)
-      echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+      echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', 'hotfix', or 'rc'." >&2
       exit 1
       ;;
   esac

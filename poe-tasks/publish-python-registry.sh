@@ -18,7 +18,7 @@ Options:
     -n, --name CONNECTOR_NAME     Connector name (required)
     -t, --token TOKEN             PyPI token (optional, specify this or set PYTHON_REGISTRY_TOKEN environment variable)
     -v, --version VERSION         Override version (optional)
-    --with-semver-suffix TYPE     Semver suffix (optional): 'none', 'preview', or 'rc' (default is 'preview')
+    --with-semver-suffix TYPE     Semver suffix (optional): 'none', 'preview', 'hotfix', or 'rc' (default is 'preview')
     --test-registry               Use the test PyPI registry (default is production registry)
     --dry-run                     Build the package and skip upload
     -h, --help                    Show this help message
@@ -126,8 +126,8 @@ if [[ -z "$CONNECTOR_NAME" ]]; then
     exit 1
 fi
 
-if [[ "$SEMVER_SUFFIX" != "none" && "$SEMVER_SUFFIX" != "preview" && "$SEMVER_SUFFIX" != "rc" ]]; then
-    echo "Error: Invalid semver suffix '$SEMVER_SUFFIX'. Valid options are 'none', 'preview', or 'rc'." >&2
+if [[ "$SEMVER_SUFFIX" != "none" && "$SEMVER_SUFFIX" != "preview" && "$SEMVER_SUFFIX" != "hotfix" && "$SEMVER_SUFFIX" != "rc" ]]; then
+    echo "Error: Invalid semver suffix '$SEMVER_SUFFIX'. Valid options are 'none', 'preview', 'hotfix', or 'rc'." >&2
     usage >&2
     exit 1
 fi
@@ -182,8 +182,8 @@ if [[ -n "$VERSION_OVERRIDE" ]]; then
 elif [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
     # When set by the publish workflow, use the pre-resolved tag directly.
     VERSION="$CONNECTOR_VERSION_TAG"
-elif [[ "$SEMVER_SUFFIX" == "preview" ]]; then
-    # Add current timestamp for preview builds.
+elif [[ "$SEMVER_SUFFIX" == "preview" || "$SEMVER_SUFFIX" == "hotfix" ]]; then
+    # Add current timestamp for pre-release builds.
     # we can't use the git revision because not all python registries allow local version identifiers. 
     # Public version identifiers must conform to PEP 440 and only allow digits.
     TIMESTAMP=$(date +"%Y%m%d%H%M")

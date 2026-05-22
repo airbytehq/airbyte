@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Uploads the java tar for java connectors.
-# Usage: ./poe-tasks/upload-java-connector-tar-file.sh --name destination-bigquery --with-semver-suffix <none|preview|rc>
+# Usage: ./poe-tasks/upload-java-connector-tar-file.sh --name destination-bigquery --with-semver-suffix <none|preview|hotfix|rc>
 # You must have set the env var GCS_CREDENTIALS, which contains a JSON-formatted GCP service account key.
 # GCS_CREDENTIALS needs write access to `gs://$metadata_bucket/resources/java`.
 set -euo pipefail
@@ -36,11 +36,14 @@ else
     preview)
       docker_tag=$(generate_dev_tag "$base_tag")
       ;;
+    hotfix)
+      docker_tag=$(generate_hotfix_tag "$base_tag")
+      ;;
     rc)
       docker_tag=$(generate_rc_tag "$base_tag")
       ;;
     *)
-      echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+      echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', 'hotfix', or 'rc'." >&2
       exit 1
       ;;
   esac

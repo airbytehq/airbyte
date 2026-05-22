@@ -62,6 +62,16 @@ generate_dev_tag() {
   echo "${base}-preview.${hash}"
 }
 
+# Generate the hotfix image tag (e.g. `1.2.3-hotfix.0522.abc`).
+generate_hotfix_tag() {
+  local base="$1"
+  local date_suffix
+  local hash
+  date_suffix=$(date -u +%m%d)
+  hash=$(git rev-parse --short=3 HEAD)
+  echo "${base}-hotfix.${date_suffix}.${hash}"
+}
+
 # Generate the release candidate image tag (e.g. `1.2.3-rc1`).
 generate_rc_tag() {
   local base="$1"

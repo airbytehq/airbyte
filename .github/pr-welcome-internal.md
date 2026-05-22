@@ -25,7 +25,7 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - `/ai-docs-review` - AI-powered documentation review for PRs with connector changes.
   - `/ai-create-docs-pr` - Creates a documentation PR for connector changes, stacked on the current PR.
 - 🚀 Connector Releases:
-  - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
+  - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}` by default, or `{version}-hotfix.{mmdd}.{sha}` when requested) for all modified connectors in the PR.
 - ☕️ JVM connectors:
   - `/update-connector-cdk-version connector=<CONNECTOR_NAME>` - Updates the specified connector to the latest CDK version.
     Example: `/update-connector-cdk-version connector=destination-bigquery`

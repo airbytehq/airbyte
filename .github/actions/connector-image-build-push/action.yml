@@ -13,7 +13,7 @@ inputs:
     required: false
     default: "docker.io/airbyte"
   with-semver-suffix:
-    description: "Semver suffix mode: 'none', 'preview', or 'rc'. Determines tagging and latest push behavior."
+    description: "Semver suffix mode: 'none', 'preview', 'hotfix', or 'rc'. Determines tagging and latest push behavior."
     required: false
     default: "preview"
   tag-override:
@@ -142,6 +142,11 @@ runs:
           hash=$(git rev-parse --short=7 HEAD)
           CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-preview.${hash}"
           echo "🏷 Using preview tag: $CONNECTOR_VERSION_TAG"
+        elif [[ "${{ inputs.with-semver-suffix }}" == "hotfix" ]]; then
+          date_suffix=$(date -u +%m%d)
+          hash=$(git rev-parse --short=3 HEAD)
+          CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-hotfix.${date_suffix}.${hash}"
+          echo "🏷 Using hotfix tag: $CONNECTOR_VERSION_TAG"
         elif [[ "${{ inputs.with-semver-suffix }}" == "rc" ]]; then
           CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-rc1"
           echo "🏷 Using RC tag: $CONNECTOR_VERSION_TAG"
@@ -162,7 +167,7 @@ runs:
             echo "🏷 Will push with latest tag for production release"
           else
             PUSH_LATEST_TAG="false"
-            echo "🏷 Skipping latest tag for preview, RC, or release candidate build"
+            echo "🏷 Skipping latest tag for preview, hotfix, RC, or release candidate build"
           fi
         fi
 

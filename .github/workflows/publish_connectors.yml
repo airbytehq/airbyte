@@ -18,6 +18,7 @@ on:
           - default: Resolves to 'none' on push to master, 'preview' on manual trigger
           - none: Use exact version from metadata.yaml (for production releases)
           - preview: Append '-preview.{sha}' suffix (for development builds)
+          - hotfix: Append '-hotfix.{mmdd}.{sha}' suffix (for tested bug/customer fixes)
           - rc: Append '-rc1' suffix (for release candidates)
         default: default
         type: string
@@ -55,6 +56,7 @@ on:
           - default: Resolves to 'none' on push to master, 'preview' on manual trigger
           - none: Use exact version from metadata.yaml (for production releases)
           - preview: Append '-preview.{sha}' suffix (for development builds)
+          - hotfix: Append '-hotfix.{mmdd}.{sha}' suffix (for tested bug/customer fixes)
           - rc: Append '-rc1' suffix (for release candidates)
         default: default
         type: choice
@@ -62,6 +64,7 @@ on:
           - default
           - none
           - preview
+          - hotfix
           - rc
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
@@ -302,11 +305,12 @@ jobs:
 
           # Generate docker image tag based on semver suffix mode
           case "$SEMVER_SUFFIX" in
-            preview)
+            preview|hotfix)
               DOCKER_TAG=$(airbyte-ops registry connector-version next \
                 --name "${{ matrix.connector }}" \
                 --sha "$(git rev-parse HEAD)" \
-                --base-version "${CONNECTOR_VERSION}")
+                --base-version "${CONNECTOR_VERSION}" \
+                --suffix "${SEMVER_SUFFIX}")
               echo "docker-image-tag=${DOCKER_TAG}" | tee -a $GITHUB_OUTPUT
               echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
               ;;
@@ -451,15 +455,13 @@ jobs:
           echo "Progressive rollout enabled in metadata.yaml"
 
       # --- Ephemeral version bump for pre-release builds ---
-      # For preview builds, the metadata.yaml still contains the base version (e.g. 3.2.3)
-      # but the actual published tag is the preview version (e.g. 3.2.3-preview.820ce48).
       # The artifact generator reads dockerImageTag from metadata.yaml, so we need to
       # bump it in-place before generating artifacts. This is ephemeral — not committed.
       # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/604
       - name: Ephemeral version bump for pre-release
         if: >
           steps.check-release-block.outputs.blocked != 'true' &&
-          needs.publish_options.outputs.with-semver-suffix == 'preview'
+          contains(fromJson('["preview", "hotfix"]'), needs.publish_options.outputs.with-semver-suffix)
         run: |
           echo "Bumping metadata.yaml version to ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
           airbyte-ops local connector bump-version \

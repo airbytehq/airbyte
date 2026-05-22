@@ -1,8 +1,8 @@
 # Parse the command-line args that we care about.
 # Scripts sourcing this script can be invoked as either:
-# ./foo.sh [--with-semver-suffix=<none|preview|rc>] [--publish] [--name=<source/destination-foo>]* [--name <source/destination-foo>]*
+# ./foo.sh [--with-semver-suffix=<none|preview|hotfix|rc>] [--publish] [--name=<source/destination-foo>]* [--name <source/destination-foo>]*
 # Or, if invoked with no `--name` flags:
-# ./get-modified-connectors.sh --json | ./foo.sh [--with-semver-suffix=<none|preview|rc>] [--publish]
+# ./get-modified-connectors.sh --json | ./foo.sh [--with-semver-suffix=<none|preview|hotfix|rc>] [--publish]
 semver_suffix="preview"
 do_publish=false
 connectors=()
