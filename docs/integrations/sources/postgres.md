@@ -346,7 +346,6 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                    |
 | composite type                        | string         |                                                                                                                                                      |
 
-
 </HideInUI>
 
 ## IP allow list
