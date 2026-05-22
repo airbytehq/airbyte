@@ -20,7 +20,9 @@ definitions:
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
         - http_codes: [400]
-          action: RETRY
+          action: FAIL
+          failure_type: config_error
+          error_message: "Facebook API rejected the request. Error: {{ response.get('error', {}).get('message', response) }}"
         - action: RETRY
           error_message_contains: Please reduce the amount of data you're asking for, then retry your request
 
