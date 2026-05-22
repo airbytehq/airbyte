@@ -270,7 +270,7 @@ jobs:
             Review the PR diff, changed files, and PR comments. Each field in the schema has a description explaining exactly what to check and when to set pass to true or false.
 
             Important:
-            - For allowed_scopes, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
+            - For change_scope, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
             - Be precise and conservative: when in doubt, set pass to false.
             - Do NOT create any files, branches, or PRs. Do NOT write any code. Only analyze.
           structured-output-schema: |
@@ -299,7 +299,7 @@ jobs:
                         type: string
                     required: [pass, reasoning]
                 required: [no_breaking_changes, ai_review_passed]
-              allowed_scopes:
+              change_scope:
                 type: object
                 description: "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else."
                 properties:
@@ -340,7 +340,7 @@ jobs:
                         type: string
                     required: [pass, reasoning]
                 required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change]
-            required: [preconditions, allowed_scopes]
+            required: [preconditions, change_scope]
 
       - name: Check for structured output
         if: steps.devin.outputs.session-id
@@ -376,11 +376,11 @@ jobs:
             preconditions_pass="false"
           fi
 
-          # Allowed scopes: ANY must be true
-          docs_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.docs_only_change.pass')
-          comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.comment_only_change.pass')
-          dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.dependency_version_bump.pass')
-          metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.metadata_only_change.pass')
+          # Change scope: ANY must be true
+          docs_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.docs_only_change.pass')
+          comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')
+          dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
+          metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
 
           if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" ]]; then
             scope_pass="true"
@@ -399,7 +399,7 @@ jobs:
           echo "scope_pass=$scope_pass" | tee -a "$GITHUB_OUTPUT"
           echo "result=$result" | tee -a "$GITHUB_OUTPUT"
 
-          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, scope=$scope_pass)"
+          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, change_scope=$scope_pass)"
 
       # ── Post results ───────────────────────────────────────────────
       - name: Build evaluation report
@@ -444,23 +444,23 @@ jobs:
               "AI review passed" \
               "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.reasoning')"
             echo ""
-            echo "### Allowed scopes (at least one must pass)"
+            echo "### Change scope (at least one must pass)"
             checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.docs_only_change.pass')" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.docs_only_change.pass')" \
               "Docs-only change" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.docs_only_change.reasoning')"
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.docs_only_change.reasoning')"
             checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.comment_only_change.pass')" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')" \
               "Comment-only change" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.comment_only_change.reasoning')"
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.reasoning')"
             checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.dependency_version_bump.pass')" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')" \
               "Dependency version bump" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.dependency_version_bump.reasoning')"
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.reasoning')"
             checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.metadata_only_change.pass')" \
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')" \
               "Metadata-only change" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.allowed_scopes.metadata_only_change.reasoning')"
+              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.reasoning')"
             if [[ -n "$footer_note" ]]; then
               echo ""
               echo "> $footer_note"
