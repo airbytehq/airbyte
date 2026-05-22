@@ -247,6 +247,7 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
 
     private val cursorLowerBoundClause: WhereClauseLeafNode
         get() =
+            // Inclusive cursor lower bounds re-emit ties at the checkpoint for at-least-once syncs.
             if (isLowerBoundIncluded) {
                 GreaterOrEqual(cursor, cursorLowerBound)
             } else {
