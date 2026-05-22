@@ -27,7 +27,7 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
+from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
@@ -47,7 +47,13 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 
 class SourceS3(FileBasedSource):
-    _concurrency_level = DEFAULT_CONCURRENCY
+    # Cap source-s3 at 20 concurrent partition readers. The CDK default of 100
+    # is too aggressive for the in-memory message-repository deque on large
+    # file streams (e.g. tens of thousands of small JSON files): workers
+    # outpace stdout and the source pod approaches its memory limit. 20 keeps
+    # peak RSS well under the 2 Gi connector pod cap while still giving an
+    # order-of-magnitude speed-up over the legacy single-threaded path.
+    _concurrency_level = 20
 
     @classmethod
     def read_config(cls, config_path: str) -> Mapping[str, Any]:
