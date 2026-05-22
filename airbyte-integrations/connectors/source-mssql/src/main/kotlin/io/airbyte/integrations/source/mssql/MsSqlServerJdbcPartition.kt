@@ -247,6 +247,7 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
 
     private val cursorLowerBoundClause: WhereClauseLeafNode
         get() =
+            // Cursor partitions use an inclusive lower bound for at-least-once syncs; legacy callers can still request an exclusive bound.
             if (isLowerBoundIncluded) {
                 GreaterOrEqual(cursor, cursorLowerBound)
             } else {
