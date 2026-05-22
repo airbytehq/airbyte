@@ -413,15 +413,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Helper: emit a checkbox line with reasoning
-          checkbox() {
-            local pass="$1" label="$2" reasoning="$3"
-            if [[ "$pass" == "true" ]]; then
-              echo "- :white_check_mark: **${label}** -- ${reasoning}"
-            else
-              echo "- :x: **${label}** -- ${reasoning}"
-            fi
-          }
+          # Helpers
+          icon() { if [[ "$1" == "true" ]]; then echo ":white_check_mark:"; else echo ":x:"; fi; }
+          pretty_label() { echo "$1" | sed 's/_/ /g; s/\b\(.\)/\u\1/g'; }
 
           if [[ "$DRY_RUN" == "true" ]]; then
             header="## Auto-merge evaluation: **${EVAL_RESULT}** (dry run)"
@@ -435,32 +429,35 @@ jobs:
             echo "$header"
             echo ""
             echo "### Preconditions (all must pass)"
-            checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.pass')" \
-              "No breaking changes" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.reasoning')"
-            checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.pass')" \
-              "AI review passed" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.reasoning')"
+            echo ""
+            echo "| Status | Check | Reasoning |"
+            echo "|--------|-------|-----------|"
+            for key in no_breaking_changes ai_review_passed; do
+              pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".preconditions.${key}.pass")
+              reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".preconditions.${key}.reasoning")
+              echo "| $(icon "$pass") | $(pretty_label "$key") | ${reasoning} |"
+            done
             echo ""
             echo "### Change scope (at least one must pass)"
-            checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.docs_only_change.pass')" \
-              "Docs-only change" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.docs_only_change.reasoning')"
-            checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')" \
-              "Comment-only change" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.reasoning')"
-            checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')" \
-              "Dependency version bump" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.reasoning')"
-            checkbox \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')" \
-              "Metadata-only change" \
-              "$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.reasoning')"
+            echo ""
+            scope_matched=false
+            has_scope_row=false
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change; do
+              pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
+              if [[ "$pass" == "true" ]]; then
+                if [[ "$has_scope_row" == "false" ]]; then
+                  echo "| Status | Scope | Reasoning |"
+                  echo "|--------|-------|-----------|"
+                  has_scope_row=true
+                fi
+                reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.reasoning")
+                echo "| :white_check_mark: | $(pretty_label "$key") | ${reasoning} |"
+                scope_matched=true
+              fi
+            done
+            if [[ "$scope_matched" == "false" ]]; then
+              echo ":x: No matching change scope detected."
+            fi
             if [[ -n "$footer_note" ]]; then
               echo ""
               echo "> $footer_note"
