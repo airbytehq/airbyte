@@ -2,10 +2,6 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Mixpanel Migration Guide
 
-## Connector upgrade guide
-
-<MigrationGuide />
-
 ## Upgrading to 4.0.0
 
 This release removes the `Revenue` stream because Mixpanel no longer provides a documented or working revenue Query API endpoint.
@@ -15,7 +11,8 @@ Before upgrading:
 1. Refresh the source schema for each Mixpanel connection.
 2. Remove the `Revenue` stream from the connection catalog.
 3. Clear or remove downstream data tables that were populated from the `Revenue` stream if they are no longer needed.
-4. Resume syncs for the remaining streams.
+4. Review the [connector upgrade guide](#connector-upgrade-guide) if you need more help preparing for the upgrade.
+5. Resume syncs for the remaining streams.
 
 ## Upgrading to 3.0.0
 
@@ -37,3 +34,7 @@ In this release, the default primary key for stream Export has been deleted, all
 ## Upgrading to 1.0.0
 
 In this release, the datetime field of stream engage has had its type changed from date-time to string due to inconsistent data from Mixpanel. Additionally, the primary key for stream export has been fixed to uniquely identify records. Users will need to refresh the source schema and reset affected streams after upgrading.
+
+## Connector upgrade guide
+
+<MigrationGuide />
