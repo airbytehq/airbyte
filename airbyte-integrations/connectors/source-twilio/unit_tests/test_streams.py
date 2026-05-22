@@ -206,9 +206,8 @@ class TestIncrementalTwilioStream:
             f"{BASE}/Accounts/AC123/Messages.json",
             json={"messages": [{"sid": "SM1", "date_sent": "2022-11-16 01:00:00Z"}]},
             status_code=200,
-            additional_matcher=lambda req: parse_qs(urlparse(req.url).query, keep_blank_values=True).get("DateSent>") == [
-                "2022-11-15 00:00:00Z"
-            ],
+            additional_matcher=lambda req: parse_qs(urlparse(req.url).query, keep_blank_values=True).get("DateSent>")
+            == ["2022-11-15 00:00:00Z"],
         )
         state = (
             StateBuilder()
