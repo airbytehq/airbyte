@@ -3,57 +3,16 @@
 #
 
 import logging
-import random
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Union
-
-import requests
+from typing import Any, Dict, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 logger = logging.getLogger("airbyte")
-
-
-@dataclass
-class JitteredConstantBackoffStrategy(BackoffStrategy):
-    """
-    Constant backoff strategy with per-worker random jitter applied to the wait time.
-
-    The stock `ConstantBackoffStrategy` causes all concurrent workers that hit a rate-limited
-    response in the same window to wake up at the same instant, which keeps each worker's parsed
-    page buffer resident in memory for the full backoff interval and then synchronously re-issues
-    requests that immediately re-trigger the rate limit. On high-volume properties this manifests
-    as a saw-tooth memory profile that can push the worker over its memory cap (see
-    airbytehq/oncall#12246).
-
-    Adding a uniformly distributed jitter to the wait time de-synchronizes worker wake-ups so the
-    buffers are not all held simultaneously, and so retries are spread across the rate-limit
-    window instead of stampeding. The wait time is bounded below by zero.
-
-    Attributes:
-        backoff_time_in_seconds: base wait time in seconds. Must be non-negative.
-        jitter_range_in_seconds: maximum absolute jitter to add to the base wait time. The actual
-            backoff is drawn uniformly from `[max(0, base - jitter), base + jitter]`.
-    """
-
-    backoff_time_in_seconds: float = 60.0
-    jitter_range_in_seconds: float = 15.0
-
-    def backoff_time(
-        self,
-        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
-        attempt_count: int,
-    ) -> Optional[float]:
-        base = float(self.backoff_time_in_seconds)
-        jitter = float(self.jitter_range_in_seconds)
-        low = max(0.0, base - jitter)
-        high = base + jitter
-        return random.uniform(low, high)
 
 
 @dataclass
