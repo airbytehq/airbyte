@@ -383,6 +383,10 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
+
 ## Version information
 
 **Connector version:** 0.1.19
