@@ -115,7 +115,6 @@ For information about migrating between different versions of DuckDB, please see
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a DuckDB schema.
 
-
 ## Changelog
 
 <details>

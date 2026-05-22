@@ -85,7 +85,6 @@ Using this feature requires additional configuration, when creating the destinat
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). SurrealDB doesn't differentiate between a database and schema. The configured database acts as the default namespace.
 
-
 ## Changelog
 
 <details>

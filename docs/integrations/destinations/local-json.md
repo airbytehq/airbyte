@@ -76,7 +76,6 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

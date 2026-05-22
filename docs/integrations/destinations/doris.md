@@ -53,7 +53,6 @@ You need to prepare tables that will be used to store synced data from Airbyte, 
 - **Password**
 - **Database**
 
-
 ## Changelog
 
 <details>

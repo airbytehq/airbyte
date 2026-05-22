@@ -41,7 +41,6 @@ These files can then be accessed by creating an SFTP connection to the server an
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

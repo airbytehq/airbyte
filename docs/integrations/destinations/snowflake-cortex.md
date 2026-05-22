@@ -81,7 +81,6 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

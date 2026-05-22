@@ -29,7 +29,6 @@
 
 1. Rockset api key with appropriate read and write credentials
 
-
 ## Changelog
 
 <details>

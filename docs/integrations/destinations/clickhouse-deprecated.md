@@ -95,7 +95,6 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
 
-
 ## Changelog
 
 <details>

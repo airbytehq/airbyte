@@ -118,7 +118,6 @@ Collection names should begin with an underscore or a letter character, and cann
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a MongoDB database.
 
-
 ## Changelog
 
 <details>

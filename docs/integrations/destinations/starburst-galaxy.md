@@ -98,7 +98,6 @@ Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Starburst Galaxy schema.
 
-
 ## Changelog
 
 <details>

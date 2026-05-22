@@ -89,7 +89,6 @@ All streams are indexed into the same index. The `_ab_stream` metadata field dis
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

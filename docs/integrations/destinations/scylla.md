@@ -47,7 +47,6 @@ and handle any amount of data from the connector.
 
 ### Setup guide
 
-
 ## Changelog
 
 <details>

@@ -50,7 +50,6 @@ For each of the above high-level requirements as appropriate, add or point to a 
 
 For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
 
-
 ## Changelog
 
 <details>

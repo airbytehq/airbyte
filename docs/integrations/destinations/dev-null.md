@@ -44,7 +44,6 @@ This mode throws an exception after receiving a configurable number of messages.
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

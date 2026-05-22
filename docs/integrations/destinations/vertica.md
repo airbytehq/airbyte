@@ -156,7 +156,6 @@ Each stream will be mapped to a separate table in Vertica. Each table will conta
 - `_airbyte_data`: a json blob representing with the event data. The column type in Vertica
   is `JSONB`.
 
-
 ## Changelog
 
 <details>

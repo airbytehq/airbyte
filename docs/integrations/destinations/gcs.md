@@ -236,7 +236,6 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

@@ -89,7 +89,6 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to an Oracle schema.
 
-
 ## Changelog
 
 <details>

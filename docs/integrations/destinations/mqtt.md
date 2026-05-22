@@ -81,7 +81,6 @@ More info about this can be found in the [OASIS MQTT standard site](http://docs.
 
 _NOTE_: MQTT version 5 is not supported yet.
 
-
 ## Changelog
 
 <details>

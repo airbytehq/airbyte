@@ -78,7 +78,6 @@ Connect your first source and then head to the Keen application. You can seamles
 
 If you have any questions, please reach out to us at team@keen.io and we’ll be happy to help!
 
-
 ## Changelog
 
 <details>

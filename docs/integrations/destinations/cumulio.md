@@ -167,7 +167,6 @@ data less frequently** rather than _smaller amounts of data more frequently_!
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

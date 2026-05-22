@@ -41,7 +41,6 @@ value for your API by following these
 [instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in
 the MeiliSearch docs.
 
-
 ## Changelog
 
 <details>

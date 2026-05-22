@@ -72,7 +72,6 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

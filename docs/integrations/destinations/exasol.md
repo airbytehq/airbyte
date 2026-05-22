@@ -65,7 +65,6 @@ You should now have all the requirements needed to configure Exasol as a destina
 - Username
 - Password
 
-
 ## Changelog
 
 <details>

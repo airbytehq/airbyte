@@ -58,7 +58,6 @@ More info about this can be found in the [Redpanda producer configs documentatio
 
 _NOTE_: Configurations for SSL are not available yet.
 
-
 ## Changelog
 
 <details>

@@ -44,7 +44,6 @@ The connector buffer size should also be tweaked according to your data size and
 
 ### Setup guide
 
-
 ## Changelog
 
 <details>

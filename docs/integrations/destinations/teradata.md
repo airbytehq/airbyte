@@ -114,7 +114,6 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Teradata database.
 
-
 ## Changelog
 
 <details>

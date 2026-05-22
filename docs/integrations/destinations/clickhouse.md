@@ -170,7 +170,6 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
 
-
 ## Changelog
 
 <!-- vale off -->

@@ -388,7 +388,6 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

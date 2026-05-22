@@ -77,7 +77,6 @@ In order to configure this connector, you need to generate your Track API Key an
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                   |

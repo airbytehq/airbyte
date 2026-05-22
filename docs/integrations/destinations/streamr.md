@@ -36,7 +36,6 @@ Any json data schema will work
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). However, setting a specific bucket path is equivalent to having separate namespaces.
 
-
 ## Changelog
 
 <details>

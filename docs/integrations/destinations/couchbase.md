@@ -121,7 +121,6 @@ Each stream will be output into a collection in Couchbase. The connector follows
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |

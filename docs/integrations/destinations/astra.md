@@ -41,7 +41,6 @@ This page contains the setup guide and reference information for the destination
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

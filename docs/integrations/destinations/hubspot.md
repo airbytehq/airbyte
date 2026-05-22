@@ -110,7 +110,6 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

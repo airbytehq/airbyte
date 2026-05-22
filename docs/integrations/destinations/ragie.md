@@ -143,7 +143,6 @@ This will be merged with each document’s metadata.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 | Version | Changes                                                          |

@@ -74,7 +74,6 @@ If you have any questions or want to get started, [please reach out to a billing
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

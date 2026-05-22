@@ -72,7 +72,6 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>
