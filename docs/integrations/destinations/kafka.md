@@ -103,9 +103,6 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is incorporated into the topic name via the `{namespace}` variable in the `topic_pattern` configuration.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

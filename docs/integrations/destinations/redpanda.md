@@ -58,9 +58,6 @@ More info about this can be found in the [Redpanda producer configs documentatio
 
 _NOTE_: Configurations for SSL are not available yet.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

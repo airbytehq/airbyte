@@ -113,9 +113,6 @@ Final table schema:
 SingleStore restricts all identifiers to 63 characters or less. If your stream includes column names
 longer than 63 characters, they will be truncated to this length.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## CHANGELOG
 

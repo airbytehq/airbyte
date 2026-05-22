@@ -53,9 +53,6 @@ You need to prepare database that will be used to store synced data from Airbyte
 - **password**
 - **database**
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

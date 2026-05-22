@@ -151,9 +151,6 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 <!-- /env:oss -->
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

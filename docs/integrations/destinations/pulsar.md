@@ -90,9 +90,6 @@ You should now have all the requirements needed to configure Pulsar as a destina
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

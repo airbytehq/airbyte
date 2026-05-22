@@ -156,9 +156,6 @@ Each stream will be mapped to a separate table in Vertica. Each table will conta
 - `_airbyte_data`: a json blob representing with the event data. The column type in Vertica
   is `JSONB`.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

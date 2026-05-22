@@ -44,9 +44,6 @@ The connector buffer size should also be tweaked according to your data size and
 
 ### Setup guide
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
