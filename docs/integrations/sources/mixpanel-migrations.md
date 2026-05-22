@@ -6,14 +6,13 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 This release removes the `Revenue` stream because Mixpanel no longer provides a documented or working revenue Query API endpoint.
 
-If one or more Mixpanel connections sync the `Revenue` stream:
+Before upgrading:
 
-1. Remove the `Revenue` stream from each connection catalog before upgrading to version `4.0.0`.
-2. Upgrade the connector to version `4.0.0`.
-3. Refresh the source schema and confirm the `Revenue` stream is no longer available.
-4. Clear or remove downstream data tables populated from the `Revenue` stream if you no longer need them.
+1. Refresh the source schema for each Mixpanel connection.
+2. Remove the `Revenue` stream from the connection catalog.
+3. Clear or remove downstream data tables that were populated from the `Revenue` stream if they are no longer needed.
+4. Review the [connector upgrade guide](#connector-upgrade-guide) if you need more help preparing for the upgrade.
 5. Resume syncs for the remaining streams.
-6. Review the [connector upgrade guide](#connector-upgrade-guide) if you need more help preparing for the upgrade.
 
 ## Upgrading to 3.0.0
 
