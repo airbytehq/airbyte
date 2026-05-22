@@ -2713,11 +2713,13 @@ definitions:
             reportOptions:
               reportPeriod: "WEEK"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2739,11 +2741,13 @@ definitions:
             reportOptions:
               reportPeriod: "WEEK"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByDepartmentAndSearchTerm
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByDepartmentAndSearchTerm"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2765,11 +2769,13 @@ definitions:
             reportOptions:
               reportPeriod: "WEEK"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2791,11 +2797,13 @@ definitions:
             reportOptions:
               reportPeriod: "WEEK"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2817,11 +2825,13 @@ definitions:
             reportOptions:
               reportPeriod: "WEEK"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
