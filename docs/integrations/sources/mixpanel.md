@@ -76,29 +76,7 @@ Syncing large date windows may take longer due to these rate limits. You can adj
 
 The Mixpanel source connector supports `US` and `EU` data residency regions. It doesn't support Mixpanel's India data residency endpoints.
 
-## Reference
-
-The connector uses these configuration fields for programmatic setup with PyAirbyte, Terraform, or the Airbyte API:
-
-| Field | Required | Description |
-| :--- | :---: | :--- |
-| `credentials.option_title` | Yes | Authentication method. Valid values are `Service Account` and `Project Secret`. |
-| `credentials.username` | Required for service account authentication | Mixpanel service account username. |
-| `credentials.secret` | Required for service account authentication | Mixpanel service account secret. Store this value when you create the service account because Mixpanel doesn't show it again. |
-| `credentials.project_id` | Required for service account authentication | Mixpanel project ID. |
-| `credentials.api_secret` | Required for project secret authentication | Mixpanel project secret. Mixpanel deprecated project secret authentication and retires it on March 3, 2027. |
-| `attribution_window` | No | Number of days to use as the attribution lookback window. Defaults to `5`. |
-| `project_timezone` | No | Time zone configured for the Mixpanel project. Defaults to `US/Pacific`. |
-| `select_properties_by_default` | No | Whether to capture new event and Engage properties automatically. Defaults to `true`. |
-| `start_date` | No | Earliest date to replicate, in `YYYY-MM-DD` format. If unset, the connector uses one year before the first sync. |
-| `end_date` | No | Latest date to replicate, in `YYYY-MM-DD` format. If unset, the connector syncs through the most recent available date. |
-| `region` | No | Mixpanel data residency region. Valid values are `US` and `EU`. Defaults to `US`. |
-| `date_window_size` | No | Number of days per request window. Defaults to `30`. Reduce this value if a request window contains too much data for your environment. |
-| `page_size` | No | Number of records to fetch per request for the Engage stream. Defaults to `1000`. |
-| `export_lookback_window` | No | Number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. Defaults to `0`. |
-| `num_workers` | No | Number of concurrent threads to use for the sync. Valid values are `1` through `25`. Defaults to `3`. |
-
-## CHANGELOG
+## Changelog
 
 <details>
   <summary>Expand to review</summary>
