@@ -43,7 +43,6 @@ In order to connect, you need:
 - Database URL: navigate to the configuration tab in your workspace and copy the
   `Workspace API base URL`.
 
-
 ## CHANGELOG
 
 <details>

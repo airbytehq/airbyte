@@ -113,7 +113,6 @@ Final table schema:
 SingleStore restricts all identifiers to 63 characters or less. If your stream includes column names
 longer than 63 characters, they will be truncated to this length.
 
-
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                              |
