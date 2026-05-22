@@ -394,7 +394,7 @@ open class MsSqlServerJdbcPartitionFactory(
                     streamState,
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
-                    isLowerBoundIncluded = true,
+                    isLowerBoundIncluded = true, // ties are included
                     cursorCutoffTime = getCursorCutoffTime(cursor)
                 )
             }
@@ -403,7 +403,7 @@ open class MsSqlServerJdbcPartitionFactory(
                 streamState,
                 cursor,
                 cursorLowerBound = cursorCheckpoint,
-                isLowerBoundIncluded = true,
+                isLowerBoundIncluded = true, // ties are included
                 cursorUpperBound = streamState.cursorUpperBound,
                 cursorCutoffTime = getCursorCutoffTime(cursor),
             )

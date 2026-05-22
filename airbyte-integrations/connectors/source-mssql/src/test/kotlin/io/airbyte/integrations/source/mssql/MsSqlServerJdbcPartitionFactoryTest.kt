@@ -23,14 +23,21 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.From
+import io.airbyte.cdk.read.GreaterOrEqual
+import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.ResourceAcquirer
+import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQuerier
+import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.StateManager
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
+import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.every
@@ -915,6 +922,22 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertTrue(
             (partition as MsSqlServerJdbcNonResumableCursorIncrementalPartition)
                 .isLowerBoundIncluded
+        )
+        val upperBound = Jsons.readTree("\"2026-04-20T00:00:00.000000\"")
+        val streamState = partition.streamState
+        streamState.cursorUpperBound = upperBound
+        assertEquals(
+            SelectQuerySpec(
+                SelectColumns(viewStream.fields),
+                From(viewStream.name, viewStream.namespace),
+                Where(
+                    And(
+                        GreaterOrEqual(fieldName, Jsons.readTree("\"2026-04-19T15:05:22.349252\"")),
+                        LesserOrEqual(fieldName, upperBound)
+                    )
+                )
+            ),
+            partition.nonResumableQuerySpec
         )
     }
 }
