@@ -79,7 +79,8 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Reference
 
-This connector uses the [Meta Graph API](https://developers.facebook.com/docs/graph-api/) with the `https://graph.facebook.com/v24.0` endpoint. Airbyte requests the selected Page and Post fields from the connector catalog, and requests a fixed set of Page Insights and Post Insights metrics.
+This connector uses the [Meta Graph API](https://developers.facebook.com/docs/graph-api/) with the `https://graph.facebook.com/v24.0` endpoint.
+Airbyte requests the selected Page and Post fields from the connector catalog, and requests a fixed set of Page Insights and Post Insights metrics.
 
 For programmatic configuration, use these parameter names:
 
@@ -102,7 +103,9 @@ To resolve this error, use a token from an app that has access to the permission
 - `pages_show_list`
 - `read_insights`
 
-If you use your own Meta app, it might need [App Review](https://developers.facebook.com/docs/resp-plat-initiatives/appreview/tutorial/) and Advanced Access before it can use these permissions in production. The person who generates the token must also be able to perform the required task on the Page. For Page Insights, Meta requires access to a Page that you own or administer, or on which you can perform the `ANALYZE` task.
+If you use your own Meta app, it might need [App Review](https://developers.facebook.com/docs/resp-plat-initiatives/appreview/tutorial/) and Advanced Access before it can use these permissions in production.
+The person who generates the token must also be able to perform the required task on the Page.
+For Page Insights, Meta requires access to a Page that you own or administer, or on which you can perform the `ANALYZE` task.
 
 ### "Please reduce the amount of data you're asking for" error
 
