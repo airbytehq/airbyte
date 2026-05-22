@@ -127,7 +127,9 @@ def test_facebook_app_approval_error_is_config_error():
 
     assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
     assert response_filter["failure_type"] == FailureType.config_error.value
-    assert response_filter["error_message"] == "Facebook app is not approved for requested Page fields."
+    assert response_filter["error_message"].startswith(
+        "The application used to create the Facebook access token has not been approved to use this API."
+    )
 
 
 def test_page_stream_does_not_request_live_videos_by_default():
