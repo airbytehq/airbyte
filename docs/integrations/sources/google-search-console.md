@@ -237,6 +237,10 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

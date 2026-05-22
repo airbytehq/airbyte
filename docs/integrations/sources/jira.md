@@ -221,6 +221,10 @@ Check out common troubleshooting issues for the Jira connector on our Airbyte Fo
 
 The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 The connector uses these configuration fields for programmatic setup with PyAirbyte, Terraform, or the Airbyte API:

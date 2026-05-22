@@ -136,6 +136,10 @@ The Snapchat Marketing API limits requests to 1,000 items per page.
 
 Syncing data with an hourly granularity often generates large data volumes and can take longer times to sync. We recommend syncing at a day granularity.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

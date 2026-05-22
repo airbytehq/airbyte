@@ -26,6 +26,10 @@ Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). R
 | Contact Search | id | DefaultPaginator | ✅ |  ✅  |
 
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

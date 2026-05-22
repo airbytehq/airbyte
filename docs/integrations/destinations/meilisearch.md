@@ -41,6 +41,10 @@ value for your API by following these
 [instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in
 the MeiliSearch docs.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

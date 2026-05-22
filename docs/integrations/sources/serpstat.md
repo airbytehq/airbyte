@@ -46,6 +46,10 @@ The Serpstat source connector supports the following [sync modes](https://docs.a
 
 The maximum sync speed is limited by the number of requests per second per API key. See this limit in your [Serpstat account](https://serpstat.com/users/profile/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 <details>
   <summary>Expand to review</summary>

@@ -350,6 +350,10 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 </HideInUI>
 
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

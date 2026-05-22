@@ -78,6 +78,10 @@ Connect your first source and then head to the Keen application. You can seamles
 
 If you have any questions, please reach out to us at team@keen.io and we’ll be happy to help!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

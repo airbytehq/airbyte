@@ -122,6 +122,10 @@ Incremental streams page the Twilio API in fixed-size time windows between the r
 
 Smaller windows increase the number of API requests and are more likely to be rate limited, but they reduce the amount of data Twilio must return per request. Larger windows reduce request count but can time out on busy accounts. If syncs of the `calls`, `messages`, `recordings`, `message_media`, `conference_participants`, `usage_records`, or `alerts` streams fail with timeouts, lower the slice step duration.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, and `https://verify.twilio.com/v2` API endpoints.

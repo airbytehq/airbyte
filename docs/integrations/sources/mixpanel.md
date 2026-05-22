@@ -73,6 +73,10 @@ Mixpanel enforces separate rate limits for different API endpoints:
 
 Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## CHANGELOG
 
 <details>

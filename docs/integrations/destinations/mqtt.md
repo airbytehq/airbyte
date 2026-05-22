@@ -81,6 +81,10 @@ More info about this can be found in the [OASIS MQTT standard site](http://docs.
 
 _NOTE_: MQTT version 5 is not supported yet.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
