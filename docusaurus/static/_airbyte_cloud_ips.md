@@ -1,7 +1,3 @@
-Airbyte Cloud runs and syncs your data using a specific set of IP addresses. Allow these IPs in your firewall to ensure Airbyte users can correctly use the platform.
-
-Airbyte defaults to running syncs in the United States. To change this, or to check your data residency, see your [data residency](/platform/cloud/managing-airbyte-cloud/manage-data-residency) for each workspace.
-
 ## Google Cloud Platform
 
 | Geography     | Region       | IP address (CIDR) | IP addresses   |

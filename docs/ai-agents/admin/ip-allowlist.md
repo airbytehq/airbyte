@@ -9,7 +9,7 @@ import AirbyteCloudIps from '@site/static/_airbyte_cloud_ips.md';
 
 Airbyte Agents uses the Airbyte Cloud IP addresses, plus additional IP addresses for Agents-specific workloads. If your organization restricts inbound traffic by IP address, allow the following addresses in your firewall.
 
-<AirbyteCloudIps/>
+<AirbyteCloudIps />
 
 ## Airbyte Agents
 
