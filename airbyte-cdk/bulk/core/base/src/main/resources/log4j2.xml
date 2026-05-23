@@ -10,6 +10,9 @@
     </Console>
   </Appenders>
   <Loggers>
+    <Logger name="io.debezium" level="DEBUG" additivity="false">
+        <AppenderRef ref="ConsoleJSONAppender"/>
+    </Logger>
     <Root level="${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}" additivity="false">
       <AppenderRef ref="ConsoleJSONAppender"/>
     </Root>
