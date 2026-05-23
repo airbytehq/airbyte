@@ -16,6 +16,7 @@ import aws.sdk.kotlin.services.s3.model.DeleteObjectsRequest
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.sdk.kotlin.services.s3.model.HeadObjectRequest
 import aws.sdk.kotlin.services.s3.model.ListObjectsV2Request
+import aws.sdk.kotlin.services.s3.model.NoSuchBucket
 import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
@@ -24,6 +25,7 @@ import aws.smithy.kotlin.runtime.content.toInputStream
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.net.url.Url
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
@@ -41,6 +43,8 @@ import java.io.InputStream
 import kotlinx.coroutines.flow.flow
 
 private const val DELETE_BATCH_SIZE = 1000
+private const val BUCKET_CONFIG_ERROR_MESSAGE =
+    "Object storage bucket does not exist or is not accessible. Verify the bucket name and credentials in the destination configuration."
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
@@ -63,19 +67,23 @@ class S3KotlinClient(
     private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String) = flow {
-        var token: String? = null
-        do {
-            val resp =
-                client.listObjectsV2(
-                    ListObjectsV2Request {
-                        bucket = bucketConfig.s3BucketName
-                        this.prefix = prefix
-                        continuationToken = token
-                    }
-                )
-            resp.contents?.forEach { emit(S3Object(it.key!!, bucketConfig)) }
-            token = resp.nextContinuationToken
-        } while (token != null)
+        try {
+            var token: String? = null
+            do {
+                val resp =
+                    client.listObjectsV2(
+                        ListObjectsV2Request {
+                            bucket = bucketConfig.s3BucketName
+                            this.prefix = prefix
+                            continuationToken = token
+                        }
+                    )
+                resp.contents?.forEach { emit(S3Object(it.key!!, bucketConfig)) }
+                token = resp.nextContinuationToken
+            } while (token != null)
+        } catch (e: NoSuchBucket) {
+            throw ConfigErrorException(BUCKET_CONFIG_ERROR_MESSAGE, e)
+        }
     }
 
     override suspend fun move(remoteObject: S3Object, toKey: String): S3Object {
