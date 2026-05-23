@@ -28,7 +28,7 @@ def test_ads_audience_reports_by_province_daily_uses_single_day_report_windows()
             json={"code": 0, "message": "ok", "data": {"list": []}},
         )
 
-        output = read(get_source(config=config, state=None), config, catalog)
+        output = read(get_source(config=config), config, catalog)
 
     assert len(output.records) == 0
     report_requests = [request for request in mocker.request_history if "report/integrated/get" in request.url]
