@@ -24,7 +24,7 @@ def test_ads_audience_reports_by_province_daily_uses_single_day_report_windows()
             json={"code": 0, "message": "ok", "data": {"list": [{"advertiser_id": "872746382648"}]}},
         )
         mocker.get(
-            re.compile(r"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/.*"),
+            re.compile(r"https://business-api\.tiktok\.com/open_api/v1\.3/report/integrated/get/.*"),
             json={"code": 0, "message": "ok", "data": {"list": []}},
         )
 
