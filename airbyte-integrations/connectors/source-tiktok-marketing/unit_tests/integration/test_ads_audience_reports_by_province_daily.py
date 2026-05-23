@@ -5,6 +5,7 @@ import re
 from urllib.parse import parse_qs, urlparse
 
 import requests_mock
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -15,11 +16,7 @@ from .config_builder import ConfigBuilder
 
 def test_ads_audience_reports_by_province_daily_uses_single_day_report_windows():
     config = ConfigBuilder().with_end_date("2024-01-03").build()
-    catalog = (
-        CatalogBuilder()
-        .with_stream(name="ads_audience_reports_by_province_daily", sync_mode=SyncMode.full_refresh)
-        .build()
-    )
+    catalog = CatalogBuilder().with_stream(name="ads_audience_reports_by_province_daily", sync_mode=SyncMode.full_refresh).build()
 
     with requests_mock.Mocker() as mocker:
         mocker.get(
