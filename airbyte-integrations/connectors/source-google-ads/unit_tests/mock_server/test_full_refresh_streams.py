@@ -1,8 +1,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+from collections import namedtuple
 import json
 
 import pytest
+from source_google_ads.components import CustomGAQuerySchemaLoader
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -12,6 +14,7 @@ from unit_tests.mock_server.config import ConfigBuilder
 from unit_tests.mock_server.conftest import create_source
 from unit_tests.mock_server.helpers import (
     API_BASE,
+    build_error_response,
     build_full_refresh_query,
     build_stream_response,
     setup_full_refresh_parent_mocks,
@@ -189,3 +192,41 @@ def test_full_refresh_403_ignored(stream_name):
         output = read(source, config=config, catalog=catalog)
 
     assert len(output.records) == 0
+
+
+def test_custom_query_400_error_fails_as_config_error(mocker):
+    query = "SELECT ad_group_ad_asset_view.asset FROM ad_group_ad_asset_view"
+    stream_name = "custom_invalid_metric_query"
+    config = ConfigBuilder().with_custom_queries([{"query": query, "table_name": stream_name}]).build()
+    data_type = namedtuple("DataType", ["name"])
+    node = namedtuple("Node", ["data_type", "enum_values", "is_repeated"])
+    fields_metadata = {
+        "ad_group_ad_asset_view.asset": node(data_type("RESOURCE_NAME"), [], False),
+    }
+    mocker.patch.object(CustomGAQuerySchemaLoader, "google_ads_client", return_value=mocker.Mock(get_fields_metadata=lambda fields: fields_metadata))
+
+    with HttpMocker() as http_mocker:
+        setup_full_refresh_parent_mocks(http_mocker)
+        http_mocker.post(
+            HttpRequest(
+                url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
+                body=json.dumps({"query": query}),
+            ),
+            build_error_response(
+                400,
+                "PROHIBITED_METRIC_IN_SELECT_OR_WHERE_CLAUSE: metrics.video_views is not allowed for ad_group_ad_asset_view.",
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+        source = create_source(config=config, catalog=catalog)
+        output = read(source, config=config, catalog=catalog)
+
+    assert len(output.records) == 0
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type.value == "config_error"
+    assert error.message == (
+        "Invalid Google Ads query. PROHIBITED_METRIC_IN_SELECT_OR_WHERE_CLAUSE: "
+        "metrics.video_views is not allowed for ad_group_ad_asset_view."
+    )
