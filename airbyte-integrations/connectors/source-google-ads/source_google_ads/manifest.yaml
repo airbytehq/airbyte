@@ -59,8 +59,14 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        failure_type: config_error
+        error_message: >-
+          Invalid Google Ads query. {{ response[0].get('error', {}).get('message', 'The Google Ads API rejected the query.') }}
   #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
-
   base_selector:
     type: RecordSelector
     extractor:
