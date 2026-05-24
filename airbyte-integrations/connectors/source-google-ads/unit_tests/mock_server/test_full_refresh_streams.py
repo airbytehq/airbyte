@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-from collections import namedtuple
 import json
+from collections import namedtuple
 
 import pytest
 from source_google_ads.components import CustomGAQuerySchemaLoader
@@ -203,7 +203,9 @@ def test_custom_query_400_error_fails_as_config_error(mocker):
     fields_metadata = {
         "ad_group_ad_asset_view.asset": node(data_type("RESOURCE_NAME"), [], False),
     }
-    mocker.patch.object(CustomGAQuerySchemaLoader, "google_ads_client", return_value=mocker.Mock(get_fields_metadata=lambda fields: fields_metadata))
+    mocker.patch.object(
+        CustomGAQuerySchemaLoader, "google_ads_client", return_value=mocker.Mock(get_fields_metadata=lambda fields: fields_metadata)
+    )
 
     with HttpMocker() as http_mocker:
         setup_full_refresh_parent_mocks(http_mocker)
