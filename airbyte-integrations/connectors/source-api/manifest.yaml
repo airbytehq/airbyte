@@ -1,0 +1,200 @@
+version: 7.10.0
+
+type: DeclarativeSource
+
+description: connect api
+
+check:
+  type: CheckStream
+  stream_names:
+    - CoinGecko Markets
+
+definitions:
+  linked:
+    SimpleRetriever: {}
+
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.coingecko.com/api/v3/coins/markets
+        request_parameters:
+          vs_currency: usd
+          order: market_cap_desc
+          per_page: "20"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 5
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 15
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 30
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          inject_on_first_request: true
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+      decoder:
+        type: JsonDecoder
+    name: CoinGecko Markets
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          symbol:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          image:
+            type:
+              - string
+              - "null"
+          current_price:
+            type:
+              - number
+              - "null"
+          market_cap:
+            type:
+              - number
+              - "null"
+          market_cap_rank:
+            type:
+              - number
+              - "null"
+          fully_diluted_valuation:
+            type:
+              - number
+              - "null"
+          total_volume:
+            type:
+              - number
+              - "null"
+          high_24h:
+            type:
+              - number
+              - "null"
+          low_24h:
+            type:
+              - number
+              - "null"
+          price_change_24h:
+            type:
+              - number
+              - "null"
+          price_change_percentage_24h:
+            type:
+              - number
+              - "null"
+          market_cap_change_24h:
+            type:
+              - number
+              - "null"
+          market_cap_change_percentage_24h:
+            type:
+              - number
+              - "null"
+          circulating_supply:
+            type:
+              - number
+              - "null"
+          total_supply:
+            type:
+              - number
+              - "null"
+          max_supply:
+            type:
+              - number
+              - "null"
+          ath:
+            type:
+              - number
+              - "null"
+          ath_change_percentage:
+            type:
+              - number
+              - "null"
+          ath_date:
+            type:
+              - string
+              - "null"
+          atl:
+            type:
+              - number
+              - "null"
+          atl_change_percentage:
+            type:
+              - number
+              - "null"
+          atl_date:
+            type:
+              - string
+              - "null"
+          roi:
+            type:
+              - object
+              - "null"
+            properties:
+              times:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              percentage:
+                type:
+                  - number
+                  - "null"
+          last_updated:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    properties: {}
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    CoinGecko Markets:
+      streamHash: b5c51ca23706ab8ea5693e947dafda8b1879b90f
+      isStale: true
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    CoinGecko Markets: true
