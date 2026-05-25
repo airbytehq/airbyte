@@ -163,3 +163,7 @@ airbyte:
             output: The sync was aborted due to a deadlock, will retry.
             group: SQL Server Deadlock
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-1205-database-engine-error
+
+          - code: 3947
+            error: transient
+            output: Azure SQL read replica aborted the query.
