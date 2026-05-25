@@ -3112,6 +3112,11 @@ definitions:
           - type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                predicate: "{{ response.get('errors', [{}])[0].get('code') == 'InvalidInput' and 'not registered in marketplace' in response.get('errors', [{}])[0].get('message', '') }}"
+                error_message: "Amazon Seller account is not registered in the configured marketplace."
+              - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
