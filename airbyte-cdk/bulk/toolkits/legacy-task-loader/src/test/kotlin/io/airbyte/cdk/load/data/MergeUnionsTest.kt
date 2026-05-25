@@ -108,9 +108,7 @@ class MergeUnionsTest {
             ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
         val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .withUnion(
-                    expectedInstead = FieldType(concreteObject, nullable = false)
-                )
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
                 .with(concreteObject)
                 .with(ObjectTypeWithoutSchema)
                 .endUnion()
@@ -125,9 +123,7 @@ class MergeUnionsTest {
             ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
         val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .withUnion(
-                    expectedInstead = FieldType(concreteObject, nullable = false)
-                )
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
                 .with(concreteObject)
                 .with(ObjectTypeWithEmptySchema)
                 .endUnion()
@@ -140,9 +136,7 @@ class MergeUnionsTest {
     fun testSchemalessObjectVariantsDedup() {
         val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .withUnion(
-                    expectedInstead = FieldType(ObjectTypeWithoutSchema, nullable = false)
-                )
+                .withUnion(expectedInstead = FieldType(ObjectTypeWithoutSchema, nullable = false))
                 .with(ObjectTypeWithoutSchema)
                 .with(ObjectTypeWithEmptySchema)
                 .endUnion()
@@ -157,9 +151,7 @@ class MergeUnionsTest {
             ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
         val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .withUnion(
-                    expectedInstead = FieldType(concreteObject, nullable = false)
-                )
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
                 .with(ObjectTypeWithoutSchema)
                 .with(concreteObject)
                 .endUnion()
@@ -174,9 +166,7 @@ class MergeUnionsTest {
             ObjectType(linkedMapOf("field1" to FieldType(StringType, nullable = true)))
         val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .withUnion(
-                    expectedInstead = FieldType(concreteObject, nullable = false)
-                )
+                .withUnion(expectedInstead = FieldType(concreteObject, nullable = false))
                 .with(ObjectTypeWithEmptySchema)
                 .with(concreteObject)
                 .with(ObjectTypeWithoutSchema)
