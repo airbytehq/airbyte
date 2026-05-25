@@ -7,7 +7,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import orjson
 
@@ -48,6 +48,16 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 class SourceS3(FileBasedSource):
     _concurrency_level = DEFAULT_CONCURRENCY
+
+    def streams(self, config: Mapping[str, Any]) -> List[Any]:
+        # If the caller pinned a concurrency level in the spec, apply it before the
+        # CDK builds the concurrent source. Otherwise keep the class-level default
+        # (DEFAULT_CONCURRENCY). Useful as an operational knob on connections that
+        # hit the source pod memory limit on very large file streams.
+        configured = config.get("concurrency_level") if isinstance(config, Mapping) else None
+        if configured:
+            self._concurrency_level = int(configured)
+        return super().streams(config)
 
     @classmethod
     def read_config(cls, config_path: str) -> Mapping[str, Any]:

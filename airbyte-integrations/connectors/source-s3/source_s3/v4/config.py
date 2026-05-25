@@ -92,6 +92,20 @@ class Config(AbstractFileBasedSpec):
         default="use_records_transfer",
     )
 
+    concurrency_level: Optional[int] = Field(
+        title="Concurrency Level",
+        description=(
+            "Maximum number of partition reader threads source-s3 uses to read files in parallel. "
+            "Higher values increase throughput but also increase peak memory of the source pod. "
+            "Leave empty to use the CDK default (100). Lower this (e.g. 20-50) if the source pod hits "
+            "its memory limit on streams with many or large files."
+        ),
+        default=None,
+        gt=0,
+        order=7,
+        group="advanced",
+    )
+
     @root_validator
     def validate_optional_args(cls, values):
         aws_access_key_id = values.get("aws_access_key_id")
