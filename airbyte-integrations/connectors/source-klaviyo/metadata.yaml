@@ -53,6 +53,18 @@ data:
     - title: Changelog
       url: https://developers.klaviyo.com/en/docs/changelog
       type: api_release_history
+    - title: Authentication Guide
+      url: https://developers.klaviyo.com/en/docs/authenticate_
+      type: authentication_guide
+    - title: OAuth Migration Guide
+      url: https://developers.klaviyo.com/en/docs/migrate_to_oauth_from_private_key_authentication
+      type: authentication_guide
+    - title: App Listing Requirements
+      url: https://developers.klaviyo.com/en/docs/klaviyo_app_listing_requirements
+      type: api_reference
+    - title: App Review Submission
+      url: https://developers.klaviyo.com/en/docs/submit_your_app_for_review
+      type: api_reference
   tags:
     - cdk:low-code
     - language:manifest-only
