@@ -336,11 +336,25 @@ definitions:
         error_message: "{{ response['error']['message'] }}"
       - type: HttpResponseFilter
         action: FAIL
+        failure_type: config_error
+        http_codes: []
+        error_message_contains: "Invalid aggregationType"
+        error_message: >-
+          Search Analytics aggregation type is invalid for this stream.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: []
+        error_message_contains: "aggregationType"
+        error_message: >-
+          Search Analytics aggregation type is invalid for this stream.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
         http_codes:
           - 400
         error_message: >-
-          Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
-          'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
+          Google Search Console API rejected the Search Analytics request.
 
   oauth_authenticator:
     type: OAuthAuthenticator

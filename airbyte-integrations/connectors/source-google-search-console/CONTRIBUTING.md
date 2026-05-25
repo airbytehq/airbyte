@@ -68,3 +68,21 @@ The Google Search Console API supports date-based filtering via `startDate`/`end
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+
+---
+
+## 4. Two-Step Search Appearance Keyword Reports
+
+The keyword report streams (`search_analytics_keyword_page_report`,
+`search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site`)
+cannot request `searchAppearance` alongside other dimensions directly. They first call Search Analytics
+with `dimensions: ["searchAppearance"]`, then fan out child requests with `dimensionFilterGroups` for
+each valid appearance value.
+
+The parent stream deliberately filters empty/null appearance rows before child partitioning, while concrete
+appearance values such as `FAQ` are passed through as normal discovered partitions. Without the empty/null
+filter, the child stream can query malformed appearance partitions.
+
+**Why this matters:** Do not re-add a child `site_urls` router, remove the parent `RecordFilter`, or
+special-case upstream appearance values when touching keyword streams. The parent slice already carries
+both site and appearance context.
