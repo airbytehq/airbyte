@@ -48,6 +48,12 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 class SourceS3(FileBasedSource):
     _concurrency_level = DEFAULT_CONCURRENCY
+    # Smaller inter-worker record queue keeps peak RSS down on streams with
+    # large records (e.g. multi-KB JSONL blobs). Combined with the malloc-arena
+    # cap in run.py this keeps the concurrent read path well under the 2 Gi pod
+    # limit on the affected dictionary-style streams. Throughput unchanged in
+    # measurements (workers were never actually the bottleneck; main thread is).
+    _concurrent_record_queue_maxsize = 1_000
 
     def streams(self, config: Mapping[str, Any]) -> List[Any]:
         # If the caller pinned a concurrency level in the spec, apply it before the
