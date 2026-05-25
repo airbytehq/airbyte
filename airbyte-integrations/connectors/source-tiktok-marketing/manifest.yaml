@@ -25,6 +25,12 @@ definitions:
         - predicate: "{{ response.get('code') == 40100 }}"
           action: RATE_LIMITED
           error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 60001 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 40002 }}"
+          action: IGNORE
+          error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -272,13 +278,34 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": [stream_partition.buying_type]}|string if config.get("include_deleted", False) else {"buying_types": [stream_partition.buying_type]}|string }}'
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
-        $ref: "#/definitions/single_id_partition_router"
+        - type: ListPartitionRouter
+          values:
+            - AUCTION
+            - RESERVATION_TOP_VIEW
+            - RESERVATION_RF
+          cursor_field: buying_type
+        - class_name: "source_declarative_manifest.components.SingleAdvertiserIdPerPartition"
+          $parameters:
+            path_in_config:
+              - ["credentials", "advertiser_id"]
+              - ["environment", "advertiser_id"]
+            partition_field: advertiser_id
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: advertiser_id
+              request_option:
+                inject_into: request_parameter
+                type: RequestOption
+                field_name: advertiser_id
+              partition_field: advertiser_id
+              stream:
+                $ref: "#/definitions/advertiser_ids_stream"
     incremental_sync:
       $ref: "#/definitions/semi_incremental_sync"
 
@@ -2133,6 +2160,12 @@ definitions:
             - predicate: "{{ 'one or more value of the params is not acceptable' in response.get('message', '').lower() or 'one or more value of the param is not acceptable' in response.get('message', '').lower() }}"
               action: IGNORE
               error_message: "Unsupported objective_type/optimization_goal combination, skipping. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 60001 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 40002 }}"
+              action: IGNORE
+              error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') != 0 }}"
               action: FAIL
               error_message: "{{ response['message'] }}"
@@ -2228,6 +2261,12 @@ definitions:
             - predicate: "{{ response.get('code') == 40001 and 'Adv has no permission to operate on the Pixel' in response['message'] }}"
               action: IGNORE
               error_message: "{{ response['message'] }}"
+            - predicate: "{{ response.get('code') == 60001 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 40002 }}"
+              action: IGNORE
+              error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') != 0 }}"
               action: FAIL
               error_message: "{{ response['message'] }}"

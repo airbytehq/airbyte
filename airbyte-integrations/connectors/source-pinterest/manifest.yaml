@@ -4963,6 +4963,7 @@ spec:
         type: string
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
+        maxLength: 18 # Pinterest account IDs are at most 18 characters
         examples: ["1234567890"]
       num_threads:
         type: integer
@@ -5089,7 +5090,7 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_threads'] or 2 }}"
+  default_concurrency: "{{ config['num_threads'] or 5 }}"
   max_concurrency: 50
 
 api_budget:

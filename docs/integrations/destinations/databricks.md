@@ -21,6 +21,12 @@ the connector, you must agree to the
 only use this connector to connect third party applications to Apache Spark SQL within a Databricks
 offering using the ODBC and/or JDBC protocols.
 
+## Network access
+
+If you're using Airbyte Cloud and this destination uses IP-based access controls,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your
+allowlist.
+
 ## Airbyte Setup
 
 When setting up a Databricks destination, you need these pieces of information:
@@ -96,6 +102,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                                |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.8   | 2026-03-11 | [74732](https://github.com/airbytehq/airbyte/pull/74732)                                                            | Add JDBC ConnectTimeout and SocketTimeout to prevent indefinite hangs when Databricks SQL warehouse is paused or unresponsive                                                          |
 | 3.3.7   | 2025-07-15 | [63311](https://github.com/airbytehq/airbyte/pull/63311)                                                            | Support arbitrary number of streams in findExisitngTable query                                                                                                                         |
 | 3.3.6   | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)                                                            | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                      |
 | 3.3.5   | 2025-03-07 | [55232](https://github.com/airbytehq/airbyte/pull/55232)                                                            | fix table name collision multiple connections same schema                                                                                                                              |
