@@ -31,6 +31,11 @@ _REPORT_ID = "6789087632"
 _REPORT_DOCUMENT_ID = "report_document_id"
 
 DEFAULT_EXPECTED_NUMBER_OF_RECORDS = 2  # every test file in resource/http/response contains 2 records
+
+# Streams that use creation_requester_with_report_options, which always includes reportOptions in
+# the POST /reports body (even as {} when no options are configured).
+_STREAMS_USING_REPORT_OPTIONS = frozenset({"GET_LEDGER_DETAIL_VIEW_DATA", "GET_LEDGER_SUMMARY_VIEW_DATA"})
+
 STREAMS = (
     ("GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING", "csv"),
     ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
@@ -70,7 +75,8 @@ def _create_report_request(report_name: str) -> RequestBuilder:
     A POST request needed to start generating a report on Amazon SP platform.
     Performed in ReportsAmazonSPStream._create_report method.
     """
-    return RequestBuilder.create_report_endpoint(report_name)
+    report_options = {} if report_name in _STREAMS_USING_REPORT_OPTIONS else None
+    return RequestBuilder.create_report_endpoint(report_name, report_options=report_options)
 
 
 def _check_report_status_request(report_id: str) -> RequestBuilder:
@@ -1145,4 +1151,65 @@ class TestSalesAndTrafficReportRequestBody:
         )
 
         output = self._read(stream_name, config().with_asin_granularity("SKU"))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestReportOptions:
+    """Tests that report_options_list config entries are reflected in the POST /reports request body."""
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @HttpMocker()
+    def test_given_report_options_list_when_read_then_options_included_in_request_body(self, http_mocker: HttpMocker) -> None:
+        """When report_options_list is configured for GET_LEDGER_DETAIL_VIEW_DATA, the options
+        must appear as reportOptions in the POST /reports request body."""
+        stream_name = "GET_LEDGER_DETAIL_VIEW_DATA"
+        configured_options = {"option1": "value1", "option2": "value2"}
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        create_body = json.dumps(
+            {
+                "reportType": stream_name,
+                "marketplaceIds": [MARKETPLACE_ID],
+                "dataStartTime": CONFIG_START_DATE,
+                "dataEndTime": CONFIG_END_DATE,
+                "reportOptions": configured_options,
+            }
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name),
+        )
+
+        _config = config().with_report_options_list(
+            [
+                {
+                    "stream_name": stream_name,
+                    "options_list": [{"option_name": k, "option_value": v} for k, v in configured_options.items()],
+                }
+            ]
+        )
+
+        output = self._read(stream_name, _config)
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS

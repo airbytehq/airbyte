@@ -21,13 +21,15 @@ class RequestBuilder:
         return cls("auth/o2/token").with_base_url("https://api.amazon.com").with_headers(request_headers).with_body(request_body)
 
     @classmethod
-    def create_report_endpoint(cls, report_name: str) -> RequestBuilder:
+    def create_report_endpoint(cls, report_name: str, report_options: Optional[dict] = None) -> RequestBuilder:
         request_body = {
             "reportType": report_name,
             "marketplaceIds": [MARKETPLACE_ID],
             "dataStartTime": "2023-01-01T00:00:00Z",
             "dataEndTime": "2023-01-30T00:00:00Z",
         }
+        if report_options is not None:
+            request_body["reportOptions"] = report_options
         return cls("reports/2021-06-30/reports").with_body(json.dumps(request_body))
 
     @classmethod
