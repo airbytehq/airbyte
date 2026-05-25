@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .auth import MissingAccessTokenError, ShopifyAuthenticator, build_shopify_authenticator
+from .auth import MissingAccessTokenError, build_shopify_authenticator
 from .scopes import ShopifyScopes
 from .streams.streams import (
     AbandonedCheckouts,
