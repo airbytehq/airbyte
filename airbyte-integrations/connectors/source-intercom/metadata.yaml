@@ -16,16 +16,25 @@ data:
   externalDocumentationUrls:
     - title: Unversioned Changes
       url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/unversioned-changes#unversioned-changes
-      type: api_reference
-    - title: API Changelog
+      type: api_release_history
+    - title: Intercom API Changelog
       url: https://developers.intercom.com/docs/references/changelog
       type: api_release_history
-    - title: Changelog
+    - title: About the API Changelogs
       url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/api-changelog
       type: api_release_history
+    - title: Intercom API Reference
+      url: https://developers.intercom.com/docs/references/rest-api/api.intercom.io
+      type: api_reference
     - title: Intercom API OpenAPI specification
-      url: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/openapi.json
+      url: https://developers.intercom.com/_bundle/docs/references/@2.15/rest-api/api.intercom.io.yaml
       type: openapi_spec
+    - title: Authentication
+      url: https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/
+      type: authentication_guide
+    - title: App Review and Publishing
+      url: https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app
+      type: authentication_guide
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2
