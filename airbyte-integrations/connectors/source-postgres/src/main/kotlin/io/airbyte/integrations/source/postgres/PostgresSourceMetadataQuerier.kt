@@ -44,7 +44,7 @@ class PostgresSourceMetadataQuerier(
      * require SSL encryption or an SSH tunnel; connections with ssl_mode in [disable, allow,
      * prefer] and no tunnel are rejected.
      */
-    private fun validateSslConfiguration() {
+    internal fun validateSslConfiguration() {
         if (!featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
             return
         }
@@ -53,8 +53,7 @@ class PostgresSourceMetadataQuerier(
         val hasNoTunnel = postgresSourceConfig.sshTunnel is SshNoTunnelMethod
         if (sslMode !in acceptableSslModes && hasNoTunnel) {
             throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. " +
-                    "Current SSL mode: $sslMode",
+                "Airbyte Cloud Postgres connections require SSL mode \"require\", \"verify-ca\", \"verify-full\", or an SSH tunnel."
             )
         }
     }
