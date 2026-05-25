@@ -13,7 +13,7 @@ This release combines two breaking changes:
 
 Key changes include:
 
-- New `segments.ad_network_type` support for Performance Max campaigns (channel-level reporting)
+- Added `segments.ad_network_type` to several built-in stream schemas for channel-level reporting, including Performance Max campaigns
 - Renamed deprecated video metrics to TrueView equivalents
 - Removed `CallAd` and `CallAdInfo` fields from `ad_group_ad` schema
 - Renamed campaign date fields to datetime equivalents
@@ -50,13 +50,15 @@ The following field renames and removals affect built-in stream schemas:
 | `user_location_view` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
 | `user_location_view` | `metrics.video_views` | `metrics.video_trueview_views` |
 
+The connector also added `segments.ad_network_type` to the schemas for `account_performance_report`, `ad_group_ad_legacy`, `campaign`, `display_keyword_view`, `topic_view`, `user_location_view`, and `click_view`. If you sync any of these streams, refresh the source schema so destinations can create or update the `segments.ad_network_type` column.
+
 The following fields were also removed in v23 and may affect custom queries (`custom_queries_array`), even though they are not used in built-in streams:
 
 - `campaign.url_expansion_opt_out`
 - `ad_group_ad.ad.demand_gen_multi_asset_ad.lead_form_only`
 - `asset_group_asset.performance_label`
 
-For custom queries, the stream may fail if a field was removed or renamed during the API update. Users with custom queries that reference any of the renamed or removed fields above must update their queries accordingly.
+For custom queries, the stream may fail if a field was removed or renamed during the API update. If your custom queries reference any of the renamed or removed fields above, update them before syncing with connector version 5.0.0.
 You can use the [Query Builder](https://developers.google.com/google-ads/api/fields/v23/query_validator) to validate your custom queries.
 
 ### Primary key change for bidding strategy streams
@@ -72,7 +74,7 @@ Users syncing the `campaign_bidding_strategy` or `ad_group_bidding_strategy` str
 
 ### Action required
 
-After upgrading, refresh the source schema and clear data for the affected streams to ensure uninterrupted syncs.
+After upgrading, refresh the source schema and clear data for the affected streams. Refreshing the schema lets Airbyte detect renamed, removed, and newly added fields. Clearing the affected streams prevents destinations from mixing records written with the old schema or old primary key with records written by version 5.0.0.
 
 <MigrationGuide />
 

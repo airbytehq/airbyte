@@ -371,6 +371,25 @@ This source is constrained by the [Google Ads API limits](https://developers.goo
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>
 
+## Reference
+
+For programmatic configuration with PyAirbyte, Terraform, or the Airbyte API, use these parameter names.
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `credentials.developer_token` | Yes | Google Ads API developer token. For production Google Ads accounts, use a token with Basic Access or Standard Access. |
+| `credentials.client_id` | Yes | Client ID for your Google OAuth application. |
+| `credentials.client_secret` | Yes | Client secret for your Google OAuth application. |
+| `credentials.refresh_token` | Yes | OAuth refresh token for the Google account that has access to the Google Ads accounts you want to sync. |
+| `credentials.access_token` | No | OAuth access token. Airbyte can refresh access by using the refresh token, so this is usually omitted. |
+| `customer_id` | No | Comma-separated Google Ads customer IDs, written as 10-digit numbers without dashes. If omitted, Airbyte syncs all accessible connected accounts. |
+| `customer_status_filter` | No | List of customer statuses to include. Valid values are `UNKNOWN`, `ENABLED`, `CANCELED`, `SUSPENDED`, and `CLOSED`. Defaults to all statuses. |
+| `start_date` | No | UTC date in `YYYY-MM-DD` format. Records before this date aren't replicated. Defaults to two years before the sync runs. |
+| `end_date` | No | UTC date in `YYYY-MM-DD` format. Records after this date aren't replicated. Defaults to the day the sync runs. |
+| `custom_queries_array` | No | Array of custom GAQL query objects. Each object must include `query` and `table_name`. |
+| `conversion_window_days` | No | Number of days after an ad interaction during which conversions can be attributed. Defaults to `14`. Valid values are `0` through `1095`. |
+| `num_workers` | No | Number of concurrent threads to use during a sync. Defaults to `3`. Valid values are `2` through `25`. Increase this only if your Google Ads API quota can support the additional request volume. |
+
 ## Changelog
 
 <details>
@@ -378,7 +397,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0 | 2026-04-20 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
+| 5.0.0 | 2026-05-25 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
 | 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |
 | 4.2.6-rc.3 | 2026-05-07 | [77835](https://github.com/airbytehq/airbyte/pull/77835) | Update CDK to pre-release with runtime cap on concurrent partition generators to fix thread pool starvation deadlock |
 | 4.2.6-rc.2 | 2026-05-01 | [77663](https://github.com/airbytehq/airbyte/pull/77663) | Mount `TimeoutHTTPAdapter` on parent-stream sessions (`customer_client`, `customer_client_non_manager`, `accessible_accounts`) so the 5-minute HTTP socket timeout also covers parent-record fetches |
