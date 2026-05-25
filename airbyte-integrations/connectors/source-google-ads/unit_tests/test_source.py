@@ -4,10 +4,12 @@
 
 
 from collections import namedtuple
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, call
 
 import pendulum
 import pytest
+import yaml
 from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
@@ -279,3 +281,51 @@ _ANY_VALUE = -1
 def test_keys_transformation(input_keys, expected_keys):
     KeysToSnakeCaseGoogleAdsTransformation().transform(input_keys)
     assert input_keys == expected_keys
+
+
+def _load_manifest():
+    """Load the manifest.yaml and return parsed definitions."""
+    manifest_path = Path(__file__).parent.parent / "source_google_ads" / "manifest.yaml"
+    return yaml.safe_load(manifest_path.read_text())
+
+
+@pytest.mark.parametrize(
+    "stream_definition_key, stream_name, expected_primary_key",
+    [
+        pytest.param(
+            "ad_group_bidding_strategy_stream",
+            "ad_group_bidding_strategy",
+            ["ad_group.id", "segments.date"],
+            id="ad_group_bidding_strategy",
+        ),
+        pytest.param(
+            "campaign_bidding_strategy_stream",
+            "campaign_bidding_strategy",
+            ["campaign.id", "segments.date"],
+            id="campaign_bidding_strategy",
+        ),
+    ],
+)
+def test_bidding_strategy_streams_do_not_include_nullable_pk_fields(stream_definition_key, stream_name, expected_primary_key):
+    """
+    Verify that bidding_strategy.id is NOT in the primary key for bidding strategy streams.
+
+    bidding_strategy.id is nullable in the schema (type: ["null", integer]) and including
+    it as a primary key causes failures in destinations that enforce non-null PKs (e.g., Iceberg).
+    See: https://github.com/airbytehq/oncall/issues/11748
+    """
+    manifest = _load_manifest()
+    stream_def = manifest["definitions"][stream_definition_key]
+
+    assert stream_def["name"] == stream_name
+    assert stream_def["primary_key"] == expected_primary_key
+    assert (
+        "bidding_strategy.id" not in stream_def["primary_key"]
+    ), f"bidding_strategy.id must not be in the primary key for {stream_name} because it is nullable"
+
+    # Also verify the field is indeed nullable in the schema
+    schema_ref = stream_def["schema_loader"]["schema"]["$ref"]
+    schema_name = schema_ref.split("/")[-1]
+    schema = manifest["schemas"][schema_name]
+    bidding_strategy_id_type = schema["properties"]["bidding_strategy.id"]["type"]
+    assert "null" in bidding_strategy_id_type, "bidding_strategy.id should be nullable in the schema"
