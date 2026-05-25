@@ -1,20 +1,107 @@
 # AppsFlyer
 
-The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
+<HideInUI>
 
-## Supported Streams
+This page contains the setup guide and reference information for the [AppsFlyer](https://www.appsflyer.com/) source connector.
 
-| Category                     | Status                |
-|------------------------------|-----------------------|
-| Raw Data (Non-Organic)       | ✔️ (Except Reinstall) |
-| Raw Data (Organic)           | ✔️ (Except Reinstall) |
-| Raw Data (Retargeting)       | ✔️                    |
-| Ad Revenue                   | ❌                     |
-| Postback                     | ❌                     |
-| Protect360 Fraud             | ❌                     |
-| Aggregate Report             | ✔️                    |
-| Aggregate Retargeting Report | ✔️                    |
+</HideInUI>
 
+## Prerequisites
+
+- An AppsFlyer account
+- An AppsFlyer [API V2 token](https://support.appsflyer.com/hc/en-us/articles/360004562377-Managing-AppsFlyer-tokens). Only account admins can view and manage API tokens.
+- Your AppsFlyer App ID
+
+## Setup guide
+
+### Step 1: Obtain your API token
+
+1. In the AppsFlyer dashboard, open the account menu and go to **Security center**.
+2. In the **AppsFlyer API tokens** section, click **Manage your AppsFlyer API tokens**.
+3. Copy an existing API V2 token, or click **+ New token** to create one.
+
+For more details, see AppsFlyer's [token management documentation](https://support.appsflyer.com/hc/en-us/articles/360004562377-Managing-AppsFlyer-tokens).
+
+### Step 2: Find your App ID
+
+Your App ID is the app identifier as registered in AppsFlyer. You can find it in the AppsFlyer dashboard URL or in your app's settings page.
+
+### Step 3: Set up the connector in Airbyte
+
+1. Enter your **App ID**.
+2. Enter your **API Token**.
+3. Enter a **Start Date** in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format. Raw data reports are limited to the last 90 days; if your start date is more than 90 days ago, the connector automatically adjusts it to 90 days before the current date.
+4. Optionally, set the **Timezone**. This controls the timezone for date parameters in API requests. Defaults to `UTC`. Use the timezone configured in your AppsFlyer app settings to align data with the AppsFlyer dashboard.
+
+## Supported sync modes
+
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental Sync              | Yes        |
+
+## Supported streams
+
+All streams support incremental sync based on a date cursor.
+
+### Raw data streams (non-organic)
+
+| Stream              | Cursor Field   | Description |
+| :------------------ | :------------- | :---------- |
+| Installs            | `install_time` | Non-organic installs. Updated in real time. |
+| In-App Events       | `event_time`   | In-app events performed by users. Updated in real time. |
+| Uninstall Events    | `event_time`   | App uninstalls. Updated daily. |
+
+### Raw data streams (organic)
+
+| Stream                    | Cursor Field   | Description |
+| :------------------------ | :------------- | :---------- |
+| Organic Installs          | `install_time` | Organic installs. Updated continuously. |
+| Organic In-App Events     | `event_time`   | Organic in-app events. Updated continuously. |
+| Organic Uninstall Events  | `event_time`   | Organic app uninstalls. Updated daily. |
+
+### Raw data streams (retargeting)
+
+| Stream                     | Cursor Field   | Description |
+| :------------------------- | :------------- | :---------- |
+| Retargeting In-App Events  | `event_time`   | In-app events from retargeting campaigns. Updated in real time. |
+| Retargeting Installs       | `install_time` | Conversions from retargeting campaigns. Updated in real time. |
+
+### Aggregate report streams
+
+| Stream                              | Cursor Field | Description |
+| :---------------------------------- | :----------- | :---------- |
+| Daily Report                        | `date`       | Daily performance metrics. |
+| Partners Report                     | `date`       | Performance metrics by media source. |
+| Geo Report                          | `date`       | Performance metrics by geography. |
+| Geo Events Report                   | `date`       | In-app event metrics by geography. |
+| Partners Events Report              | `date`       | In-app event metrics by media source. |
+
+### Aggregate retargeting report streams
+
+| Stream                                | Cursor Field | Description |
+| :------------------------------------ | :----------- | :---------- |
+| Retargeting Daily Report              | `date`       | Retargeting daily performance metrics. |
+| Retargeting Partners Report           | `date`       | Retargeting metrics by media source. |
+| Retargeting Geo Report                | `date`       | Retargeting metrics by geography. |
+| Retargeting Geo Events Report         | `date`       | Retargeting event metrics by geography. |
+| Retargeting Partners Events Report    | `date`       | Retargeting event metrics by media source. |
+
+### Unsupported report categories
+
+The following AppsFlyer Pull API report categories aren't supported by this connector:
+
+- Raw data reinstall reports (organic and non-organic)
+- Ad revenue reports
+- Postback reports
+- Protect360 fraud reports
+
+## Limitations and troubleshooting
+
+- **90-day limit for raw data**: The AppsFlyer Pull API limits raw data report requests to the last 90 days. The connector enforces this automatically.
+- **1,000,000 row maximum per request**: Each API request returns a maximum of 1,000,000 rows. If a report exceeds this limit, the response is truncated.
+- **Rate limits**: AppsFlyer applies daily rate limits per report type, per app, and per account. For aggregate reports with a date range of 2 days or fewer, the limit is 1 request per minute per app. For raw data reports, limits vary by subscription plan. See [AppsFlyer's rate limit documentation](https://support.appsflyer.com/hc/en-us/articles/207034366-Report-generation-quotas-rate-limitations) for details.
+- **Currency**: Raw data streams use the currency configured in your AppsFlyer app settings (`preferred` currency mode).
 
 ## Changelog
 
@@ -23,7 +110,7 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
-| 0.3.0 | 2026-04-27 | [77123](https://github.com/airbytehq/airbyte/pull/77123) | Migrate to airbyte-cdk 7.x and update base image |
+| 0.3.0 | 2026-04-29 | [77123](https://github.com/airbytehq/airbyte/pull/77123) | Migrate to airbyte-cdk 7.x and update base image |
 | 0.2.40 | 2025-05-17 | [60656](https://github.com/airbytehq/airbyte/pull/60656) | Update dependencies |
 | 0.2.39 | 2025-05-10 | [59774](https://github.com/airbytehq/airbyte/pull/59774) | Update dependencies |
 | 0.2.38 | 2025-05-03 | [59359](https://github.com/airbytehq/airbyte/pull/59359) | Update dependencies |
@@ -64,7 +151,7 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 | 0.2.3 | 2024-06-25 | [40476](https://github.com/airbytehq/airbyte/pull/40476) | Update dependencies |
 | 0.2.2 | 2024-06-22 | [40059](https://github.com/airbytehq/airbyte/pull/40059) | Update dependencies |
 | 0.2.1 | 2024-06-11 | [39407](https://github.com/airbytehq/airbyte/pull/39407) | Fix Organic In-App Events Stream |
-| 0.2.0 | 2024-05-19 | [38339](https://github.com/airbytehq/airbyte/pull/38339) | Migrate to [AppyFlyer API V2](https://support.appsflyer.com/hc/en-us/articles/12399683708305-Bulletin-API-token-changes?query=token) |
+| 0.2.0 | 2024-05-19 | [38339](https://github.com/airbytehq/airbyte/pull/38339) | Migrate to [AppsFlyer API V2](https://support.appsflyer.com/hc/en-us/articles/12399683708305-Bulletin-API-token-changes?query=token) |
 | 0.1.2 | 2024-06-06 | [39187](https://github.com/airbytehq/airbyte/pull/39187) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-20 | [38436](https://github.com/airbytehq/airbyte/pull/38436) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2021-03-22 | [2544](https://github.com/airbytehq/airbyte/pull/2544) | Adding the appsflyer singer based connector |
