@@ -421,40 +421,26 @@ def test_custom_query_partition_router_for_metrics(query, has_metrics, config_fo
 @pytest.mark.parametrize(
     "state_date, expected_start_click_view, expected_start_regular",
     [
-        # No state - use retention dates
-        # click_view: 2025-01-01 minus 90 days = 2024-10-03
-        # regular: config.start_date = 2023-06-01
-        (None, "2024-10-03", "2023-06-01"),
-        # State within retention - use state date
-        # Both use state date since it's within the allowed range
-        ("2024-12-01", "2024-12-01", "2024-12-01"),
-        # State before retention - click_view enforces retention, regular uses state
-        # click_view: Ignores old state, uses 2024-10-03 (90-day limit)
-        # regular: Uses state date 2024-01-01
-        ("2024-01-01", "2024-10-03", "2024-01-01"),
+        pytest.param(None, "2026-03-03", "2023-05-01", id="no_state"),
+        pytest.param("2026-04-01", "2026-04-01", "2026-04-01", id="state_within_retention"),
+        pytest.param("2024-01-01", "2026-03-03", "2024-01-01", id="state_within_click_view_retention"),
+        pytest.param("2021-01-01", "2026-03-03", "2023-05-01", id="state_before_google_ads_retention"),
     ],
-    ids=["no_state", "state_within_retention", "state_before_retention"],
 )
-@freeze_time("2025-01-01")
+@freeze_time("2026-06-01")
 def test_custom_query_click_view_retention_and_step(
     query, is_click_view, state_date, expected_start_click_view, expected_start_regular, config_for_custom_query_tests
 ):
     """
-    Test that click_view custom queries have correct step override and retention.
+    Test that custom queries use the expected step size and retention window.
 
-    This test freezes time to 2025-01-01 and verifies:
-    - click_view queries: P1D step (1 day) - verifies step override in manifest (lines 1033-1053)
-    - click_view queries: 90-day retention via start_datetime override in manifest (lines 1054-1079)
-    - regular queries: P14D step (14 days) - default for incremental queries
-    - regular queries: use config.start_date for retention
-
-    Tests three state scenarios:
-    1. No state - uses retention dates
-    2. State within retention - uses state date
-    3. State before retention - click_view enforces retention, regular uses state
+    This test freezes time to 2026-06-01 and verifies:
+    - click_view queries: P1D step (1 day) and 90-day retention
+    - regular queries: P14D step (14 days) and 37-month Google Ads retention
+    - state values older than each retention window are clamped forward
     """
     config = config_for_custom_query_tests.copy()
-    config["start_date"] = "2023-06-01"
+    config["start_date"] = "2021-01-01"
     stream_name = "test_query"
     config["custom_queries_array"] = [
         {
@@ -497,6 +483,5 @@ def test_custom_query_click_view_retention_and_step(
         f"Query: {query}\n"
         f"State: {state_date}\n"
         f"Expected start date: {expected_start_date}\n"
-        f"Actual start date: {actual_start_date}\n"
-        f"Click view should enforce 90-day retention (2024-10-03), regular queries use config.start_date or state."
+        f"Actual start date: {actual_start_date}"
     )

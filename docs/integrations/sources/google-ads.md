@@ -317,7 +317,7 @@ SELECT
 FROM ad_group
 ```
 
-Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the `SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by day.
+Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the `SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by day. Google Ads only supports daily reporting data for the past 37 months, so older configured start dates are treated as the earliest supported date for these reports.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 
@@ -378,6 +378,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.7 | 2026-05-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Limit Google Ads daily reporting streams to the API's 37-month retention window. |
 | 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |
 | 4.2.6-rc.3 | 2026-05-07 | [77835](https://github.com/airbytehq/airbyte/pull/77835) | Update CDK to pre-release with runtime cap on concurrent partition generators to fix thread pool starvation deadlock |
 | 4.2.6-rc.2 | 2026-05-01 | [77663](https://github.com/airbytehq/airbyte/pull/77663) | Mount `TimeoutHTTPAdapter` on parent-stream sessions (`customer_client`, `customer_client_non_manager`, `accessible_accounts`) so the 5-minute HTTP socket timeout also covers parent-record fetches |
