@@ -121,7 +121,11 @@ If you are accessing your account through a Google Ads Manager account, you must
 11. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
 </FieldAnchor>
 
-12. Click **Set up source** and wait for the tests to complete.
+<FieldAnchor field="num_workers">
+12. (Optional) Enter the **Number of Concurrent Threads** to use for syncing. Increasing this value may speed up syncs for accounts with many customers or streams. The default is 3, with a maximum of 25.
+</FieldAnchor>
+
+13. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -141,7 +145,8 @@ If you are accessing your account through a Google Ads Manager account, you must
 11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
 12. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
 13. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
-14. Click **Set up source** and wait for the tests to complete.
+14. (Optional) Enter the **Number of Concurrent Threads** to use for syncing. Increasing this value may speed up syncs for accounts with many customers or streams. The default is 3, with a maximum of 25.
+15. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 <HideInUI>
@@ -159,8 +164,8 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 List of streams:
 
-- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
-- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
 - [campaign_criterion](https://developers.google.com/google-ads/api/fields/v20/campaign_criterion)
 
 These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
