@@ -693,9 +693,7 @@ class TestIncremental:
 
         output = self._read(
             stream_name,
-            config()
-            .with_report_stream_lookback_window_in_hours(6)
-            .with_end_date(pendulum.parse("2023-01-16T00:00:00Z")),
+            config().with_report_stream_lookback_window_in_hours(6).with_end_date(pendulum.parse("2023-01-16T00:00:00Z")),
             state=initial_state,
         )
         assert len(output.records) > 0
