@@ -251,6 +251,14 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"auth_token\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [404]
+          error_message: "Sentry organization or project is missing or invalid."
+          failure_type: config_error
 
 streams:
   - $ref: "#/definitions/streams/events"
@@ -271,6 +279,8 @@ spec:
     properties:
       project:
         type: string
+        minLength: 1
+        pattern: ^.*\S.*$
         description: The name (slug) of the Project you want to sync.
         order: 3
         title: Project
@@ -295,6 +305,8 @@ spec:
         airbyte_secret: true
       organization:
         type: string
+        minLength: 1
+        pattern: ^.*\S.*$
         description: The slug of the organization the groups belong to.
         order: 2
         title: Organization
