@@ -232,17 +232,17 @@ abstract class S3V2WriteTest(
                 namespaceMapper = namespaceMapperForMedium()
             )
 
-        assertThrows<DestinationUncleanExitException> {
-            runSync(
-                updatedConfig,
-                stream,
-                listOf(
-                        """{"id": 1, "union_of_objects": {"field1": "a"}}""",
-                        """{"id": 2, "union_of_objects": {"undeclared": "field"}}"""
-                    )
-                    .map { InputRecord(stream, it, 1L) }
-            )
-        }
+        // MergeUnions now absorbs ObjectTypeWithoutSchema into the concrete ObjectType,
+        // so this no longer throws.
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                    """{"id": 1, "union_of_objects": {"field1": "a"}}""",
+                    """{"id": 2, "union_of_objects": {"undeclared": "field"}}"""
+                )
+                .map { InputRecord(stream, it, 1L) }
+        )
     }
 
     @Test
