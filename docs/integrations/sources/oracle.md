@@ -7,7 +7,7 @@
 | Full Refresh Sync             | Yes         |                    |
 | Incremental - Append Sync     | Yes         |                    |
 | Replicate Incremental Deletes | No          |                    |
-| Logical Replication \(WAL\)   | No          |                    |
+| Logical Replication (WAL)     | No          |                    |
 | TLS Support                   | Yes         |                    |
 | SSH Tunnel Connection         | Yes         |                    |
 | LogMiner                      | No          |                    |
@@ -16,23 +16,19 @@
 
 The Oracle source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
-## Getting Started \(Airbyte Cloud\)
-
-On Airbyte Cloud, only TLS connections to your Oracle instance are supported. Other than that, you can proceed with the open-source instructions below.
-
-## Getting Started \(Airbyte Open Source\)
-
-#### Requirements
+## Prerequisites
 
 1. Oracle Database `11g` or above (tested with Oracle 11g, 12c, 18c, 19c, and 21c)
-2. Allow connections from Airbyte to your Oracle database \(if they exist in separate VPCs\)
+2. Allow connections from Airbyte to your Oracle database (if they exist in separate VPCs)
 3. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
-#### 1. Make sure your database is accessible from the machine running Airbyte
+## Setup guide
+
+### Step 1: Confirm your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Oracle instance is via the check connection tool in the UI.
 
-#### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
+### Step 2: Create a dedicated read-only user with access to the relevant tables (recommended but optional)
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
@@ -58,44 +54,46 @@ GRANT SELECT ON "<schema_b>"."<table_2>" TO airbyte;
 
 Your database user should now be ready for use with Airbyte.
 
-#### 3. Configure connection type and schemas
+### Step 3: Configure connection type and schemas
 
 **Connection Type**: Choose between Service Name and System ID (SID):
+
 - **Service Name**: Recommended for modern Oracle installations (Oracle 8i and later). A service name is a logical representation of a database and can be used for connection load balancing and failover.
 - **System ID (SID)**: Used for legacy Oracle instances. A SID uniquely identifies a specific Oracle database instance on a server.
 
 **Schemas**: Specify the schemas Airbyte should sync from. Case sensitive. Defaults to the upper-cased username if empty. If the user does not have access to the configured schemas, no tables will be discovered.
 
-#### 4. Additional JDBC Configuration (Optional)
+### Step 4: Additional JDBC configuration (optional)
 
 You can provide additional JDBC URL parameters in the `JDBC URL Params` field to customize the connection behavior. Parameters should be formatted as `key=value` pairs separated by `&`. For example:
 
-```
+```text
 defaultRowPrefetch=20&oracle.net.CONNECT_TIMEOUT=10000&oracle.net.READ_TIMEOUT=30000
 ```
 
 Common useful parameters:
+
 - `defaultRowPrefetch`: Number of rows to prefetch (default: 10)
 - `oracle.net.CONNECT_TIMEOUT`: Connection timeout in milliseconds
 - `oracle.net.READ_TIMEOUT`: Socket read timeout in milliseconds
 
 ## Connection via SSH Tunnel
 
-Airbyte has the ability to connect to a Oracle instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
+Airbyte can connect to an Oracle instance through an SSH tunnel. This is useful when the database is not directly accessible from the public internet, for example because it does not have a public IP address or your security policy restricts direct connections.
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion sever\) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+When using an SSH tunnel, Airbyte connects to an intermediate server (a bastion server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the database.
 
-Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+To configure an SSH tunnel:
 
-1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
-2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
-   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
-   2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
-3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
-4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
-5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the Oracle username.
-6. If you are using `Password Authentication`, then `Password` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Oracle password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
-7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
+1. Configure all fields for the source as you normally would, except **SSH Tunnel Method**.
+2. **SSH Tunnel Method** defaults to **No Tunnel** (meaning a direct connection). To use an SSH tunnel, choose **SSH Key Authentication** or **Password Authentication**.
+   1. Choose **Key Authentication** if you will use an RSA private key for the SSH tunnel (see below for more information on generating this key).
+   2. Choose **Password Authentication** if you will use a password for the SSH tunnel.
+3. **SSH Tunnel Jump Server Host** is the hostname or IP address of the bastion server.
+4. **SSH Connection Port** is the port on the bastion server for the SSH connection. The default SSH port is `22`.
+5. **SSH Login Username** is the username Airbyte uses to connect to the bastion server. This is not the Oracle database username.
+6. If you are using **Password Authentication**, set **Password** to the password for the bastion server OS user. If you are using **SSH Key Authentication**, leave this blank.
+7. If you are using **SSH Key Authentication**, set **SSH Private Key** to the RSA private key for the SSH connection. Provide the full contents of the key file, starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ### Generating an SSH Key Pair
 
@@ -105,11 +103,11 @@ The connector expects an RSA key in PEM format. To generate this key:
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
-This produces the private key in pem format, and the public key remains in the standard format used by the `authorized_keys` file on your bastion host. The public key should be added to your bastion host to whichever user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
+This produces the private key in PEM format and the public key in the standard format used by the `authorized_keys` file on your bastion host. Add the public key to the bastion host for the user you want Airbyte to connect as. Copy and paste the private key into the Airbyte connector configuration.
 
 ## Data Type Mapping
 
-Oracle data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-oracle/src/test-integration/java/io/airbyte/integrations/source/oracle/OracleSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+Oracle data types are mapped to the following data types when synchronizing data.
 
 **Note**: The connector automatically handles LONG and LONG RAW columns by setting the Oracle JDBC property `oracle.jdbc.useFetchSizeWithLongColumn=true`. Oracle recommends avoiding LONG and LONG RAW columns in favor of LOB types (CLOB, BLOB) for new applications.
 
@@ -141,19 +139,18 @@ Oracle data types are mapped to the following data types when synchronizing data
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
-## Encryption Options
+## Encryption options
 
-Airbyte supports three network connectivity options for connecting to Oracle:
+The connector supports three encryption methods. On Airbyte Cloud, encryption is required. You must choose either Native Network Encryption or TLS. On Self-Managed Airbyte, all three options are available.
 
-1. **Unencrypted** (Self-Managed only): The connection uses the TCP protocol without encryption. All data transmitted over the network will be in plain text. Only use this option in secure, trusted network environments. Note: This option is only available in Self-Managed Airbyte deployments, not in Airbyte Cloud.
+1. **Unencrypted** (Self-Managed only): The connection uses the TCP protocol without encryption. All data is transmitted in plain text. Only use this option in secure, trusted network environments.
 
 2. **Native Network Encryption (NNE)**: Provides database connection encryption without the configuration overhead of TLS and without requiring different ports. The connector sets `SQLNET.ENCRYPTION_CLIENT=REQUIRED`, meaning only encrypted traffic is accepted. Choose from these encryption algorithms:
-   - **AES256**: Advanced Encryption Standard with 256-bit keys (recommended for highest security)
+   - **AES256**: Advanced Encryption Standard with 256-bit keys (recommended)
    - **RC4_56**: RC4 stream cipher with 56-bit keys (legacy, less secure)
    - **3DES168**: Triple DES with 168-bit keys (legacy, less secure)
 
-3. **TLS Encrypted (verify certificate)**: Uses the TLS protocol with certificate verification for maximum security. Requires you to provide the server's SSL certificate in PEM format in the `SSL PEM file` field. The certificate must be valid and trusted.
-
+3. **TLS Encrypted (verify certificate)**: Uses the TLS protocol with certificate verification for maximum security. Requires you to provide the server's SSL certificate in PEM format in the **SSL PEM file** field. The certificate must be valid and trusted.
 
 ## Changelog
 
@@ -162,7 +159,7 @@ Airbyte supports three network connectivity options for connecting to Oracle:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.5.8   | 2026-03-24 | [75410](https://github.com/airbytehq/airbyte/pull/75410)  | Fold strict-encrypt variant into main connector using deployment mode feature flag                                                         |
+| 0.5.8   | 2026-03-25 | [75410](https://github.com/airbytehq/airbyte/pull/75410) | Fold strict-encrypt variant into main connector; encryption is now required on Airbyte Cloud                                              |
 | 0.5.7   | 2025-07-15 | [63326](https://github.com/airbytehq/airbyte/pull/63326) | Fix publishing flow.                                                                                                                      |
 | 0.5.6   | 2025-07-10 | [62920](https://github.com/airbytehq/airbyte/pull/62920) | Convert to new gradle build flow                                                                                                          |
 | 0.5.5   | 2025-07-10 | [62921](https://github.com/airbytehq/airbyte/pull/62921) | Convert to new gradle build flow                                                                                                          |
