@@ -9,16 +9,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.microsoft.sqlserver.jdbc.Geography
 import com.microsoft.sqlserver.jdbc.Geometry
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
+import io.airbyte.cdk.discover.AirbyteStreamFactory
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DataField
+import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -32,6 +35,8 @@ import io.airbyte.cdk.read.*
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -48,6 +53,33 @@ private val log = KotlinLogging.logger {}
 @Primary
 class MsSqlSourceOperations :
     JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+    override fun create(
+        config: SourceConfiguration,
+        discoveredStream: DiscoveredStream
+    ): AirbyteStream {
+        val isCdc = config.isCdc()
+        val hasPK = hasValidPrimaryKey(discoveredStream)
+        val hasPotentialCursorField = hasPotentialCursorFields(discoveredStream)
+
+        val syncModes =
+            when {
+                !isCdc && hasPotentialCursorField || isCdc ->
+                    listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                else -> listOf(SyncMode.FULL_REFRESH)
+            }
+        val primaryKey: List<List<String>> =
+            if (isCdc || hasPK) discoveredStream.primaryKeyColumnIDs else emptyList()
+        return AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
+            if (isCdc) {
+                decorateAirbyteStream(this)
+            }
+            supportedSyncModes = syncModes
+            sourceDefinedPrimaryKey = primaryKey
+            sourceDefinedCursor = isCdc
+            isResumable = hasPK
+        }
+    }
+
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType {
         when (val type = c.type) {
             is SystemType -> {
