@@ -65,9 +65,10 @@ class PostgresSourceMetadataQuerierTest {
             selectQueryGenerator = PostgresSourceSelectQueryGenerator(),
             fieldTypeMapper = PostgresSourceFieldTypeMapper(),
             checkQueries = JdbcCheckQueries(),
-            jdbcConnectionFactory = mockk<JdbcConnectionFactory>(relaxed = true) {
-                every { get() } returns mockk(relaxed = true)
-            }
+            jdbcConnectionFactory =
+                mockk<JdbcConnectionFactory>(relaxed = true) {
+                    every { get() } returns mockk(relaxed = true)
+                }
         )
     }
 
