@@ -1,5 +1,6 @@
 {
   "username": "SERVICE-xxxxx",
   "password": "token",
-  "is_sandbox": true
+  "is_sandbox": true,
+  "start_date": "2024-01-01T00:00:00Z"
 }

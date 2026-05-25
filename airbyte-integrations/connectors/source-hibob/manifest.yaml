@@ -1,25 +1,98 @@
 version: 6.48.15
-
 type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - payroll
+    - employee_fields
 
 definitions:
+  authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config['username'] }}"
+    password: "{{ config['password'] }}"
+
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ 'https://api.sandbox.hibob.com/v1' if config.get('is_sandbox') else 'https://api.hibob.com/v1' }}"
+    authenticator:
+      $ref: "#/definitions/authenticator"
+
+  default_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 200
+      cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+      stop_condition: '{{ not response.get("response_metadata", {}).get("next_cursor", {}) }}'
+
+  employees_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      field_path:
+        - pagination
+        - cursor
+      inject_into: body_json
+    page_size_option:
+      type: RequestOption
+      field_path:
+        - pagination
+        - limit
+      inject_into: body_json
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 200
+      cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+      stop_condition: '{{ not response.get("response_metadata", {}).get("next_cursor", {}) }}'
+
+  daily_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: createdOn
+    start_datetime:
+      datetime: "{{ config.get('start_date') or day_delta(-365, '%Y-%m-%dT%H:%M:%SZ') }}"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%f"
+      - "%Y-%m-%dT%H:%M:%S"
+    step: P180D
+    cursor_granularity: PT1S
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: since
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: to
+
   streams:
-    payroll:
+    employees:
       type: DeclarativeStream
-      name: payroll
+      name: employees
       primary_key:
         - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /payroll/history
-          http_method: GET
+          path: /people/search
+          http_method: POST
+          request_body_json:
+            showInactive: true
+            humanReadable: REPLACE
         record_selector:
           type: RecordSelector
           extractor:
@@ -27,25 +100,14 @@ definitions:
             field_path:
               - employees
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 200
-            cursor_value: "{{ response.get('next_cursor', {}) }}"
+          $ref: "#/definitions/employees_paginator"
         decoder:
           type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/payroll"
+          $ref: "#/schemas/employees"
+
     profiles:
       type: DeclarativeStream
       name: profiles
@@ -64,101 +126,77 @@ definitions:
             field_path:
               - employees
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 200
-            cursor_value: "{{ response.get('next_cursor', {}) }}"
+          type: NoPagination
         decoder:
           type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/profiles"
-    employees:
+
+    employee_fields:
       type: DeclarativeStream
-      name: employees
+      name: employee_fields
       primary_key:
         - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: people/search
-          http_method: POST
-          request_body_json:
-            fields:
-              - root.id
-              - root.firstName
-              - root.surname
-              - root.fullName
-              - root.displayName
-              - root.email
-              - root.companyId
-              - internal.status
-              - internal.lifecycleStatus
-              - internal.terminationReason
-              - internal.terminationDate
-              - personal.shortBirthDate
-              - personal.pronouns
-              - personal.honorific
-              - personal.nationality
-              - employee.veteranStatus
-              - employee.disabilityStatus
-              - employee.lastDayOfWork
-              - work.shortStartDate
-              - work.startDate
-              - work.manager
-              - work.workPhone
-              - work.tenureDuration.periodISO
-              - work.tenureDuration.sortFactor
-              - work.tenureDuration.humanize
-              - work.custom.field_1698036945383
-              - work.durationOfEmployment.periodISO
-              - work.durationOfEmployment.sortFactor
-              - work.durationOfEmployment.humanize
-              - work.reportsToIdInCompany
-              - work.employeeIdInCompany
-              - work.reportsTo.displayName
-              - work.reportsTo.email
-              - work.reportsTo.surname
-              - work.reportsTo.firstName
-              - work.reportsTo.id
-              - work.workMobile
-              - work.indirectReports
-              - work.department
-              - work.siteId
-              - work.tenureDurationYears
-              - work.tenureYears
-              - work.isManager
-              - work.title
-              - work.site
-              - work.originalStartDate
-              - work.activeEffectiveDate
-              - work.directReports
-              - work.workChangeType
-              - work.secondLevelManager
-              - work.yearsOfService
-              - work.daysOfPreviousService
-              - about.foodPreferences
-              - about.socialData.linkedin
-              - about.socialData.twitter
-              - about.socialData.facebook
-              - about.superpowers
-              - about.hobbies
-              - about.about
-              - about.avatar
-              - home.privateEmail
-            showInactive: true
-            humanReadable: REPLACE
+          path: /company/people/fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - fields
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employee_fields"
+
+    company_named_lists:
+      type: DeclarativeStream
+      name: company_named_lists
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /company/named-lists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "*"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_named_lists"
+
+    work_history:
+      type: DeclarativeStream
+      name: work_history
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bulk/people/work
+          http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
@@ -166,1200 +204,209 @@ definitions:
             field_path:
               - employees
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 200
-            cursor_value: "{{ response.get('next_cursor', {}) }}"
+          $ref: "#/definitions/default_paginator"
         decoder:
           type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/employees"
-  base_requester:
-    type: HttpRequester
-    url_base: >-
-      {{ 'https://app.sandbox.hibob.com/v1/' if config['is_sandbox'] else
-      'https://app.hibob.com/v1/' }}
-    authenticator:
-      type: BasicHttpAuthenticator
-      password: "{{ config[\"password\"] }}"
-      username: "{{ config[\"username\"] }}"
+          $ref: "#/schemas/work_history"
+
+    lifecycle_history:
+      type: DeclarativeStream
+      name: lifecycle_history
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bulk/people/lifecycle
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+        paginator:
+          $ref: "#/definitions/default_paginator"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lifecycle_history"
+
+    employment_history:
+      type: DeclarativeStream
+      name: employment_history
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bulk/people/employment
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+        paginator:
+          $ref: "#/definitions/default_paginator"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employment_history"
+
+    time_off_request_changes:
+      type: DeclarativeStream
+      name: time_off_request_changes
+      primary_key:
+        - requestId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /timeoff/requests/changes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - changes
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/daily_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_off_request_changes"
+
+    job_roles:
+      type: DeclarativeStream
+      name: job_roles
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /job-catalog/job-roles
+          http_method: GET
+          request_parameters:
+            includeHumanReadable: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - JobRoleEntries
+              - "*"
+        paginator:
+          $ref: "#/definitions/default_paginator"
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("response_metadata", {}).get("next_cursor", {}) }}'
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_roles"
 
 streams:
-  - $ref: "#/definitions/streams/payroll"
-  - $ref: "#/definitions/streams/profiles"
   - $ref: "#/definitions/streams/employees"
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/employee_fields"
+  - $ref: "#/definitions/streams/company_named_lists"
+  - $ref: "#/definitions/streams/work_history"
+  - $ref: "#/definitions/streams/lifecycle_history"
+  - $ref: "#/definitions/streams/employment_history"
+  - $ref: "#/definitions/streams/time_off_request_changes"
+  - $ref: "#/definitions/streams/job_roles"
 
 spec:
   type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/hibob
   connection_specification:
-    type: object
     $schema: http://json-schema.org/draft-07/schema#
+    title: Hibob Spec
+    type: object
+    additionalProperties: true
     required:
       - username
+      - password
       - is_sandbox
     properties:
       username:
         type: string
+        title: Service user ID
+        description: HiBob service user ID.
         order: 0
-        title: Username
       password:
         type: string
-        order: 1
-        title: Password
-        always_show: true
+        title: Service user token
+        description: HiBob service user token.
         airbyte_secret: true
+        always_show: true
+        order: 1
       is_sandbox:
         type: boolean
-        description: "Toggle true if this instance is a HiBob sandbox "
+        title: Use sandbox
+        description: Toggle on to connect to the HiBob sandbox API.
+        default: false
         order: 2
-        title: Is Sandbox
-    additionalProperties: true
+      start_date:
+        type: string
+        title: Start date
+        description: UTC datetime used as the lower bound for incremental time off request changes.
+        format: date-time
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 3
 
 metadata:
   autoImportSchema:
-    payroll: false
-    profiles: false
     employees: false
-  testedStreams:
-    payroll:
-      hasRecords: true
-      streamHash: 833ca535dd3e74348199c9d05951a5210c74f032
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    profiles:
-      hasRecords: true
-      streamHash: 295de31d5942f4c243e5791861bf77c64f68e9cf
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    employees:
-      streamHash: e52c288e25979a8e43936b2375ba9306cc238950
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
+    profiles: false
+    employee_fields: false
+    company_named_lists: false
+    work_history: false
+    lifecycle_history: false
+    employment_history: false
+    time_off_request_changes: false
+    job_roles: false
   assist:
-    docsUrl: https://apidocs.hibob.com/reference/post_people-search
+    docsUrl: https://apidocs.hibob.com/
 
 schemas:
-  payroll:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      about:
-        type:
-          - object
-          - "null"
-        properties:
-          avatar:
-            type:
-              - string
-              - "null"
-          foodPreferences:
-            type:
-              - array
-              - "null"
-          hobbies:
-            type:
-              - array
-              - "null"
-          socialData:
-            type:
-              - object
-              - "null"
-            properties: {}
-          superpowers:
-            type:
-              - array
-              - "null"
-      avatarUrl:
-        type:
-          - string
-          - "null"
-      companyId:
-        type:
-          - number
-          - "null"
-      coverImageUrl:
-        type:
-          - string
-          - "null"
-      creationDateTime:
-        type:
-          - string
-          - "null"
-      displayName:
-        type:
-          - string
-          - "null"
-      email:
-        type:
-          - string
-          - "null"
-      employee:
-        type:
-          - object
-          - "null"
-        properties: {}
-      financial:
-        type:
-          - object
-          - "null"
-        properties:
-          accountName:
-            type:
-              - string
-              - "null"
-          accountnumber:
-            type:
-              - string
-              - "null"
-          bankAccountType:
-            type:
-              - string
-              - "null"
-          bankName:
-            type:
-              - string
-              - "null"
-          custom:
-            type:
-              - object
-              - "null"
-            properties:
-              field_1692991687729:
-                type:
-                  - string
-                  - "null"
-          passportNumber:
-            type:
-              - string
-              - "null"
-      firstName:
-        type:
-          - string
-          - "null"
-      fullName:
-        type:
-          - string
-          - "null"
-      home:
-        type:
-          - object
-          - "null"
-        properties:
-          familyStatus:
-            type:
-              - string
-              - "null"
-          legalGender:
-            type:
-              - string
-              - "null"
-          mobilePhone:
-            type:
-              - string
-              - "null"
-          numberOfKids:
-            type:
-              - number
-              - "null"
-          privateEmail:
-            type:
-              - string
-              - "null"
-          privatePhone:
-            type:
-              - string
-              - "null"
-          spouse:
-            type:
-              - object
-              - "null"
-            properties: {}
-      id:
-        type: string
-      identification:
-        type:
-          - object
-          - "null"
-        properties:
-          custom:
-            type:
-              - object
-              - "null"
-            properties:
-              field_1697450926907:
-                type:
-                  - array
-                  - "null"
-      internal:
-        type:
-          - object
-          - "null"
-        properties:
-          currentActiveStatusStartDate:
-            type:
-              - string
-              - "null"
-          lifecycleStatus:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-      payroll:
-        type:
-          - object
-          - "null"
-        properties:
-          actualPayment:
-            type:
-              - array
-              - "null"
-          custom:
-            type:
-              - object
-              - "null"
-            properties:
-              field_1694738605040:
-                type:
-                  - number
-                  - "null"
-              field_1694739058581:
-                type:
-                  - string
-                  - "null"
-              field_1694739102985:
-                type:
-                  - number
-                  - "null"
-          deduction:
-            type:
-              - object
-              - "null"
-            properties:
-              Childcare vouchers:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Company Car:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Cycle to work:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Lunch vouchers:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Season ticket loans:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-          deductions:
-            type:
-              - array
-              - "null"
-          employment:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              activeEffectiveDate:
-                type:
-                  - string
-                  - "null"
-              actualWorkingPattern:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  days:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      friday:
-                        type:
-                          - number
-                          - "null"
-                      monday:
-                        type:
-                          - number
-                          - "null"
-                      saturday:
-                        type:
-                          - number
-                          - "null"
-                      sunday:
-                        type:
-                          - number
-                          - "null"
-                      thursday:
-                        type:
-                          - number
-                          - "null"
-                      tuesday:
-                        type:
-                          - number
-                          - "null"
-                      wednesday:
-                        type:
-                          - number
-                          - "null"
-                  hoursPerDay:
-                    type:
-                      - number
-                      - "null"
-                  workingPatternId:
-                    type:
-                      - number
-                      - "null"
-                  workingPatternType:
-                    type:
-                      - string
-                      - "null"
-              calendarId:
-                type:
-                  - number
-                  - "null"
-              contract:
-                type:
-                  - string
-                  - "null"
-              fte:
-                type:
-                  - number
-                  - "null"
-              hoursInDayNotWorked:
-                type:
-                  - number
-                  - "null"
-              salaryPayType:
-                type:
-                  - string
-                  - "null"
-              siteWorkingPattern:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  days:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      friday:
-                        type:
-                          - number
-                          - "null"
-                      monday:
-                        type:
-                          - number
-                          - "null"
-                      saturday:
-                        type:
-                          - number
-                          - "null"
-                      sunday:
-                        type:
-                          - number
-                          - "null"
-                      thursday:
-                        type:
-                          - number
-                          - "null"
-                      tuesday:
-                        type:
-                          - number
-                          - "null"
-                      wednesday:
-                        type:
-                          - number
-                          - "null"
-                  hoursPerDay:
-                    type:
-                      - number
-                      - "null"
-                  workingPatternId:
-                    type:
-                      - number
-                      - "null"
-                  workingPatternType:
-                    type:
-                      - string
-                      - "null"
-              weeklyHours:
-                type:
-                  - number
-                  - "null"
-          employmentType:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                activeEffectiveDate:
-                  type:
-                    - string
-                    - "null"
-                actualWorkingPattern:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    days:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        friday:
-                          type:
-                            - number
-                            - "null"
-                        monday:
-                          type:
-                            - number
-                            - "null"
-                        saturday:
-                          type:
-                            - number
-                            - "null"
-                        sunday:
-                          type:
-                            - number
-                            - "null"
-                        thursday:
-                          type:
-                            - number
-                            - "null"
-                        tuesday:
-                          type:
-                            - number
-                            - "null"
-                        wednesday:
-                          type:
-                            - number
-                            - "null"
-                    hoursPerDay:
-                      type:
-                        - number
-                        - "null"
-                    workingPatternId:
-                      type:
-                        - number
-                        - "null"
-                    workingPatternType:
-                      type:
-                        - string
-                        - "null"
-                calendarId:
-                  type:
-                    - number
-                    - "null"
-                calendarName:
-                  type:
-                    - string
-                    - "null"
-                canBeDeleted:
-                  type:
-                    - boolean
-                    - "null"
-                change:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    changedById:
-                      type:
-                        - string
-                        - "null"
-                contract:
-                  type:
-                    - string
-                    - "null"
-                customColumns:
-                  type:
-                    - object
-                    - "null"
-                effectiveDate:
-                  type:
-                    - string
-                    - "null"
-                fte:
-                  type:
-                    - number
-                    - "null"
-                hoursInDayNotWorked:
-                  type:
-                    - number
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                isCurrent:
-                  type:
-                    - boolean
-                    - "null"
-                modificationDate:
-                  type:
-                    - string
-                    - "null"
-                salaryPayType:
-                  type:
-                    - string
-                    - "null"
-                siteWorkingPattern:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    days:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        friday:
-                          type:
-                            - number
-                            - "null"
-                        monday:
-                          type:
-                            - number
-                            - "null"
-                        saturday:
-                          type:
-                            - number
-                            - "null"
-                        sunday:
-                          type:
-                            - number
-                            - "null"
-                        thursday:
-                          type:
-                            - number
-                            - "null"
-                        tuesday:
-                          type:
-                            - number
-                            - "null"
-                        wednesday:
-                          type:
-                            - number
-                            - "null"
-                    hoursPerDay:
-                      type:
-                        - number
-                        - "null"
-                    workingPatternId:
-                      type:
-                        - number
-                        - "null"
-                    workingPatternType:
-                      type:
-                        - string
-                        - "null"
-                weeklyHours:
-                  type:
-                    - number
-                    - "null"
-          entitlement:
-            type:
-              - object
-              - "null"
-            properties:
-              Childcare vouchers:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Company Car:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Cycle to work:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Lunch vouchers:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Season ticket loans:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-          entitlements:
-            type:
-              - array
-              - "null"
-          equity:
-            type:
-              - array
-              - "null"
-          salary:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                activeEffectiveDate:
-                  type:
-                    - string
-                    - "null"
-                base:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    currency:
-                      type:
-                        - string
-                        - "null"
-                    value:
-                      type:
-                        - number
-                        - "null"
-                canBeDeleted:
-                  type:
-                    - boolean
-                    - "null"
-                change:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    changedById:
-                      type:
-                        - string
-                        - "null"
-                    reason:
-                      type:
-                        - string
-                        - "null"
-                customColumns:
-                  type:
-                    - object
-                    - "null"
-                effectiveDate:
-                  type:
-                    - string
-                    - "null"
-                endEffectiveDate:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                isCurrent:
-                  type:
-                    - boolean
-                    - "null"
-                modificationDate:
-                  type:
-                    - string
-                    - "null"
-                payFrequency:
-                  type:
-                    - string
-                    - "null"
-                payPeriod:
-                  type:
-                    - string
-                    - "null"
-          timeSinceLastSalaryChange:
-            type:
-              - object
-              - "null"
-            properties:
-              humanize:
-                type:
-                  - string
-                  - "null"
-              periodISO:
-                type:
-                  - string
-                  - "null"
-              sortFactor:
-                type:
-                  - number
-                  - "null"
-          variable:
-            type:
-              - object
-              - "null"
-            properties:
-              Bonus:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Commission:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-              Executive bonus:
-                type:
-                  - object
-                  - "null"
-                properties: {}
-          variablePayment:
-            type:
-              - array
-              - "null"
-      personal:
-        type:
-          - object
-          - "null"
-        properties:
-          communication:
-            type:
-              - object
-              - "null"
-            properties: {}
-      surname:
-        type:
-          - string
-          - "null"
-      work:
-        type:
-          - object
-          - "null"
-        properties:
-          activeEffectiveDate:
-            type:
-              - string
-              - "null"
-          custom:
-            type:
-              - object
-              - "null"
-            properties:
-              field_1698036945383:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-          daysOfPreviousService:
-            type:
-              - number
-              - "null"
-          department:
-            type:
-              - string
-              - "null"
-          directReports:
-            type:
-              - number
-              - "null"
-          durationOfEmployment:
-            type:
-              - object
-              - "null"
-            properties:
-              humanize:
-                type:
-                  - string
-                  - "null"
-              periodISO:
-                type:
-                  - string
-                  - "null"
-              sortFactor:
-                type:
-                  - number
-                  - "null"
-          employeeIdInCompany:
-            type:
-              - number
-              - "null"
-          indirectReports:
-            type:
-              - number
-              - "null"
-          isManager:
-            type:
-              - boolean
-              - "null"
-          manager:
-            type:
-              - string
-              - "null"
-          originalStartDate:
-            type:
-              - string
-              - "null"
-          reportsTo:
-            type:
-              - object
-              - "null"
-            properties:
-              displayName:
-                type:
-                  - string
-                  - "null"
-              email:
-                type:
-                  - string
-                  - "null"
-              firstName:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              surname:
-                type:
-                  - string
-                  - "null"
-          reportsToIdInCompany:
-            type:
-              - number
-              - "null"
-          shortStartDate:
-            type:
-              - string
-              - "null"
-          site:
-            type:
-              - string
-              - "null"
-          siteId:
-            type:
-              - number
-              - "null"
-          startDate:
-            type:
-              - string
-              - "null"
-          tenureDuration:
-            type:
-              - object
-              - "null"
-            properties:
-              humanize:
-                type:
-                  - string
-                  - "null"
-              periodISO:
-                type:
-                  - string
-                  - "null"
-              sortFactor:
-                type:
-                  - number
-                  - "null"
-          tenureDurationYears:
-            type:
-              - number
-              - "null"
-          tenureYears:
-            type:
-              - number
-              - "null"
-          title:
-            type:
-              - string
-              - "null"
-          yearsOfService:
-            type:
-              - number
-              - "null"
-    required:
-      - id
-  profiles:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      about:
-        type:
-          - object
-          - "null"
-        properties:
-          avatar:
-            type:
-              - string
-              - "null"
-          foodPreferences:
-            type:
-              - array
-              - "null"
-          hobbies:
-            type:
-              - array
-              - "null"
-          socialData:
-            type:
-              - object
-              - "null"
-            properties: {}
-          superpowers:
-            type:
-              - array
-              - "null"
-      companyId:
-        type:
-          - number
-          - "null"
-      displayName:
-        type:
-          - string
-          - "null"
-      email:
-        type:
-          - string
-          - "null"
-      firstName:
-        type:
-          - string
-          - "null"
-      home:
-        type:
-          - object
-          - "null"
-        properties:
-          privateEmail:
-            type:
-              - string
-              - "null"
-      id:
-        type:
-          - string
-          - "null"
-      surname:
-        type:
-          - string
-          - "null"
-      work:
-        type:
-          - object
-          - "null"
-        properties:
-          activeEffectiveDate:
-            type:
-              - string
-              - "null"
-          custom:
-            type:
-              - object
-              - "null"
-            properties:
-              field_1698036945383:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-          daysOfPreviousService:
-            type:
-              - number
-              - "null"
-          department:
-            type:
-              - string
-              - "null"
-          directReports:
-            type:
-              - number
-              - "null"
-          durationOfEmployment:
-            type:
-              - object
-              - "null"
-            properties:
-              humanize:
-                type:
-                  - string
-                  - "null"
-              periodISO:
-                type:
-                  - string
-                  - "null"
-              sortFactor:
-                type:
-                  - number
-                  - "null"
-          employeeIdInCompany:
-            type:
-              - number
-              - "null"
-          indirectReports:
-            type:
-              - number
-              - "null"
-          isManager:
-            type:
-              - boolean
-              - "null"
-          manager:
-            type:
-              - string
-              - "null"
-          originalStartDate:
-            type:
-              - string
-              - "null"
-          reportsTo:
-            type:
-              - object
-              - "null"
-            properties:
-              displayName:
-                type:
-                  - string
-                  - "null"
-              email:
-                type:
-                  - string
-                  - "null"
-              firstName:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              surname:
-                type:
-                  - string
-                  - "null"
-          reportsToIdInCompany:
-            type:
-              - number
-              - "null"
-          shortStartDate:
-            type:
-              - string
-              - "null"
-          site:
-            type:
-              - string
-              - "null"
-          siteId:
-            type:
-              - number
-              - "null"
-          startDate:
-            type:
-              - string
-              - "null"
-          tenureDuration:
-            type:
-              - object
-              - "null"
-            properties:
-              humanize:
-                type:
-                  - string
-                  - "null"
-              periodISO:
-                type:
-                  - string
-                  - "null"
-              sortFactor:
-                type:
-                  - number
-                  - "null"
-          tenureDurationYears:
-            type:
-              - number
-              - "null"
-          tenureYears:
-            type:
-              - number
-              - "null"
-          title:
-            type:
-              - string
-              - "null"
-          yearsOfService:
-            type:
-              - number
-              - "null"
   employees:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      about:
+      id:
+        type: string
+      firstName:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          avatar:
-            type:
-              - string
-              - "null"
-          foodPreferences:
-            type:
-              - string
-              - "null"
-          hobbies:
-            type:
-              - string
-              - "null"
-          superpowers:
-            type:
-              - string
-              - "null"
-      companyId:
+      surname:
+        type:
+          - string
+          - "null"
+      fullName:
         type:
           - string
           - "null"
@@ -1371,161 +418,335 @@ schemas:
         type:
           - string
           - "null"
+      companyId:
+        type:
+          - string
+          - integer
+          - "null"
+      about:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
       employee:
         type:
           - object
           - "null"
-        properties:
-          lastDayOfWork:
-            type:
-              - string
-              - "null"
-          veteranStatus:
-            type:
-              - string
-              - "null"
-      firstName:
-        type:
-          - string
-          - "null"
-      fullName:
-        type:
-          - string
-          - "null"
-      home:
+        additionalProperties: true
+      employment:
         type:
           - object
           - "null"
-        properties:
-          privateEmail:
-            type:
-              - string
-              - "null"
-      id:
-        type: string
+        additionalProperties: true
       internal:
         type:
           - object
           - "null"
-        properties:
-          lifecycleStatus:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          terminationDate:
-            type:
-              - string
-              - "null"
-          terminationReason:
-            type:
-              - string
-              - "null"
+        additionalProperties: true
       personal:
         type:
           - object
           - "null"
-        properties:
-          honorific:
-            type:
-              - string
-              - "null"
-          nationality:
-            type:
-              - string
-              - "null"
-          pronouns:
-            type:
-              - string
-              - "null"
-          shortBirthDate:
-            type:
-              - string
-              - "null"
-      surname:
-        type:
-          - string
-          - "null"
+        additionalProperties: true
       work:
         type:
           - object
           - "null"
-        properties:
-          activeEffectiveDate:
-            type:
-              - string
-              - "null"
-          custom:
-            type:
-              - object
-              - "null"
-            properties:
-              field_1698036945383:
-                type:
-                  - string
-                  - "null"
-          daysOfPreviousService:
-            type:
-              - string
-              - "null"
-          department:
-            type:
-              - string
-              - "null"
-          employeeIdInCompany:
-            type:
-              - string
-              - "null"
-          isManager:
-            type:
-              - string
-              - "null"
-          manager:
-            type:
-              - string
-              - "null"
-          originalStartDate:
-            type:
-              - string
-              - "null"
-          shortStartDate:
-            type:
-              - string
-              - "null"
-          site:
-            type:
-              - string
-              - "null"
-          siteId:
-            type:
-              - string
-              - "null"
-          startDate:
-            type:
-              - string
-              - "null"
-          tenureDurationYears:
-            type:
-              - string
-              - "null"
-          tenureYears:
-            type:
-              - string
-              - "null"
-          title:
-            type:
-              - string
-              - "null"
-          workChangeType:
-            type:
-              - string
-              - "null"
-          yearsOfService:
-            type:
-              - string
-              - "null"
+        additionalProperties: true
     required:
       - id
+
+  profiles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      firstName:
+        type:
+          - string
+          - "null"
+      surname:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - string
+          - integer
+          - "null"
+      about:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      work:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+    required:
+      - id
+
+  employee_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      typeData:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      historical:
+        type:
+          - boolean
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+
+  company_named_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type: string
+      values:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - string
+                - integer
+            value:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            archived:
+              type:
+                - boolean
+                - "null"
+            children:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                additionalProperties: true
+    required:
+      - name
+
+  work_history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      employeeId:
+        type: string
+      entries:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      values:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      errors:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+    required:
+      - employeeId
+
+  lifecycle_history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      employeeId:
+        type: string
+      entries:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      values:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      errors:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+    required:
+      - employeeId
+
+  employment_history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      employeeId:
+        type: string
+      entries:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      values:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      errors:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+    required:
+      - employeeId
+
+  time_off_request_changes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      requestId:
+        type:
+          - integer
+          - string
+      employeeId:
+        type:
+          - string
+          - "null"
+      createdOn:
+        type:
+          - string
+          - "null"
+        format: date-time
+      changeType:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      originalRequestId:
+        type:
+          - integer
+          - string
+          - "null"
+      previousRequestId:
+        type:
+          - integer
+          - string
+          - "null"
+      request:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+    required:
+      - requestId
+
+  job_roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "/jobRole/id":
+        type: object
+        additionalProperties: true
+        properties:
+          value:
+            type:
+              - integer
+              - string
+          humanReadable:
+            type:
+              - string
+              - "null"
+      "/jobRole/name":
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      "/jobRole/description":
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      humanReadable:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
