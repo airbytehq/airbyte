@@ -423,7 +423,9 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
             body = json.loads(request.body)
 
             if body.get("dimensions") == ["searchAppearance"]:
-                return json.dumps(_build_search_appearances_response([{"keys": ["FAQ"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}]))
+                return json.dumps(
+                    _build_search_appearances_response([{"keys": ["FAQ"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}])
+                )
 
             context.status_code = 400
             return build_error_response(400, "Unsupported searchAppearance filter value: FAQ").body
@@ -468,7 +470,11 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
                 keyword_filter_expressions.append(search_appearance)
                 return json.dumps(
                     _build_search_analytics_response(
-                        [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", f"{search_appearance} query", "https://example.com/page1")]
+                        [
+                            _build_search_analytics_row(
+                                "2024-01-01", "usa", "DESKTOP", f"{search_appearance} query", "https://example.com/page1"
+                            )
+                        ]
                     )
                 )
 
