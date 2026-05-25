@@ -26,7 +26,7 @@ data:
       url: https://www.twilio.com/en-us/changelog?product=sendgrid-email-api%2Ctwilio-sendgrid-platform%2Cmarketing-campaigns
       type: api_release_history
     - title: SendGrid API OpenAPI specification
-      url: https://github.com/sendgrid/sendgrid-oai
+      url: https://github.com/twilio/sendgrid-oai
       type: openapi_spec
   githubIssueLabel: source-sendgrid
   icon: sendgrid.svg
