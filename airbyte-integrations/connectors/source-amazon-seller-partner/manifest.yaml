@@ -3112,6 +3112,11 @@ definitions:
           - type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ response.get('errors', [{}])[0].get('code') == 'InvalidInput' and 'not registered in marketplace' in response.get('errors', [{}])[0].get('message', '').lower() }}"
+                failure_type: config_error
+                error_message: "Merchant account is not registered in the selected marketplace."
+              - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
