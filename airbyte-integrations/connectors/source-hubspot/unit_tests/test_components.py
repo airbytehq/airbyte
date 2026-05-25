@@ -462,6 +462,32 @@ def test_associations_extractor(config, components_module):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
+def test_associations_extractor_uses_date_based_api(requests_mock, config, components_module):
+    response = requests.Response()
+    response._content = b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}]}'
+    response.status_code = 200
+
+    associations_adapter = requests_mock.register_uri(
+        "POST",
+        "https://api.hubapi.com/crm/associations/2026-03/deals/companies/batch/read",
+        [{"json": {"results": [{"from": {"id": "123"}, "to": [{"toObjectId": "408"}]}]}, "status_code": 200}],
+    )
+
+    extractor = components_module.HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="deals",
+        associations_list=["companies"],
+        decoder=JsonDecoder(parameters={}),
+        config=config,
+        parameters={},
+    )
+
+    records = list(extractor.extract_records(response=response))
+
+    assert records[0]["companies"] == ["408"]
+    assert associations_adapter.call_count == 1
+
+
 def test_associations_extractor_with_permissions_error(requests_mock, oauth_config, components_module):
     """With OAuth credentials, a 401 on associations should be retried and succeed on the second attempt."""
     response = requests.Response()
@@ -498,10 +524,10 @@ def test_associations_extractor_with_permissions_error(requests_mock, oauth_conf
         [{"json": {"access_token": "refreshed_token", "expires_in": 3600}, "status_code": 200}],
     )
     requests_mock.register_uri(
-        "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
+        "POST", "https://api.hubapi.com/crm/associations/2026-03/deals/companies/batch/read", companies_associations_responses
     )
     requests_mock.register_uri(
-        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", contacts_associations_responses
+        "POST", "https://api.hubapi.com/crm/associations/2026-03/deals/contacts/batch/read", contacts_associations_responses
     )
 
     extractor = components_module.HubspotAssociationsExtractor(
@@ -535,10 +561,10 @@ def test_associations_extractor_with_permissions_error_pat(requests_mock, config
     ]
 
     requests_mock.register_uri(
-        "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
+        "POST", "https://api.hubapi.com/crm/associations/2026-03/deals/companies/batch/read", companies_associations_responses
     )
     requests_mock.register_uri(
-        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", [{"json": {"results": []}, "status_code": 200}]
+        "POST", "https://api.hubapi.com/crm/associations/2026-03/deals/contacts/batch/read", [{"json": {"results": []}, "status_code": 200}]
     )
 
     extractor = components_module.HubspotAssociationsExtractor(

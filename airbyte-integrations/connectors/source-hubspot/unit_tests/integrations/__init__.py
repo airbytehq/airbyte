@@ -266,7 +266,7 @@ class HubspotCRMSearchStream(HubspotTestCase):
     ):
         """
         Mocks:
-          POST https://api.hubapi.com/crm/v4/associations/{parent_entity}/{association_name}/batch/read
+          POST https://api.hubapi.com/crm/associations/2026-03/{parent_entity}/{association_name}/batch/read
 
         Response body mirrors HubSpot's shape but only includes:
           { "status": "COMPLETE", "results": [ { "from": {"id": ...}, "to": [ { "toObjectId": ..., "associationTypes": [...] }, ... ] }, ... ] }
