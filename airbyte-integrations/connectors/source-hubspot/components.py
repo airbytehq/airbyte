@@ -695,8 +695,7 @@ def build_associations_retriever(
     requester = HttpRequester(
         name="associations",
         url_base="https://api.hubapi.com",
-        path=f"/crm/associations/{_ASSOCIATIONS_API_VERSION}/{evaluated_entity}/"
-        + "{{ stream_partition['association_name'] }}/batch/read",
+        path=f"/crm/associations/{_ASSOCIATIONS_API_VERSION}/{evaluated_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
