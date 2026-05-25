@@ -4,6 +4,12 @@ const DATA_DIR = path.join(__dirname, "..", "data");
 const REGISTRY_CACHE_PATH = path.join(DATA_DIR, "connector_registry_slim.json");
 const COMPOSITE_REGISTRY_URL =
   "https://connectors.airbyte.com/files/registries/v0/composite_registry.json";
+const CONNECTOR_QUALITY_METRICS_CACHE_PATH = path.join(
+  DATA_DIR,
+  "connector_quality_metrics.json",
+);
+const CONNECTOR_QUALITY_METRICS_BUCKET = "ab-analytics-connector-metrics";
+const CONNECTOR_QUALITY_METRICS_PREFIX = "data/connector_quality_metrics/";
 
 // Connector documentation paths
 const CONNECTORS_DOCS_ROOT = "../docs/integrations";
@@ -15,6 +21,9 @@ module.exports = {
   DATA_DIR,
   REGISTRY_CACHE_PATH,
   COMPOSITE_REGISTRY_URL,
+  CONNECTOR_QUALITY_METRICS_CACHE_PATH,
+  CONNECTOR_QUALITY_METRICS_BUCKET,
+  CONNECTOR_QUALITY_METRICS_PREFIX,
   CONNECTORS_DOCS_ROOT,
   SOURCES_DOCS,
   DESTINATIONS_DOCS,

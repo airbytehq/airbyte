@@ -3,6 +3,9 @@ const { isDocsPage, getRegistryEntry } = require("./utils");
 const {
   parseCDKVersion,
 } = require("../scripts/connector_registry");
+const {
+  fetchConnectorQualityMetrics,
+} = require("../scripts/fetch-connector-metrics");
 const visit = require("unist-util-visit").visit;
 
 /**
@@ -19,6 +22,9 @@ const plugin = () => {
 
     const registryEntry = await getRegistryEntry(vfile);
     if (!registryEntry) return;
+    const connectorMetricsByDefinitionId = await fetchConnectorQualityMetrics();
+    const connectorMetrics =
+      connectorMetricsByDefinitionId[registryEntry.definitionId] || {};
 
     const rawCDKVersion = getFromPaths(
       registryEntry,
@@ -32,12 +38,17 @@ const plugin = () => {
         const originalTitle = node.children[0].value;
 
         const syncSuccessRate = getFromPaths(
-          registryEntry,
+          { generated: { metrics: connectorMetrics } },
           "generated.metrics.[all|cloud|oss].sync_success_rate",
+          getFromPaths(
+            registryEntry,
+            "generated.metrics.[all|cloud|oss].sync_success_rate",
+          ),
         );
         const usageRate = getFromPaths(
-          registryEntry,
+          { generated: { metrics: connectorMetrics } },
           "generated.metrics.[all|cloud|oss].usage",
+          getFromPaths(registryEntry, "generated.metrics.[all|cloud|oss].usage"),
         );
         const lastUpdated = getFromPaths(
           registryEntry,
@@ -59,7 +70,9 @@ const plugin = () => {
           issue_url: registryEntry.issue_url,
           originalTitle,
           cdkVersion: version,
-          ...(isLatest !== undefined && { isLatestCDKString: boolToBoolString(isLatest) }),
+          ...(isLatest !== undefined && {
+            isLatestCDKString: boolToBoolString(isLatest),
+          }),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,
