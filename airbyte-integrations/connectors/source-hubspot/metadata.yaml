@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 6.5.5
+  dockerImageTag: 6.5.6-rc.1
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   resourceRequirements:
@@ -36,12 +36,14 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 6.5.5
     oss:
       enabled: true
+      dockerImageTag: 6.5.5
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       6.0.0:
         message: >-
@@ -67,13 +69,7 @@ data:
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
-            impactedScopes:
-              [
-                "contact_lists",
-                "contacts_form_submissions",
-                "contacts_list_memberships",
-                "contacts_merged_audit",
-              ]
+            impactedScopes: ["contact_lists", "contacts_form_submissions", "contacts_list_memberships", "contacts_merged_audit"]
       4.0.0:
         message: >-
           This update brings extended schema with data type changes for the streams
@@ -82,8 +78,7 @@ data:
         upgradeDeadline: "2024-03-10"
         scopedImpact:
           - scopeType: stream
-            impactedScopes:
-              ["deals_property_history", "companies_property_history"]
+            impactedScopes: ["deals_property_history", "companies_property_history"]
       3.0.0:
         message: >-
           This update brings extended schema with data type changes for the Marketing
