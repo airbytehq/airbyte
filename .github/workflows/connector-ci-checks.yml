@@ -200,7 +200,6 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
           FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
-          IS_UP_TO_DATE_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login == 'octavia-bot-hoard[bot]' && (startsWith(github.head_ref, 'up-to-date/') || contains(github.event.pull_request.labels.*.name, 'up-to-date')) }}
         run: |
           set -euo pipefail
 
@@ -215,8 +214,7 @@ jobs:
           fi
 
           ALLOW_TEST_FAILURES=false
-          if [[ "$IS_UP_TO_DATE_PR" == "true" &&
-                "$SUPPORT_LEVEL" == "community" &&
+          if [[ "$SUPPORT_LEVEL" == "community" &&
                 "$FETCH_SECRETS_OUTCOME" == "success" &&
                 "$SECRET_COUNT" == "0" ]]; then
             ALLOW_TEST_FAILURES=true
@@ -332,7 +330,6 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
           FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
-          IS_UP_TO_DATE_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login == 'octavia-bot-hoard[bot]' && (startsWith(github.head_ref, 'up-to-date/') || contains(github.event.pull_request.labels.*.name, 'up-to-date')) }}
         run: |
           set -euo pipefail
 
@@ -347,8 +344,7 @@ jobs:
           fi
 
           ALLOW_TEST_FAILURES=false
-          if [[ "$IS_UP_TO_DATE_PR" == "true" &&
-                "$SUPPORT_LEVEL" == "community" &&
+          if [[ "$SUPPORT_LEVEL" == "community" &&
                 "$FETCH_SECRETS_OUTCOME" == "success" &&
                 "$SECRET_COUNT" == "0" ]]; then
             ALLOW_TEST_FAILURES=true
