@@ -83,7 +83,7 @@ The Mixpanel source connector supports `US` and `EU` data residency regions. It 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 4.0.1 | 2026-05-26 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Bump underlying SDM base image |
+| 4.0.1 | 2026-05-26 | [78446](https://github.com/airbytehq/airbyte/pull/78446) | Bump underlying SDM base image |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
