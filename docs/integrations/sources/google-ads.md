@@ -378,6 +378,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.1 | 2026-05-26 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Classify unrecognized fields in custom GAQL queries as configuration errors. |
 | 5.0.0 | 2026-04-20 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
 | 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |
 | 4.2.6-rc.3 | 2026-05-07 | [77835](https://github.com/airbytehq/airbyte/pull/77835) | Update CDK to pre-release with runtime cap on concurrent partition generators to fix thread pool starvation deadlock |
