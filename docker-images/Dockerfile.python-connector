@@ -10,10 +10,15 @@ ARG BASE_IMAGE
 ARG CONNECTOR_NAME
 ARG EXTRA_PREREQS_SCRIPT=""
 
+USER root
+
 # Install git and openssh-client are needed to clone repositories for testing connectors on pre-release versions of the CDK
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git openssh-client \
+    && apt-get install -y --no-install-recommends git openssh-client python3.11-venv \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python3.11 -m venv /opt/airbyte-connector-venv && \
+    /opt/airbyte-connector-venv/bin/python -m pip install --no-cache-dir poetry==2.1.1 poetry-plugin-export filelock requests-toolbelt
 
 WORKDIR /airbyte/integration_code
 
@@ -35,13 +40,19 @@ RUN if [ -n "${EXTRA_PREREQS_SCRIPT}" ]; then \
 
 # Until PEP 751 is adopted, we have to install with Poetry in order
 # to respect the `poetry.lock` file.
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --without=dev
+RUN /opt/airbyte-connector-venv/bin/python -m poetry config virtualenvs.create false && \
+    /opt/airbyte-connector-venv/bin/python -m poetry install --no-interaction --no-ansi --without=dev
 
 # Now build the final stage
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_NAME
 ARG BASE_IMAGE
+
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3.11 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
 
