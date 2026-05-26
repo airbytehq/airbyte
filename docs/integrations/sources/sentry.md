@@ -65,7 +65,7 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.9.22-rc.1 | 2026-05-26 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Start concurrency tuning — verify existing default_concurrency=5 via progressive rollout |
+| 0.9.22-rc.1 | 2026-05-26 | [78444](https://github.com/airbytehq/airbyte/pull/78444) | Start concurrency tuning — verify existing default_concurrency=5 via progressive rollout |
 | 0.9.21 | 2026-04-28 | [77407](https://github.com/airbytehq/airbyte/pull/77407) | Update dependencies |
 | 0.9.20 | 2026-04-21 | [76772](https://github.com/airbytehq/airbyte/pull/76772) | Update dependencies |
 | 0.9.19 | 2026-03-31 | [75797](https://github.com/airbytehq/airbyte/pull/75797) | Update dependencies |
