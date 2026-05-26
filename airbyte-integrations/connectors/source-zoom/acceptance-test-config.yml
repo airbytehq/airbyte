@@ -44,6 +44,12 @@ acceptance_tests:
             bypass_reason: "Need paid Webinar license to populate data"
           - name: "report_webinar_participants"
             bypass_reason: "Need paid Webinar license to populate data"
+          - name: "phone_call_history"
+            bypass_reason: "Need paid Zoom Phone license to populate data"
+          - name: "phone_recordings"
+            bypass_reason: "Need paid Zoom Phone license to populate data"
+          - name: "phone_recording_transcripts"
+            bypass_reason: "Need paid Zoom Phone license to populate data"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
