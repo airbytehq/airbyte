@@ -28,10 +28,8 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
     @HttpMocker()
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         """Basic read test for subscription_with_scheduled_changes stream."""
-        http_mocker.get(
-            RequestBuilder.subscriptions_endpoint().with_any_query_params().build(),
-            subscription_response(),
-        )
+        subscription_request = RequestBuilder.subscriptions_endpoint().with_any_query_params().build()
+        http_mocker.get(subscription_request, subscription_response())
         http_mocker.get(
             RequestBuilder.subscription_scheduled_changes_endpoint("sub_001").with_any_query_params().build(),
             subscription_with_scheduled_changes_response(),
@@ -40,14 +38,13 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "sub_001"
+        assert "has_scheduled_changes%5Bis%5D=true" in http_mocker._mocker.request_history[0].url
 
     @HttpMocker()
     def test_with_multiple_parents(self, http_mocker: HttpMocker) -> None:
         """Test subscription_with_scheduled_changes substream with multiple parent subscriptions."""
-        http_mocker.get(
-            RequestBuilder.subscriptions_endpoint().with_any_query_params().build(),
-            subscription_response_multiple(),
-        )
+        subscription_request = RequestBuilder.subscriptions_endpoint().with_any_query_params().build()
+        http_mocker.get(subscription_request, subscription_response_multiple())
         http_mocker.get(
             RequestBuilder.subscription_scheduled_changes_endpoint("sub_001").with_any_query_params().build(),
             subscription_with_scheduled_changes_response(),
@@ -59,6 +56,7 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
         assert len(output.records) == 2
+        http_mocker.assert_number_of_calls(subscription_request, 1)
 
     @HttpMocker()
     def test_error_no_scheduled_changes_ignored(self, http_mocker: HttpMocker) -> None:
