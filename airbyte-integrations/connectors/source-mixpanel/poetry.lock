@@ -771,7 +771,10 @@ files = [
 [package.dependencies]
 httpx = ">=0.23.0,<1"
 orjson = {version = ">=3.9.14,<4.0.0", markers = "platform_python_implementation != \"PyPy\""}
-pydantic = {version = ">=1,<3", markers = "python_full_version < \"3.12.4\""}
+pydantic = [
+    {version = ">=1,<3", markers = "python_full_version < \"3.12.4\""},
+    {version = ">=2.7.4,<3.0.0", markers = "python_full_version >= \"3.12.4\""},
+]
 requests = ">=2,<3"
 requests-toolbelt = ">=1.0.0,<2.0.0"
 
@@ -1054,6 +1057,7 @@ files = [
 numpy = [
     {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -2229,5 +2233,5 @@ files = [
 
 [metadata]
 lock-version = "2.1"
-python-versions = "^3.10,<3.12"
-content-hash = "b6481eedf40a85843713c733ca3ca1421bf421cf16b71e8b586b82c4cca55282"
+python-versions = "^3.10,<3.13"
+content-hash = "99888ce446375d5e038c184e1dd46a990b329ed2bda1ad7ebade9d9b4b5450f0"
