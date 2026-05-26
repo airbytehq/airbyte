@@ -86,7 +86,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.6.0-rc.1 | 2026-05-26 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add subscription_tier spec field and tier-aware HTTPAPIBudget for concurrency tuning (Path B) |
+| 2.6.0-rc.1 | 2026-05-26 | [78442](https://github.com/airbytehq/airbyte/pull/78442) | Add subscription_tier spec field and tier-aware HTTPAPIBudget for concurrency tuning (Path B) |
 | 2.5.8 | 2026-04-28 | [77302](https://github.com/airbytehq/airbyte/pull/77302) | Update dependencies |
 | 2.5.7 | 2026-04-21 | [76675](https://github.com/airbytehq/airbyte/pull/76675) | Update dependencies |
 | 2.5.6 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
