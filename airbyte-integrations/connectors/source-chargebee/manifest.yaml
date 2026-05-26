@@ -11841,16 +11841,16 @@ schemas:
 #   Chargebee-side cap unused).
 # TEST sites are always capped at 150 req/min regardless of plan.
 # Rate-limit errors return HTTP 429 with a Retry-After header.
-# default_concurrency is set to 5 — calibrated against the LOWEST documented tier (Starter,
+# default_concurrency is set to 3 — calibrated against the LOWEST documented tier (Starter,
 # 150 req/min = 2.5 req/sec) per the Path B rule: floor(2.5/4) = 0, then the
-# special-case override applies, with manual tuning to 5.
+# special-case override applies, with manual tuning to 3.
 # It is intentionally a single value, not tier-aware: tuning is performed empirically against
 # this baseline and the same value applies to all customers. Higher-tier customers (Performance,
 # Enterprise) can raise num_workers in their connection config to fully exploit their plan;
 # unconfigured users on lower tiers stay safe at the lowest-tier-aware default.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 50
 
 api_budget:
