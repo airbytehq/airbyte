@@ -33,6 +33,10 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 - **Workramp API key**. See the [Workramp docs](https://developers.workramp.com/reference/basic-auth) for information on how to obtain an API key.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

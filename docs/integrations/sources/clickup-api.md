@@ -50,6 +50,10 @@ Here are some optional fields:
 
 - `Include Closed Tasks`: Toggle to include or exclude closed tasks. By default, they are excluded.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

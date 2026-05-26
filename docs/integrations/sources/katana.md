@@ -38,6 +38,10 @@ To generate a live API key: log in to your Katana account.  Go to Settings &gt; 
 | manufacturing_orders | id | DefaultPaginator | ✅ |  ✅  |
 | materials | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

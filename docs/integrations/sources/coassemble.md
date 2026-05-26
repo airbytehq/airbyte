@@ -19,6 +19,10 @@ See the [Coassemble API docs](https://developers.coassemble.com/get-started) for
 
 ⚠️⚠️ Note: The `screen_types` and `trackings` streams are **Available on request only** as per the [API docs](https://developers.coassemble.com/get-started). Hence, enabling them without having them enabled on the API side would result in errors. ⚠️⚠️
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -73,6 +73,10 @@ Report streams use `date` as the cursor field and default to `(date, campaignId)
 - For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
 - Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Apple Ads Campaign Management API v5](https://developer.apple.com/documentation/apple_ads). Airbyte calls `https://api.searchads.apple.com/api/v5` and sends the selected Apple Ads organization in the `X-AP-Context` header as `orgId={orgId}`.

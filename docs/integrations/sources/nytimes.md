@@ -38,6 +38,10 @@ The New York Times connector should not run into limitations under normal usage.
 2. Enable API access for the supported endpoints (see Output schema section for supported streams).
 3. Write the key into `secrets/config.json` file.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -209,6 +209,10 @@ enforces rate limits per endpoint category. For example, analytics endpoints all
 minute with standard access, while general read endpoints allow 1,000 requests per minute. For
 details, see the [Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

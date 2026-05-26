@@ -23,6 +23,10 @@ Due to some limitation of SmartWaiver API it can have situations where you won't
 | detailed_signed_waiver | waiverId | No pagination | ✅ |  ❌  |
 | checkins | waiverId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

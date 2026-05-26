@@ -20,6 +20,9 @@ With this connector we can extract data from EOD , Intraday and news feeds strea
 | eod_data | date.ticker | No pagination | ✅ |  ✅  |
 | intraday_unadjusted_data | date.ticker | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
