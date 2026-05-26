@@ -421,8 +421,8 @@ spec:
         title: Number of concurrent threads
         minimum: 2
         maximum: 50
-        default: 4
-        examples: [1, 2, 3]
+        default: 6
+        examples: [2, 6, 10]
         description: The number of worker threads to use for the sync.
       subscription_tier:
         type: string
@@ -495,7 +495,7 @@ check:
 #   Concurrency limit: Basic/Free/Standard = 40, Pro = 100, Enterprise = 250
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 40 # Monday concurrency limit for lowest tier is 40. https://developer.monday.com/api-reference/docs/rate-limits#concurrency-limit
 
 # Tier-aware HTTP API budget — COMMENTED OUT during concurrency tuning (Phases 1–3).
