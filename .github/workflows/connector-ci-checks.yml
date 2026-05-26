@@ -190,7 +190,7 @@ jobs:
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+          airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
@@ -284,11 +284,13 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
+        id: fetch-secrets
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && env.GCP_PROJECT_ID != ''
+        continue-on-error: true
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+          airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}

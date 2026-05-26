@@ -1,5 +1,5 @@
+import { usePluginData } from "@docusaurus/useGlobalData";
 import styles from "./AgentConnectorRegistry.module.css";
-import slugs from "../data/agent_connectors.json";
 
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
@@ -16,6 +16,7 @@ function formatConnectorName(slug) {
 }
 
 export default function AgentConnectorRegistry() {
+  const { slugs = [] } = usePluginData("agent-connectors-plugin") ?? {};
   const connectors = slugs
     .map((slug) => ({
       slug,
@@ -34,6 +35,7 @@ export default function AgentConnectorRegistry() {
       <thead>
         <tr>
           <th>Connector</th>
+          <th>Slug</th>
           <th style={{ textAlign: "center" }}>Links</th>
         </tr>
       </thead>
@@ -55,6 +57,9 @@ export default function AgentConnectorRegistry() {
                 </div>
                 <a href={connector.href}>{connector.name}</a>
               </div>
+            </td>
+            <td>
+              <code>{connector.slug}</code>
             </td>
             <td>
               <div className={styles.links}>
