@@ -10,7 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
 MANIFEST_PATH = Path(__file__).parent.parent.parent / "source_google_ads" / "manifest.yaml"
-API_BASE = "https://googleads.googleapis.com/v20"
+API_BASE = "https://googleads.googleapis.com/v23"
 OAUTH_URL = "https://www.googleapis.com/oauth2/v3/token"
 
 REPORT_MAPPING = {

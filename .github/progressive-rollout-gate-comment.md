@@ -11,6 +11,8 @@
 
 - Rollout version: `{{ .rollout_docker_image_tag }}`
 - Rollout state: `{{ .rollout_state }}`
+- Rollout last updated by: `{{ .rollout_updated_by }}`
+- [Open Connector Rollout Manager in Retool]({{ .retool_url }}) to clean up or close out this rollout if appropriate.
 
 ### Version on `master` Branch: `{{ .master_version }}`
 
@@ -49,7 +51,7 @@ After merging, you still need to start the new rollout. During start, pinned act
 You should not merge the PR unless/until the RC has been finalized as canceled. See above `Rollout state` for detected status.
 
 > [!Warning]
-> This PR should not be merged if the RC rollout is still active. First finalize the active rollout as successful or cancel it.
+> This PR should not be merged if the RC rollout is still active. First finalize the active rollout as successful or cancel it in [Connector Rollout Manager]({{ .retool_url }}).
 
 When you finalize an RC rollout as successful, the platform triggers a promotion workflow that strips the `-rc` suffix, removes stable-version `registryOverrides`, disables progressive rollout, force-merges that promotion, and unpins actors.
 
