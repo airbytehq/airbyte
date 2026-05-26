@@ -39,7 +39,7 @@ def read_from_source(catalog):
     return list(
         SourceIterable().read(
             mock.MagicMock(),
-            {"start_date": TEST_START_DATE, "api_key": "api_key"},
+            {"start_date": TEST_START_DATE, "api_key": "api_key", "lookback_window": 0},
             catalog,
             None,
         )

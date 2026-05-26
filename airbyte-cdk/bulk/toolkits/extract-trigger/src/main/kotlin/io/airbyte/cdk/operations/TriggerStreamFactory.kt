@@ -8,7 +8,7 @@ import io.airbyte.cdk.TriggerTableConfig
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
@@ -22,7 +22,7 @@ import java.time.OffsetDateTime
 @Primary
 class TriggerStreamFactory(private val config: TriggerTableConfig) : JdbcAirbyteStreamFactory {
 
-    override val globalCursor: FieldOrMetaField = config.CURSOR_FIELD
+    override val globalCursor: DataOrMetaField = config.CURSOR_FIELD
 
     override val globalMetaFields: Set<MetaField> =
         setOf(

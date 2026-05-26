@@ -4,12 +4,12 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -37,18 +37,17 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteProbeMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class DestinationMessageTest {
+    private val coercer = AirbyteValueCoercer()
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
@@ -110,14 +109,11 @@ internal class DestinationMessageTest {
     }
 
     @Test
-    fun testThrowOnIncompleteStatus() {
-        val e = assertThrows<ConfigErrorException> { convert(factory(), incompleteStatusMessage) }
-        assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
-        )
+    fun testIgnoreIncompleteStatus() {
+        // Destination must not crash on INCOMPLETE.
+        // Instead it is ignored and the source gets blamed for the failure.
+        val converted = assertDoesNotThrow { convert(factory(), incompleteStatusMessage) }
+        assertEquals(Ignored, converted)
     }
 
     @ParameterizedTest
@@ -551,14 +547,14 @@ internal class DestinationMessageTest {
             1234,
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .emittedAtMs
         )
         assertEquals(
             1,
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["id"]
                 ?.let { (it.abValue as IntegerValue).value.toInt() }
         )
@@ -566,7 +562,7 @@ internal class DestinationMessageTest {
             "test",
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["name"]
                 ?.let { (it.abValue as StringValue).value }
         )

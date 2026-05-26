@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.clickhouse
 import org.testcontainers.clickhouse.ClickHouseContainer
 
 object ClickhouseContainerHelper {
-    private val container = ClickHouseContainer("clickhouse/clickhouse-server:latest")
+    private val container = ClickHouseContainer("clickhouse/clickhouse-server:26.4")
 
     fun start() {
         synchronized(lock = container) {

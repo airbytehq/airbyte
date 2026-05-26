@@ -1,13 +1,14 @@
 # MSSQL
 
-## Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-| Namespaces                     | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Output Schema
 
@@ -28,7 +29,9 @@ See [here](../../platform/understanding-airbyte/airbyte-metadata-fields) for mor
 
 #### Network Access
 
-Make sure your SQL Server database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+Make sure your SQL Server database can be accessed by Airbyte. If your database is within a VPC, you
+may need to allow access from the IP you're using to expose Airbyte. If you're using Airbyte Cloud,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 #### **Permissions**
 
@@ -151,6 +154,10 @@ You’ll need to supply:
 
 See the [Getting Started: Configuration section](#configuration) of this guide for more details on `BULK INSERT` connector configuration.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a SQL Server schema.
+
 ## Changelog
 
 <details>
@@ -158,6 +165,7 @@ See the [Getting Started: Configuration section](#configuration) of this guide f
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.2.16 | 2026-04-23 | [76946](https://github.com/airbytehq/airbyte/pull/76946) | Upgrade Bulk CDK to 1.0.11 and fix `_ab_cdc_deleted_at` column type so the secondary index on CDC streams can be created. |
 | 2.2.15 | 2026-01-26 | [72297](https://github.com/airbytehq/airbyte/pull/72297) | Upgrade CDK to 0.2.0 |
 | 2.2.14 | 2025-11-05 | [69130](https://github.com/airbytehq/airbyte/pull/69130) | Upgrade to Bulk CDK 0.1.61. |
 | 2.2.13     | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)   | Pin to CDK artifact                                                                                 |
