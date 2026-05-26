@@ -36,6 +36,6 @@ The arXiv API Terms of Use limit clients to one request every three seconds and 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------- | :----------- | :------ |
-| 0.1.0 | 2026-05-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Added the arXiv source connector with paper metadata syncs. |
+| 0.1.0 | 2026-05-26 | [78425](https://github.com/airbytehq/airbyte/pull/78425) | Added the arXiv source connector with paper metadata syncs. |
 
 </details>
