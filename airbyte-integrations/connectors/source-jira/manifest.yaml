@@ -14698,7 +14698,7 @@ check:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 40
 
 spec:
@@ -14912,11 +14912,11 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 4
+        default: 6
         examples:
         - 1
         - 2
-        - 4
+        - 6
         description: The number of worker threads to use for the sync.
         order: 6
   advanced_auth:
