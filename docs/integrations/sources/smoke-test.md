@@ -74,6 +74,7 @@ To enable slow streams, set **All Slow Streams** to `true`, or include `large_ba
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2026-05-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update base image to source-declarative-manifest 7.19.3. |
 | 0.1.0 | 2026-03-19 | [75181](https://github.com/airbytehq/airbyte/pull/75181) | Initial release: smoke test source for destination regression testing |
 
 </details>
