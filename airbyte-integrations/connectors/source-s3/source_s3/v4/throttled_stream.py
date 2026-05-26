@@ -21,6 +21,7 @@ The wrapper observes the message stream produced by the parent `read()` and:
 
 Localized to source-s3 — no CDK change required.
 """
+
 from __future__ import annotations
 
 import time
@@ -54,10 +55,7 @@ class ThrottledFileBasedStream(DefaultFileBasedStream):
         pending_state: Optional[AirbyteMessage] = None
 
         for message in super().read(*args, **kwargs):
-            if (
-                isinstance(message, AirbyteMessage)
-                and message.type == MessageType.STATE
-            ):
+            if isinstance(message, AirbyteMessage) and message.type == MessageType.STATE:
                 now = time.time()
                 if now - last_emit_at < throttle:
                     # Within throttle window — hold this one back. The most

@@ -2,8 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 """Unit tests for source_s3.v4.throttled_stream.ThrottledFileBasedStream."""
+
 from typing import Iterable, List
 from unittest.mock import patch
+
+from source_s3.v4.throttled_stream import ThrottledFileBasedStream
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -14,8 +17,6 @@ from airbyte_cdk.models import (
     StreamDescriptor,
 )
 from airbyte_cdk.models import Type as MessageType
-
-from source_s3.v4.throttled_stream import ThrottledFileBasedStream
 
 
 def _state(value: int) -> AirbyteMessage:
@@ -63,9 +64,7 @@ def _run(messages: List[AirbyteMessage], times: List[float]) -> List[AirbyteMess
         "source_s3.v4.throttled_stream.DefaultFileBasedStream.read",
         lambda self, *a, **kw: stream._scripted_super_read(),
     ):
-        with patch(
-            "source_s3.v4.throttled_stream.time.time", side_effect=times
-        ):
+        with patch("source_s3.v4.throttled_stream.time.time", side_effect=times):
             return list(stream.read())
 
 
