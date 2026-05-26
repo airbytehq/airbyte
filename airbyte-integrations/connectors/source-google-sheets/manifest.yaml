@@ -652,5 +652,5 @@ spec:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 75
-  max_concurrency: 75
+  default_concurrency: 4
+  max_concurrency: 4
