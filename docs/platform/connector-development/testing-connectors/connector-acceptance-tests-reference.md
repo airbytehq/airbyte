@@ -291,7 +291,7 @@ Some examples of the types of tests covered are verification that streams define
 The inputs in the tables below are set under the `acceptance_tests.connector_documentation.tests` key.
 
 Verifies that connectors documentation follows our standard template, does have correct order of headings,
-does not have missing headings and all required fields in Prerequisites section.
+does not have missing headings, includes the required IP allow list section for source connectors, and all required fields in Prerequisites section.
 
 | Input             | Type   | Default               | Note                                                               |
 | :---------------- | :----- | :-------------------- | :----------------------------------------------------------------- |
