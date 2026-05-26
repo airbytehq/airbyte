@@ -4970,11 +4970,11 @@ spec:
         title: Number of concurrent workers
         minimum: 1
         maximum: 40
-        default: 2
+        default: 4
         examples:
           - 1
-          - 2
-          - 3
+          - 4
+          - 5
         description: The number of worker threads to use for the sync. Higher values can speed up syncs but may increase rate-limit pressure against Pinterest.
         order: 10
   advanced_auth:
@@ -5090,7 +5090,7 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  default_concurrency: "{{ config.get('num_workers') or config.get('num_threads') or 4 }}"
   max_concurrency: 50
 
 api_budget:
