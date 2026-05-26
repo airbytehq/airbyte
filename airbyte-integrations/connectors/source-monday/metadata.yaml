@@ -20,16 +20,7 @@ data:
         upgradeDeadline: "2024-01-15"
         scopedImpact:
           - scopeType: stream
-            impactedScopes:
-              [
-                "boards",
-                "items",
-                "tags",
-                "teams",
-                "updates",
-                "users",
-                "workspaces",
-              ]
+            impactedScopes: ["boards", "items", "tags", "teams", "updates", "users", "workspaces"]
   dockerRepository: airbyte/source-monday
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   githubIssueLabel: source-monday
@@ -44,8 +35,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 2.5.8
     oss:
       enabled: true
+      dockerImageTag: 2.5.8
   releaseStage: generally_available
   suggestedStreams:
     streams:
