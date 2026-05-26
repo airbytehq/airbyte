@@ -54,7 +54,7 @@ definitions:
         failure_type: config_error
         http_codes:
           - 400
-        predicate: "{{ 'UNRECOGNIZED_FIELD' in (response | string) or 'Unrecognized field' in (response | string) or 'Unrecognized fields' in (response | string) }}"
+        predicate: "{{ 'UNRECOGNIZED_FIELD' in (response | string) or 'Unrecognized field' in (response | string) }}"
         error_message: >-
           {{ (((response[0] if response is iterable and response is not mapping else response).get('error', {}).get('details', [{}])[0].get('errors', [{}])[0].get('message')) or (response[0] if response is iterable and response is not mapping else response).get('error', {}).get('message') or 'Google Ads query contains unrecognized fields.') }}
       - type: HttpResponseFilter

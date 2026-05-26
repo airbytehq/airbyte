@@ -14,8 +14,8 @@ from unit_tests.mock_server.config import ConfigBuilder
 from unit_tests.mock_server.conftest import create_source
 from unit_tests.mock_server.helpers import (
     API_BASE,
-    build_error_response,
     build_full_refresh_query,
+    build_google_ads_query_error_response,
     build_stream_response,
     setup_full_refresh_parent_mocks,
 )
@@ -219,9 +219,9 @@ def test_custom_query_unrecognized_field_error_fails_as_config_error(mocker):
                 url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
                 body=json.dumps({"query": query}),
             ),
-            build_error_response(
-                400,
-                "Unrecognized fields in the query: 'campaign.start_date', 'campaign.end_date'.",
+            build_google_ads_query_error_response(
+                query_error="UNRECOGNIZED_FIELD",
+                message="Unrecognized fields in the query: 'campaign.start_date', 'campaign.end_date'.",
             ),
         )
 
