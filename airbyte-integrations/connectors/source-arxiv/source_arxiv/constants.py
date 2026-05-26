@@ -9,9 +9,9 @@ DEFAULT_MAX_RESULTS_PER_PAGE = 100
 MAX_RESULTS_PER_PAGE = 2000
 
 ATOM_NS = {
-    "atom": "http://www.w3.org/2005/Atom",
-    "arxiv": "http://arxiv.org/schemas/atom",
-    "opensearch": "http://a9.com/-/spec/opensearch/1.1/",
+    "atom": "https://www.w3.org/2005/Atom",
+    "arxiv": "https://arxiv.org/schemas/atom",
+    "opensearch": "https://a9.com/-/spec/opensearch/1.1/",
 }
 
 ARXIV_CATEGORIES = [

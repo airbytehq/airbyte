@@ -172,7 +172,8 @@ class PapersStream(ArxivStream, IncrementalMixin):
 
     def _record_from_entry(self, entry: Mapping[str, Any]) -> Mapping[str, Any]:
         entry_id = entry.get("id", "")
-        arxiv_id = entry_id.removeprefix("http://arxiv.org/abs/").removeprefix("https://arxiv.org/abs/")
+        parsed_entry_id = urlparse(entry_id)
+        arxiv_id = parsed_entry_id.path.removeprefix("/abs/") if parsed_entry_id.netloc == "arxiv.org" else entry_id
         authors = [author.get("name") for author in entry.get("authors", []) if author.get("name")]
         categories = [tag.get("term") for tag in entry.get("tags", []) if tag.get("term")]
         links = [
