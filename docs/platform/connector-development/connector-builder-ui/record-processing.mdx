@@ -1,4 +1,4 @@
-# Record processing
+# Record Parsing
 
 Connectors built with the connector builder always make HTTP requests, receive the responses and emit records. Besides making the right requests, it's important to properly hand over the records to the system:
 
@@ -917,3 +917,7 @@ In some cases, the auto-detected schema might not cover all scenarios:
 - **Fields have inconsistent types.** If the same field appears as a string for one record and a number for another, the auto-detected schema may choose too narrow a type. In these cases, manually edit the declared schema to use a broader type such as `["string", "number"]`.
 
 For the common case where the API returns a mix of known and unknown fields, the auto-detected schema combined with Airbyte's schema change management provides the right balance between structured typing and flexibility.
+
+## Related
+
+- *YAML Components*: [Record Selector](/platform/connector-development/config-based/understanding-the-yaml-file/record-selector)
