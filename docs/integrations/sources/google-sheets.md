@@ -305,6 +305,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.27-rc.1 | 2026-05-26 | [78437](https://github.com/airbytehq/airbyte/pull/78437) | Set default_concurrency to 4 for concurrency tuning |
 | 0.12.26 | 2026-05-26 | [78443](https://github.com/airbytehq/airbyte/pull/78443) | Update dependencies |
 | 0.12.25 | 2026-04-28 | [77273](https://github.com/airbytehq/airbyte/pull/77273) | Update dependencies |
 | 0.12.24 | 2026-04-21 | [76629](https://github.com/airbytehq/airbyte/pull/76629) | Update dependencies |
