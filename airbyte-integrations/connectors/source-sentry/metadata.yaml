@@ -39,10 +39,8 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 0.9.21
     oss:
       enabled: true
-      dockerImageTag: 0.9.21
   releaseStage: generally_available
   suggestedStreams:
     streams:
