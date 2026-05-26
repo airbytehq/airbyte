@@ -105,7 +105,7 @@ airbyte-agent workspaces list --fields id,name
 List configured connectors in the default workspace:
 
 ```bash
-airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,connector_type
+airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,summarized_source_template.connector_name
 ```
 
 ## Command model

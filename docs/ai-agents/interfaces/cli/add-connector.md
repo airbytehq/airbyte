@@ -83,7 +83,7 @@ Open `credentials_url` manually in a browser where you can sign in to the third-
 List configured connectors:
 
 ```bash
-airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,connector_type,context_store_status
+airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,summarized_source_template.connector_name,context_store_status
 ```
 
 Next, run [`connectors describe`](./describe-connector) to inspect the connector's entities, actions, and parameter schemas.
