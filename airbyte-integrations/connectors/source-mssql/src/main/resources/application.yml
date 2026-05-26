@@ -63,6 +63,17 @@ airbyte:
             output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
             reference-links: https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
 
+          - pattern: (?i).*error code 3947.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: The service has encountered an error
+              processing your request. Please try again. Error code 3947.
+            error: transient
+            group: SQL Server Read Replica Redo Lag
+            output: >-
+              The query was terminated by the SQL Server read replica to keep it in sync with the
+              primary, will retry.
+            reference-links: https://learn.microsoft.com/en-us/azure/azure-sql/database/read-scale-out
+
           - pattern: (?i).*login failed for user.*
             input-example: >-
               com.microsoft.sqlserver.jdbc.SQLServerException: Login failed for user 'sa'.
