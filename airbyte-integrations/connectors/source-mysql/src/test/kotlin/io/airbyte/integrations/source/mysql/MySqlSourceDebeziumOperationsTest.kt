@@ -22,13 +22,13 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun testGenerateWarmStartPropertiesStoresDdlOnlyForCapturedTables() {
-        val properties = operations().generateWarmStartProperties(listOf(stream("test", "selected")))
+        val properties =
+            operations().generateWarmStartProperties(listOf(stream("test", "selected")))
 
         assertEquals(
             "true",
             properties[
-                MySqlSourceDebeziumOperations
-                    .SCHEMA_HISTORY_STORE_ONLY_CAPTURED_TABLES_DDL_PROPERTY
+                MySqlSourceDebeziumOperations.SCHEMA_HISTORY_STORE_ONLY_CAPTURED_TABLES_DDL_PROPERTY
             ]
         )
         assertEquals("""\Qtest.selected\E""", properties["table.include.list"])
@@ -36,12 +36,12 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun testGenerateColdStartPropertiesDoesNotStoreDdlOnlyForCapturedTables() {
-        val properties = operations().generateColdStartProperties(listOf(stream("test", "selected")))
+        val properties =
+            operations().generateColdStartProperties(listOf(stream("test", "selected")))
 
         assertFalse(
             properties.containsKey(
-                MySqlSourceDebeziumOperations
-                    .SCHEMA_HISTORY_STORE_ONLY_CAPTURED_TABLES_DDL_PROPERTY
+                MySqlSourceDebeziumOperations.SCHEMA_HISTORY_STORE_ONLY_CAPTURED_TABLES_DDL_PROPERTY
             )
         )
         assertFalse(properties.containsKey("table.include.list"))
