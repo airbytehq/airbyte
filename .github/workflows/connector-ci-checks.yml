@@ -203,7 +203,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "community"' metadata.yaml 2>/dev/null || echo "community")
+          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "unknown"' metadata.yaml 2>/dev/null || echo "unknown")
           SECRET_COUNT=0
           if [[ -d secrets ]]; then
             SECRET_COUNT=$(find secrets -maxdepth 1 -type f -name '*.json' | wc -l | tr -d ' ')
@@ -214,6 +214,7 @@ jobs:
           fi
 
           ALLOW_TEST_FAILURES=false
+          # Only treat zero secrets as intentional when GSM fetch completed; fetch errors must keep tests blocking.
           if [[ "$SUPPORT_LEVEL" == "community" &&
                 "$FETCH_SECRETS_OUTCOME" == "success" &&
                 "$SECRET_COUNT" == "0" ]]; then
@@ -333,7 +334,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "community"' metadata.yaml 2>/dev/null || echo "community")
+          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "unknown"' metadata.yaml 2>/dev/null || echo "unknown")
           SECRET_COUNT=0
           if [[ -d secrets ]]; then
             SECRET_COUNT=$(find secrets -maxdepth 1 -type f -name '*.json' | wc -l | tr -d ' ')
@@ -344,6 +345,7 @@ jobs:
           fi
 
           ALLOW_TEST_FAILURES=false
+          # Only treat zero secrets as intentional when GSM fetch completed; fetch errors must keep tests blocking.
           if [[ "$SUPPORT_LEVEL" == "community" &&
                 "$FETCH_SECRETS_OUTCOME" == "success" &&
                 "$SECRET_COUNT" == "0" ]]; then
