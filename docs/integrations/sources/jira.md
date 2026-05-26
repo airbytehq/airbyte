@@ -247,6 +247,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.1 | 2026-05-26 | [](https://github.com/airbytehq/airbyte/pull/) | Adjust default concurrency to 4 and enable progressive rollout for concurrency tuning |
 | 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
 | 5.0.0 | 2026-05-20 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
 | 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
