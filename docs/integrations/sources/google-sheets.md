@@ -305,7 +305,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.12.26 | 2026-05-26 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Upgrade source declarative manifest base image to 7.19.3 |
+| 0.12.26 | 2026-05-26 | [78443](https://github.com/airbytehq/airbyte/pull/78443) | Update dependencies |
 | 0.12.25 | 2026-04-28 | [77273](https://github.com/airbytehq/airbyte/pull/77273) | Update dependencies |
 | 0.12.24 | 2026-04-21 | [76629](https://github.com/airbytehq/airbyte/pull/76629) | Update dependencies |
 | 0.12.23 | 2026-04-02 | [75578](https://github.com/airbytehq/airbyte/pull/75578) | Add `oauth_connector_input_specification` with granular scopes |
