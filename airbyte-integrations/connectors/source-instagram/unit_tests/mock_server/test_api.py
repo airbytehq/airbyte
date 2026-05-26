@@ -21,7 +21,7 @@ from ..conftest import get_source
 from .config import ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, InstagramPaginationStrategy
 from .request_builder import get_account_request
-from .response_builder import build_response, get_account_response
+from .response_builder import SECOND_BUSINESS_ACCOUNT_ID, build_response, get_account_response, get_multiple_accounts_response
 from .utils import config, read_output
 
 
@@ -113,3 +113,62 @@ class TestFullRefresh(TestCase):
         is_successful, error = get_source(config={}).check_connection(logger=logger, config={})
         assert not is_successful
         assert "Forbidden" in error
+
+
+class TestIgAccountIdFilter(TestCase):
+    @staticmethod
+    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    def test_no_ig_account_id_returns_all_accounts(self, http_mocker: HttpMocker) -> None:
+        """When ig_account_id is not set, all accounts should be returned."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_ig_account_id_filters_to_matching_account(self, http_mocker: HttpMocker) -> None:
+        """When ig_account_id is set, only the matching account should be returned."""
+        from .config import BUSINESS_ACCOUNT_ID
+
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+
+        output = self._read(config_=config().with_ig_account_id(BUSINESS_ACCOUNT_ID))
+        assert len(output.records) == 1
+        assert output.records[0].record.data["account"]["business_account_id"] == BUSINESS_ACCOUNT_ID
+
+    @HttpMocker()
+    def test_ig_account_id_filters_to_second_account(self, http_mocker: HttpMocker) -> None:
+        """When ig_account_id matches the second account, only that one is returned."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+
+        output = self._read(config_=config().with_ig_account_id(SECOND_BUSINESS_ACCOUNT_ID))
+        assert len(output.records) == 1
+        assert output.records[0].record.data["account"]["business_account_id"] == SECOND_BUSINESS_ACCOUNT_ID
+
+    @HttpMocker()
+    def test_ig_account_id_no_match_returns_empty(self, http_mocker: HttpMocker) -> None:
+        """When ig_account_id doesn't match any account, no records are returned."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+
+        output = self._read(config_=config().with_ig_account_id("999999999999999"))
+        assert len(output.records) == 0

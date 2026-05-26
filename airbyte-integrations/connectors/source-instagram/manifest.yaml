@@ -684,7 +684,10 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ "instagram_business_account" in record }}'
+            condition: >-
+              {{ "instagram_business_account" in record and
+              (not config.get("ig_account_id") or
+              record["instagram_business_account"]["id"] == config["ig_account_id"]) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -805,6 +808,16 @@ spec:
         description: The Client Secret for your Oauth application
         airbyte_secret: true
         type: string
+      ig_account_id:
+        title: Instagram Business Account ID
+        description: >-
+          Optional. The Instagram Business Account ID to sync data for. If
+          provided, only this account will be synced. If left empty, all
+          accounts accessible by the token will be synced. This is the
+          Instagram-side ID (e.g. 17841400123456789), not the Facebook Page ID.
+        type: string
+        examples:
+          - "17841400123456789"
       num_workers:
         type: integer
         title: Number of concurrent threads
