@@ -1,3 +1,7 @@
+---
+sidebar_label: Replication MCP Server
+---
+
 # Airbyte Replication MCP Server
 
 :::note
