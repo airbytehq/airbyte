@@ -29,6 +29,24 @@ If your harness supports the `skills` CLI, you can also install from GitHub:
 npx skills add airbytehq/airbyte-agent-cli
 ```
 
+## Canonical agent sequence
+
+Use this order when an agent needs to create or use a connector:
+
+```bash
+airbyte-agent login show
+airbyte-agent workspaces list --fields id,name
+airbyte-agent schema connectors create
+airbyte-agent connectors list-available --fields id,name,connector_name
+airbyte-agent connectors create --json '{"workspace":"default","name":"GitHub"}'
+airbyte-agent connectors list --json '{"workspace":"default"}' --fields id,name,context_store_status
+airbyte-agent connectors describe --json '{"id":"<connector-id>"}' --fields id,name,entities,schema.result.describe
+airbyte-agent schema connectors execute
+airbyte-agent connectors execute --json @request.json
+```
+
+After `connectors create`, always run `connectors list` and capture the exact configured connector `id` and `name`. Use the returned `id` for `describe`, `execute`, `update`, and `delete` wherever supported. This avoids ambiguity when a workspace has multiple connectors with the same display name.
+
 ## Rules for agents
 
 ### Read the command schema first
@@ -57,16 +75,13 @@ Don't mix `--json` with per-parameter flags. The CLI rejects that combination.
 
 ### Describe before execute
 
-Run `connectors describe` before executing:
+Run `connectors describe` before executing. Prefer the configured connector `id` captured from `connectors list`:
 
 ```bash
-airbyte-agent connectors describe --json '{
-  "workspace": "default",
-  "name": "GitHub"
-}'
+airbyte-agent connectors describe --json '{"id":"<connector-id>"}' --fields id,name,entities,schema.result.describe
 ```
 
-Use the returned schema to choose `entity`, `action`, `params`, and response fields. Don't infer them from another connector.
+Use the returned schema to choose `entity`, `action`, `params`, and response fields. Don't infer them from another connector. Some connectors, including GitHub, return a large describe payload; use `--fields` first, then inspect only the entity and action you need.
 
 ### Keep responses small
 
@@ -74,18 +89,17 @@ For `connectors execute`, include `select_fields` or `exclude_fields` in the JSO
 
 ```bash
 airbyte-agent connectors execute --json '{
-  "workspace": "default",
-  "name": "GitHub",
-  "entity": "issues",
-  "action": "context_store_search",
-  "select_fields": ["id", "title", "state"],
+  "id": "<connector-id>",
+  "entity": "pull_requests",
+  "action": "api_search",
+  "select_fields": ["id", "number", "title", "state"],
   "params": {
-    "limit": 10
+    "query": "repo:airbytehq/airbyte type:pr is:open docs"
   }
-}' --fields data.id,data.title
+}' --fields result.data.id,result.data.number,result.data.title,result.data.state
 ```
 
-### Never ask for third-party connector secrets in chat
+### Keep connector credentials in the browser widget
 
 If a task needs a new connector, run:
 
@@ -93,7 +107,47 @@ If a task needs a new connector, run:
 airbyte-agent connectors create --json '{"workspace": "default", "name": "GitHub"}'
 ```
 
-The user enters credentials in the browser. The agent should not collect or echo third-party API keys, OAuth tokens, passwords, or one-time codes.
+Connector credential requirements are discovered inside the browser widget. The widget may require OAuth, a personal access token, an API key, 2FA, or connector-specific fields. For GitHub, OAuth is the default path, but PAT authentication is also available in the widget. Use repository names in `owner/repo` format, such as `airbytehq/airbyte`.
+
+Do not pass third-party connector credentials as CLI JSON params. The user enters connector secrets in the browser widget so they stay out of shell history, logs, and agent transcripts.
+
+Stop and ask the user for help if the widget hits 2FA, a missing OAuth session, an inaccessible third-party account, or repeated credential timeouts. Do not guess credentials, ask for secrets in chat, or retry indefinitely.
+
+### Start with read-only smoke tests
+
+Prefer read-only actions before attempting writes. For a GitHub connector, good smoke tests are:
+
+- `repositories.get` for a known repository. Split repository format `owner/repo`, such as `airbytehq/airbyte`, into `owner` and `repo` params.
+- `pull_requests.api_search` for a narrow PR search. Include repository scope in the GitHub search query, such as `repo:airbytehq/airbyte type:pr is:open`.
+- `users.get` for a known GitHub username.
+
+Example repository read:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "id": "<connector-id>",
+  "entity": "repositories",
+  "action": "get",
+  "params": {
+    "owner": "airbytehq",
+    "repo": "airbyte"
+  }
+}' --fields result.data.nameWithOwner,result.data.url,result.data.isPrivate
+```
+
+Example PR search:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "id": "<connector-id>",
+  "entity": "pull_requests",
+  "action": "api_search",
+  "params": {
+    "query": "repo:airbytehq/airbyte type:pr is:open docs"
+  },
+  "select_fields": ["number", "title", "state", "url"]
+}' --fields result.data.number,result.data.title,result.data.state,result.data.url
+```
 
 ### Parse stderr JSON on failures
 
@@ -113,7 +167,9 @@ A safe workflow for an agent is:
 
 1. Check authentication with `airbyte-agent login show`.
 2. List workspaces or use the saved default workspace.
-3. List connectors in the workspace.
-4. Describe the connector.
-5. Execute the smallest action that answers the user's request.
-6. Filter outputs with API-side field selection and `--fields`.
+3. If a connector is missing, create it through the browser widget.
+4. Immediately list connectors in the workspace and capture the exact configured connector `id` and `name`.
+5. Describe the connector by `id` with `--fields` to keep the schema output focused.
+6. Run a read-only execute smoke test first.
+7. Execute the smallest action that answers the user's request.
+8. Filter outputs with API-side field selection and `--fields`.

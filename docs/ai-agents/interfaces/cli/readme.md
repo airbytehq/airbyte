@@ -105,7 +105,7 @@ airbyte-agent workspaces list --fields id,name
 List configured connectors in the default workspace:
 
 ```bash
-airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,summarized_source_template.connector_name
+airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name
 ```
 
 ## Command model
@@ -114,7 +114,7 @@ The CLI has three resource groups:
 
 - `organizations`: list organizations and save a default organization.
 - `workspaces`: list workspaces and save a default workspace.
-- `connectors`: list available connector templates, create connectors, list configured connectors, describe connector schemas, execute actions, update connector credentials, and delete connectors.
+- `connectors`: list available connector types, create connectors, list configured connectors, describe connector schemas, execute actions, update connector credentials, and delete connectors.
 
 Top-level commands include `login`, `login show`, `schema`, `version`, and `completion`.
 

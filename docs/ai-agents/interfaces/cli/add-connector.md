@@ -11,19 +11,19 @@ A connector stores credentials and configuration for a third-party service in an
 
 > Never paste third-party credentials into the CLI. Use `connectors create` and complete credential entry in the browser. This keeps secrets out of shell history, logs, and agent transcripts.
 
-## Find an available connector template
+## Find an available connector
 
-List the source connector templates available to your organization:
+List the connector types available to your organization:
 
 ```bash
 airbyte-agent connectors list-available --fields id,name,connector_name
 ```
 
-Use the display `name` or template `id` with `connectors create`. Name matching is case-insensitive against the template display name.
+Use the display `name` or returned `id` with `connectors create`. Name matching is case-insensitive.
 
 ## Create a connector
 
-Create by template name:
+Create by connector name:
 
 ```bash
 airbyte-agent connectors create --json '{
@@ -32,18 +32,18 @@ airbyte-agent connectors create --json '{
 }'
 ```
 
-Create by template ID:
+Create by connector type ID:
 
 ```bash
 airbyte-agent connectors create --json '{
   "workspace": "default",
-  "id": "<template-id>"
+  "id": "<connector-type-id>"
 }'
 ```
 
 What happens:
 
-1. The CLI resolves the source template.
+1. The CLI resolves the connector type.
 2. It creates a short-lived browser credential session.
 3. It prints a `credentials_url` JSON object to stderr and opens your browser.
 4. You complete the third-party credential flow in the browser.
@@ -83,7 +83,7 @@ Open `credentials_url` manually in a browser where you can sign in to the third-
 List configured connectors:
 
 ```bash
-airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,summarized_source_template.connector_name,context_store_status
+airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,context_store_status
 ```
 
 Next, run [`connectors describe`](./describe-connector) to inspect the connector's entities, actions, and parameter schemas.
