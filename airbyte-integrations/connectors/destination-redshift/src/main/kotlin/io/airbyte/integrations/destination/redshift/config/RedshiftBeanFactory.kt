@@ -62,7 +62,7 @@ class RedshiftBeanFactory {
     fun aggregatePublishingConfig(): AggregatePublishingConfig =
         AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000_000L,
-            maxEstBytesPerAgg = 250_000_000L,
+            maxEstBytesPerAgg = 150_000_000L,
             maxEstBytesAllAggregates = 1_000_000_000L,
             stalenessDeadlinePerAgg = 10.minutes,
             maxBufferedAggregates = 10,
