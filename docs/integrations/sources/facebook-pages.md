@@ -149,7 +149,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.2 | 2026-05-26 | | Improve permission error messages to list all required permissions including `catalog_management`. |
+| 2.1.2 | 2026-05-26 | [78449](https://github.com/airbytehq/airbyte/pull/78449) | Improve permission error messages to list all required permissions including `catalog_management`. |
 | 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |
 | 2.1.0 | 2026-02-09 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
 | 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |
