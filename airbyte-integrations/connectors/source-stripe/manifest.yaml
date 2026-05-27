@@ -407,21 +407,41 @@ definitions:
             $ref: "#/schemas/invoices"
 
     invoice_payments:
-      $ref: "#/definitions/created_stream"
-      retriever:
-        $ref: "#/definitions/base_retriever"
-        requester:
-          $ref: "#/definitions/base_requester"
-          request_headers:
-            Stripe-Version: "2025-03-31.basil"
-            Stripe-Account: '{{ config.get("account_id") }}'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/invoice_payments"
+      type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'invoice_payments' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
-        path: invoice_payments
         name: invoice_payments
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: invoice_payments
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_headers:
+              Stripe-Version: "2025-03-31.basil"
+              Stripe-Account: '{{ config.get("account_id") }}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_payments"
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: events
+            request_headers:
+              Stripe-Version: "2025-03-31.basil"
+              Stripe-Account: '{{ config.get("account_id") }}'
+          $parameters:
+            request_parameters: "{{ {'type': 'invoice_payment.paid'} }}"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_payments"
 
     transfers:
       type: StateDelegatingStream
@@ -2011,6 +2031,7 @@ spec:
             - external_account_cards
             - invoice_items
             - invoice_line_items
+            - invoice_payments
             - invoices
             - payment_intents
             - payment_methods
@@ -12204,6 +12225,11 @@ schemas:
           - integer
       created:
         description: The timestamp when the invoice payment was created.
+        type:
+          - "null"
+          - integer
+      updated:
+        description: The timestamp when the invoice payment was last updated.
         type:
           - "null"
           - integer
