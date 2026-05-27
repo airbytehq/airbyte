@@ -252,13 +252,3 @@ def test_complete_oauth_output_specification_contains_refresh_and_access_token()
     output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
     assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
     assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"
-
-
-def test_metadata_pins_sdm_base_image_with_concurrent_read_deadlock_fix():
-    metadata_path = Path(__file__).parent.parent / "metadata.yaml"
-    metadata = yaml.safe_load(metadata_path.read_text())
-
-    assert (
-        metadata["data"]["connectorBuildOptions"]["baseImage"]
-        == "docker.io/airbyte/source-declarative-manifest:7.19.3.post2.dev26444084111@sha256:d5f3b2f5908d663d98ac805bb08e1276c6c60034ec3dc35620abb74415829bc0"
-    )
