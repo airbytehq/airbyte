@@ -46,8 +46,8 @@ For programmatic configuration, use this parameter name:
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                   |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
 | 0.2.41 | 2026-05-27 | [78454](https://github.com/airbytehq/airbyte/pull/78454) | Update dependencies |
 | 0.2.40 | 2026-04-28 | [77482](https://github.com/airbytehq/airbyte/pull/77482) | Update dependencies |
 | 0.2.39 | 2026-04-21 | [76803](https://github.com/airbytehq/airbyte/pull/76803) | Update dependencies |
