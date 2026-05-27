@@ -4,27 +4,27 @@
 
 package io.airbyte.integrations.destination.redshift.write.load
 
+import de.siegmar.fastcsv.writer.CsvWriter
+import de.siegmar.fastcsv.writer.LineDelimiter
+import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.redshift.client.RedshiftAirbyteClient
 import io.airbyte.integrations.destination.redshift.config.RedshiftConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
+import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.*
 import java.util.zip.GZIPOutputStream
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
 
 private val logger = KotlinLogging.logger {}
 
-internal val CSV_FORMAT: CSVFormat = CSVFormat.DEFAULT
 private const val STAGING_FILE_EXTENSION = ".csv.gz"
 private const val DATE_FORMAT = "yyyy_MM_dd"
 private const val UTC = "UTC"
+private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
 /** Regex matching extended placeholders like `{date:yyyy_MM}` or `{timestamp:millis}`. */
 private val EXTENDED_PLACEHOLDER_PATTERN = Regex("""\{(date:.+?|timestamp:.+?)\}""")
@@ -52,7 +52,15 @@ class RedshiftInsertBuffer(
     /** In-memory byte buffer backing the gzip CSV output. */
     private var byteBuffer: ByteArrayOutputStream? = null
     private var gzipOutputStream: GZIPOutputStream? = null
-    private var csvPrinter: CSVPrinter? = null
+    private var csvWriter: CsvWriter? = null
+
+    private val csvWriterBuilder =
+        CsvWriter.builder()
+            .bufferSize(CSV_WRITER_BUFFER_SIZE)
+            .fieldSeparator(',')
+            .quoteCharacter('"')
+            .lineDelimiter(LineDelimiter.LF)
+            .quoteStrategy(QuoteStrategies.REQUIRED)
 
     internal var recordCount = 0
     private var partNumber = 0
@@ -68,7 +76,7 @@ class RedshiftInsertBuffer(
             initializeBuffer()
         }
 
-        csvPrinter!!.printRecord(formatter.format(recordFields))
+        csvWriter!!.writeRecord(formatter.format(recordFields).map { it.toString() })
         recordCount++
     }
 
@@ -91,8 +99,8 @@ class RedshiftInsertBuffer(
 
         try {
             // Step 1: Finalize the gzip CSV
-            csvPrinter?.flush()
-            csvPrinter?.close()
+            csvWriter?.flush()
+            csvWriter?.close()
             gzipOutputStream?.finish()
             gzipOutputStream?.close()
 
@@ -144,13 +152,18 @@ class RedshiftInsertBuffer(
      *
      * The header row contains all column names in the table's ordinal order. Redshift's COPY
      * command skips it via `IGNOREHEADER 1`.
+     *
+     * Uses [CompressionOutputStream] (64 KB buffer, compression level 5) to reduce CPU spent in
+     * native zlib deflate.
      */
     private fun initializeBuffer() {
-        byteBuffer = ByteArrayOutputStream()
-        gzipOutputStream = GZIPOutputStream(byteBuffer)
-        csvPrinter =
-            CSVPrinter(OutputStreamWriter(gzipOutputStream!!, StandardCharsets.UTF_8), CSV_FORMAT)
-        csvPrinter!!.printRecord(columns)
+        val buffer = ByteArrayOutputStream()
+        val gzip = CompressionOutputStream(buffer)
+        val writer = csvWriterBuilder.build(gzip)
+        writer.writeRecord(columns)
+        byteBuffer = buffer
+        gzipOutputStream = gzip
+        csvWriter = writer
     }
 
     /**
@@ -249,9 +262,26 @@ class RedshiftInsertBuffer(
 
     /** Resets all internal state for the next batch. */
     private fun resetState() {
-        csvPrinter = null
+        csvWriter = null
         gzipOutputStream = null
         byteBuffer = null
         recordCount = 0
+    }
+}
+
+/**
+ * [GZIPOutputStream] with a 64 KB buffer (vs. 512 bytes default) and compression level 5 to reduce
+ * zlib JNI overhead for ephemeral staging files.
+ */
+private class CompressionOutputStream(
+    out: OutputStream,
+    bufferSize: Int = DEFAULT_BUFFER_SIZE,
+) : GZIPOutputStream(out, bufferSize) {
+    init {
+        def.setLevel(5)
+    }
+
+    companion object {
+        private const val DEFAULT_BUFFER_SIZE = 65_536 // 64 KB
     }
 }

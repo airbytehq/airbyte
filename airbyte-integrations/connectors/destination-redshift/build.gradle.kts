@@ -31,6 +31,9 @@ val junitPlatformVersion = "1.13.4"
 dependencies {
     // Redshift JDBC driver
     implementation("com.amazon.redshift:redshift-jdbc42:$redshiftJdbcVersion")
+
+    // High-performance CSV writer for staging files
+    implementation("de.siegmar:fastcsv:4.0.0")
     
     // Connection pooling
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
