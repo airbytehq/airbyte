@@ -4,11 +4,11 @@
 
 
 import pytest
+from destination_google_sheets.writer import GoogleSheetsWriter
 from googleapiclient.errors import HttpError
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from destination_google_sheets.writer import GoogleSheetsWriter
 
 
 @pytest.mark.parametrize(
@@ -35,7 +35,9 @@ class _GoogleApiResponse:
 
 class _FailingWorksheetWithCellLimit:
     def append_table(self, values, start, dimension):
-        content = b'{"error":{"message":"This action would increase the number of cells in the workbook above the limit of 10000000 cells."}}'
+        content = (
+            b'{"error":{"message":"This action would increase the number of cells in the workbook above the limit of 10000000 cells."}}'
+        )
         raise HttpError(_GoogleApiResponse(), content)
 
 

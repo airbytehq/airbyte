@@ -12,6 +12,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from .buffer import WriteBufferMixin
 from .spreadsheet import GoogleSheets
 
+
 GOOGLE_SHEETS_CELL_LIMIT_ERROR = "This action would increase the number of cells in the workbook above the limit of 10000000 cells."
 GOOGLE_SHEETS_CELL_LIMIT_MESSAGE = "Google Sheets spreadsheet exceeds the 10,000,000-cell limit."
 
