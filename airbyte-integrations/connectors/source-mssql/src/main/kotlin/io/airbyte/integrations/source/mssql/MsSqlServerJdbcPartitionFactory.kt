@@ -361,9 +361,7 @@ open class MsSqlServerJdbcPartitionFactory(
                 return null
             }
             if (sv.cursor == null || sv.cursor.isNull) {
-                log.info {
-                    "State has no cursor value for stream ${stream.name}, resetting stream"
-                }
+                log.info { "State has no cursor value for stream ${stream.name}, resetting stream" }
                 streamState.reset()
                 return coldStart(streamState)
             }
