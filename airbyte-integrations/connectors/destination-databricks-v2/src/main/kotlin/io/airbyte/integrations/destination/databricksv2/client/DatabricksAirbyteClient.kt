@@ -44,7 +44,7 @@ class DatabricksAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     ) {
-        execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
+        execute(sqlGenerator.createTable(tableName, stream.tableSchema))
     }
 
     override suspend fun tableExists(table: TableName): Boolean =

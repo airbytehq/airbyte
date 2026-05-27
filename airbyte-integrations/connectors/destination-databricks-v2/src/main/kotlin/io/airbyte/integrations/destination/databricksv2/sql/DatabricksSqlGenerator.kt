@@ -43,10 +43,10 @@ class DatabricksSqlGenerator(
         |AND table_name = ${tableName.name.toSqlLiteral()}
         """.trimMargin()
 
+    // TODO: use "isStaging/isTemp" instead of "replace"
     fun createTable(
         tableName: TableName,
         tableSchema: StreamTableSchema,
-        replace: Boolean,
     ): String {
         val userColumns = tableSchema.columnSchema.finalSchema
 
@@ -63,8 +63,7 @@ class DatabricksSqlGenerator(
                 }
                 .joinToString(",\n    ")
 
-        val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
-        return "$createOrReplace TABLE ${fullyQualifiedName(tableName)} ( $columnDeclarations)"
+        return "CREATE TABLE IF NOT EXISTS ${fullyQualifiedName(tableName)} ( $columnDeclarations)"
     }
 
     fun dropTable(tableName: TableName): String =
@@ -72,11 +71,11 @@ class DatabricksSqlGenerator(
 
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String =
         """
-        |BEGIN ATOMIC
+        |BEGIN TRANSACTION
         |CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)}
         |AS SELECT * FROM ${fullyQualifiedName(sourceTableName)};
         |${dropTable(sourceTableName)};
-        |END
+        |COMMIT
         """.trimMargin()
 
     fun copyTable(
@@ -194,7 +193,7 @@ class DatabricksSqlGenerator(
             }
         }
 
-        return "BEGIN ATOMIC\n${statements.joinToString(";\n")};\nEND"
+        return "BEGIN TRANSACTION\n${statements.joinToString(";\n")};\nCOMMIT;"
     }
 
     // -- Internal Helpers --
