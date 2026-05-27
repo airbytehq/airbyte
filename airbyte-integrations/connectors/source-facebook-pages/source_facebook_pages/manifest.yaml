@@ -16,7 +16,22 @@ definitions:
         - action: FAIL
           error_message_contains: This application has not been approved to use this API
           failure_type: config_error
-          error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions. Please, visit https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app for more info about your own OAuth App.
+          error_message: >-
+            The application used to create the Facebook access token has not been approved to use this API.
+            Ensure your Meta app has been granted all permissions required by this connector before running CHECK:
+            pages_read_engagement, pages_read_user_content, pages_show_list, read_insights, and catalog_management.
+            Meta may only report one missing permission at a time, so request the full list above in a single app review.
+            The Airbyte OAuth App is in the process of requesting needed scopes. In the meantime, use your own access token
+            with the necessary permissions. See https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app
+        - action: FAIL
+          error_message_contains: Requires
+          failure_type: config_error
+          error_message: >-
+            The access token is missing permissions required by this connector. Meta reported: {{ response.error.message }}.
+            Ensure your Meta app has been granted all permissions required by this connector:
+            pages_read_engagement, pages_read_user_content, pages_show_list, read_insights, and catalog_management.
+            Meta may only report one missing permission at a time, so request the full list above in a single app review.
+            See https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
