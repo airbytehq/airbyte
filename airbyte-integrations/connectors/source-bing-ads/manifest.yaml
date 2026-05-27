@@ -17700,7 +17700,7 @@ schemas:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
+  default_concurrency: 12
   max_concurrency: 20
 
 spec:

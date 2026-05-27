@@ -20,6 +20,10 @@ Use the credentials of your HoorayHR account to configure the connector. Make su
 | leave-types | id          | No pagination | ✅                 | ❌                   |
 | users       | id          | No pagination | ✅                 | ❌                   |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

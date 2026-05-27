@@ -15,6 +15,10 @@ Interzoid is an AI-powered API platform providing data quality, data matching, a
 | Street Address Matching |  | No pagination | ✅ |  ❌  |
 | Standardize Company Names |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

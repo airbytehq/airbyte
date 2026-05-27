@@ -17,8 +17,8 @@ In open source mode, you provide API credentials directly to the connector.
 |------------|------|----------|-------------|
 | `access_token` | `str` | No | OAuth access token for API requests |
 | `refresh_token` | `str` | Yes | OAuth refresh token for automatic token renewal |
-| `client_id` | `str` | No | Connected App Consumer Key |
-| `client_secret` | `str` | No | Connected App Consumer Secret |
+| `client_id` | `str` | No | Connected App Client ID |
+| `client_secret` | `str` | No | Connected App Client Secret |
 
 Example request:
 
@@ -30,8 +30,8 @@ connector = AsanaConnector(
     auth_config=AsanaOauth2AuthConfig(
         access_token="<OAuth access token for API requests>",
         refresh_token="<OAuth refresh token for automatic token renewal>",
-        client_id="<Connected App Consumer Key>",
-        client_secret="<Connected App Consumer Secret>"
+        client_id="<Connected App Client ID>",
+        client_secret="<Connected App Client Secret>"
     )
 )
 ```
@@ -71,8 +71,8 @@ Create a connector with OAuth credentials.
 |------------|------|----------|-------------|
 | `access_token` | `str` | No | OAuth access token for API requests |
 | `refresh_token` | `str` | Yes | OAuth refresh token for automatic token renewal |
-| `client_id` | `str` | No | Connected App Consumer Key |
-| `client_secret` | `str` | No | Connected App Consumer Secret |
+| `client_id` | `str` | No | Connected App Client ID |
+| `client_secret` | `str` | No | Connected App Client Secret |
 
 Example request:
 
@@ -87,8 +87,8 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     "credentials": {
       "access_token": "<OAuth access token for API requests>",
       "refresh_token": "<OAuth refresh token for automatic token renewal>",
-      "client_id": "<Connected App Consumer Key>",
-      "client_secret": "<Connected App Consumer Secret>"
+      "client_id": "<Connected App Client ID>",
+      "client_secret": "<Connected App Client Secret>"
     }
   }'
 ```
@@ -97,6 +97,30 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 #### Bring your own OAuth flow
 To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own).
+
+##### Configure your own OAuth app credentials (optional)
+
+By default, Airbyte uses its own OAuth app credentials. You can override these with your own so that OAuth consent screens show your company's branding. If you skip this step, the consent screen shows "Airbyte" as the requesting application.
+
+```bash
+curl -X PUT "https://api.airbyte.ai/api/v1/oauth/credentials" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connector_type": "asana",
+    "configuration": {
+      "client_id": "<Your Asana OAuth app's client ID>",
+      "client_secret": "<Your Asana OAuth app's client secret>"
+    }
+  }'
+```
+
+**To revert to Airbyte-managed defaults**:
+
+```bash
+curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/asana" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>"
+```
 
 ##### Step 1: Initiate the OAuth flow
 

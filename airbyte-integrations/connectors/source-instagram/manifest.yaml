@@ -738,7 +738,7 @@ streams:
 # Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 15) }}"
+  default_concurrency: "{{ config.get('num_workers', 20) }}"
   max_concurrency: 50
 
 metadata:
@@ -810,7 +810,7 @@ spec:
         title: Number of concurrent threads
         minimum: 2
         maximum: 40
-        default: 15
+        default: 20
         examples:
           - 1
           - 2

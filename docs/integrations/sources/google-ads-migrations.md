@@ -1,4 +1,80 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Google Ads Migration Guide
+
+## Upgrading to 5.0.0
+
+This release combines two breaking changes:
+
+1. The Google Ads API is upgraded from Version 20 to Version 23 (see key changes below).
+2. The nullable `bidding_strategy.id` field is removed from primary keys. See the table below for new primary keys.
+
+### Google Ads API v23 changes
+
+Key changes include:
+
+- New `segments.ad_network_type` support for Performance Max campaigns (channel-level reporting)
+- Renamed deprecated video metrics to TrueView equivalents
+- Removed `CallAd` and `CallAdInfo` fields from `ad_group_ad` schema
+- Renamed campaign date fields to datetime equivalents
+- Removed `lead_form_only` field from `DemandGenMultiAssetAdInfo`
+- Removed aggregate asset performance label metrics
+
+The following field renames and removals affect built-in stream schemas:
+
+| Stream | Previous field name | New field name |
+|---|---|---|
+| `account_performance_report` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `account_performance_report` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `account_performance_report` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `ad_group_ad` | `ad_group_ad.ad.call_ad.*` / `CallAdInfo` fields | Removed |
+| `ad_group_ad_legacy` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `ad_group_ad_legacy` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `ad_group_ad_legacy` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `campaign` | `campaign.start_date` | `campaign.start_date_time` |
+| `campaign` | `campaign.end_date` | `campaign.end_date_time` |
+| `campaign` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `campaign_budget` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `campaign_budget` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `campaign_budget` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `display_keyword_view` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `display_keyword_view` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `display_keyword_view` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `geographic_view_with_metrics` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `geographic_view_with_metrics` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `geographic_view_with_metrics` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `topic_view` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `topic_view` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `topic_view` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `user_location_view` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `user_location_view` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `user_location_view` | `metrics.video_views` | `metrics.video_trueview_views` |
+
+The following fields were also removed in v23 and may affect custom queries (`custom_queries_array`), even though they are not used in built-in streams:
+
+- `campaign.url_expansion_opt_out`
+- `ad_group_ad.ad.demand_gen_multi_asset_ad.lead_form_only`
+- `asset_group_asset.performance_label`
+
+For custom queries, the stream may fail if a field was removed or renamed during the API update. Users with custom queries that reference any of the renamed or removed fields above must update their queries accordingly.
+You can use the [Query Builder](https://developers.google.com/google-ads/api/fields/v23/query_validator) to validate your custom queries.
+
+### Primary key change for bidding strategy streams
+
+The `bidding_strategy.id` field is nullable in the Google Ads API, meaning it can return `null` values. Including a nullable field in the primary key caused sync failures for destinations that enforce non-null primary key constraints, such as the Iceberg destination.
+
+| Stream | Old primary key | New primary key |
+|---|---|---|
+| `campaign_bidding_strategy` | `campaign.id`, `bidding_strategy.id`, `segments.date` | `campaign.id`, `segments.date` |
+| `ad_group_bidding_strategy` | `ad_group.id`, `bidding_strategy.id`, `segments.date` | `ad_group.id`, `segments.date` |
+
+Users syncing the `campaign_bidding_strategy` or `ad_group_bidding_strategy` streams are affected.
+
+### Action required
+
+After upgrading, refresh the source schema and clear data for the affected streams to ensure uninterrupted syncs.
+
+<MigrationGuide />
 
 ## Upgrading to 4.0.0
 

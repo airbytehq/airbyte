@@ -15,3 +15,7 @@ Reach out to your service representative or system admin to find the parameters 
 ### Output schema
 
 The output schema is the same as that of the [Zencart Database](https://docs.zen-cart.com/dev/schema/) described here.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
