@@ -30,6 +30,10 @@ A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
 | asset_histories |  | DefaultPaginator | ✅ |  ✅  |
 | asset_stock_histories |  | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

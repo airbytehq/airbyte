@@ -37,6 +37,10 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 | userpreferences_me | _id | DefaultPaginator | ✅ |  ❌  |
 | users_me | _id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
