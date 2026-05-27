@@ -55,7 +55,9 @@ class PostgresExceptionClassifierTest {
     fun testConnectionAttemptFailed() {
         val result =
             classifier.classify(
-                RuntimeException("org.postgresql.util.PSQLException: The connection attempt failed.")
+                RuntimeException(
+                    "org.postgresql.util.PSQLException: The connection attempt failed."
+                )
             )
 
         assertEquals(
@@ -104,7 +106,9 @@ class PostgresExceptionClassifierTest {
     fun testExistingMsecTimeoutRule() {
         val result =
             classifier.classify(
-                RuntimeException("java.util.concurrent.TimeoutException: Timed out after 15000 msec")
+                RuntimeException(
+                    "java.util.concurrent.TimeoutException: Timed out after 15000 msec"
+                )
             )
 
         assertEquals(
