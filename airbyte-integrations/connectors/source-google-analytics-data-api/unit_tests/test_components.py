@@ -260,5 +260,5 @@ def test_metadata_pins_sdm_base_image_with_concurrent_read_deadlock_fix():
 
     assert (
         metadata["data"]["connectorBuildOptions"]["baseImage"]
-        == "docker.io/airbyte/source-declarative-manifest:7.18.1.post8.dev25490693965@sha256:ed6172ecc9436eba6aa774de466ab22f4648573a5f69f621f57c22e9bb01b608"
+        == "docker.io/airbyte/source-declarative-manifest:7.19.3@sha256:b4796c8ad8a6b1918bbd2bdf9e874f149309194f5c2f5a23e05b51e6172d9b78"
     )

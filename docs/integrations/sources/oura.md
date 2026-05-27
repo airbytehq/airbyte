@@ -49,6 +49,10 @@ The following fields are required fields for the connector to work:
 - (optional) `start_datetime`: The start date and time for the sync.
 - (optional) `end_datetime`: The end date and time for the sync.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

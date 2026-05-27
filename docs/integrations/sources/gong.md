@@ -75,6 +75,10 @@ The Gong connector should not run into Gong API limitations under normal usage. 
 
 The call transcripts stream fetches transcripts one call at a time as a substream of the calls stream. On the initial sync for accounts with a large number of calls, this may take longer than a bulk-fetch approach. Subsequent incremental syncs only fetch transcripts for new calls.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

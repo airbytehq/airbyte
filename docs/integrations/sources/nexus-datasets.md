@@ -165,6 +165,10 @@ The Infor Nexus Data API returns the following status codes during dataset expor
 | 202 | Dataset is not yet ready. | Wait and retry the sync later. |
 | 304 | Dataset is not ready. | Contact Infor member services to investigate. |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

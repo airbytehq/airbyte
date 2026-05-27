@@ -22,6 +22,10 @@ Documentation: https://api-docs.partnerize.com/partner/#section/Introduction
 | conversion_metrics | ref_conversion_metric_id | DefaultPaginator | ✅ |  ❌  |
 | partnership_model | ref_partnership_model_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

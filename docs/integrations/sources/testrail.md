@@ -38,6 +38,10 @@ Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments`
 | case_fields | id | DefaultPaginator | ✅ |  ❌  |
 | cases | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
