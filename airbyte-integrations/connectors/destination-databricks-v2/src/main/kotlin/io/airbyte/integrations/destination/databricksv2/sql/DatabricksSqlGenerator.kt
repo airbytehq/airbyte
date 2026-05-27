@@ -26,6 +26,23 @@ class DatabricksSqlGenerator(
     fun createNamespace(namespace: String): String =
         "CREATE SCHEMA IF NOT EXISTS ${fullyQualifiedNamespace(namespace)}"
 
+    fun namespaceExists(namespace: String): String =
+        """
+        |SELECT COUNT(*) > 0 AS schema_exists
+        |FROM ${config.database.quote()}.information_schema.schemata
+        |WHERE catalog_name = ${config.database.toSqlLiteral()}
+        |AND schema_name = ${namespace.toSqlLiteral()}
+        """.trimMargin()
+
+    fun tableExists(tableName: TableName): String =
+        """
+        |SELECT COUNT(*) > 0 AS table_exists
+        |FROM ${config.database.quote()}.information_schema.tables
+        |WHERE table_catalog = ${config.database.toSqlLiteral()}
+        |AND table_schema = ${tableName.namespace.toSqlLiteral()}
+        |AND table_name = ${tableName.name.toSqlLiteral()}
+        """.trimMargin()
+
     fun createTable(
         tableName: TableName,
         tableSchema: StreamTableSchema,
@@ -146,9 +163,9 @@ class DatabricksSqlGenerator(
         """
         |SELECT column_name, data_type, is_nullable
         |FROM ${config.database.quote()}.information_schema.columns
-        |WHERE table_catalog = '${sqlEscape(config.database)}'
-        |AND table_schema = '${sqlEscape(tableName.namespace)}'
-        |AND table_name = '${sqlEscape(tableName.name)}'
+        |WHERE table_catalog = ${config.database.toSqlLiteral()}
+        |AND table_schema = ${tableName.namespace.toSqlLiteral()}
+        |AND table_name = ${tableName.name.toSqlLiteral()}
         |ORDER BY ordinal_position
         """.trimMargin()
 
@@ -244,8 +261,8 @@ class DatabricksSqlGenerator(
         /** Wraps the string with backtick quotes for use as a Databricks SQL identifier. */
         fun String.quote(): String = "$QUOTE$this$QUOTE"
 
-        /** Escapes special characters in a SQL string literal. */
-        fun sqlEscape(value: String): String = value.replace("'", "''")
+        /** Escapes and wraps the string as a single-quoted SQL string literal. */
+        fun String.toSqlLiteral(): String = "'${this.replace("'", "''")}'"
     }
 
     private val metaColumns: LinkedHashMap<String, ColumnType> =
