@@ -20,7 +20,7 @@ import io.mockk.just
 import io.mockk.slot
 import java.math.BigInteger
 import java.text.SimpleDateFormat
-import java.util.TimeZone
+import java.util.*
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -73,7 +73,7 @@ internal class RedshiftInsertBufferTest {
     @BeforeEach
     fun setUp() {
         coEvery { redshiftClient.uploadToS3(any(), any(), any()) } just Runs
-        coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } just Runs
+        coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } returns 1L
         coEvery { redshiftClient.deleteFromS3(any(), any()) } just Runs
 
         buffer = RedshiftInsertBuffer(tableName, columns, redshiftClient, configuration)

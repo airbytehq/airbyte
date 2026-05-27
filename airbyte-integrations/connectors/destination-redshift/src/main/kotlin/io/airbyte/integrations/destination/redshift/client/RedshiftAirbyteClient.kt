@@ -245,12 +245,11 @@ class RedshiftAirbyteClient(
         accessKeyId: String,
         secretAccessKey: String,
         region: String,
-    ) {
+    ): Long =
         execute(
             sqlGenerator.copyFromS3(tableName, s3Path, accessKeyId, secretAccessKey, region),
             logStatement = false,
         )
-    }
 
     /** Adds a column to an existing table. */
     suspend fun addColumn(tableName: TableName, columnName: String, columnType: String) {
@@ -338,13 +337,18 @@ class RedshiftAirbyteClient(
      * @param logStatement set to `false` for statements that contain secrets (e.g. COPY with inline
      * AWS credentials) to prevent plaintext credentials from appearing in logs.
      */
-    internal fun execute(query: String, logStatement: Boolean = true) {
+    internal fun execute(query: String, logStatement: Boolean = true): Long {
         if (logStatement) {
             log.info { query.trimIndent() }
         }
         try {
-            dataSource.connection.use { connection ->
-                connection.createStatement().use { it.execute(query) }
+            return dataSource.connection.use { connection ->
+                connection.createStatement().use { stmt ->
+                    stmt.execute(query)
+                    val updateCount = stmt.updateCount.toLong()
+                    log.info { "Statement affected $updateCount row(s)" }
+                    updateCount
+                }
             }
         } catch (e: SQLException) {
             if (
