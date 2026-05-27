@@ -66,10 +66,10 @@ class GcsDataLakeCatalogUtilTest {
     fun `local emulator uses no auth and custom service host`() {
         val properties =
             util.toCatalogProperties(
-                gcsConfiguration(gcsEndpoint = "http://gcs:4443") // ignore-https-check
+                gcsConfiguration(gcsEndpoint = "http://gcs:4443") // # ignore-https-check
             )
 
-        assertEquals("http://gcs:4443", properties[GCPProperties.GCS_SERVICE_HOST]) // ignore-https-check
+        assertEquals("http://gcs:4443", properties[GCPProperties.GCS_SERVICE_HOST]) // # ignore-https-check
         assertEquals("true", properties[GCPProperties.GCS_NO_AUTH])
 
         val fileIO = GcsDataLakeFileIO()
@@ -82,7 +82,7 @@ class GcsDataLakeCatalogUtilTest {
         catalogConfiguration:
             io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfig =
             PolarisCatalogConfiguration(
-                serverUri = "http://polaris:8181", // ignore-https-check
+                serverUri = "http://polaris:8181", // # ignore-https-check
                 catalogName = "catalog",
                 clientId = "client-id",
                 clientSecret = "client-secret",
