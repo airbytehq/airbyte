@@ -193,7 +193,7 @@ const boolStringToBool = (boolString) => {
   return null;
 };
 
- const getSupportLevelDisplay=(rawSupportLevel) => {
+const getSupportLevelDisplay = (rawSupportLevel) => {
   switch (rawSupportLevel) {
     case "certified":
       return "Airbyte";
@@ -206,7 +206,7 @@ const boolStringToBool = (boolString) => {
     default:
       return null;
   }
-}
+};
 
 // COMPONENTS
 
@@ -248,6 +248,7 @@ const ConnectorMetadataCallout = ({
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
   definitionId,
 }) => (
@@ -328,6 +329,16 @@ const ConnectorMetadataCallout = ({
           <MetricIcon iconComponent={USAGE_ICON} level={usageRate} />
         </MetadataStat>
       )}
+      {defaultDataWorkers && (
+        <MetadataStat label="Default data workers">
+          <span title="Applies to Airbyte Cloud plans on capacity-based pricing. Actual usage can vary if your organization has custom resource overrides.">
+            {defaultDataWorkers} per sync
+          </span>
+          <a href="/platform/cloud/managing-airbyte-cloud/manage-data-workers#how-data-workers-map-to-syncs">
+            Learn more
+          </a>
+        </MetadataStat>
+      )}
       {isEnterprise && (
         <MetadataStat label="Enterprise Connector">
           <strong>
@@ -384,6 +395,7 @@ export const HeaderDecoration = ({
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
   definitionId,
   "enterprise-connector": enterpriseConnector,
@@ -419,6 +431,7 @@ export const HeaderDecoration = ({
         isLatestCDK={isLatestCDK}
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
+        defaultDataWorkers={defaultDataWorkers}
         lastUpdated={lastUpdated}
         definitionId={definitionId}
       />
