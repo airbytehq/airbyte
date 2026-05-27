@@ -82,6 +82,10 @@ abstract class LosslessJdbcFieldType<R, W>(
         paramIdx: Int,
         value: JsonNode,
     ) {
+        if (value.isNull) {
+            stmt.setObject(paramIdx, null)
+            return
+        }
         jdbcSetter.set(stmt, paramIdx, jsonDecoder.decode(value))
     }
 }

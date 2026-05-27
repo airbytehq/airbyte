@@ -69,6 +69,24 @@ class JdbcSelectQuerierTest {
     }
 
     @Test
+    fun testNullBinding() {
+        runTest(
+            SelectQuery(
+                "SELECT k, v FROM kv WHERE v > ?",
+                columns,
+                listOf(SelectQuery.Binding(Jsons.nullNode(), StringFieldType)),
+            ),
+        )
+        runTest(
+            SelectQuery(
+                "SELECT k, v FROM kv WHERE k > ?",
+                columns,
+                listOf(SelectQuery.Binding(Jsons.nullNode(), IntFieldType)),
+            ),
+        )
+    }
+
+    @Test
     fun testProjection() {
         runTest(
             SelectQuery("SELECT v FROM kv", columns.drop(1), listOf()),
