@@ -7,7 +7,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from string import Template
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
@@ -2172,6 +2172,355 @@ class Transaction(ShopifyBulkQuery):
                     transaction["order_id"] = record.get("id")
                     transaction["currency"] = record.get("currency")
                     yield self.process_transaction(transaction)
+
+
+class MoneyBagMixin:
+    money_fields: List[Field] = [
+        "amount",
+        Field(name="currencyCode", alias="currency_code"),
+    ]
+
+    money_bag_fields: List[Field] = [
+        Field(name="shopMoney", alias="shop_money", fields=money_fields),
+        Field(name="presentmentMoney", alias="presentment_money", fields=money_fields),
+    ]
+
+    tax_line_fields: List[Field] = [
+        Field(name="channelLiable", alias="channel_liable"),
+        "price",
+        Field(name="priceSet", alias="price_set", fields=money_bag_fields),
+        "rate",
+        "title",
+    ]
+
+    discount_allocation_fields: List[Field] = [
+        Field(name="allocatedAmountSet", alias="amount_set", fields=money_bag_fields),
+        Field(name="discountApplication", fields=["index"]),
+    ]
+
+    def _process_money_bag(self, money_bag: Optional[MutableMapping[str, Any]]) -> Optional[MutableMapping[str, Any]]:
+        if money_bag:
+            for money in money_bag.values():
+                if money and money.get("amount") is not None:
+                    money["amount"] = float(money["amount"])
+        return money_bag
+
+    def _process_tax_lines(self, tax_lines: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for tax_line in tax_lines:
+            self._process_money_bag(tax_line.get("price_set"))
+            if tax_line.get("price") is not None:
+                tax_line["price"] = float(tax_line["price"])
+        return tax_lines
+
+    def _process_discount_allocations(self, discount_allocations: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for discount_allocation in discount_allocations:
+            self._process_money_bag(discount_allocation.get("amount_set"))
+            amount_set = discount_allocation.get("amount_set") or {}
+            shop_money = amount_set.get("shop_money") or {}
+            discount_allocation["amount"] = shop_money.get("amount")
+            discount_application = discount_allocation.pop("discountApplication", None)
+            if discount_application:
+                discount_allocation["discount_application_index"] = discount_application.get("index")
+        return discount_allocations
+
+    def _process_line_item_base(self, line_item: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        line_item["admin_graphql_api_id"] = line_item.get("id")
+        line_item["id"] = self.tools.resolve_str_id(line_item.get("id"))
+        variant = line_item.pop("variant", None)
+        if variant:
+            line_item["variant_id"] = self.tools.resolve_str_id(variant.get("id"))
+            line_item["variant_inventory_management"] = variant.get("inventoryManagement")
+            line_item["variant_title"] = variant.get("title")
+        product = line_item.pop("product", None)
+        if product:
+            line_item["product_id"] = self.tools.resolve_str_id(product.get("id"))
+        if line_item.get("price_set"):
+            self._process_money_bag(line_item["price_set"])
+            shop_money = line_item["price_set"].get("shop_money") or {}
+            line_item["price"] = shop_money.get("amount")
+        if line_item.get("total_discount_set"):
+            self._process_money_bag(line_item["total_discount_set"])
+            shop_money = line_item["total_discount_set"].get("shop_money") or {}
+            line_item["total_discount"] = shop_money.get("amount")
+        if line_item.get("tax_lines"):
+            line_item["tax_lines"] = self._process_tax_lines(line_item["tax_lines"])
+        if line_item.get("duties"):
+            line_item["duties"] = self._process_duties(line_item["duties"])
+        if line_item.get("discount_allocations"):
+            line_item["discount_allocations"] = self._process_discount_allocations(line_item["discount_allocations"])
+        line_item["fulfillable_quantity"] = line_item.pop("unfulfilledQuantity", None)
+        line_item.pop("currentQuantity", None)
+        line_item.pop("discountedTotal", None)
+        return line_item
+
+
+class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    duty_fields: List[Field] = [
+        "id",
+        Field(name="countryCodeOfOrigin", alias="country_code_of_origin"),
+        Field(name="harmonizedSystemCode", alias="harmonized_system_code"),
+        Field(name="price", alias="shop_money", fields=MoneyBagMixin.money_fields),
+        Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
+    ]
+
+    line_item_fields: List[Field] = [
+        "id",
+        "currentQuantity",
+        "discountedTotal",
+        "name",
+        "quantity",
+        "requiresShipping",
+        "sku",
+        "taxable",
+        "title",
+        "unfulfilledQuantity",
+        "vendor",
+        Field(name="discountedTotalSet", alias="total_discount_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="discountAllocations", alias="discount_allocations", fields=MoneyBagMixin.discount_allocation_fields),
+        Field(name="duties", fields=duty_fields),
+        Field(name="originalUnitPriceSet", alias="price_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="product", fields=["id"]),
+        Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
+        Field(name="variant", fields=["id", "inventoryManagement", "title"]),
+    ]
+
+    fulfillment_line_item_fields: List[Field] = [
+        "__typename",
+        "id",
+        "quantity",
+        Field(name="lineItem", alias="line_item", fields=line_item_fields),
+    ]
+
+    fulfillment_fields: List[Field] = [
+        "__typename",
+        "id",
+        "createdAt",
+        "name",
+        "requiresShipping",
+        "status",
+        "totalQuantity",
+        "updatedAt",
+        Field(name="fulfillmentLineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=fulfillment_line_item_fields)])]),
+        Field(name="location", fields=["id"]),
+        Field(name="order", fields=["id"]),
+        Field(name="originAddress", alias="origin_address", fields=["address1", "address2", "city", "countryCode", "provinceCode", "zip"]),
+        Field(name="service", fields=["serviceName"]),
+        Field(name="trackingInfo", fields=["company", "number", "url"]),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+        "record_components": ["Fulfillment", "FulfillmentLineItem"],
+    }
+
+    def _fulfillment_field(self, filter_query: Optional[str]) -> Field:
+        arguments = [Argument(name="query", value=f'"{filter_query}"')] if filter_query else []
+        return Field(
+            name="fulfillments",
+            arguments=arguments,
+            fields=[Field(name="edges", fields=[Field(name="node", fields=self.fulfillment_fields)])],
+        )
+
+    def query(self, filter_query: Optional[str] = None) -> Query:
+        return self.build(self.query_name, ["__typename", "id", "updatedAt", self._fulfillment_field(filter_query)])
+
+    def _process_duties(self, duties: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for duty in duties:
+            if duty.get("id"):
+                duty["id"] = self.tools.resolve_str_id(duty["id"])
+            duty["presentment_money"] = duty.get("shop_money")
+            if duty.get("tax_lines"):
+                duty["tax_lines"] = self._process_tax_lines(duty["tax_lines"])
+        return duties
+
+    def _process_line_item(self, line_item: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        return self.tools.fields_names_to_snake_case(self._process_line_item_base(line_item))
+
+    def _process_fulfillment_line_items(
+        self, fulfillment_line_items: Iterable[MutableMapping[str, Any]]
+    ) -> Iterable[MutableMapping[str, Any]]:
+        line_items = []
+        for fulfillment_line_item in fulfillment_line_items:
+            line_item = self._process_line_item(fulfillment_line_item.get("line_item") or {})
+            line_item["fulfillment_line_item_id"] = self.tools.resolve_str_id(fulfillment_line_item.get("id"))
+            line_item["quantity"] = fulfillment_line_item.get("quantity")
+            line_items.append(line_item)
+        return line_items
+
+    def _process_fulfillment(self, fulfillment: MutableMapping[str, Any], order_id: Optional[str]) -> MutableMapping[str, Any]:
+        fulfillment["admin_graphql_api_id"] = fulfillment.get("id")
+        fulfillment["id"] = self.tools.resolve_str_id(fulfillment.get("id"))
+        fulfillment["createdAt"] = self.tools.from_iso8601_to_rfc3339(fulfillment, "createdAt")
+        fulfillment["updatedAt"] = self.tools.from_iso8601_to_rfc3339(fulfillment, "updatedAt")
+        fulfillment["order_id"] = order_id if isinstance(order_id, int) else self.tools.resolve_str_id(order_id)
+        location = fulfillment.pop("location", None)
+        fulfillment["location_id"] = self.tools.resolve_str_id(location.get("id")) if location else None
+        service = fulfillment.pop("service", None)
+        fulfillment["service"] = service.get("serviceName") if service else None
+        tracking_info = fulfillment.pop("trackingInfo", [])
+        fulfillment["tracking_company"] = tracking_info[0].get("company") if tracking_info else None
+        fulfillment["tracking_number"] = tracking_info[0].get("number") if tracking_info else None
+        fulfillment["tracking_url"] = tracking_info[0].get("url") if tracking_info else None
+        fulfillment["tracking_numbers"] = [info.get("number") for info in tracking_info if info.get("number")]
+        fulfillment["tracking_urls"] = [info.get("url") for info in tracking_info if info.get("url")]
+        record_components = fulfillment.pop("record_components", {})
+        fulfillment_line_items = fulfillment.pop("fulfillment_line_items", fulfillment.pop("fulfillmentLineItems", []))
+        fulfillment_line_items.extend(record_components.get("FulfillmentLineItem", []))
+        fulfillment["line_items"] = self._process_fulfillment_line_items(fulfillment_line_items)
+        fulfillment.pop("order", None)
+        fulfillment.pop(BULK_PARENT_KEY, None)
+        fulfillment.pop("requiresShipping", None)
+        fulfillment.pop("totalQuantity", None)
+        return self.tools.fields_names_to_snake_case(fulfillment)
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        record_components = record.get("record_components", {})
+        fulfillments = record_components.get("Fulfillment", [])
+        fulfillment_line_items = record_components.get("FulfillmentLineItem", [])
+        line_items_by_fulfillment_id: Dict[str, List[MutableMapping[str, Any]]] = {}
+        for line_item in fulfillment_line_items:
+            line_items_by_fulfillment_id.setdefault(line_item.get(BULK_PARENT_KEY), []).append(line_item)
+        if fulfillments:
+            for fulfillment in fulfillments:
+                fulfillment["fulfillment_line_items"] = line_items_by_fulfillment_id.get(
+                    fulfillment.get("admin_graphql_api_id", fulfillment.get("id")), []
+                )
+                yield self._process_fulfillment(fulfillment, record.get("id"))
+
+
+class OrderRefund(MoneyBagMixin, ShopifyBulkQuery):
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    duty_fields: List[Field] = [
+        Field(name="id", alias="duty_id"),
+        Field(name="amountSet", alias="amount_set", fields=MoneyBagMixin.money_bag_fields),
+    ]
+
+    line_item_fields: List[Field] = [
+        "id",
+        "currentQuantity",
+        "discountedTotal",
+        "discountedUnitPrice",
+        "name",
+        "quantity",
+        "requiresShipping",
+        "sku",
+        "taxable",
+        "title",
+        "unfulfilledQuantity",
+        "vendor",
+        Field(name="discountedTotalSet", alias="total_discount_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="discountAllocations", alias="discount_allocations", fields=MoneyBagMixin.discount_allocation_fields),
+        Field(name="duties", fields=duty_fields),
+        Field(name="originalUnitPriceSet", alias="price_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
+        Field(name="variant", fields=["id", "inventoryManagement", "title"]),
+        Field(name="product", fields=["id"]),
+    ]
+
+    refund_line_item_fields: List[Field] = [
+        "__typename",
+        "id",
+        "quantity",
+        "restockType",
+        "subtotal",
+        Field(name="subtotalSet", alias="subtotal_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="totalTaxSet", alias="total_tax_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="lineItem", alias="line_item", fields=line_item_fields),
+        Field(name="location", fields=["id"]),
+    ]
+
+    refund_fields: List[Field] = [
+        "__typename",
+        "id",
+        "createdAt",
+        "note",
+        "updatedAt",
+        Field(name="refundLineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=refund_line_item_fields)])]),
+        Field(name="return", fields=["id"]),
+        Field(name="totalRefundedSet", alias="total_duties_set", fields=MoneyBagMixin.money_bag_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+        "record_components": ["Refund", "RefundLineItem"],
+    }
+
+    def _refund_field(self, filter_query: Optional[str]) -> Field:
+        arguments = [Argument(name="query", value=f'"{filter_query}"')] if filter_query else []
+        return Field(
+            name="refunds",
+            arguments=arguments,
+            fields=[Field(name="edges", fields=[Field(name="node", fields=self.refund_fields)])],
+        )
+
+    def query(self, filter_query: Optional[str] = None) -> Query:
+        return self.build(self.query_name, ["__typename", "id", "updatedAt", self._refund_field(filter_query)])
+
+    def _process_duties(self, duties: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for duty in duties:
+            if duty.get("duty_id"):
+                duty["duty_id"] = self.tools.resolve_str_id(duty["duty_id"])
+            self._process_money_bag(duty.get("amount_set"))
+        return duties
+
+    def _process_line_item(self, line_item: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        line_item = self._process_line_item_base(line_item)
+        if line_item.get("discountedUnitPrice") is not None:
+            line_item["pre_tax_price"] = float(line_item.pop("discountedUnitPrice"))
+        return self.tools.fields_names_to_snake_case(line_item)
+
+    def _process_refund_line_items(self, refund_line_items: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for refund_line_item in refund_line_items:
+            refund_line_item["id"] = self.tools.resolve_str_id(refund_line_item.get("id"))
+            refund_line_item["location_id"] = self.tools.resolve_str_id((refund_line_item.pop("location", None) or {}).get("id"))
+            refund_line_item["line_item"] = self._process_line_item(refund_line_item.get("line_item") or {})
+            refund_line_item["line_item_id"] = refund_line_item["line_item"].get("id")
+            self._process_money_bag(refund_line_item.get("subtotal_set"))
+            self._process_money_bag(refund_line_item.get("total_tax_set"))
+            if refund_line_item.get("subtotal") is not None:
+                refund_line_item["subtotal"] = float(refund_line_item["subtotal"])
+            shop_money = (refund_line_item.get("total_tax_set") or {}).get("shop_money") or {}
+            refund_line_item["total_tax"] = shop_money.get("amount")
+            refund_line_item.pop(BULK_PARENT_KEY, None)
+            refund_line_item.pop("refund_line_items", None)
+            yield self.tools.fields_names_to_snake_case(refund_line_item)
+
+    def _process_refund(self, refund: MutableMapping[str, Any], order_id: Optional[str]) -> MutableMapping[str, Any]:
+        refund["admin_graphql_api_id"] = refund.get("id")
+        refund["id"] = self.tools.resolve_str_id(refund.get("id"))
+        refund["order_id"] = order_id if isinstance(order_id, int) else self.tools.resolve_str_id(order_id)
+        refund["createdAt"] = self.tools.from_iso8601_to_rfc3339(refund, "createdAt")
+        refund["updatedAt"] = self.tools.from_iso8601_to_rfc3339(refund, "updatedAt")
+        record_components = refund.pop("record_components", {})
+        refund_line_items = refund.pop("refund_line_items", refund.pop("refundLineItems", []))
+        refund_line_items.extend(record_components.get("RefundLineItem", []))
+        refund["refund_line_items"] = list(self._process_refund_line_items(refund_line_items))
+        return_obj = refund.pop("return", None)
+        if return_obj:
+            refund["return"] = {
+                "admin_graphql_api_id": return_obj.get("id"),
+                "id": self.tools.resolve_str_id(return_obj.get("id")),
+            }
+        self._process_money_bag(refund.get("total_duties_set"))
+        refund.pop(BULK_PARENT_KEY, None)
+        return self.tools.fields_names_to_snake_case(refund)
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        record_components = record.get("record_components", {})
+        refunds = record_components.get("Refund", [])
+        refund_line_items = record_components.get("RefundLineItem", [])
+        line_items_by_refund_id: Dict[str, List[MutableMapping[str, Any]]] = {}
+        for line_item in refund_line_items:
+            line_items_by_refund_id.setdefault(line_item.get(BULK_PARENT_KEY), []).append(line_item)
+        if refunds:
+            for refund in refunds:
+                refund["refund_line_items"] = line_items_by_refund_id.get(refund.get("admin_graphql_api_id", refund.get("id")), [])
+                yield self._process_refund(refund, record.get("id"))
 
 
 class Product(ShopifyBulkQuery):

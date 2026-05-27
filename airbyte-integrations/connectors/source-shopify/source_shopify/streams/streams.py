@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -15,6 +15,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     CustomerJourney,
     DeliveryProfile,
     DiscountCode,
+    Fulfillment,
     FulfillmentOrder,
     InventoryItem,
     InventoryLevel,
@@ -27,6 +28,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProductImage,
     MetafieldProductVariant,
     OrderAgreement,
+    OrderRefund,
     OrderRisk,
     Product,
     ProductImage,
@@ -358,11 +360,20 @@ class OrderAgreements(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderAgreement = OrderAgreement
 
 
-class OrderRefunds(IncrementalShopifyNestedStream):
-    parent_stream_class = Orders
-    # override default cursor field
+class OrderRefunds(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: OrderRefund = OrderRefund
     cursor_field = "created_at"
-    nested_entity = "refunds"
+
+    @property
+    def url_base(self) -> str:
+        if "shop" not in self.config:
+            return ""
+        return super().url_base
+
+    def _sort_key_for_record(self, record: Mapping[str, Any]) -> Tuple[Union[str, int], Union[str, int], Union[str, int]]:
+        created_at = record.get("created_at") or self.default_state_comparison_value
+        updated_at = record.get("updated_at") or self.default_state_comparison_value
+        return created_at, updated_at, record.get("id", self.default_state_comparison_value)
 
 
 class OrderRisks(IncrementalShopifyGraphQlBulkStream):
@@ -454,9 +465,12 @@ class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: FulfillmentOrder = FulfillmentOrder
 
 
-class Fulfillments(IncrementalShopifyNestedStream):
-    parent_stream_class = Orders
-    nested_entity = "fulfillments"
+class Fulfillments(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: Fulfillment = Fulfillment
+
+    def _sort_key_for_record(self, record: Mapping[str, Any]) -> Tuple[Union[str, int], Union[str, int]]:
+        updated_at = record.get("updated_at") or self.default_state_comparison_value
+        return updated_at, record.get("id", self.default_state_comparison_value)
 
 
 class Shop(ShopifyStream):
