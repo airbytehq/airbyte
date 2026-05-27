@@ -96,6 +96,7 @@ In Airbyte, configure the following fields:
 | **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
 | **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
 | **Default Namespace**    | No         | Default namespace for tables (for example: `default`, `airbyte_data`)        |
+| **Delete Staging Branch on Successful Sync** | No | Advanced option. Deletes `airbyte_staging` only after a successful committed sync, so the next staging branch can be recreated from compacted main lineage when you run external compaction. Airbyte doesn't perform compaction. |
 
 ### BigLake-specific fields
 
@@ -198,6 +199,8 @@ At the end of stream sync, the current `main` branch is replaced with the `airby
 
 **Important Warning**: any changes made to the `main` branch outside of Airbyte's operations after a sync begins is going to be lost during this process.
 
+The advanced **Delete Staging Branch on Successful Sync** option deletes the `airbyte_staging` branch only after Airbyte has successfully committed the stream to `main`. This is disabled by default. Enable it when an external compaction process rewrites the `main` branch and you want the next sync to recreate `airbyte_staging` from the compacted main lineage. Airbyte doesn't perform compaction.
+
 ## Compaction
 
 :::caution
@@ -221,6 +224,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.0.11  | 2026-05-26 |                                                              | Add opt-in deletion of the Iceberg staging branch after successful committed syncs.   |
 | 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13 |
 | 1.0.9   | 2026-04-16 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9.                                                                 |
 | 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution.                |

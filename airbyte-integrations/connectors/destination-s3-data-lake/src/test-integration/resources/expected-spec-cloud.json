@@ -215,17 +215,29 @@
         "order" : 7,
         "type" : "object"
       },
+      "delete_staging_branch_on_success" : {
+        "type" : "boolean",
+        "description" : "Deletes the Iceberg staging branch only after a successful committed sync. This is useful when external compaction rewrites the main branch so the next staging branch is recreated from compacted main lineage.",
+        "title" : "Delete Staging Branch on Successful Sync",
+        "group" : "advanced",
+        "order" : 8,
+        "default" : false
+      },
       "flush_batch_size_mb" : {
         "type" : "integer",
         "description" : "The approximate size in megabytes of each batch of data written to Iceberg. Smaller values flush more frequently, improving data freshness and reducing data loss on failure, but will create more small files that require compaction. Must be between 1 and 500 MB. Default is 200 MB.",
         "title" : "Flush Batch Size (MB)",
         "examples" : [ 200 ],
         "default" : 200,
-        "order" : 8,
+        "order" : 9,
         "airbyte_hidden" : true
       }
     },
-    "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]
+    "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ],
+    "groups" : [ {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

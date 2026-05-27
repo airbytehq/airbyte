@@ -342,6 +342,8 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
 **Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
 
+The advanced **Delete Staging Branch on Successful Sync** option deletes the `airbyte_staging` branch only after Airbyte has successfully committed the stream to `main`. This is disabled by default. Enable it when an external compaction process rewrites the `main` branch and you want the next sync to recreate `airbyte_staging` from the compacted main lineage. Airbyte doesn't perform compaction.
+
 ## Compaction
 
 :::caution
@@ -395,6 +397,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.50      | 2026-05-26 |                                                            | Add opt-in deletion of the Iceberg staging branch after successful committed syncs.                                             |
 | 0.3.49      | 2026-05-19 | [78232](https://github.com/airbytehq/airbyte/pull/78232)  | Upgrade CDK to 1.0.13 |
 | 0.3.48      | 2026-05-01 | [77677](https://github.com/airbytehq/airbyte/pull/77677)  | Add configurable flush batch size for aggregate publishing.                                                                     |
 | 0.3.47      | 2026-04-16 | [76410](https://github.com/airbytehq/airbyte/pull/76410) | Upgrade CDK to 1.0.9.                                                  |

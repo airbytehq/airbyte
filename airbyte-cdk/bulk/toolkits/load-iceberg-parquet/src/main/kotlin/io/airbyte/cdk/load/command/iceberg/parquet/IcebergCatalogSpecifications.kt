@@ -54,6 +54,18 @@ interface IcebergCatalogSpecifications {
     val mainBranchName: String
 
     /**
+     * Whether to delete the staging branch after a successful sync has been fully committed to the
+     * main branch.
+     */
+    @get:JsonSchemaTitle("Delete Staging Branch on Successful Sync")
+    @get:JsonPropertyDescription(
+        "Deletes the Iceberg staging branch only after a successful committed sync. This can be useful when external compaction rewrites the main branch."
+    )
+    @get:JsonProperty("delete_staging_branch_on_success", required = false)
+    val deleteStagingBranchOnSuccess: Boolean?
+        get() = false
+
+    /**
      * The catalog type.
      *
      * Indicates the type of catalog used (e.g., NESSIE, GLUE, REST) and provides configuration
@@ -103,7 +115,12 @@ interface IcebergCatalogSpecifications {
                     )
             }
 
-        return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
+        return IcebergCatalogConfiguration(
+            warehouseLocation,
+            mainBranchName,
+            catalogConfiguration,
+            deleteStagingBranchOnSuccess ?: false,
+        )
     }
 }
 

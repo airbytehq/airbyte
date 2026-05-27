@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
-import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -32,6 +31,7 @@ class S3DataLakeStreamLoader(
     private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
     private val mainBranchName: String,
+    private val deleteStagingBranchOnSuccess: Boolean,
     private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : StreamLoader {
     private lateinit var table: Table
@@ -72,16 +72,7 @@ class S3DataLakeStreamLoader(
         // incrementally, and if the entire sync is in a transaction, we might crash before we can
         // commit that transaction.
         targetSchema = computeOrExecuteSchemaUpdate().schema
-        try {
-            logger.info {
-                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
-            }
-            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
-        } catch (e: IllegalArgumentException) {
-            logger.info {
-                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.mappedDescriptor}"
-            }
-        }
+        createStagingBranchIfAbsent()
 
         val state =
             S3DataLakeStreamState(
@@ -96,7 +87,7 @@ class S3DataLakeStreamLoader(
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
             logger.info {
-                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
+                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
             }
             // We've modified the table over the sync (i.e. adding new snapshots)
             // so we need to refresh here to get the latest table metadata.
@@ -105,6 +96,7 @@ class S3DataLakeStreamLoader(
             table.refresh()
             // Commit all pending schema updates in order (important for two-phase commits)
             computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
+            table.refresh()
             table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
             if (stream.isSingleGenerationTruncate()) {
@@ -118,7 +110,12 @@ class S3DataLakeStreamLoader(
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
+                table.refresh()
                 table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+            }
+
+            if (deleteStagingBranchOnSuccess) {
+                removeStagingBranchIfPresent()
             }
         }
     }
@@ -135,4 +132,58 @@ class S3DataLakeStreamLoader(
             incomingSchema,
             columnTypeChangeBehavior,
         )
+
+    private fun createStagingBranchIfAbsent() {
+        table.refresh()
+        if (table.refs().containsKey(stagingBranchName)) {
+            logger.info {
+                "Branch '$stagingBranchName' already exists for stream ${stream.mappedDescriptor}; skipping create."
+            }
+            return
+        }
+
+        try {
+            logger.info {
+                "Creating branch '$stagingBranchName' for stream ${stream.mappedDescriptor}."
+            }
+            table.manageSnapshots().createBranch(stagingBranchName).commit()
+        } catch (e: IllegalArgumentException) {
+            table.refresh()
+            if (table.refs().containsKey(stagingBranchName)) {
+                logger.info(e) {
+                    "Branch '$stagingBranchName' was created concurrently for stream ${stream.mappedDescriptor}; continuing."
+                }
+            } else {
+                throw e
+            }
+        }
+    }
+
+    private fun removeStagingBranchIfPresent() {
+        if (stagingBranchName == mainBranchName) {
+            logger.warn {
+                "Skipping deletion of staging branch '$stagingBranchName' for stream ${stream.mappedDescriptor} because it matches the main branch."
+            }
+            return
+        }
+
+        try {
+            table.refresh()
+            if (!table.refs().containsKey(stagingBranchName)) {
+                logger.info {
+                    "Branch '$stagingBranchName' is absent for stream ${stream.mappedDescriptor}; skipping delete."
+                }
+                return
+            }
+
+            logger.info {
+                "Deleting branch '$stagingBranchName' for stream ${stream.mappedDescriptor} after successful commit."
+            }
+            table.manageSnapshots().removeBranch(stagingBranchName).commit()
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to delete branch '$stagingBranchName' for stream ${stream.mappedDescriptor} after successful commit; leaving sync successful."
+            }
+        }
+    }
 }

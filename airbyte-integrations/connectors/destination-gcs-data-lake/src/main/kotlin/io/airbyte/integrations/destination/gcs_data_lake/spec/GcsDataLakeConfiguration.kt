@@ -24,6 +24,7 @@ data class GcsDataLakeConfiguration(
     val gcsEndpoint: String?,
     val namespace: String,
     val gcsCatalogConfiguration: GcsCatalogConfiguration,
+    val deleteStagingBranchOnSuccess: Boolean,
 ) : DestinationConfiguration() {
 
     // Lazy-loaded credentials from service account JSON with proper OAuth scopes
@@ -72,6 +73,7 @@ class GcsDataLakeConfigurationFactory :
             gcsEndpoint = pojo.gcsEndpoint,
             namespace = pojo.namespace,
             gcsCatalogConfiguration = pojo.toGcsCatalogConfiguration(),
+            deleteStagingBranchOnSuccess = pojo.deleteStagingBranchOnSuccess ?: false,
         )
     }
 }

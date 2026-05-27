@@ -58,9 +58,11 @@ class BigLakeWriteTest :
                                             GcsCatalogConfiguration(
                                                 warehouseLocation = "",
                                                 mainBranchName = "",
+                                                deleteStagingBranchOnSuccess = false,
                                                 catalogConfiguration =
                                                     BigLakeCatalogConfiguration("", "")
                                             ),
+                                        deleteStagingBranchOnSuccess = false,
                                     ),
                                     tempTableNameGenerator = DefaultTempTableNameGenerator(),
                                 )

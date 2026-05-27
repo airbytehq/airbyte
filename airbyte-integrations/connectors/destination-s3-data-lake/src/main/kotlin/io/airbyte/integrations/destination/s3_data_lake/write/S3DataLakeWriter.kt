@@ -71,6 +71,7 @@ class S3DataLakeWriter(
             icebergUtil,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
+            deleteStagingBranchOnSuccess = icebergConfiguration.deleteStagingBranchOnSuccess,
             streamStateStore = streamStateStore,
         )
     }

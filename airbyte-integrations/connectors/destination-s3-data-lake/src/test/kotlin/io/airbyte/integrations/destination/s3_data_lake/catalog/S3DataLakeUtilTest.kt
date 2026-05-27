@@ -239,6 +239,7 @@ internal class S3DataLakeUtilTest {
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
                 flushBatchSizeMb = null,
+                deleteStagingBranchOnSuccess = false,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         Assertions.assertEquals(
@@ -352,6 +353,7 @@ internal class S3DataLakeUtilTest {
                         )
                 ),
             flushBatchSizeMb = null,
+            deleteStagingBranchOnSuccess = false,
         )
     }
 

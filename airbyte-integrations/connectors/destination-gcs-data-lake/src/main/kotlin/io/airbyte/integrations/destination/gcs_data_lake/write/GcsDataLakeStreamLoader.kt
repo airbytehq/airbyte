@@ -33,6 +33,7 @@ class GcsDataLakeStreamLoader(
     private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
     private val mainBranchName: String,
+    private val deleteStagingBranchOnSuccess: Boolean,
     private val streamStateStore: StreamStateStore<GcsDataLakeStreamState>,
 ) : StreamLoader {
     private lateinit var table: Table
@@ -181,16 +182,7 @@ class GcsDataLakeStreamLoader(
             "Final target schema has ${targetSchema.identifierFieldIds().size} identifier fields: ${targetSchema.identifierFieldIds()}"
         }
 
-        try {
-            logger.info {
-                "maybe creating branch $stagingBranchName for stream ${stream.mappedDescriptor}"
-            }
-            table.manageSnapshots().createBranch(stagingBranchName).commit()
-        } catch (e: IllegalArgumentException) {
-            logger.info {
-                "branch $stagingBranchName already exists for stream ${stream.mappedDescriptor}"
-            }
-        }
+        createStagingBranchIfAbsent()
 
         val state =
             GcsDataLakeStreamState(
@@ -205,7 +197,7 @@ class GcsDataLakeStreamLoader(
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
             logger.info {
-                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
+                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
             }
             // We've modified the table over the sync (i.e. adding new snapshots)
             // so we need to refresh here to get the latest table metadata.
@@ -230,6 +222,7 @@ class GcsDataLakeStreamLoader(
                     throw e
                 }
             }
+            table.refresh()
             table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
             if (stream.isSingleGenerationTruncate()) {
@@ -243,7 +236,12 @@ class GcsDataLakeStreamLoader(
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
+                table.refresh()
                 table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+            }
+
+            if (deleteStagingBranchOnSuccess) {
+                removeStagingBranchIfPresent()
             }
         }
     }
@@ -264,4 +262,58 @@ class GcsDataLakeStreamLoader(
             // in a single transaction, even with different field IDs.
             requireSeparateCommitsForColumnReplace = true,
         )
+
+    private fun createStagingBranchIfAbsent() {
+        table.refresh()
+        if (table.refs().containsKey(stagingBranchName)) {
+            logger.info {
+                "Branch '$stagingBranchName' already exists for stream ${stream.mappedDescriptor}; skipping create."
+            }
+            return
+        }
+
+        try {
+            logger.info {
+                "Creating branch '$stagingBranchName' for stream ${stream.mappedDescriptor}."
+            }
+            table.manageSnapshots().createBranch(stagingBranchName).commit()
+        } catch (e: IllegalArgumentException) {
+            table.refresh()
+            if (table.refs().containsKey(stagingBranchName)) {
+                logger.info(e) {
+                    "Branch '$stagingBranchName' was created concurrently for stream ${stream.mappedDescriptor}; continuing."
+                }
+            } else {
+                throw e
+            }
+        }
+    }
+
+    private fun removeStagingBranchIfPresent() {
+        if (stagingBranchName == mainBranchName) {
+            logger.warn {
+                "Skipping deletion of staging branch '$stagingBranchName' for stream ${stream.mappedDescriptor} because it matches the main branch."
+            }
+            return
+        }
+
+        try {
+            table.refresh()
+            if (!table.refs().containsKey(stagingBranchName)) {
+                logger.info {
+                    "Branch '$stagingBranchName' is absent for stream ${stream.mappedDescriptor}; skipping delete."
+                }
+                return
+            }
+
+            logger.info {
+                "Deleting branch '$stagingBranchName' for stream ${stream.mappedDescriptor} after successful commit."
+            }
+            table.manageSnapshots().removeBranch(stagingBranchName).commit()
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to delete branch '$stagingBranchName' for stream ${stream.mappedDescriptor} after successful commit; leaving sync successful."
+            }
+        }
+    }
 }
