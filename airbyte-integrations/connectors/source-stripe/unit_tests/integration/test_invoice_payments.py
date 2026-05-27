@@ -45,9 +45,7 @@ def _invoice_payments_request() -> StripeRequestBuilder:
 
 
 def _events_request() -> StripeRequestBuilder:
-    return StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_header(
-        "Stripe-Version", "2025-03-31.basil"
-    )
+    return StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_header("Stripe-Version", "2025-03-31.basil")
 
 
 def _config() -> ConfigBuilder:
@@ -89,9 +87,7 @@ def _an_event() -> RecordBuilder:
 
 
 def _events_response() -> HttpResponseBuilder:
-    return create_response_builder(
-        find_template("events", __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy()
-    )
+    return create_response_builder(find_template("events", __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy())
 
 
 def _read(config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None) -> EntrypointOutput:
