@@ -69,7 +69,10 @@ class GcsDataLakeCatalogUtilTest {
                 gcsConfiguration(gcsEndpoint = "http://gcs:4443") // # ignore-https-check
             )
 
-        assertEquals("http://gcs:4443", properties[GCPProperties.GCS_SERVICE_HOST]) // # ignore-https-check
+        assertEquals(
+            "http://gcs:4443",
+            properties[GCPProperties.GCS_SERVICE_HOST]
+        ) // # ignore-https-check
         assertEquals("true", properties[GCPProperties.GCS_NO_AUTH])
 
         val fileIO = GcsDataLakeFileIO()
