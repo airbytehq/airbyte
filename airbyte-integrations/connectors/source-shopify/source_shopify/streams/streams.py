@@ -28,7 +28,6 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProductImage,
     MetafieldProductVariant,
     OrderAgreement,
-    OrderRefund,
     OrderRisk,
     Product,
     ProductImage,
@@ -360,20 +359,11 @@ class OrderAgreements(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderAgreement = OrderAgreement
 
 
-class OrderRefunds(IncrementalShopifyGraphQlBulkStream):
-    bulk_query: OrderRefund = OrderRefund
+class OrderRefunds(IncrementalShopifyNestedStream):
+    parent_stream_class = Orders
+    # override default cursor field
     cursor_field = "created_at"
-
-    @property
-    def url_base(self) -> str:
-        if "shop" not in self.config:
-            return ""
-        return super().url_base
-
-    def _sort_key_for_record(self, record: Mapping[str, Any]) -> Tuple[Union[str, int], Union[str, int], Union[str, int]]:
-        created_at = record.get("created_at") or self.default_state_comparison_value
-        updated_at = record.get("updated_at") or self.default_state_comparison_value
-        return created_at, updated_at, record.get("id", self.default_state_comparison_value)
+    nested_entity = "refunds"
 
 
 class OrderRisks(IncrementalShopifyGraphQlBulkStream):
