@@ -39,7 +39,8 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
         Stream(
             id =
                 StreamIdentifier.from(
-                    io.airbyte.protocol.models.v0.StreamDescriptor()
+                    io.airbyte.protocol.models.v0
+                        .StreamDescriptor()
                         .withName("test_table")
                         .withNamespace("public")
                 ),
@@ -92,11 +93,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                 set<JsonNode>("tags", Jsons.arrayNode().add("a").add("b"))
             }
         val record =
-            operations.deserializeRecord(
-                buildDebeziumKey(),
-                buildDebeziumValue(after),
-                stream
-            )
+            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
         assertTrue(
             record.changes.isEmpty(),
             "Expected no deserialization failures for proper ArrayNode"
@@ -119,11 +116,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                 put("tags", "[\"x\",\"y\"]")
             }
         val record =
-            operations.deserializeRecord(
-                buildDebeziumKey(),
-                buildDebeziumValue(after),
-                stream
-            )
+            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
         // The text should be parsed into a JSON array successfully
         assertTrue(
             record.changes.none { it.value == FieldValueChange.DESERIALIZATION_FAILURE_TOTAL },
@@ -147,11 +140,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                 put("tags", "{hello,world}")
             }
         val record =
-            operations.deserializeRecord(
-                buildDebeziumKey(),
-                buildDebeziumValue(after),
-                stream
-            )
+            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
         val arrayField = EmittedField("tags", ArrayFieldType(StringFieldType))
         assertEquals(
             FieldValueChange.DESERIALIZATION_FAILURE_TOTAL,
@@ -176,11 +165,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                 put("vals", "42")
             }
         val record =
-            operations.deserializeRecord(
-                buildDebeziumKey(),
-                buildDebeziumValue(after),
-                stream
-            )
+            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
         val arrayField = EmittedField("vals", ArrayFieldType(IntFieldType))
         assertEquals(
             FieldValueChange.DESERIALIZATION_FAILURE_TOTAL,
@@ -204,11 +189,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                 putNull("tags")
             }
         val record =
-            operations.deserializeRecord(
-                buildDebeziumKey(),
-                buildDebeziumValue(after),
-                stream
-            )
+            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
         assertTrue(
             record.changes.isEmpty(),
             "Expected no deserialization failures for null array value"
@@ -230,11 +211,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                 // "tags" field is absent
             }
         val record =
-            operations.deserializeRecord(
-                buildDebeziumKey(),
-                buildDebeziumValue(after),
-                stream
-            )
+            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
         assertTrue(
             record.changes.isEmpty(),
             "Expected no deserialization failures for missing array field"
@@ -256,11 +233,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                 put("name", "test")
             }
         val record =
-            operations.deserializeRecord(
-                buildDebeziumKey(),
-                buildDebeziumValue(after),
-                stream
-            )
+            operations.deserializeRecord(buildDebeziumKey(), buildDebeziumValue(after), stream)
         assertTrue(
             record.changes.isEmpty(),
             "Expected no deserialization failures for non-array fields"
