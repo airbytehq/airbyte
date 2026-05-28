@@ -60,9 +60,9 @@ def test_extensive_calls_request_includes_context_extended():
         request_body = mocker.last_request.json()
 
     content_selector = request_body["contentSelector"]
-    assert content_selector["context"] == "Extended", (
-        f"expected contentSelector.context='Extended', got {content_selector.get('context')!r}"
-    )
+    assert (
+        content_selector["context"] == "Extended"
+    ), f"expected contentSelector.context='Extended', got {content_selector.get('context')!r}"
 
 
 def test_extensive_calls_request_includes_context_timing():
@@ -77,6 +77,7 @@ def test_extensive_calls_request_includes_context_timing():
         request_body = mocker.last_request.json()
 
     content_selector = request_body["contentSelector"]
-    assert sorted(content_selector["contextTiming"]) == ["Now", "TimeOfCall"], (
-        f"expected contextTiming=['Now', 'TimeOfCall'], got {content_selector.get('contextTiming')!r}"
-    )
+    assert sorted(content_selector["contextTiming"]) == [
+        "Now",
+        "TimeOfCall",
+    ], f"expected contextTiming=['Now', 'TimeOfCall'], got {content_selector.get('contextTiming')!r}"
