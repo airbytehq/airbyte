@@ -8,9 +8,6 @@ which omits context data from responses. The manifest must explicitly request
 returned in sync results.
 """
 
-import json
-
-import pytest
 import requests_mock
 from _helpers import get_source
 
