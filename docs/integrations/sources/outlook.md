@@ -122,6 +122,10 @@ To filter messages after extraction, you can:
 
 For more information about Microsoft Graph Mail API capabilities, see the [Microsoft Graph Mail API documentation](https://learn.microsoft.com/en-us/graph/api/user-list-messages).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

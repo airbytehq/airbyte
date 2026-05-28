@@ -103,6 +103,10 @@ This connector uses Harvest's granular permission model. If your credentials lac
 
 When authenticating with OAuth, the granted scopes determine which Harvest accounts are reachable through the connection. Personal Access Tokens always have the `all` scope and reach every Harvest account on your user, while OAuth applications can be limited to a single account, depending on how you registered the application.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

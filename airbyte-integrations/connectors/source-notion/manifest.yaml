@@ -251,17 +251,6 @@ streams:
       schema:
         $ref: "#/schemas/blocks"
 
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 3
-          interval: PT1S
-      matchers: []
-  status_codes_for_ratelimit_hit:
-    - 429
-
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 5) }}"

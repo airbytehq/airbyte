@@ -23,6 +23,9 @@ Historical News is only available for premium users of NewsData service.
 | latest_news | `article_id` | DefaultPaginator | ✅ |  ❌  |
 | historical_news | `article_id` | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

@@ -105,6 +105,10 @@ The List Users stream skips lists that return `500 - Generic Error` responses an
 
 For all streams, the connector retries failed requests with exponential backoff for rate limiting (HTTP 429) and server errors (HTTP 500–599), with up to 10 retries and delays ranging from 20 to 400 seconds.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

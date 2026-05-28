@@ -75,15 +75,15 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v23/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v23/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
+        "https://googleads.googleapis.com/v23/customers/123/googleAds:searchStream",
         shopping_performance_view_response,
     )
 
@@ -222,15 +222,15 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     }
 
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v23/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v23/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
+        "https://googleads.googleapis.com/v23/customers/123/googleAds:searchStream",
         custom_query_response,
     )
 

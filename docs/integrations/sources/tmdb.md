@@ -89,6 +89,10 @@ GET https://api.themoviedb.org/3/movie/{movie_id}/alternative_titles?api_key={ap
 
 TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/introduction) has v3 at present and v4 is at development. The connector as default uses v3.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

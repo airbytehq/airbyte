@@ -41,7 +41,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+    url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -49,6 +49,14 @@ definitions:
   base_error_handler:
     type: DefaultErrorHandler
     response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 400
+        predicate: "{{ 'UNRECOGNIZED_FIELD' in (response | string) or 'Unrecognized field' in (response | string) }}"
+        error_message: >-
+          {{ (((response[0] if response is iterable and response is not mapping else response).get('error', {}).get('details', [{}])[0].get('errors', [{}])[0].get('message')) or (response[0] if response is iterable and response is not mapping else response).get('error', {}).get('message') or 'Google Ads query contains unrecognized fields.') }}
       - type: HttpResponseFilter
         action: RETRY
         http_codes:
@@ -196,7 +204,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+          url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -221,7 +229,7 @@ definitions:
     incremental_stream:
       $ref: "#/definitions/incremental_stream_base"
       $parameters:
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
       retriever:
         type: CustomRetriever
         class_name: "source_google_ads.components.CriterionRetriever"
@@ -292,7 +300,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers"
+        url_base: "https://googleads.googleapis.com/v23/customers:listAccessibleCustomers"
         http_method: GET
       record_selector:
         type: RecordSelector
@@ -307,7 +315,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -345,7 +353,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -403,7 +411,7 @@ definitions:
         name: "custom_requester"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -443,7 +451,7 @@ definitions:
       class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
       requester:
         $ref: "#/definitions/base_requester"
-        url: "https://googleads.googleapis.com/v20/googleAdsFields"
+        url: "https://googleads.googleapis.com/v23/googleAdsFields"
         http_method: GET
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -533,7 +541,6 @@ definitions:
     name: ad_group_bidding_strategy
     primary_key:
       - ad_group.id
-      - bidding_strategy.id
       - segments.date
     schema_loader:
       type: InlineSchemaLoader
@@ -598,7 +605,6 @@ definitions:
     name: campaign_bidding_strategy
     primary_key:
       - campaign.id
-      - bidding_strategy.id
       - segments.date
     schema_loader:
       type: InlineSchemaLoader
@@ -658,7 +664,7 @@ definitions:
             $ref: "#/schemas/click_view"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -847,7 +853,7 @@ definitions:
     $ref: "#/definitions/incremental_stream_base"
     name: change_status
     $parameters:
-      url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+      url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:search"
     retriever:
       type: SimpleRetriever
       requester:
@@ -2098,7 +2104,7 @@ schemas:
         type:
           - "null"
           - boolean
-      campaign.end_date:
+      campaign.end_date_time:
         description: The end date of the campaign.
         type:
           - "null"
@@ -2277,7 +2283,7 @@ schemas:
         type:
           - "null"
           - integer
-      campaign.start_date:
+      campaign.start_date_time:
         description: The start date of the campaign.
         type:
           - "null"
@@ -2425,7 +2431,7 @@ schemas:
         type:
           - "null"
           - integer
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views in the campaign.
         type:
           - "null"
@@ -2728,7 +2734,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view
         type:
           - "null"
@@ -3007,12 +3013,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The video view rate
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views
         type:
           - "null"
@@ -3221,7 +3227,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view.
         type:
           - "null"
@@ -3296,12 +3302,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The rate of video views.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views.
         type:
           - "null"
@@ -3881,7 +3887,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average CPV (Cost Per View) metric.
         type:
           - "null"
@@ -4173,12 +4179,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The video view rate metric.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views metric.
         type:
           - "null"
@@ -4352,7 +4358,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view.
         type:
           - "null"
@@ -4437,12 +4443,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The rate of video views.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views.
         type:
           - "null"
@@ -4733,7 +4739,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view for the campaign.
         type:
           - "null"
@@ -4827,12 +4833,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The view rate for video ads in the campaign.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views for the campaign.
         type:
           - "null"
@@ -4937,7 +4943,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: Average cost per view
         type:
           - "null"
@@ -5111,12 +5117,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: Rate of video views
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views
         type:
           - "null"
@@ -5219,76 +5225,6 @@ schemas:
           - array
         items:
           type: string
-      ad_group_ad.ad.call_ad.business_name:
-        description: The business name for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.call_tracked:
-        description: Indicates if calls are being tracked for Call ads.
-        type:
-          - "null"
-          - boolean
-      ad_group_ad.ad.call_ad.conversion_action:
-        description: The conversion action for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.conversion_reporting_state:
-        description: The state of conversion reporting for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.country_code:
-        description: The country code for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.description1:
-        description: Description line 1 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.description2:
-        description: Description line 2 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.disable_call_conversion:
-        description: Indicates if call conversions are disabled for Call ads.
-        type:
-          - "null"
-          - boolean
-      ad_group_ad.ad.call_ad.headline1:
-        description: Headline 1 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.headline2:
-        description: Headline 2 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.path1:
-        description: Path field 1 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.path2:
-        description: Path field 2 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.phone_number:
-        description: The phone number for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.phone_number_verification_url:
-        description: The phone number verification URL for Call ads.
-        type:
-          - "null"
-          - string
       ad_group_ad.ad.device_preference:
         description: The device preference for the ad.
         type:
@@ -6046,7 +5982,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: Average cost per view.
         type:
           - "null"
@@ -6625,12 +6561,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: Rate of video views.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Number of video views.
         type:
           - "null"

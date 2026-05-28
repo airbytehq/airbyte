@@ -132,6 +132,10 @@ You can adjust the **Number of Concurrent Threads** setting to control how many 
 
 The connector silently skips any group, project, or resource that returns an HTTP 403 (Forbidden) response. If you notice missing data, verify that your access token has the required permissions for the groups and projects you want to sync.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
