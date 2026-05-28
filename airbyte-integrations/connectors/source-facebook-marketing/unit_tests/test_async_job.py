@@ -529,6 +529,33 @@ class TestInsightAsyncJob:
         assert fields_a == expected_a
         assert fields_b == expected_b
 
+    def test_split_job_by_fields_parent_excludes_breakdown_primary_keys_from_fields(self, api):
+        interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
+        params = {
+            "time_increment": 1,
+            "breakdowns": ["body_asset"],
+            "fields": ["date_start", "account_id", "ad_id", "clicks", "impressions", "spend"],
+        }
+        pk = ["date_start", "account_id", "ad_id", "body_asset_id"]
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad(1),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+            object_breakdowns={"body_asset": "body_asset_id"},
+        )
+
+        [parent] = job._split_job()
+
+        assert parent._primary_key == pk
+        assert [child._params["fields"] for child in parent._jobs] == [
+            ["date_start", "account_id", "ad_id", "clicks"],
+            ["date_start", "account_id", "ad_id", "impressions", "spend"],
+        ]
+
     @pytest.mark.parametrize(
         "fields",
         [

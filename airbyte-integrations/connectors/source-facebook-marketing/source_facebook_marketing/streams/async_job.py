@@ -524,11 +524,15 @@ class InsightAsyncJob(AsyncJob):
 
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
+        breakdown_primary_key_fields = {
+            self._object_breakdowns.get(breakdown, breakdown) for breakdown in self._params.get("breakdowns", [])
+        }
+        request_primary_key = [field for field in self._primary_key if field not in breakdown_primary_key_fields]
 
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = request_primary_key + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = request_primary_key + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,
