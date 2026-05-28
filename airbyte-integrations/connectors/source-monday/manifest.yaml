@@ -498,15 +498,16 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 40 # Monday concurrency limit for lowest tier is 40. https://developer.monday.com/api-reference/docs/rate-limits#concurrency-limit
 
-# Tier-aware HTTP API budget. Values from https://developer.monday.com/api-reference/docs/rate-limits
+# HTTP API budget — enforces Monday.com basic-tier minute limit (1,000 req/min).
+# Pro (2,500/min) and Enterprise (5,000/min) users can increase via num_workers.
+# https://developer.monday.com/api-reference/docs/rate-limits
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ {'basic': 1000, 'pro': 2500, 'enterprise': 5000}[config.get('subscription_tier', 'basic')] }}"
+        - limit: 1000
           interval: PT1M
-  action_on_excess: WAIT
 
 schemas:
   activity_logs:
