@@ -56,6 +56,15 @@ Some operations use internal routes without published schemas. Use command help 
 airbyte-agent organizations list --help
 ```
 
+A `schema` response for an internal operation can look like this:
+
+```json
+{
+  "type": "not_supported",
+  "message": "Schema is not available for organizations list. Use --help for command details."
+}
+```
+
 ## `--json cannot be combined with parameter flags`
 
 Pass input either as one JSON payload or as individual flags, not both.
@@ -83,7 +92,7 @@ AIRBYTE_CREDENTIAL_TIMEOUT=300 airbyte-agent connectors create --json '{
 }'
 ```
 
-If the browser doesn't open, copy the `credentials_url` printed to stderr and open it manually.
+If the browser doesn't open, copy the `credentials_url` printed to stderr and open it manually. If the command times out, no connector was created; re-run `connectors create` to start a new browser credential session.
 
 ## Delete prompts in non-interactive runs
 
@@ -113,7 +122,7 @@ airbyte-agent connectors execute --json '{
   "params": {
     "limit": 10
   }
-}' --fields data.id,data.title
+}' --fields result.id,result.title
 ```
 
 For list and search actions where long text fields are truncated, pass `"skip_truncation": true` in the JSON payload when you need full values.

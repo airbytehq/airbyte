@@ -45,7 +45,7 @@ airbyte-agent schema connectors execute
 airbyte-agent connectors execute --json @request.json
 ```
 
-After `connectors create`, always run `connectors list` and capture the exact configured connector `id` and `name`. Use the returned `id` for `describe`, `execute`, `update`, and `delete` wherever supported. This avoids ambiguity when a workspace has multiple connectors with the same display name.
+After `connectors create`, always run `connectors list` and capture the exact configured connector `id` and `name`. The available connector `name` from `list-available` is a display name like `GitHub`; the configured connector `name` may include workspace-specific text. Use the returned `id` for `describe`, `execute`, and `delete` wherever supported.
 
 ## Rules for agents
 
@@ -85,6 +85,8 @@ Use the returned schema to choose `entity`, `action`, `params`, and response fie
 
 ### Keep responses small
 
+`connectors execute` writes `{"status":"success","result": ...}` on success. For object results, filter under `result.<field>`. For array results, use the row fields under `result.<field>`; the CLI applies the field path to each row.
+
 For `connectors execute`, include `select_fields` or `exclude_fields` in the JSON payload whenever you know which fields you need. Also use `--fields` to trim stdout for the agent's next step.
 
 ```bash
@@ -96,12 +98,12 @@ airbyte-agent connectors execute --json '{
   "params": {
     "query": "repo:airbytehq/airbyte type:pr is:open docs"
   }
-}' --fields result.data.id,result.data.number,result.data.title,result.data.state
+}' --fields result.number,result.title,result.state
 ```
 
 ### Keep connector credentials in the browser widget
 
-If a task needs a new connector, run:
+Manual login can avoid the browser for CLI authentication, but connector credential setup still requires the browser widget. If a task needs a new connector, run:
 
 ```bash
 airbyte-agent connectors create --json '{"workspace": "default", "name": "GitHub"}'
@@ -131,8 +133,23 @@ airbyte-agent connectors execute --json '{
   "params": {
     "owner": "airbytehq",
     "repo": "airbyte"
-  }
-}' --fields result.data.nameWithOwner,result.data.url,result.data.isPrivate
+  },
+  "select_fields": ["id", "name"]
+}' --fields result.id,result.name
+```
+
+Example user read:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "id": "<connector-id>",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "username": "airbytehq"
+  },
+  "select_fields": ["id", "login"]
+}' --fields result.id,result.login
 ```
 
 Example PR search:
@@ -145,8 +162,8 @@ airbyte-agent connectors execute --json '{
   "params": {
     "query": "repo:airbytehq/airbyte type:pr is:open docs"
   },
-  "select_fields": ["number", "title", "state", "url"]
-}' --fields result.data.number,result.data.title,result.data.state,result.data.url
+  "select_fields": ["number", "title", "state"]
+}' --fields result.number,result.title,result.state
 ```
 
 ### Parse stderr JSON on failures

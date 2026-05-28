@@ -118,10 +118,18 @@ If you pass both, the API gives `select_fields` priority.
 
 ### Client-side filtering: `--fields`
 
-`--fields` filters the JSON after the API returns it. Use it to shape stdout:
+`--fields` filters the JSON after the API returns it. `connectors execute` returns `{"status":"success","result": ...}` on success, so field paths start under `result`.
+
+For object results, name the object fields you want:
 
 ```bash
-airbyte-agent connectors execute --json @request.json --fields data.id,data.title,next
+airbyte-agent connectors execute --json @request.json --fields result.id,result.name
+```
+
+For array results, name the row fields you want. The CLI applies the field path to each row:
+
+```bash
+airbyte-agent connectors execute --json @request.json --fields result.number,result.title,result.state
 ```
 
 Paths use dot notation. When a path crosses an array, the remaining path applies to every element. For list-style responses wrapped in `{"data": [...]}`, the CLI can also broadcast row-level paths:

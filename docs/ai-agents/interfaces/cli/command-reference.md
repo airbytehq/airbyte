@@ -94,7 +94,14 @@ List connectors available to your organization:
 airbyte-agent connectors list-available --fields id,name,connector_name
 ```
 
-No parameters.
+Parameters:
+
+- **`limit`** (integer, required: No): Maximum total rows to return.
+- **`include_docs`** (boolean, required: No): Include connector documentation metadata when available. This maps to `--include-docs` when using per-parameter flags.
+- **`name_contains`** (string, required: No): Filter by display name substring, such as `GitHub`.
+- **`connector_name_contains`** (string, required: No): Filter by connector implementation name substring. This maps to `--connector-name-contains` when using per-parameter flags.
+- **`mode`** (string, required: No): Filter by connector mode.
+- **`category`** (string, required: No): Filter by connector category.
 
 ### `connectors create`
 
@@ -175,7 +182,7 @@ Parameters:
 
 ### `connectors update`
 
-Open the browser to edit an existing connector's credentials or configuration:
+Open the browser URL for editing an existing connector. The CLI doesn't edit connector configuration directly:
 
 ```bash
 airbyte-agent connectors update --json '{
@@ -190,7 +197,7 @@ Parameters:
 - **`name`** (string, required: No): Connector name. Requires `workspace` or a saved default workspace.
 - **`workspace`** (string, required: No): Workspace name. Defaults to the saved workspace, then `default`, when used with `name`.
 
-The command returns a URL, the connector ID, a message, and `browser_opened`. It only opens the browser after an exact `yes` confirmation. In non-interactive contexts, use the returned URL if the prompt isn't answered.
+The command returns a URL, the connector ID, a message that connectors can't be edited through the CLI, and `browser_opened`. It only opens the browser after an exact `yes` confirmation. In non-interactive contexts, use the returned URL if the prompt isn't answered.
 
 ### `connectors delete`
 
@@ -214,9 +221,9 @@ Unless `AIRBYTE_ALLOW_DESTRUCTIVE` or `allow_destructive` is true, the command p
 ## Exit codes
 
 - **`0`**: Success.
-- **`1`**: General error.
-- **`2`**: Authentication or authorization error.
+- **`1`**: General error. Some token-exchange and authentication failures currently return `1` with a JSON error such as `token exchange failed (status 401)`.
+- **`2`**: Authentication or authorization error when the CLI can classify it before returning.
 - **`3`**: Not found.
 - **`4`**: Validation error.
 
-On failure, read the JSON error written to stderr. The `type` field is more specific than the exit code.
+On failure, read the JSON error written to stderr. The `type`, `status_code`, and `message` fields are more specific than the exit code and are safer for scripts to branch on.

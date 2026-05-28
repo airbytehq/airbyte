@@ -5,9 +5,9 @@ sidebar_position: 2
 
 # Add a connector
 
-A connector stores credentials and configuration for a third-party service in an Airbyte Agents workspace. Create a connector once, then reference it by `name` and `workspace`, or by `id`, when you describe it or execute actions.
+A connector stores credentials and configuration for a third-party service in an Airbyte Agents workspace. Create a connector once, then reference it by `id` when you describe it or execute actions.
 
-`connectors create` opens a browser flow for third-party credential entry. The CLI doesn't accept third-party API keys, OAuth tokens, passwords, or other connector credentials as command parameters.
+`connectors create` opens a browser flow for third-party credential entry. Manual login can avoid the browser for CLI authentication, but connector credential setup still requires the browser widget. The CLI doesn't accept third-party API keys, OAuth tokens, passwords, or other connector credentials as command parameters.
 
 :::warning
 
@@ -23,7 +23,7 @@ List the connectors available to your organization:
 airbyte-agent connectors list-available --fields id,name,connector_name
 ```
 
-Use the display `name` or returned `id` with `connectors create`. Name matching is case-insensitive.
+Use the display `name` or returned `id` with `connectors create`. Name matching is case-insensitive. After creation, prefer the configured connector `id`; the configured connector `name` may differ from the available connector display name.
 
 ## Create a connector
 
@@ -53,7 +53,37 @@ What happens:
 4. You complete the third-party credential flow in the browser.
 5. The CLI polls for completion, creates the connector, and prints the connector response to stdout.
 
-When the command returns, save the connector `id` or `name`. Use it with [`connectors describe`](./describe-connector), [`connectors execute`](./execute), [`connectors update`](./command-reference#connectors-update), or [`connectors delete`](./command-reference#connectors-delete).
+In an interactive terminal, stderr and stdout appear together. For agents or logs, redirect stderr separately so you can distinguish the initial browser-session payload from the final connector response:
+
+```bash
+airbyte-agent connectors create --json '{"workspace":"default","name":"GitHub"}' \
+  >connector-response.json \
+  2>credential-session.json
+```
+
+Initial stderr payload:
+
+```json
+{
+  "credentials_url": "https://app.airbyte.ai/widget-bridge?...",
+  "session_id": "...",
+  "message": "Opening browser to complete credential setup. Waiting for credentials..."
+}
+```
+
+Final stdout payload after credentials complete:
+
+```json
+{
+  "status": "success",
+  "result": {
+    "id": "...",
+    "name": "GitHub - default"
+  }
+}
+```
+
+When the command returns, save the connector `id`. Use it with [`connectors describe`](./describe-connector), [`connectors execute`](./execute), or [`connectors delete`](./command-reference#connectors-delete). To change connector credentials or configuration, use [`connectors update`](./command-reference#connectors-update) to open the web edit URL; the CLI doesn't edit connector configuration directly.
 
 ## Credential-flow timeout
 
@@ -66,7 +96,17 @@ AIRBYTE_CREDENTIAL_TIMEOUT=300 airbyte-agent connectors create --json '{
 }'
 ```
 
-If the timeout expires, the command prints a success-shaped JSON payload with `error: "timeout"` and the `session_id`. Re-run the command to start a new flow.
+If the timeout expires, the credential session didn't complete and no connector was created. The command returns a timeout payload with the session ID:
+
+```json
+{
+  "status": "error",
+  "error": "timeout",
+  "session_id": "..."
+}
+```
+
+Re-run `connectors create` to start a new credential flow.
 
 ## If the browser doesn't open
 
@@ -87,7 +127,9 @@ Open `credentials_url` manually in a browser where you can sign in to the third-
 List configured connectors:
 
 ```bash
-airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,context_store_status
+airbyte-agent connectors list --json '{"workspace": "default"}' --fields id,name,context_store_status,context_store_entity_count
 ```
+
+`context_store_status` describes indexing for search-style actions. `null` is expected for direct/API-only connectors or connectors that haven't started indexing. Timeout values such as `FIRST_PULL_PREVIEW_TIMEOUT` mean indexing didn't finish in the expected window. Direct actions such as `get`, `list`, or provider-native `api_search` can still work before context-store indexing is ready, when the connector exposes those actions.
 
 Next, run [`connectors describe`](./describe-connector) to inspect the connector's entities, actions, and parameter schemas.

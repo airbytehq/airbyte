@@ -30,7 +30,7 @@ Source code and releases live in the [`airbytehq/airbyte-agent-cli`](https://git
 Before you begin, make sure you have:
 
 - An Airbyte Agents account. Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
-- A browser on the machine running the CLI for the default [`airbyte-agent login`](./authenticate) flow and for [`connectors create`](./add-connector). Headless machines can use `airbyte-agent login --manual`, but adding connector credentials still happens in the browser.
+- A browser on the machine running the CLI for the default [`airbyte-agent login`](./authenticate) flow and for [`connectors create`](./add-connector). Headless machines can use `airbyte-agent login --manual`, but adding connector credentials still requires the browser widget.
 - Access to any third-party account you want to connect. The CLI never accepts third-party credentials directly.
 
 ## Install
@@ -75,6 +75,8 @@ The binary is written to `./airbyte-agent`. To install to your Go binary directo
 ```bash
 airbyte-agent version
 ```
+
+If your shell can't find `airbyte-agent` after running the install script, reopen the shell or add the install directory to `PATH`. The default script install location is usually `$HOME/.local/bin` unless you set `AIRBYTE_AGENT_INSTALL_DIR`.
 
 ## Authenticate
 
@@ -156,7 +158,14 @@ Run `schema` before composing a command you haven't used before:
 airbyte-agent schema connectors execute
 ```
 
-The response includes CLI parameters plus the underlying OpenAPI request and response schemas when a published API schema exists. Some internal operations, such as `organizations list`, don't have a published schema. For those, the CLI returns a `not_supported` JSON error and points you to `--help`.
+The response includes CLI parameters plus the underlying OpenAPI request and response schemas when a published API schema exists. Some internal operations, such as `organizations list`, don't have a published schema. For those, the CLI returns a `not_supported` JSON error and points you to `--help`:
+
+```json
+{
+  "type": "not_supported",
+  "message": "Schema is not available for organizations list. Use --help for command details."
+}
+```
 
 ## Learn more
 
