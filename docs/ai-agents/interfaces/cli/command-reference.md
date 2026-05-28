@@ -94,14 +94,7 @@ List connectors available to your organization:
 airbyte-agent connectors list-available --fields id,name,connector_name
 ```
 
-Parameters:
-
-- **`limit`** (integer, required: No): Maximum total rows to return.
-- **`include_docs`** (boolean, required: No): Include connector documentation metadata when available. This maps to `--include-docs` when using per-parameter flags.
-- **`name_contains`** (string, required: No): Filter by display name substring, such as `GitHub`.
-- **`connector_name_contains`** (string, required: No): Filter by connector implementation name substring. This maps to `--connector-name-contains` when using per-parameter flags.
-- **`mode`** (string, required: No): Filter by connector mode.
-- **`category`** (string, required: No): Filter by connector category.
+No CLI input parameters. `airbyte-agent schema connectors list-available` currently reports an empty params object, so don't pass filters in `--json` or as per-parameter flags.
 
 ### `connectors create`
 

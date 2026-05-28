@@ -96,17 +96,7 @@ AIRBYTE_CREDENTIAL_TIMEOUT=300 airbyte-agent connectors create --json '{
 }'
 ```
 
-If the timeout expires, the credential session didn't complete and no connector was created. The command returns a timeout payload with the session ID:
-
-```json
-{
-  "status": "error",
-  "error": "timeout",
-  "session_id": "..."
-}
-```
-
-Re-run `connectors create` to start a new credential flow.
+If the timeout expires, the credential session didn't complete and no connector was created. The command returns JSON that indicates the credential session timed out and includes the `session_id`. Re-run `connectors create` to start a new credential flow.
 
 ## If the browser doesn't open
 
