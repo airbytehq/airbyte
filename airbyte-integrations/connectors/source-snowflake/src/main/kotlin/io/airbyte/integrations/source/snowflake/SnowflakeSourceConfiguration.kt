@@ -80,7 +80,7 @@ class SnowflakeSourceConfigurationFactory :
             }
             is ProgrammaticAccessTokenCredentialsSpecification -> {
                 jdbcProperties["user"] = credentials.username
-                jdbcProperties["password"] = credentials.programmaticAccessToken
+                jdbcProperties["token"] = credentials.programmaticAccessToken
                 jdbcProperties["authenticator"] = "programmatic_access_token"
             }
             else ->

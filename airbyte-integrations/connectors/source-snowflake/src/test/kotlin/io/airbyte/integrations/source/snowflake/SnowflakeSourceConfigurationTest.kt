@@ -202,7 +202,7 @@ class SnowflakeSourceConfigurationTest {
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)
         assertEquals("CUSTOM_SCHEMA", config.schema)
         assertEquals("testuser", config.jdbcProperties["user"])
-        assertEquals("test-token", config.jdbcProperties["password"])
+        assertEquals("test-token", config.jdbcProperties["token"])
         assertEquals("programmatic_access_token", config.jdbcProperties["authenticator"])
     }
 
