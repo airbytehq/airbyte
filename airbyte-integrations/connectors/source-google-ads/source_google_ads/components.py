@@ -84,6 +84,17 @@ REPORT_MAPPING = {
 
 DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
 
+GRANULAR_SEGMENT_TYPES = ("segments.date", "segments.week")
+
+# Google Ads enforces a 37-month retention window for granular (daily/weekly)
+# segment data.  Using 1110 days (37 × 30) is conservative — approximately
+# 36.5 months — so queries always stay within the allowed range.
+DATA_RETENTION_PERIOD_DAYS = 1110
+
+
+def _get_data_retention_cutoff(fmt: str = "%Y-%m-%d") -> str:
+    return (datetime.utcnow() - timedelta(days=DATA_RETENTION_PERIOD_DAYS)).strftime(fmt)
+
 
 GOOGLE_ADS_DATATYPE_MAPPING = {
     "INT64": "integer",
@@ -398,8 +409,11 @@ class GoogleAdsHttpRequester(HttpRequester):
         ]
 
         if "start_time" in stream_slice and "end_time" in stream_slice:
-            # For incremental streams
-            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
+            start_time = max(stream_slice["start_time"], _get_data_retention_cutoff())
+            end_time = stream_slice["end_time"]
+            if start_time > end_time:
+                return {"query": f"SELECT {', '.join(fields)} FROM {resource_name} WHERE 1 = 0"}
+            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{start_time}' AND '{end_time}' ORDER BY segments.date ASC"
         else:
             # For full refresh streams
             query = f"SELECT {', '.join(fields)} FROM {resource_name}"
@@ -976,7 +990,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
         is_incremental = self.is_custom_query_incremental(self.query)
 
         if is_incremental:
-            start_date = stream_slice["start_time"]
+            start_date = max(stream_slice["start_time"], _get_data_retention_cutoff())
             end_date = stream_slice["end_time"]
             return str(self._insert_segments_date_expr(self.query, start_date, end_date))
         else:

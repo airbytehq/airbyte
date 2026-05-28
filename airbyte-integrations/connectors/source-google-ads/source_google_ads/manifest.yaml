@@ -165,6 +165,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1110, format='%Y-%m-%d') }}"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('end_date', today_utc()) }}"
@@ -1015,7 +1016,8 @@ definitions:
               "start_datetime": {
                 "type": "MinMaxDatetime",
                 "datetime": "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}",
-                "datetime_format": "%Y-%m-%d"
+                "datetime_format": "%Y-%m-%d",
+                "min_datetime": "{{ day_delta(-1110, format='%Y-%m-%d') }}"
               },
               "end_datetime": {
                 "type": "MinMaxDatetime",
