@@ -171,6 +171,10 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     JsonSubTypes.Type(
         value = UsernamePasswordCredentialsSpecification::class,
         name = "username/password"
+    ),
+    JsonSubTypes.Type(
+        value = ProgrammaticAccessTokenCredentialsSpecification::class,
+        name = "Programmatic Access Token"
     )
 )
 @JsonSchemaTitle("Authorization Method")
@@ -217,6 +221,24 @@ data class UsernamePasswordCredentialsSpecification(
     @JsonPropertyDescription("The password associated with the username.")
     @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
     val password: String
+) : CredentialsSpecification
+
+@JsonSchemaTitle("Programmatic Access Token")
+@JsonSchemaInject(json = """{"order":3}""")
+data class ProgrammaticAccessTokenCredentialsSpecification(
+    @JsonProperty("auth_type")
+    @JsonSchemaInject(json = """{"order":0}""")
+    val authType: String = "Programmatic Access Token",
+    @JsonProperty("username")
+    @JsonSchemaTitle("Username")
+    @JsonPropertyDescription("The username associated with the programmatic access token.")
+    @JsonSchemaInject(json = """{"order":1}""")
+    val username: String,
+    @JsonProperty("programmatic_access_token")
+    @JsonSchemaTitle("Programmatic Access Token")
+    @JsonPropertyDescription("The programmatic access token associated with the username.")
+    @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
+    val programmaticAccessToken: String
 ) : CredentialsSpecification
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")

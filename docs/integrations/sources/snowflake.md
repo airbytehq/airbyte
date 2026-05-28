@@ -118,7 +118,7 @@ You'll need the following information to configure the Snowflake source:
 4. **Database**
 5. **Schema**
 6. **Username**
-7. **Password**
+7. **Password, private key, or programmatic access token**
 8. **JDBC URL Params** (Optional)
 
 Additionally, create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
@@ -182,6 +182,22 @@ Your database user should now be ready for use with Airbyte.
 ### Key pair authentication
 
  <KeypairExample/>
+
+### Programmatic access token authentication
+
+To authenticate with a Snowflake [programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens), select **Programmatic Access Token** as the authorization method and provide the username and token.
+
+Create a programmatic access token in Snowflake with:
+
+```sql
+ALTER USER <user_name> ADD PROGRAMMATIC ACCESS TOKEN <token_name>
+  ROLE_RESTRICTION = '<airbyte_role>'
+  DAYS_TO_EXPIRY = <days>;
+```
+
+The token secret is only shown when the token is created. Store it securely before closing the result.
+
+For service users, Snowflake requires `ROLE_RESTRICTION` by default. Snowflake also requires a network policy for service users to generate or use programmatic access tokens unless your authentication policy changes this behavior. If an authentication policy restricts allowed methods, include `PROGRAMMATIC_ACCESS_TOKEN` in `AUTHENTICATION_METHODS`.
 
 ### Network policies
 

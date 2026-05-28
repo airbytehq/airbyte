@@ -182,6 +182,31 @@ class SnowflakeSourceConfigurationTest {
     }
 
     @Test
+    fun testProgrammaticAccessTokenAuthenticationWithSchema() {
+        val spec =
+            SnowflakeSourceConfigurationSpecification().apply {
+                host = "test.snowflakecomputing.com"
+                role = "TEST_ROLE"
+                warehouse = "TEST_WAREHOUSE"
+                database = "TEST_DATABASE"
+                schema = "CUSTOM_SCHEMA"
+                credentials =
+                    ProgrammaticAccessTokenCredentialsSpecification(
+                        username = "testuser",
+                        programmaticAccessToken = "test-token"
+                    )
+            }
+
+        val config = factory.makeWithoutExceptionHandling(spec)
+
+        assertEquals(setOf("TEST_DATABASE"), config.namespaces)
+        assertEquals("CUSTOM_SCHEMA", config.schema)
+        assertEquals("testuser", config.jdbcProperties["user"])
+        assertEquals("test-token", config.jdbcProperties["password"])
+        assertEquals("programmatic_access_token", config.jdbcProperties["authenticator"])
+    }
+
+    @Test
     fun testInvalidConfiguration() {
         // Test that invalid configurations throw appropriate errors
         val spec =

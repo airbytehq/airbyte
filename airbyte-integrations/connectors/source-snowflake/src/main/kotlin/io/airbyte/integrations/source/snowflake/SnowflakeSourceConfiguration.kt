@@ -78,6 +78,11 @@ class SnowflakeSourceConfigurationFactory :
                 jdbcProperties["private_key_file"] = PRIVATE_KEY_FILE_NAME
                 credentials.privateKeyPassword?.let { jdbcProperties["private_key_file_pwd"] = it }
             }
+            is ProgrammaticAccessTokenCredentialsSpecification -> {
+                jdbcProperties["user"] = credentials.username
+                jdbcProperties["password"] = credentials.programmaticAccessToken
+                jdbcProperties["authenticator"] = "programmatic_access_token"
+            }
             else ->
                 throw ConfigErrorException(
                     "Unsupported credentials type: ${credentials?.javaClass?.name}"
