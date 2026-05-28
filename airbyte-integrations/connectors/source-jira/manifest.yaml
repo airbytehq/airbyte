@@ -14696,15 +14696,6 @@ check:
   stream_names:
   - projects
 
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10
-          interval: PT1S
-      matchers: []
-
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 5) }}"
