@@ -151,6 +151,12 @@ definitions:
               partition_field: issue_id
               stream:
                 $ref: "#/definitions/streams/issues"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - issue_id
+              value: "{{ stream_partition.issue_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -865,6 +871,10 @@ schemas:
     properties:
       id:
         type: string
+      issue_id:
+        type:
+          - "null"
+          - string
       message_html:
         type:
           - "null"
