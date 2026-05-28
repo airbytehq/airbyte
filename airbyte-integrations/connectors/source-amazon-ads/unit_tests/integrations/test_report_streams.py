@@ -124,7 +124,9 @@ class TestDisplayReportStreams:
             status_code=200,
         )
         output = self._read(config, "sponsored_brands_campaigns_report_stream", SyncMode.incremental)
-        created_report_request = next(request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports"))
+        created_report_request = next(
+            request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports")
+        )
 
         assert created_report_request["configuration"]["reportTypeId"] == "sbCampaigns"
         assert created_report_request["configuration"]["groupBy"] == ["campaign"]
@@ -156,7 +158,9 @@ class TestDisplayReportStreams:
             status_code=200,
         )
         output = self._read(config, "sponsored_brands_adgroups_report_stream", SyncMode.incremental)
-        created_report_request = next(request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports"))
+        created_report_request = next(
+            request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports")
+        )
 
         assert created_report_request["configuration"]["reportTypeId"] == "sbAdGroup"
         assert created_report_request["configuration"]["groupBy"] == ["adGroup"]
