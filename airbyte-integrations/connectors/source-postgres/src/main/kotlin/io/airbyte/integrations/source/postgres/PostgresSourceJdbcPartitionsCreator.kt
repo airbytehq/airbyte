@@ -31,6 +31,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.use
 
@@ -44,17 +45,22 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+    private val acquiredResources = AtomicReference<AcquiredResources>()
 
     /**
      * Querying for a table's filenode makes it necessary to acquire a DB connection allowance
-     * resource. The acquired handle is returned to the caller rather than stored on this singleton,
-     * so concurrent feeds do not overwrite one another's handles.
+     * resource.
      */
-    override fun tryAcquireResources(): PartitionsCreatorFactory.TryAcquireResourcesResult {
-        val acquired: AcquiredResources =
+    override fun tryAcquireResources(): PartitionsCreatorFactory.TryAcquireResourcesStatus {
+        val acquiredResources: AcquiredResources =
             partitionFactory.sharedState.tryAcquireResourcesForCreatorFactory()
-                ?: return PartitionsCreatorFactory.TryAcquireResourcesResult.RetryLater
-        return PartitionsCreatorFactory.TryAcquireResourcesResult.ReadyToRun(acquired)
+                ?: return PartitionsCreatorFactory.TryAcquireResourcesStatus.RETRY_LATER
+        this.acquiredResources.set(acquiredResources)
+        return PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN
+    }
+
+    override fun releaseResources() {
+        acquiredResources.getAndSet(null)?.close()
     }
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
