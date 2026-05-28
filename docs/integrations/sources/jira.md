@@ -242,7 +242,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 | `projects` | No | List of Jira project keys to replicate. Leave empty to replicate all projects the authenticated user can access. |
 | `start_date` | No | UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Applies to the Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues streams. If unset, defaults to two years before the first sync. |
 | `lookback_window_minutes` | No | Number of minutes to re-read on each incremental sync. Defaults to `0`. |
-| `num_workers` | No | Number of concurrent threads to use for the sync. Valid values are `1` through `40`. Defaults to `3`. |
+| `num_workers` | No | Number of concurrent threads to use for the sync. Valid values are `1` through `40`. Defaults to `5`. |
 
 ## Changelog
 
@@ -251,7 +251,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.1-rc.2 | 2026-05-28 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Revert default concurrency to 5, add HTTP API budget (10 req/s), enable progressive rollout for concurrency tuning |
+| 5.1.1-rc.2 | 2026-05-28 | [78485](https://github.com/airbytehq/airbyte/pull/78485) | Revert default concurrency to 5, enable progressive rollout for concurrency tuning |
 | 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
 | 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
 | 5.0.0 | 2026-05-20 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
