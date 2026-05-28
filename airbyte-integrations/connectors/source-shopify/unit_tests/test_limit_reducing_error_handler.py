@@ -4,7 +4,7 @@
 
 import pytest
 import requests
-from source_shopify.streams.streams import Orders
+from source_shopify.streams.streams import OrderRefunds, Orders
 from source_shopify.utils import LimitReducingErrorHandler
 
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
@@ -125,8 +125,8 @@ def test_limit_reducing_error_handler_logs_fallthrough_without_crashing(response
     assert resolution.response_action == ResponseAction.RETRY
 
 
-class TestOrdersLimitReducingErrorHandler:
-    def test_orders_stream_500_error_handling(self, requests_mock):
+class TestOrderRefundsLimitReducingErrorHandler:
+    def test_order_refunds_stream_500_error_handling(self, requests_mock):
         # Mock the events endpoint to prevent NoMockAddress error
         requests_mock.get(
             "https://test-shop.myshopify.com/admin/api/2025-10/events.json?filter=Order&verb=destroy",
@@ -167,15 +167,18 @@ class TestOrdersLimitReducingErrorHandler:
 
         # Configure the stream
         config = {"shop": "test-shop", "authenticator": None}
-        stream = Orders(config)
+        parent_stream = Orders(config)
+        stream = OrderRefunds(config)
 
         # Read records
-        records = list(stream.read_records(sync_mode="full_refresh"))
+        records = []
+        for slice_ in stream.stream_slices(sync_mode="full_refresh"):
+            records.extend(list(stream.read_records(sync_mode="full_refresh", stream_slice=slice_)))
 
         # Assertions
-        assert len(records) == 250
-        assert records[0]["id"] == 1
-        assert records[-1]["id"] == 250
+        assert len(records) == 250  # Total refunds: 125 + 125
+        assert records[0]["id"] == 10  # First refund ID
+        assert records[-1]["id"] == 2500  # Last refund ID
 
         # Assert that a request with the reduced limit was actually made
         assert any(
