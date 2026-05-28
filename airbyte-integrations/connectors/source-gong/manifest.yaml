@@ -31,6 +31,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+              - $ref: "#/definitions/rate_limit_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -75,6 +76,7 @@ definitions:
                   - type: HttpResponseFilter
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
+              - $ref: "#/definitions/rate_limit_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -135,6 +137,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+              - $ref: "#/definitions/rate_limit_error_handler"
           request_body_json:
             contentSelector:
               exposedFields:
@@ -245,6 +248,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+              - $ref: "#/definitions/rate_limit_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -290,6 +294,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+              - $ref: "#/definitions/rate_limit_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -355,6 +360,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+              - $ref: "#/definitions/rate_limit_error_handler"
           request_body_json:
             filter:
               callIds:
@@ -444,6 +450,18 @@ definitions:
           type: BasicHttpAuthenticator
           username: "{{ config['credentials']['access_key'] }}"
           password: "{{ config['credentials']['access_key_secret'] }}"
+  rate_limit_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        failure_type: transient_error
+        http_codes:
+          - 429
+        error_message: Rate limit exceeded for Gong API.
 
 streams:
   - $ref: "#/definitions/streams/users"
