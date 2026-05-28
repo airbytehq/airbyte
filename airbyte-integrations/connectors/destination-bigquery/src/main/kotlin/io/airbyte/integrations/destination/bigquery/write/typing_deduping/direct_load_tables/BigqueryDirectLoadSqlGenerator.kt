@@ -156,8 +156,7 @@ class BigqueryDirectLoadSqlGenerator(
         val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
 
         val comparisonOrder = recordComparisonOrder(importType, columnNameMapping)
-        val recencyComparison =
-            recencyComparison(comparisonOrder, "target_table", "new_record")
+        val recencyComparison = recencyComparison(comparisonOrder, "target_table", "new_record")
 
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
@@ -240,8 +239,7 @@ class BigqueryDirectLoadSqlGenerator(
                     }
                 val current = column(currentRecordAlias, columnName)
                 val new = column(newRecordAlias, columnName)
-                val columnLessThan =
-                    "($current < $new OR ($current IS NULL AND $new IS NOT NULL))"
+                val columnLessThan = "($current < $new OR ($current IS NULL AND $new IS NOT NULL))"
                 if (priorColumnsEqual.isEmpty()) {
                     columnLessThan
                 } else {

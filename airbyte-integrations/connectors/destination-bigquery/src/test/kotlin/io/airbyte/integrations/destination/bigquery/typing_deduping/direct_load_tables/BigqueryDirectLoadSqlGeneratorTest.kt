@@ -89,37 +89,47 @@ class BigqueryDirectLoadSqlGeneratorTest {
     fun testUpsertOrdersByGenerationBeforeCursor() {
         val generator = BigqueryDirectLoadSqlGenerator("project", CdcDeletionMode.SOFT_DELETE)
         val sql =
-            generator.upsertTable(
-                DestinationStream(
-                    "ns",
-                    "n",
-                    Dedupe(
-                        primaryKey = listOf(listOf("foo")),
-                        cursor = listOf("bar"),
+            generator
+                .upsertTable(
+                    DestinationStream(
+                        "ns",
+                        "n",
+                        Dedupe(
+                            primaryKey = listOf(listOf("foo")),
+                            cursor = listOf("bar"),
+                        ),
+                        ObjectType(
+                            linkedMapOf(
+                                "foo" to FieldType(IntegerType, nullable = true),
+                                "bar" to FieldType(IntegerType, nullable = true),
+                            )
+                        ),
+                        generationId = 42,
+                        minimumGenerationId = 0,
+                        syncId = 12,
+                        namespaceMapper = NamespaceMapper(NamespaceDefinitionType.SOURCE),
                     ),
-                    ObjectType(
-                        linkedMapOf(
-                            "foo" to FieldType(IntegerType, nullable = true),
-                            "bar" to FieldType(IntegerType, nullable = true),
+                    ColumnNameMapping(
+                        mapOf(
+                            "foo" to "mapped_foo",
+                            "bar" to "mapped_bar",
                         )
                     ),
-                    generationId = 42,
-                    minimumGenerationId = 0,
-                    syncId = 12,
-                    namespaceMapper = NamespaceMapper(NamespaceDefinitionType.SOURCE),
-                ),
-                ColumnNameMapping(
-                    mapOf(
-                        "foo" to "mapped_foo",
-                        "bar" to "mapped_bar",
-                    )
-                ),
-                TableName("source_ns", "source_table"),
-                TableName("target_ns", "target_table"),
-            ).transactions.single().single()
+                    TableName("source_ns", "source_table"),
+                    TableName("target_ns", "target_table"),
+                )
+                .transactions
+                .single()
+                .single()
 
-        assertContains(sql, "target_table.`_airbyte_generation_id` < new_record.`_airbyte_generation_id`")
-        assertContains(sql, "`_airbyte_generation_id` DESC NULLS LAST, `mapped_bar` DESC NULLS LAST, `_airbyte_extracted_at` DESC NULLS LAST")
+        assertContains(
+            sql,
+            "target_table.`_airbyte_generation_id` < new_record.`_airbyte_generation_id`"
+        )
+        assertContains(
+            sql,
+            "`_airbyte_generation_id` DESC NULLS LAST, `mapped_bar` DESC NULLS LAST, `_airbyte_extracted_at` DESC NULLS LAST"
+        )
     }
 
     @Test
