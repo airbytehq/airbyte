@@ -82,9 +82,9 @@ class TestOrdersLimitReducingErrorHandler:
         assert records[-1]["id"] == 375
 
         # Assert that a request with the reduced limit was actually made
-        assert any("limit=125" in req.url for req in requests_mock.request_history), (
-            "No request was made with the reduced limit (limit=125)"
-        )
+        assert any(
+            "limit=125" in req.url for req in requests_mock.request_history
+        ), "No request was made with the reduced limit (limit=125)"
 
 
 def _unmapped_response(status_code: int) -> requests.Response:
