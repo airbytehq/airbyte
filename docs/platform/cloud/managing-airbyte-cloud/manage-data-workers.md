@@ -6,7 +6,7 @@ products: cloud-plus
 
 If you are on a capacity-based plan, you can monitor your data worker usage across your organization and understand how capacity enforcement affects your syncs. When all committed data workers are in use, newly triggered sync jobs are queued until capacity becomes available. To view data worker usage, you need the **organization admin** role.
 
-## How data workers map to syncs
+## How data workers map to syncs {#data-worker-consumption-by-source-type}
 
 Each running sync consumes a fraction of one data worker. The exact amount is derived from the job's resolved CPU requirements and divided by a platform-defined factor. Different source types have different resource profiles, so the capacity consumed per sync varies. The capacity per sync may also differ if your organization has custom resource overrides.
 

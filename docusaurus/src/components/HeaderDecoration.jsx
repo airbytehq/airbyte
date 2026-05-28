@@ -330,13 +330,15 @@ const ConnectorMetadataCallout = ({
         </MetadataStat>
       )}
       {defaultDataWorkers && (
-        <MetadataStat label="Default data workers">
+        <MetadataStat label="Data workers used">
           <span title="Applies to Airbyte Cloud plans on capacity-based pricing. Actual usage can vary if your organization has custom resource overrides.">
             {defaultDataWorkers} per sync
           </span>
-          <a href="/platform/cloud/managing-airbyte-cloud/manage-data-workers#how-data-workers-map-to-syncs">
+          {" ("}
+          <a href="/platform/cloud/managing-airbyte-cloud/manage-data-workers#data-worker-consumption-by-source-type">
             Learn more
           </a>
+          {")"}
         </MetadataStat>
       )}
       {isEnterprise && (
