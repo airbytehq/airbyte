@@ -15,6 +15,7 @@ ORDERS_PAGE_1 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(1, 12
 ORDERS_PAGE_2 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(126, 251)]}  # 125 orders
 ORDERS_PAGE_3 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(251, 376)]}  # 125 orders
 
+
 class TestOrdersLimitReducingErrorHandler:
     def test_orders_stream_500_error_handling(self, requests_mock):
         # Mock the events endpoint to prevent NoMockAddress error
