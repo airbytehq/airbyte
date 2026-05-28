@@ -10,12 +10,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
+    GAQL,
     ClickViewHttpRequester,
     CustomGAQueryHttpRequester,
     CustomGAQuerySchemaLoader,
     FlattenNestedDictsTransformation,
+    GoogleAdsHttpRequester,
     GoogleAdsRetriever,
     GoogleAdsStreamingDecoder,
+    GranularSegmentFallbackTransformation,
     SerializeMessageFieldsTransformation,
     TimeoutHTTPAdapter,
 )
@@ -110,6 +113,96 @@ class TestCustomGAQuerySchemaLoader:
         assert schema_loader.get_json_schema() == expected_schema
 
 
+@pytest.mark.parametrize(
+    "record,expected",
+    [
+        pytest.param({"segments.month": "2023-04-01"}, {"segments.month": "2023-04-01", "segments.date": "2023-04-01"}, id="month"),
+        pytest.param({"segments.quarter": "2023-04-01"}, {"segments.quarter": "2023-04-01", "segments.date": "2023-04-01"}, id="quarter"),
+        pytest.param({"segments.year": "2023-01-01"}, {"segments.year": "2023-01-01", "segments.date": "2023-01-01"}, id="year"),
+        pytest.param(
+            {"segments.date": "2023-04-15", "segments.month": "2023-04-01"},
+            {"segments.date": "2023-04-15", "segments.month": "2023-04-01"},
+            id="preserves_existing_date",
+        ),
+        pytest.param({"campaign.id": "123"}, {"campaign.id": "123"}, id="no_fallback_field"),
+    ],
+)
+def test_transform_maps_fallback_segments_to_date(record, expected):
+    GranularSegmentFallbackTransformation().transform(record)
+    assert record == expected
+
+
+def test_gaql_replace_field_replaces_selected_and_ordered_field():
+    query = GAQL.parse(
+        "SELECT campaign.name, segments.date FROM campaign WHERE campaign.status = 'ENABLED' ORDER BY segments.date ASC LIMIT 10"
+    )
+
+    assert (
+        str(query.replace_field("segments.date", "segments.month"))
+        == "SELECT campaign.name, segments.month FROM campaign WHERE campaign.status = 'ENABLED' ORDER BY segments.month ASC LIMIT 10"
+    )
+
+
+def _google_ads_requester(config):
+    return GoogleAdsHttpRequester(
+        name="ad_group",
+        parameters={},
+        config=config,
+        schema_loader=InlineSchemaLoader(
+            schema={
+                "ad_group": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "ad_group.id": {"type": ["null", "integer"]},
+                        "segments.date": {"type": ["null", "string"], "format": "date"},
+                        "metrics.clicks": {"type": ["null", "integer"]},
+                    },
+                },
+            },
+            parameters={},
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "stream_slice,expected_query",
+    [
+        pytest.param(
+            {
+                "customer_id": "customers/123",
+                "parent_slice": {"customer_id": "123", "parent_slice": {}},
+                "start_time": "2022-01-15",
+                "end_time": "2022-01-31",
+            },
+            "SELECT ad_group.id, segments.month, metrics.clicks FROM ad_group WHERE segments.month BETWEEN '2022-01-01' AND '2022-01-01' ORDER BY segments.month ASC",
+            id="historical_slice_uses_month",
+        ),
+        pytest.param(
+            {
+                "customer_id": "customers/123",
+                "parent_slice": {"customer_id": "123", "parent_slice": {}},
+                "start_time": "2022-01-15",
+                "end_time": "2023-06-01",
+            },
+            "SELECT ad_group.id, segments.date, metrics.clicks FROM ad_group WHERE segments.date BETWEEN '2022-06-05' AND '2023-06-01' ORDER BY segments.date ASC",
+            id="cross_boundary_slice_clamps_start_date",
+        ),
+    ],
+)
+def test_google_ads_request_body_json_handles_retention_boundary(config, stream_slice, expected_query):
+    stream_slice = StreamSlice(
+        partition={"customer_id": stream_slice["customer_id"], "parent_slice": stream_slice["parent_slice"]},
+        cursor_slice={"start_time": stream_slice["start_time"], "end_time": stream_slice["end_time"]},
+        extra_fields={},
+    )
+
+    with patch("source_google_ads.components._get_data_retention_cutoff", return_value="2022-06-05"):
+        request_body = _google_ads_requester(config).get_request_body_json(stream_slice=stream_slice)
+
+    assert request_body == {"query": expected_query}
+
+
 class TestCustomGAQueryHttpRequester:
     def test_given_valid_query_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock):
         config = config_for_custom_query_tests
@@ -127,7 +220,44 @@ class TestCustomGAQueryHttpRequester:
         request_body = requester.get_request_body_json(stream_slice={})
         assert request_body == {"query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"}
 
-    def test_given_valid_query_with_cursor_field_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock):
+    @pytest.mark.parametrize(
+        "stream_slice,expected_query",
+        [
+            pytest.param(
+                {
+                    "customer_id": "customers/123",
+                    "parent_slice": {"customer_id": "123", "parent_slice": {}},
+                    "start_time": "2025-07-18",
+                    "end_time": "2025-07-19",
+                },
+                "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2025-07-18' AND '2025-07-19' ORDER BY segments.date ASC",
+                id="recent_slice_uses_date",
+            ),
+            pytest.param(
+                {
+                    "customer_id": "customers/123",
+                    "parent_slice": {"customer_id": "123", "parent_slice": {}},
+                    "start_time": "2022-01-15",
+                    "end_time": "2022-01-31",
+                },
+                "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.month FROM campaign_budget WHERE segments.month BETWEEN '2022-01-01' AND '2022-01-01' ORDER BY segments.month ASC",
+                id="historical_slice_uses_month",
+            ),
+            pytest.param(
+                {
+                    "customer_id": "customers/123",
+                    "parent_slice": {"customer_id": "123", "parent_slice": {}},
+                    "start_time": "2022-01-15",
+                    "end_time": "2023-06-01",
+                },
+                "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2022-06-05' AND '2023-06-01' ORDER BY segments.date ASC",
+                id="cross_boundary_slice_clamps_start_date",
+            ),
+        ],
+    )
+    def test_given_valid_query_with_cursor_field_returns_expected_request_body(
+        self, config_for_custom_query_tests, requests_mock, stream_slice, expected_query
+    ):
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = (
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget ORDER BY segments.date ASC"
@@ -140,17 +270,10 @@ class TestCustomGAQueryHttpRequester:
             },
             config=config,
         )
-        request_body = requester.get_request_body_json(
-            stream_slice={
-                "customer_id": "customers/123",
-                "parent_slice": {"customer_id": "123", "parent_slice": {}},
-                "start_time": "2025-07-18",
-                "end_time": "2025-07-19",
-            }
-        )
-        assert request_body == {
-            "query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2025-07-18' AND '2025-07-19' ORDER BY segments.date ASC"
-        }
+        with patch("source_google_ads.components._get_data_retention_cutoff", return_value="2022-06-05"):
+            request_body = requester.get_request_body_json(stream_slice=stream_slice)
+
+        assert request_body == {"query": expected_query}
 
 
 class TestClickViewHttpRequester:
@@ -834,9 +957,9 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
 def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(
-        extractor.decoder, GoogleAdsStreamingDecoder
-    ), f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -850,9 +973,9 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
 def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(
-        extractor.decoder, GoogleAdsStreamingDecoder
-    ), f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    )
 
 
 class TestSerializeMessageFieldsTransformation:
@@ -1112,9 +1235,9 @@ def test_every_stream_has_timeout_adapter_mounted(stream_name, retriever):
     requester = retriever.requester
     session = requester._http_client._session
     adapter = session.adapters.get("https://")
-    assert isinstance(
-        adapter, TimeoutHTTPAdapter
-    ), f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    assert isinstance(adapter, TimeoutHTTPAdapter), (
+        f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -1126,6 +1249,6 @@ def test_dynamic_streams_have_timeout_adapter_mounted(stream_name, retriever):
     requester = retriever.requester
     session = requester._http_client._session
     adapter = session.adapters.get("https://")
-    assert isinstance(
-        adapter, TimeoutHTTPAdapter
-    ), f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    assert isinstance(adapter, TimeoutHTTPAdapter), (
+        f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    )
