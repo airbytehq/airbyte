@@ -91,8 +91,15 @@ const TABS = [
     label: "CLI",
     command: "curl -fsSL https://airbyte.ai/install.sh | bash",
     description:
-      "Install the airbyte-agent CLI and bundled agent skill for shell scripts, CI jobs, and AI-agent harnesses.",
+      "Agents should use the install script. It installs the airbyte-agent CLI and bundled agent skill.",
+    toolsLabel:
+      "Human users can install with Homebrew, then follow the CLI docs.",
     tools: [
+      {
+        name: "Use with AI agents",
+        href: "/ai-agents/interfaces/cli/using-with-ai-agents/",
+        icon: "/img/favicon.png",
+      },
       {
         name: "CLI docs",
         href: "/ai-agents/interfaces/cli/",
@@ -182,6 +189,11 @@ export const QuickInstall = () => {
         )}
         {tab.toolsLabel && (
           <p className={styles.toolsLabel}>{tab.toolsLabel}</p>
+        )}
+        {tab.id === "cli" && (
+          <div className={styles.quickInstallCode}>
+            <code>brew install airbytehq/tap/airbyte-agent-cli</code>
+          </div>
         )}
         {tab.tools.length > 0 && (
           <div className={styles.toolChips}>
