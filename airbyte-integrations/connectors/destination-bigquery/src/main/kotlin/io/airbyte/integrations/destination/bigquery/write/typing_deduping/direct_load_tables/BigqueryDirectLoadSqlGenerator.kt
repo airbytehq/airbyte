@@ -155,26 +155,9 @@ class BigqueryDirectLoadSqlGenerator(
             }
         val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
 
-        val cursorComparison: String
-        if (importType.cursor.isNotEmpty()) {
-            val cursorFieldName = importType.cursor.first()
-            val cursorColumnName = columnNameMapping[cursorFieldName]!!
-            val cursor = "`$cursorColumnName`"
-            // Build a condition for "new_record is more recent than target_table":
-            cursorComparison = // First, compare the cursors.
-            ("""
-             (
-               target_table.$cursor < new_record.$cursor
-               OR (target_table.$cursor = new_record.$cursor AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
-               OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
-               OR (target_table.$cursor IS NULL AND new_record.$cursor IS NOT NULL)
-             )
-             """.trimIndent())
-        } else {
-            // If there's no cursor, then we just take the most-recently-emitted record
-            cursorComparison =
-                "target_table._airbyte_extracted_at < new_record._airbyte_extracted_at"
-        }
+        val comparisonOrder = recordComparisonOrder(importType, columnNameMapping)
+        val recencyComparison =
+            recencyComparison(comparisonOrder, "target_table", "new_record")
 
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
@@ -184,7 +167,11 @@ class BigqueryDirectLoadSqlGenerator(
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
-                "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND $cursorComparison THEN DELETE"
+                """
+                WHEN MATCHED
+                AND new_record._ab_cdc_deleted_at IS NOT NULL
+                AND $recencyComparison THEN DELETE
+                """.trimIndent()
             // And skip insertion entirely if there's no matching record.
             // (This is possible if a single T+D batch contains both an insertion and deletion for
             // the same PK)
@@ -209,7 +196,7 @@ class BigqueryDirectLoadSqlGenerator(
                ) new_record
                ON $pkEquivalent
                $cdcDeleteClause
-               WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+               WHEN MATCHED AND $recencyComparison THEN UPDATE SET
                  $columnAssignments
                  _airbyte_meta = new_record._airbyte_meta,
                  _airbyte_raw_id = new_record._airbyte_raw_id,
@@ -237,6 +224,51 @@ class BigqueryDirectLoadSqlGenerator(
         return Sql.of("""DROP TABLE IF EXISTS `$projectId`.$tableId;""")
     }
 
+    private fun recencyComparison(
+        comparisonOrder: List<String>,
+        currentRecordAlias: String,
+        newRecordAlias: String,
+    ): String {
+        fun column(alias: String, columnName: String) = "$alias.`$columnName`"
+        val comparisons =
+            comparisonOrder.mapIndexed { index, columnName ->
+                val priorColumnsEqual =
+                    comparisonOrder.take(index).joinToString(" AND ") {
+                        val current = column(currentRecordAlias, it)
+                        val new = column(newRecordAlias, it)
+                        "($current = $new OR ($current IS NULL AND $new IS NULL))"
+                    }
+                val current = column(currentRecordAlias, columnName)
+                val new = column(newRecordAlias, columnName)
+                val columnLessThan =
+                    "($current < $new OR ($current IS NULL AND $new IS NOT NULL))"
+                if (priorColumnsEqual.isEmpty()) {
+                    columnLessThan
+                } else {
+                    "($priorColumnsEqual AND $columnLessThan)"
+                }
+            }
+
+        return comparisons.joinToString(" OR ", prefix = "(", postfix = ")")
+    }
+
+    private fun recordComparisonOrder(
+        importType: Dedupe,
+        columnNameMapping: ColumnNameMapping,
+    ): List<String> {
+        val cursorColumns =
+            if (importType.cursor.isEmpty()) {
+                emptyList()
+            } else if (importType.cursor.size == 1) {
+                listOf(columnNameMapping[importType.cursor.first()]!!)
+            } else {
+                throw UnsupportedOperationException(
+                    "Only top-level cursors are supported, got ${importType.cursor}"
+                )
+            }
+        return listOf("_airbyte_generation_id") + cursorColumns + listOf("_airbyte_extracted_at")
+    }
+
     /**
      * A SQL SELECT statement that extracts records from the table and dedupes the records (since we
      * only need the most-recent record to upsert).
@@ -261,16 +293,9 @@ class BigqueryDirectLoadSqlGenerator(
                 val columnName = columnNameMapping[fieldName.first()]!!
                 "`$columnName`"
             }
-        val cursorOrderClause =
-            if (importType.cursor.isEmpty()) {
-                ""
-            } else if (importType.cursor.size == 1) {
-                val columnName = columnNameMapping[importType.cursor.first()]!!
-                "`$columnName` DESC NULLS LAST,"
-            } else {
-                throw UnsupportedOperationException(
-                    "Only top-level cursors are supported, got ${importType.cursor}"
-                )
+        val orderClause =
+            recordComparisonOrder(importType, columnNameMapping).joinToString(", ") {
+                "`$it` DESC NULLS LAST"
             }
 
         return """
@@ -284,7 +309,7 @@ class BigqueryDirectLoadSqlGenerator(
                  FROM `$projectId`.${sourceTableName.toPrettyString(QUOTE)}
                ), numbered_rows AS (
                  SELECT *, row_number() OVER (
-                   PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
+                   PARTITION BY $pkList ORDER BY $orderClause
                  ) AS row_number
                  FROM records
                )
