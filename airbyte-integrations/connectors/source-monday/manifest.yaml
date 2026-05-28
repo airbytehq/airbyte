@@ -508,6 +508,7 @@ api_budget:
       rates:
         - limit: 1000
           interval: PT1M
+      matchers: []
 
 schemas:
   activity_logs:
