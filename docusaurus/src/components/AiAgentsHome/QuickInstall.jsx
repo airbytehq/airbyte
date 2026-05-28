@@ -133,7 +133,9 @@ const TABS = [
 export const QuickInstall = () => {
   const [activeTab, setActiveTab] = useState("mcp");
   const [copied, setCopied] = useState(false);
+  const [copiedHomebrew, setCopiedHomebrew] = useState(false);
   const tab = TABS.find((t) => t.id === activeTab);
+  const homebrewCommand = "brew install airbytehq/tap/airbyte-agent-cli";
 
   const handleCopy = () => {
     if (tab.command) {
@@ -141,6 +143,12 @@ export const QuickInstall = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleHomebrewCopy = () => {
+    navigator.clipboard.writeText(homebrewCommand);
+    setCopiedHomebrew(true);
+    setTimeout(() => setCopiedHomebrew(false), 2000);
   };
 
   return (
@@ -155,6 +163,7 @@ export const QuickInstall = () => {
             onClick={() => {
               setActiveTab(t.id);
               setCopied(false);
+              setCopiedHomebrew(false);
             }}
           >
             {t.label}
@@ -192,7 +201,14 @@ export const QuickInstall = () => {
         )}
         {tab.id === "cli" && (
           <div className={styles.quickInstallCode}>
-            <code>brew install airbytehq/tap/airbyte-agent-cli</code>
+            <code>{homebrewCommand}</code>
+            <button
+              className={styles.quickInstallCopy}
+              onClick={handleHomebrewCopy}
+              aria-label="Copy Homebrew command to clipboard"
+            >
+              {copiedHomebrew ? "Copied" : "Copy"}
+            </button>
           </div>
         )}
         {tab.tools.length > 0 && (
