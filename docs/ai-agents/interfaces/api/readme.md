@@ -1,6 +1,6 @@
 ---
 plan: all
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
