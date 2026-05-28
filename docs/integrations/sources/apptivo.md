@@ -17,6 +17,10 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 | leads | id | DefaultPaginator | ✅ |  ❌  |
 | opportunities | opportunityId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

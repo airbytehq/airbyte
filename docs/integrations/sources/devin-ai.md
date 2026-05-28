@@ -90,6 +90,10 @@ The `session_messages` stream is a substream of `sessions`: for each session ret
 | `org_id` | string | Yes | | Your Devin organization ID. Uses the `org_` prefix. |
 | `start_date` | string (ISO 8601, UTC) | No | (no filter) | Optional lower bound on `created_at` for the `sessions`, `sessions_insights`, and `session_messages` streams. Sessions created before this instant are excluded. Format: `YYYY-MM-DDTHH:MM:SSZ`. Example: `2026-01-01T00:00:00Z`. |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

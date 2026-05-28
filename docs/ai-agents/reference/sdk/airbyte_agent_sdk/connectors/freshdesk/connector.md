@@ -82,6 +82,40 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: CompaniesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[CompaniesSearchData]`
+    :   Search companies records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CompaniesSearchFilter):
+        - id: Unique company ID
+        - name: Name of the company
+        - description: Description of the company
+        - domains: Email domains associated with the company
+        - note: Notes about the company
+        - health_score: Health score of the company
+        - account_tier: Account tier of the company
+        - renewal_date: Renewal date
+        - industry: Industry of the company
+        - custom_fields: Custom fields associated with the company
+        - created_at: Company creation timestamp
+        - updated_at: Company last update timestamp
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CompaniesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.freshdesk.models.Company`
     :   Get a single company by ID
         
@@ -111,6 +145,48 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[ContactsSearchData]`
+    :   Search contacts records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ContactsSearchFilter):
+        - id: Unique contact ID
+        - name: Name of the contact
+        - email: Primary email address
+        - phone: Phone number
+        - mobile: Mobile number
+        - active: Whether the contact has been verified
+        - address: Address of the contact
+        - company_id: ID of the primary company
+        - custom_fields: Custom fields associated with the contact
+        - description: Description of the contact
+        - job_title: Job title of the contact
+        - language: Language of the contact
+        - twitter_id: Twitter ID
+        - unique_external_id: External ID of the contact
+        - time_zone: Time zone of the contact
+        - facebook_id: Facebook ID of the contact
+        - csat_rating: CSAT rating of the contact
+        - preferred_source: Preferred contact source
+        - created_at: Contact creation timestamp
+        - updated_at: Contact last update timestamp
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ContactsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.freshdesk.models.Contact`
     :   Get a single contact by ID
@@ -187,41 +263,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'FreshdeskAuthConfig'", name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.connector.FreshdeskConnector`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A FreshdeskConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await FreshdeskConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=FreshdeskAuthConfig(api_key="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -272,10 +313,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await FreshdeskConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -420,6 +457,34 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: RolesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[RolesSearchData]`
+    :   Search roles records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (RolesSearchFilter):
+        - id: Unique role ID
+        - name: Name of the role
+        - description: Description of the role
+        - default: Whether this is a default role
+        - created_at: Role creation timestamp
+        - updated_at: Role last update timestamp
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            RolesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.freshdesk.models.Role`
     :   Get a single role by ID
         
@@ -450,6 +515,38 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: SatisfactionRatingsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[SatisfactionRatingsSearchData]`
+    :   Search satisfaction_ratings records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SatisfactionRatingsSearchFilter):
+        - id: Unique satisfaction rating ID
+        - survey_id: ID of the survey
+        - user_id: ID of the user (requester)
+        - agent_id: ID of the agent
+        - group_id: ID of the group
+        - ticket_id: ID of the ticket
+        - feedback: Feedback text
+        - ratings: Rating values (question_id to rating mapping)
+        - created_at: Rating creation timestamp
+        - updated_at: Rating last update timestamp
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SatisfactionRatingsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, per_page: int | None = None, page: int | None = None, created_since: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.freshdesk.models.FreshdeskExecuteResultWithMeta[list[SatisfactionRating], SatisfactionRatingsListResultMeta]`
     :   Returns a paginated list of satisfaction ratings
         
@@ -471,6 +568,34 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: SurveysSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[SurveysSearchData]`
+    :   Search surveys records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SurveysSearchFilter):
+        - id: Unique survey ID
+        - title: Title of the survey
+        - active: Whether the survey is active
+        - questions: Survey questions
+        - created_at: Survey creation timestamp
+        - updated_at: Survey last update timestamp
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SurveysSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, per_page: int | None = None, page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.freshdesk.models.FreshdeskExecuteResultWithMeta[list[Survey], SurveysListResultMeta]`
     :   Returns a paginated list of surveys
         
@@ -490,6 +615,46 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: TicketFieldsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TicketFieldsSearchData]`
+    :   Search ticket_fields records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TicketFieldsSearchFilter):
+        - id: Unique ticket field ID
+        - name: Name of the field
+        - label: Display label for agents
+        - label_for_customers: Display label in the customer portal
+        - description: Description of the field
+        - position: Position of the field in the form
+        - type_: Field type (e.g., custom_dropdown, custom_text)
+        - default: Whether this is a default (non-custom) field
+        - required_for_closure: Whether the field is required for ticket closure
+        - required_for_agents: Whether the field is required for agents
+        - required_for_customers: Whether the field is required for customers
+        - customers_can_edit: Whether customers can edit this field
+        - displayed_to_customers: Whether the field is displayed to customers
+        - portal_cc: Whether CC is enabled in the portal
+        - portal_cc_to: CC recipients scope (all or company)
+        - choices: Available choices for dropdown fields
+        - created_at: Field creation timestamp
+        - updated_at: Field last update timestamp
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TicketFieldsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `list(self, per_page: int | None = None, page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.freshdesk.models.FreshdeskExecuteResultWithMeta[list[TicketField], TicketFieldsListResultMeta]`
     :   Returns a list of all ticket fields
@@ -599,6 +764,40 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: TimeEntriesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TimeEntriesSearchData]`
+    :   Search time_entries records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TimeEntriesSearchFilter):
+        - id: Unique time entry ID
+        - agent_id: ID of the agent
+        - ticket_id: ID of the associated ticket
+        - company_id: ID of the associated company
+        - billable: Whether the time entry is billable
+        - note: Description of the time entry
+        - time_spent: Time spent in hh:mm format
+        - timer_running: Whether the timer is running
+        - executed_at: Execution timestamp
+        - start_time: Start time of the timer
+        - created_at: Time entry creation timestamp
+        - updated_at: Time entry last update timestamp
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TimeEntriesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `list(self, per_page: int | None = None, page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.freshdesk.models.FreshdeskExecuteResultWithMeta[list[TimeEntry], TimeEntriesListResultMeta]`
     :   Returns a paginated list of time entries

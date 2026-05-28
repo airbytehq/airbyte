@@ -17,6 +17,7 @@ Sub-modules
 * airbyte_agent_sdk.connectors.chargebee
 * airbyte_agent_sdk.connectors.clickup_api
 * airbyte_agent_sdk.connectors.confluence
+* airbyte_agent_sdk.connectors.customer_io
 * airbyte_agent_sdk.connectors.facebook_marketing
 * airbyte_agent_sdk.connectors.freshdesk
 * airbyte_agent_sdk.connectors.github

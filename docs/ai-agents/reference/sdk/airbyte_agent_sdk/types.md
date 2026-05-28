@@ -441,6 +441,9 @@ Classes
     `request_body_defaults: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+    `request_body_probe_defaults: dict[str, typing.Any]`
+    :   The type of the None singleton.
+
     `request_schema: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 

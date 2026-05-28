@@ -26,6 +26,15 @@ on:
         description: "Associated pull request number, for linking in notifications."
         required: false
         type: string
+      force:
+        description: "Force resync of latest/ directories even if version markers are current. Useful when metadata changes without a version bump."
+        required: false
+        type: boolean
+        default: false
+      connector-name:
+        description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
+        required: false
+        type: string
 
 permissions:
   contents: read

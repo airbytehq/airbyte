@@ -40,6 +40,10 @@ rate limit issues.
 
 Please follow the [their documentation for generating an App API Key](https://customer.io/docs/managing-credentials/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -47,6 +51,8 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 0.4.1 | 2026-05-08 | [77895](https://github.com/airbytehq/airbyte/pull/77895) | Align the manifest runtime image with the CDK 7.18.1 behavior used by Customer.io tests. |
+| 0.4.0   | 2026-05-06 | [16327](https://github.com/airbytehq/airbyte-internal-issues/issues/16327) | Add pagination on `campaigns_actions` and `newsletters`, client-side incremental sync on the `updated` cursor, and a configurable `region` (US/EU) selector |
 | 0.3.19  | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                 |
 | 0.3.18  | 2025-05-10 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies                         |
 | 0.3.17  | 2025-05-03 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies                         |

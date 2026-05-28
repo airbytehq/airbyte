@@ -40,6 +40,10 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 | **Records Per Stream Slice** | integer | 1000 | The number of records per stream slice before a state checkpoint is emitted. |
 | **Parallelism** | integer | 4 | The number of parallel workers for data generation. Set this to the number of CPUs allocated to the connector. |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -47,6 +51,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.1.1 | 2026-05-13 | [78075](https://github.com/airbytehq/airbyte/pull/78075) | Re-release to verify PyPI README publishing |
 | 7.1.0 | 2026-03-31 | [75941](https://github.com/airbytehq/airbyte/pull/75941) | Promoted release candidate to GA |
 | 7.1.0-rc.2 | 2026-03-31 | [75926](https://github.com/airbytehq/airbyte/pull/75926) | Bump source-faker to RC2 for progressive rollout e2e test |
 | 7.1.0-rc.1 | 2026-03-31 | [75908](https://github.com/airbytehq/airbyte/pull/75908) | test: progressive rollout e2e test on source-faker |

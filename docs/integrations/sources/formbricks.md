@@ -17,6 +17,10 @@ The Airbyte connector for [Formbricks](https://www.formbricks.com/) enables seam
 | responses | id | DefaultPaginator | ✅ |  ❌  |
 | webhooks | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

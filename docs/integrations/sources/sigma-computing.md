@@ -31,6 +31,10 @@ Next, head over to Developer Access and click on create. This will generate your
 | workspaces | workspaceId | DefaultPaginator | ✅ |  ❌  |
 | workbooks | workbookId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

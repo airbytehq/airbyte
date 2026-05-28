@@ -48,5 +48,17 @@ class ConfigBuilder:
         self._config["sales_and_traffic_report_asin_granularity"] = granularity
         return self
 
+    def with_max_done_report_age_hours(self, hours: int) -> ConfigBuilder:
+        self._config["max_done_report_age_hours"] = hours
+        return self
+
+    def with_failed_retry_wait_time_in_seconds(self, seconds: int) -> ConfigBuilder:
+        self._config["failed_retry_wait_time_in_seconds"] = seconds
+        return self
+
+    def with_report_stream_lookback_window_in_hours(self, hours: int) -> ConfigBuilder:
+        self._config["report_stream_lookback_window_in_hours"] = hours
+        return self
+
     def build(self) -> Dict[str, str]:
         return self._config

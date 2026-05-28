@@ -172,6 +172,12 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 6. (Optional) Multiselect the **Ad Statuses** to include data from Ads for particular statuses.
 </FieldAnchor>
 
+   :::caution Status filtering and missing records
+   When no statuses are selected for Campaign Statuses, AdSet Statuses, or Ad Statuses, the connector relies on the Facebook Marketing API's default behavior, which **excludes records in ARCHIVED and DELETED states**. This means archived campaigns, ad sets, and ads will not appear in your synced data.
+
+   To ensure a complete dataset, explicitly select all statuses you want to include. This is especially important when using Full Refresh sync mode, because previously synced records that have since been archived will not be re-fetched unless you include the ARCHIVED status.
+   :::
+
 <FieldAnchor field="fetch_thumbnail_images">
 7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 </FieldAnchor>
@@ -406,6 +412,20 @@ If the `ad_creatives` stream fails with the error "Please reduce the amount of d
 
 Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
 
+### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
+
+If you notice that some campaigns, ad sets, or ads are missing from your synced data, the most common cause is the status filtering configuration.
+
+The Facebook Marketing API excludes records in `ARCHIVED` and `DELETED` states by default. When the **Campaign Statuses**, **AdSet Statuses**, or **Ad Statuses** fields are left empty in the connector configuration, the connector does not override this default, and archived or deleted records are silently omitted.
+
+This is particularly noticeable after a Full Refresh sync: records that were previously synced when they were active will not reappear if they have since been archived. You can verify this by looking up the missing record IDs directly in the Facebook API. Individual record lookups by ID return data regardless of status, but the listing endpoints the connector uses do not.
+
+To resolve this:
+
+1. Go to **Settings > Source > Facebook Marketing**.
+2. For each of **Campaign Statuses**, **AdSet Statuses**, and **Ad Statuses**, select all statuses you want to include. At minimum, add `ARCHIVED` alongside the active statuses.
+3. Trigger a Full Refresh sync to re-fetch the complete dataset.
+
 ### Missing data for 7-day and 28-day view-through attribution windows
 
 Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. In v4.1.3, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. In v5.0.0, the `7d_view` and `28d_view` columns were also removed from stream schemas. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
@@ -449,6 +469,10 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 </HideInUI>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -456,8 +480,10 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.12 | 2026-05-27 | [78451](https://github.com/airbytehq/airbyte/pull/78451) | Promoted release candidate to GA |
+| 5.2.12-rc.1 | 2026-05-20 | [75457](https://github.com/airbytehq/airbyte/pull/75457) | Bump facebook-business SDK from v23 to v25 to support Marketing API v25.0 before v23.0 sunset on June 9, 2026 |
 | 5.2.11 | 2026-04-28 | [76977](https://github.com/airbytehq/airbyte/pull/76977) | Bump airbyte-cdk to ^7.17.4; facebook-business updated to 23.0.3 via lockfile refresh |
-| 5.2.10 | 2026-04-24 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
+| 5.2.10 | 2026-04-27 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
 | 5.2.9 | 2026-04-24 | [76995](https://github.com/airbytehq/airbyte/pull/76995) | Fix TypeError crash when Facebook API returns error response with no message body |
 | 5.2.8 | 2026-04-24 | [76996](https://github.com/airbytehq/airbyte/pull/76996) | Cast API throttle and rate-limit header values to float to prevent TypeError when Facebook returns string-typed numbers |
 | 5.2.7 | 2026-04-23 | [76951](https://github.com/airbytehq/airbyte/pull/76951) | Promoted release candidate to GA |

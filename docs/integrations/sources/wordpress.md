@@ -76,6 +76,10 @@ Because these timestamps use the site's local timezone, clock changes during day
 - **Authenticated endpoints**: The `plugins`, `themes`, and `settings` streams require valid credentials. If the connector is configured without authentication, these streams return errors or empty results.
 - **WordPress.com hosted sites**: This connector is designed for the self-hosted WordPress REST API (`/wp-json/wp/v2/`). It may not work with WordPress.com sites that use a different API structure.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
