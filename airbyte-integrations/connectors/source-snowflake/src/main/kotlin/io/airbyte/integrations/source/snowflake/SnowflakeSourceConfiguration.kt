@@ -79,7 +79,8 @@ class SnowflakeSourceConfigurationFactory :
                 credentials.privateKeyPassword?.let { jdbcProperties["private_key_file_pwd"] = it }
             }
             is ProgrammaticAccessTokenCredentialsSpecification -> {
-                jdbcProperties["user"] = credentials.username
+                // The Snowflake JDBC driver does not require (or use) a username for the
+                // programmatic_access_token authenticator; the token identifies the user.
                 jdbcProperties["token"] = credentials.programmaticAccessToken
                 jdbcProperties["authenticator"] = "programmatic_access_token"
             }

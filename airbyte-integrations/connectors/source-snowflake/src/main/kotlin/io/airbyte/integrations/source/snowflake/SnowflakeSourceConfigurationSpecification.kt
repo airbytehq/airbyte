@@ -229,15 +229,10 @@ data class ProgrammaticAccessTokenCredentialsSpecification(
     @JsonProperty("auth_type")
     @JsonSchemaInject(json = """{"order":0}""")
     val authType: String = "Programmatic Access Token",
-    @JsonProperty("username")
-    @JsonSchemaTitle("Username")
-    @JsonPropertyDescription("The username associated with the programmatic access token.")
-    @JsonSchemaInject(json = """{"order":1}""")
-    val username: String,
     @JsonProperty("programmatic_access_token")
     @JsonSchemaTitle("Programmatic Access Token")
-    @JsonPropertyDescription("The programmatic access token associated with the username.")
-    @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
+    @JsonPropertyDescription("The programmatic access token used to authenticate to Snowflake.")
+    @JsonSchemaInject(json = """{"order":1,"airbyte_secret":true}""")
     val programmaticAccessToken: String
 ) : CredentialsSpecification
 

@@ -185,7 +185,7 @@ Your database user should now be ready for use with Airbyte.
 
 ### Programmatic access token authentication
 
-To authenticate with a Snowflake [programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens), select **Programmatic Access Token** as the authorization method and provide the username and token.
+To authenticate with a Snowflake [programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens), select **Programmatic Access Token** as the authorization method and provide the token. A username is not required; the token identifies the Snowflake user it was created for.
 
 Create a programmatic access token in Snowflake with:
 

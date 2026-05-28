@@ -192,7 +192,6 @@ class SnowflakeSourceConfigurationTest {
                 schema = "CUSTOM_SCHEMA"
                 credentials =
                     ProgrammaticAccessTokenCredentialsSpecification(
-                        username = "testuser",
                         programmaticAccessToken = "test-token"
                     )
             }
@@ -201,7 +200,8 @@ class SnowflakeSourceConfigurationTest {
 
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)
         assertEquals("CUSTOM_SCHEMA", config.schema)
-        assertEquals("testuser", config.jdbcProperties["user"])
+        // PAT auth does not set a username; the token identifies the user to Snowflake.
+        assertTrue(!config.jdbcProperties.containsKey("user"))
         assertEquals("test-token", config.jdbcProperties["token"])
         assertEquals("programmatic_access_token", config.jdbcProperties["authenticator"])
     }
