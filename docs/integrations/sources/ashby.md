@@ -69,6 +69,10 @@ The `application_criteria_evaluations` stream fetches AI-generated criteria eval
 
 Ashby limits standard API endpoints to 1,000 requests per minute per API key. The connector enforces this request budget and reads streams concurrently with a default of 2 worker threads. You can tune **Number of concurrent threads** if your API key has enough headroom, but higher values increase the risk of rate-limit responses.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

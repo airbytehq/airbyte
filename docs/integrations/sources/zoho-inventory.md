@@ -28,6 +28,10 @@ The Zoho Inventory connector  enables seamless data synchronization between Zoho
 | creditnotes | creditnote_id | DefaultPaginator | ✅ |  ❌  |
 | users | user_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -20,6 +20,10 @@ An Airbyte connector for [Gist](https://getgist.com/) would enable data syncing 
 | teams | id | DefaultPaginator | ✅ |  ❌  |
 | teammates | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

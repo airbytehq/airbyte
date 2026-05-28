@@ -121,6 +121,10 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 - When using OAuth 2.0, the connector requests the `youtube.force-ssl` scope, which provides read and write access to YouTube resources. This scope is required even though the connector only reads data.
 - The connector does not support service account authentication because the YouTube Data API does not support this method for most operations.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

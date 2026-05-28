@@ -34,6 +34,10 @@ Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html#gene
 | access-control_actions | id | DefaultPaginator | ✅ |  ❌  |
 | access-control_meta-site_permission_user | uid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
