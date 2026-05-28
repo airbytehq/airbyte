@@ -121,14 +121,27 @@ def setup_client_class():
 
 
 @pytest.mark.parametrize(
-    "has_refresh_token, token_response, expected_result, raises_exception",
+    "has_refresh_token, token_response, expected_result, expected_internal_message",
     [
-        (False, {"access_token": "test_access_token"}, {"access_token": "test_access_token"}, False),
-        (True, {"access_token": "test_access_token"}, {"access_token": "test_access_token"}, False),
-        (False, {"error": "test_error", "error_description": "test_error_description"}, None, True),
+        pytest.param(False, {"access_token": "test_access_token"}, {"access_token": "test_access_token"}, None, id="client_credentials_success"),
+        pytest.param(True, {"access_token": "test_access_token"}, {"access_token": "test_access_token"}, None, id="refresh_token_success"),
+        pytest.param(
+            False,
+            {"error": "test_error", "error_description": "test_error_description"},
+            None,
+            "Failed to acquire access token. Error: test_error. Error description: test_error_description.",
+            id="token_error_with_description",
+        ),
+        pytest.param(
+            False,
+            {},
+            None,
+            "Failed to acquire access token. Error: No error code provided. Error description: No error description provided.",
+            id="token_error_without_details",
+        ),
     ],
 )
-def test_get_access_token(setup_client_class, has_refresh_token, token_response, expected_result, raises_exception):
+def test_get_access_token(setup_client_class, has_refresh_token, token_response, expected_result, expected_internal_message):
     instance = setup_client_class
     if has_refresh_token:
         instance.config.credentials.refresh_token = "test_refresh_token"
@@ -137,10 +150,11 @@ def test_get_access_token(setup_client_class, has_refresh_token, token_response,
         instance.config.credentials.refresh_token = None
         instance._msal_app.acquire_token_for_client.return_value = token_response
 
-    if raises_exception:
+    if expected_internal_message:
         with pytest.raises(AirbyteTracedException) as exception:
             instance._get_access_token()
-        assert exception.value.message == f"Failed to acquire access token. Error: test_error. Error description: test_error_description."
+        assert exception.value.message == "Microsoft SharePoint access token could not be acquired."
+        assert exception.value.internal_message == expected_internal_message
     else:
         assert instance._get_access_token() == expected_result
 

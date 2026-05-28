@@ -88,9 +88,11 @@ class SourceMicrosoftSharePointClient:
             result = self._msal_app.acquire_token_for_client(scopes=scope)
 
         if "access_token" not in result:
-            error_description = result.get("error_description", "No error description provided.")
-            message = f"Failed to acquire access token. Error: {result.get('error')}. Error description: {error_description}."
-            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+            error_description = result.get("error_description") or "No error description provided"
+            error = result.get("error") or "No error code provided"
+            message = "Microsoft SharePoint access token could not be acquired."
+            internal_message = f"Failed to acquire access token. Error: {error}. Error description: {error_description}."
+            raise AirbyteTracedException(message=message, internal_message=internal_message, failure_type=FailureType.config_error)
 
         return result
 
