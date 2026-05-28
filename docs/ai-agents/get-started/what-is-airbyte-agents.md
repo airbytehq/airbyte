@@ -92,17 +92,9 @@ The interface is the same across every connector and every access path. Airbyte 
 
 - **Operations teams and individual users** who want their AI tools to work with real business data, no coding required.
 
-## Four ways to use it
+## Ways to use it
 
-Airbyte Agents supports four interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
-
-- [**Web app**](../interfaces/ui): Chat with an Airbyte-hosted agent or build scheduled Automations. No code required.
-
-- [**MCP server**](../interfaces/mcp): Connect MCP-capable agents like ChatGPT, Claude, and Cursor to your data. Nothing to install.
-
-- [**Python SDK**](../interfaces/sdk): Build agents with typed connectors, automatic credential handling, and framework integrations.
-
-- [**Agent API**](../interfaces/api): Manage connectors, tokens, and execution from any language or backend.
+Airbyte Agents supports several interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
 
 For help choosing, see [Choose how to use Airbyte Agents](choose-how-to-use).
 

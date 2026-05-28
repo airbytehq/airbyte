@@ -1,0 +1,4 @@
+{
+  "label": "CLI",
+  "description": "Install, authenticate, and execute Airbyte Agent operations from a terminal or agent harness."
+}
