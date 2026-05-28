@@ -30,8 +30,8 @@ interface PartitionsCreatorFactory {
      * [PartitionsCreatorFactory]. Postgres connector being the exception.
      *
      * On success returns [TryAcquireResourcesResult.ReadyToRun] carrying an [AutoCloseable] that
-     * the caller must close exactly once when the factory is done producing its [PartitionsCreator].
-     * The handle is owned by the caller — implementations must not retain it on shared state, so
+     * the caller must close exactly once when the factory is done producing its [PartitionsCreator]
+     * . The handle is owned by the caller — implementations must not retain it on shared state, so
      * concurrent calls from different feeds cannot overwrite one another.
      */
     fun tryAcquireResources(): TryAcquireResourcesResult =
