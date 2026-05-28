@@ -5,4 +5,5 @@
 
 from .source import SourceMicrosoftSharePoint
 
+
 __all__ = ["SourceMicrosoftSharePoint"]

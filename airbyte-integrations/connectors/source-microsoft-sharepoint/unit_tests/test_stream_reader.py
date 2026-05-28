@@ -123,7 +123,9 @@ def setup_client_class():
 @pytest.mark.parametrize(
     "has_refresh_token, token_response, expected_result, expected_internal_message",
     [
-        pytest.param(False, {"access_token": "test_access_token"}, {"access_token": "test_access_token"}, None, id="client_credentials_success"),
+        pytest.param(
+            False, {"access_token": "test_access_token"}, {"access_token": "test_access_token"}, None, id="client_credentials_success"
+        ),
         pytest.param(True, {"access_token": "test_access_token"}, {"access_token": "test_access_token"}, None, id="refresh_token_success"),
         pytest.param(
             False,
