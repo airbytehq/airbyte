@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
-import math
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -51,8 +50,6 @@ from source_shopify.streams.streams import (
 
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .conftest import records_per_slice
-
 
 @pytest.fixture
 def config(basic_config) -> dict:
@@ -79,8 +76,6 @@ def config(basic_config) -> dict:
         (Products, None, "graphql.json"),
         (ProductImages, None, "graphql.json"),
         (ProductVariants, None, "graphql.json"),
-        # Nested Substreams
-        (OrderRefunds, None, ""),
         # regular streams
         (MetafieldSmartCollections, {"id": 123}, "smart_collections/123/metafields.json"),
         (MetafieldPages, {"id": 123}, "pages/123/metafields.json"),
@@ -111,9 +106,8 @@ def test_path(stream, stream_slice, expected_path, config) -> None:
     "stream,stream_slice,expected_path",
     [
         (Transactions, {"order_id": 12345}, "orders/12345/transactions.json"),
-        # Nested Substreams
-        (OrderRefunds, None, ""),
         # GQL BULK stream
+        (OrderRefunds, None, "graphql.json"),
         (Fulfillments, None, "graphql.json"),
         (OrderRisks, None, "graphql.json"),
         (DiscountCodes, None, "graphql.json"),
@@ -130,54 +124,6 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     assert result == expected_path
 
 
-@pytest.mark.parametrize(
-    "stream, parent_records, state_checkpoint_interval",
-    [
-        (
-            OrderRefunds,
-            [
-                {"id": 1, "refunds": [{"created_at": "2021-01-01T00:00:00+00:00"}]},
-                {"id": 2, "refunds": [{"created_at": "2021-02-01T00:00:00+00:00"}]},
-                {"id": 3, "refunds": [{"created_at": "2021-03-01T00:00:00+00:00"}]},
-                {"id": 4, "refunds": [{"created_at": "2021-04-01T00:00:00+00:00"}]},
-                {"id": 5, "refunds": [{"created_at": "2021-05-01T00:00:00+00:00"}]},
-            ],
-            2,
-        ),
-    ],
-)
-def test_stream_slice_nested_substream_buffering(
-    mocker,
-    config,
-    stream,
-    parent_records,
-    state_checkpoint_interval,
-) -> None:
-    # making the stream instance
-    stream = stream(config)
-    stream.state_checkpoint_interval = state_checkpoint_interval
-    # simulating `read_records` for the `parent_stream`
-    mocker.patch(
-        "source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records",
-        return_value=parent_records,
-    )
-    # count how many slices we expect, based on the number of parent_records
-    total_slices_expected = math.ceil(len(parent_records) / state_checkpoint_interval)
-    # define the how many records each individual slice should have, based on the number of parent_records
-    expected_records_per_slice = records_per_slice(parent_records, state_checkpoint_interval)
-    # slices counter
-    total_slices: int = 0
-    for slice in enumerate(stream.stream_slices()):
-        slice_index = slice[0]
-        nested_records = slice[1].get(stream.nested_entity)
-        # check the number of records / slice
-        assert len(nested_records) == expected_records_per_slice[slice_index]
-        # count total slices
-        total_slices += 1
-    # check we have emitted complete number of slices
-    assert total_slices == total_slices_expected
-
-
 def test_check_connection(config, mocker) -> None:
     mocker.patch("source_shopify.streams.streams.Shop.read_records", return_value=[{"id": 1}])
     source = SourceShopify()
@@ -185,20 +131,10 @@ def test_check_connection(config, mocker) -> None:
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
-def test_read_records(config, mocker) -> None:
-    records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
-    stream_slice = records[0]
-    stream = OrderRefunds(config)
-    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyNestedStream.read_records", return_value=records)
-    assert stream.read_records(stream_slice=stream_slice)[0] == records[0]
-
-
 @pytest.mark.parametrize(
     "stream, expected",
     [
-        # Nested Substream
-        (OrderRefunds, {}),
-        #
+        (OrderRefunds, {"limit": 250, "order": "updated_at asc", "updated_at": "2020-11-01"}),
         (Orders, {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"}),
         (
             AbandonedCheckouts,
@@ -217,26 +153,26 @@ def test_request_params(config, stream, expected) -> None:
         (
             {"created_at": "2022-10-10T06:21:53-07:00"},
             {},
-            {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}},
+            {"created_at": "2022-10-10T06:21:53-07:00"},
         ),
         # state is empty str
         (
             {"created_at": "2022-10-10T06:21:53-07:00"},
             {"created_at": ""},
-            {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}},
+            {"created_at": "2022-10-10T06:21:53-07:00"},
         ),
         # state is None
         (
             {"created_at": "2022-10-10T06:21:53-07:00"},
             {"created_at": None},
-            {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}},
+            {"created_at": "2022-10-10T06:21:53-07:00"},
         ),
         # last rec cursor is None
-        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
+        ({"created_at": None}, {"created_at": None}, {"created_at": "2020-11-01"}),
         # last rec cursor is empty str
-        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
+        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null"}),
         # no values at all
-        ({}, {}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
+        ({}, {}, {"created_at": "2020-11-01"}),
     ],
     ids=[
         "no init state",
