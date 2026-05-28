@@ -37,6 +37,8 @@ Before you begin, make sure you have:
 
 Choose one install method.
 
+If you're installing the CLI for an AI agent, use the install script so the bundled agent skill is installed with the binary. Then follow [Use the CLI with AI agents](./using-with-ai-agents) for the recommended skill setup and command sequence.
+
 ### Install script
 
 ```bash
