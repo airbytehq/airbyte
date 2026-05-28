@@ -90,14 +90,9 @@ const TABS = [
     id: "cli",
     label: "CLI",
     command: "brew install airbytehq/tap/airbyte-agent-cli",
-    description: "Install the airbyte-agent CLI for shell scripts, CI jobs, and AI-agent harnesses.",
-    tools: [
-      {
-        name: "CLI docs",
-        href: "/ai-agents/interfaces/cli/",
-        icon: "/img/favicon.png",
-      },
-    ],
+    description:
+      "Install the airbyte-agent CLI for shell scripts, CI jobs, and AI-agent harnesses.",
+    tools: [],
   },
   {
     id: "api",
