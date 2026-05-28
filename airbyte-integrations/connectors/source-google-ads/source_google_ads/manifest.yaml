@@ -154,6 +154,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: segments.date
@@ -165,7 +167,6 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
         datetime_format: "%Y-%m-%d"
-        min_datetime: "{{ day_delta(-1110, format='%Y-%m-%d') }}"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('end_date', today_utc()) }}"
@@ -438,6 +439,8 @@ definitions:
         class_name: "source_google_ads.components.SerializeMessageFieldsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -1016,8 +1019,7 @@ definitions:
               "start_datetime": {
                 "type": "MinMaxDatetime",
                 "datetime": "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}",
-                "datetime_format": "%Y-%m-%d",
-                "min_datetime": "{{ day_delta(-1110, format='%Y-%m-%d') }}"
+                "datetime_format": "%Y-%m-%d"
               },
               "end_datetime": {
                 "type": "MinMaxDatetime",

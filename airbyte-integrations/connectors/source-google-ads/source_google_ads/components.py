@@ -96,6 +96,10 @@ def _get_data_retention_cutoff(fmt: str = "%Y-%m-%d") -> str:
     return (datetime.utcnow() - timedelta(days=DATA_RETENTION_PERIOD_DAYS)).strftime(fmt)
 
 
+def _to_first_of_month(date_str: str) -> str:
+    return date_str[:7] + "-01"
+
+
 GOOGLE_ADS_DATATYPE_MAPPING = {
     "INT64": "integer",
     "INT32": "integer",
@@ -191,6 +195,31 @@ class FlattenNestedDictsTransformation(RecordTransformation):
         for top_key in [k for k, v in list(record.items()) if isinstance(v, dict)]:
             nested = record.pop(top_key)
             _flatten(top_key, nested)
+
+
+class GranularSegmentFallbackTransformation(RecordTransformation):
+    """
+    Maps coarser segment fields back to ``segments.date`` when the connector
+    falls back to ``segments.month`` for data outside the 37-month retention
+    window. This keeps the cursor field populated regardless of query
+    granularity.
+    """
+
+    _FALLBACK_FIELDS = ("segments.month", "segments.quarter", "segments.year")
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        if "segments.date" in record:
+            return
+        for field in self._FALLBACK_FIELDS:
+            if field in record:
+                record["segments.date"] = record[field]
+                return
 
 
 @dataclass
@@ -409,11 +438,18 @@ class GoogleAdsHttpRequester(HttpRequester):
         ]
 
         if "start_time" in stream_slice and "end_time" in stream_slice:
-            start_time = max(stream_slice["start_time"], _get_data_retention_cutoff())
+            start_time = stream_slice["start_time"]
             end_time = stream_slice["end_time"]
-            if start_time > end_time:
-                return {"query": f"SELECT {', '.join(fields)} FROM {resource_name} WHERE 1 = 0"}
-            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{start_time}' AND '{end_time}' ORDER BY segments.date ASC"
+            cutoff = _get_data_retention_cutoff()
+
+            if end_time <= cutoff:
+                monthly_fields = ["segments.month" if f == "segments.date" else f for f in fields]
+                start_month = _to_first_of_month(start_time)
+                end_month = _to_first_of_month(end_time)
+                query = f"SELECT {', '.join(monthly_fields)} FROM {resource_name} WHERE segments.month BETWEEN '{start_month}' AND '{end_month}' ORDER BY segments.month ASC"
+            else:
+                start_time = max(start_time, cutoff)
+                query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{start_time}' AND '{end_time}' ORDER BY segments.date ASC"
         else:
             # For full refresh streams
             query = f"SELECT {', '.join(fields)} FROM {resource_name}"
@@ -929,6 +965,11 @@ class GAQL:
         fields.append(value)
         return self.__class__(tuple(fields), self.resource_name, self.where, self.order_by, self.limit, self.parameters)
 
+    def replace_field(self, old: str, new: str) -> "GAQL":
+        fields = tuple(new if f == old else f for f in self.fields)
+        order_by = self.order_by.replace(old, new) if self.order_by else self.order_by
+        return self.__class__(fields, self.resource_name, self.where, order_by, self.limit, self.parameters)
+
 
 class CustomGAQueryHttpRequester(HttpRequester):
     """
@@ -964,6 +1005,18 @@ class CustomGAQueryHttpRequester(HttpRequester):
             return query.set_where(query.where + " AND " + condition)
         return query.set_where(condition)
 
+    @staticmethod
+    def _insert_segments_month_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
+        query = query.replace_field("segments.date", "segments.month")
+        if "segments.month" not in query.fields:
+            query = query.append_field("segments.month")
+        start_month = _to_first_of_month(start_date)
+        end_month = _to_first_of_month(end_date)
+        condition = f"segments.month BETWEEN '{start_month}' AND '{end_month}'"
+        if query.where:
+            return query.set_where(query.where + " AND " + condition)
+        return query.set_where(condition)
+
     def get_request_body_json(
         self,
         *,
@@ -990,9 +1043,15 @@ class CustomGAQueryHttpRequester(HttpRequester):
         is_incremental = self.is_custom_query_incremental(self.query)
 
         if is_incremental:
-            start_date = max(stream_slice["start_time"], _get_data_retention_cutoff())
+            start_date = stream_slice["start_time"]
             end_date = stream_slice["end_time"]
-            return str(self._insert_segments_date_expr(self.query, start_date, end_date))
+            cutoff = _get_data_retention_cutoff()
+
+            if end_date <= cutoff:
+                return str(self._insert_segments_month_expr(self.query, start_date, end_date))
+            else:
+                start_date = max(start_date, cutoff)
+                return str(self._insert_segments_date_expr(self.query, start_date, end_date))
         else:
             return str(self.query)
 
