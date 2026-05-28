@@ -308,7 +308,7 @@ spec:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 7
+  default_concurrency: 8
 
 metadata:
   assist: {}
