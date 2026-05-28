@@ -50,6 +50,10 @@ This directory contains the manifest-only connector for source-zoho-desk
 | list_user_groups | id | DefaultPaginator | ✅ |  ❌  |
 | dashboard_onhold_tickets | value | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

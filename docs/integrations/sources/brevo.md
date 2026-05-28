@@ -80,6 +80,10 @@ Brevo enforces per-endpoint rate limits that vary by account tier. On the genera
 
 When Brevo returns `429 Too Many Requests`, the connector retries with exponential backoff. If you run other integrations against the same API key, consider creating a dedicated key for Airbyte to avoid contention.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

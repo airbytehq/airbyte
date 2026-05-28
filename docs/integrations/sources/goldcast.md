@@ -86,8 +86,9 @@ This is a child stream of the events stream indicating webinars that belong to t
 
 - [discussion_groups](https://customapi.goldcast.io/swagger-ui/#/Discussion%20groups/List%20discussion%20groups)
 
+## IP allow list
 
-
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
