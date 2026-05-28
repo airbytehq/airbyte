@@ -525,10 +525,18 @@ class InsightAsyncJob(AsyncJob):
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
+        # Meta Marketing API v23+ rejects breakdown column names in the `fields` param
+        # (error code 100). The `primary_key` for breakdown streams includes the
+        # breakdown column itself (see base_insight_streams.py::primary_key), so we must
+        # strip breakdowns out before prepending the PK to `fields`. Without this, every
+        # `ads_insights_*` breakdown stream fails as soon as `_split_by_fields_parent`
+        # runs (which happens whenever an Ad-level job fails twice).
+        breakdowns_set = set(self._params.get("breakdowns", []))
+        pk_no_breakdowns = [f for f in self._primary_key if f not in breakdowns_set]
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = pk_no_breakdowns + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = pk_no_breakdowns + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,

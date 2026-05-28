@@ -529,6 +529,54 @@ class TestInsightAsyncJob:
         assert fields_a == expected_a
         assert fields_b == expected_b
 
+    def test_split_job_by_fields_parent_strips_breakdown_from_pk(self, mocker, api):
+        """
+        For breakdown streams (e.g. ads_insights_country), the `primary_key` includes the
+        breakdown column itself. `_split_by_fields_parent` must NOT propagate that breakdown
+        column into the new `fields` parameter, because Meta Marketing API v23+ rejects
+        requests with a breakdown name in `fields` (error code 100, see #78488).
+        """
+        from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob
+
+        interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
+        # Simulating ads_insights_country: breakdowns=['country'], PK includes 'country'.
+        params = {
+            "time_increment": 1,
+            "breakdowns": ["country"],
+            "fields": ["date_start", "account_id", "ad_id", "cpc", "cpm", "clicks", "spend"],
+        }
+        pk = ["date_start", "account_id", "ad_id", "country"]
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad(1),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+        )
+
+        result = job._split_job()
+        assert isinstance(result, list) and len(result) == 1
+        parent = result[0]
+        assert isinstance(parent, ParentAsyncJob)
+
+        children = parent._jobs
+        assert len(children) == 2
+        for child in children:
+            child_fields = child._params["fields"]
+            # The breakdown column must not appear in fields
+            assert "country" not in child_fields, (
+                f"breakdown column 'country' leaked into fields: {child_fields}"
+            )
+            # The non-breakdown PK columns must still be present (needed for row merging
+            # in ParentAsyncJob.get_result)
+            assert "date_start" in child_fields
+            assert "account_id" in child_fields
+            assert "ad_id" in child_fields
+            # breakdowns param itself must be preserved unchanged
+            assert child._params["breakdowns"] == ["country"]
+
     @pytest.mark.parametrize(
         "fields",
         [
