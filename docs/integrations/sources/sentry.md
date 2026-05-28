@@ -70,6 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.22-rc.2 | 2026-05-27 | [78468](https://github.com/airbytehq/airbyte/pull/78468) | Concurrency tuning iteration 2 — bump default_concurrency from 7 to 8 |
 | 0.9.22-rc.1 | 2026-05-26 | [78444](https://github.com/airbytehq/airbyte/pull/78444) | Concurrency tuning — bump default_concurrency from 5 to 7 for progressive rollout |
 | 0.9.21 | 2026-04-28 | [77407](https://github.com/airbytehq/airbyte/pull/77407) | Update dependencies |
 | 0.9.20 | 2026-04-21 | [76772](https://github.com/airbytehq/airbyte/pull/76772) | Update dependencies |
