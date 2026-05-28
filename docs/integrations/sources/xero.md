@@ -114,6 +114,10 @@ The connector automatically handles pagination for all streams, using a page siz
 
 If you are upgrading from a previous version of the connector, please refer to the [migration guide](./xero-migrations.md) for important information about changes between versions.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

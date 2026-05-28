@@ -77,6 +77,10 @@ The connector respects the `Retry-After` header and automatically retries when r
 
 If you increase **Number of Concurrent Threads**, monitor your rate limit usage. Higher concurrency speeds up syncs but increases the chance of hitting per-minute limits, especially on Free and Growth plans.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

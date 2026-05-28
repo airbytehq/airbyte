@@ -18,6 +18,10 @@ API Reference: https://developers.printify.com/#catalog
 | shop_products | id | DefaultPaginator | ✅ |  ❌  |
 | catalog_blueprint_print_providers | uuid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

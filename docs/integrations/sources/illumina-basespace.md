@@ -21,6 +21,10 @@ Connector for the Basespace v1 API. This can be used to extract data on projects
 | appresults | Id | DefaultPaginator | ✅ |  ❌  |
 | appresults_files | Id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

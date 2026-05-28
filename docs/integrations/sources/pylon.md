@@ -81,6 +81,10 @@ The Pylon API enforces per-endpoint rate limits. The endpoints used by this conn
 
 The connector handles rate-limited responses (HTTP 429) with exponential backoff and retries up to 3 times.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

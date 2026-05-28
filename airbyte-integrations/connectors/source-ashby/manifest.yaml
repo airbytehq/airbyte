@@ -995,9 +995,19 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
       password: "{{ config['api_key'] }}"
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1000
+          interval: PT1M
+      matchers: []
+
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10
 
 streams:
   - type: DeclarativeStream
@@ -2282,6 +2292,21 @@ spec:
         examples:
           - "2017-01-25T00:00:00Z"
         order: 1
+      num_workers:
+        type: integer
+        title: Number of concurrent threads
+        description: >-
+          Number of worker threads to use for syncing. Higher values can speed
+          up syncs but increase the risk of hitting Ashby's API rate limit of
+          1,000 requests per minute per API key.
+        minimum: 1
+        maximum: 10
+        default: 2
+        examples:
+          - 1
+          - 2
+          - 4
+        order: 2
     additionalProperties: true
 metadata:
   autoImportSchema:

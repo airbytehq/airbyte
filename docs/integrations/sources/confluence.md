@@ -77,6 +77,10 @@ fixed limits for this API. The connector automatically retries rate-limited
 requests. If you see rate limit issues that aren't retried successfully, contact
 Airbyte Support or post in the [Airbyte community Slack](https://slack.airbyte.com/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 The connector uses these configuration fields for programmatic setup with PyAirbyte,

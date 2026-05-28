@@ -49,6 +49,10 @@ The Drift connector should not run into Drift API limitations under normal usage
 2. Click on `Authenticate your Drift account`
 3. Proceed the authentication in order to obtain the `access_token`
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

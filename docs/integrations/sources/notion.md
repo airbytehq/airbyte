@@ -115,6 +115,10 @@ The Notion API enforces a rate limit of approximately three requests per second 
 
 The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which may slow down syncs for workspaces with complex page structures.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -122,6 +126,9 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.8-rc.5 | 2026-05-27 | [78500](https://github.com/airbytehq/airbyte/pull/78500) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
+| 4.0.8-rc.4 | 2026-05-26 | [78433](https://github.com/airbytehq/airbyte/pull/78433) | Reduce default concurrency to 4 while preserving configurable worker count and Notion API budget |
+| 4.0.8-rc.3 | 2026-05-21 | [78343](https://github.com/airbytehq/airbyte/pull/78343) | Revert default concurrency to 5, add configurable worker count, and enforce Notion API budget |
 | 4.0.8-rc.2 | 2026-05-19 | [78274](https://github.com/airbytehq/airbyte/pull/78274) | Increase `default_concurrency` to 6 for concurrency tuning iteration 2 |
 | 4.0.8-rc.1 | 2026-05-18 | [78149](https://github.com/airbytehq/airbyte/pull/78149) | Start concurrency tuning rollout |
 | 4.0.7 | 2026-04-28 | [77340](https://github.com/airbytehq/airbyte/pull/77340) | Update dependencies |
