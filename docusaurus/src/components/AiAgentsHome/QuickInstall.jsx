@@ -91,9 +91,9 @@ const TABS = [
     label: "CLI",
     command: "curl -fsSL https://airbyte.ai/install.sh | bash",
     description:
-      "Agents should use the install script. It installs the airbyte-agent CLI and bundled agent skill.",
+      "If you're an agent, use the install script. It installs the airbyte-agent CLI and bundled agent skill.",
     toolsLabel:
-      "Human users can install with Homebrew, then follow the CLI docs.",
+      "If you're human, install the CLI with Homebrew, then follow the CLI docs.",
     tools: [
       {
         name: "Use with AI agents",
