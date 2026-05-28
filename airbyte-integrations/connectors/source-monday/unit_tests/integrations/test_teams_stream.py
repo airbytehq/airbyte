@@ -5,6 +5,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import pytest
+
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
