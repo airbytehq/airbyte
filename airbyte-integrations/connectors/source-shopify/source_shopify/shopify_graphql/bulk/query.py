@@ -2249,8 +2249,6 @@ class MoneyBagMixin:
         if line_item.get("discount_allocations"):
             line_item["discount_allocations"] = self._process_discount_allocations(line_item["discount_allocations"])
         line_item["fulfillable_quantity"] = line_item.pop("unfulfilledQuantity", None)
-        line_item.pop("currentQuantity", None)
-        line_item.pop("discountedTotal", None)
         return line_item
 
 
@@ -2268,8 +2266,6 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
 
     line_item_fields: List[Field] = [
         "id",
-        "currentQuantity",
-        "discountedTotal",
         "name",
         "quantity",
         "requiresShipping",

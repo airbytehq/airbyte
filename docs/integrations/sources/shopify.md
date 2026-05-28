@@ -148,7 +148,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode)
 - [Disputes](https://shopify.dev/docs/api/admin-rest/latest/resources/dispute)
 - [Draft Orders](https://shopify.dev/api/admin-rest/latest/resources/draftorder#top)
-- [Fulfillments](https://shopify.dev/api/admin-rest/latest/resources/fulfillment)
+- [Fulfillments (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Fulfillment)
 - [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/FulfillmentOrder) — By default, closed fulfillment orders are excluded. To include them, enable the **Include Closed Fulfillment Orders** option in the connector configuration.
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
@@ -175,6 +175,10 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 ## Capturing deleted records
 
 The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, and `PriceRules` streams. When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
+
+## Fulfillments sync performance
+
+The `Fulfillments` stream uses Shopify GraphQL BULK to capture fulfillments whose `updated_at` changes without a matching update to the parent order. To avoid missing those records, each incremental `Fulfillments` sync scans the shop's orders and applies the cursor filter to the nested fulfillments. The sync cost and bulk result size for this stream are proportional to the total number of orders in the shop, not only to the number of fulfillments updated in the sync window.
 
 For deleted products, use the dedicated `Deleted Products` stream, which queries the Shopify GraphQL Events API for product deletion events. This stream returns records with `id` (the product ID), `deleted_at`, `deleted_message`, and `shop_url` fields.
 
@@ -261,7 +265,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.1 | 2026-05-27 | [78464](https://github.com/airbytehq/airbyte/pull/78464) | Fixed Fulfillments to capture records updated independently of parent orders. |
+| 3.5.0 | 2026-05-28 | [78464](https://github.com/airbytehq/airbyte/pull/78464) | Migrated the `Fulfillments` stream from REST nested extraction to Shopify GraphQL BULK; incremental sync cost is proportional to total shop order count. |
 | 3.4.0 | 2026-05-12 | [76192](https://github.com/airbytehq/airbyte/pull/76192) | Add `lookback_window_in_days` config option to re-fetch recent records during incremental syncs, preventing missing data from race conditions or late-arriving updates. |
 | 3.3.3 | 2026-05-11 | [77005](https://github.com/airbytehq/airbyte/pull/77005) | Fix some incremental GraphQL Bulk streams silently skipping parent records when a bulk job checkpoints mid-output. Use the parent cursor tracked by the bulk record producer to advance the next slice, not the child record's cursor. |
 | 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
