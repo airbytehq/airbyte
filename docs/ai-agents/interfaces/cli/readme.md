@@ -7,7 +7,7 @@ import DocCardList from '@theme/DocCardList';
 
 # CLI
 
-The Airbyte Agent CLI (`airbyte-agent`) is a Go command-line interface for Airbyte Agents. Use it from a terminal, script, CI job, or AI-agent harness to list workspaces, add connectors, inspect connector schemas, and execute connector actions.
+The Airbyte Agent CLI (`airbyte-agent`) is a Go command-line interface for Airbyte Agents. Use it from a terminal, script, CI job, or agent harness to list workspaces, add connectors, inspect connector schemas, and execute connector actions.
 
 Resource commands use this shape:
 
@@ -114,7 +114,7 @@ The CLI has three resource groups:
 
 - `organizations`: list organizations and save a default organization.
 - `workspaces`: list workspaces and save a default workspace.
-- `connectors`: list available connector types, create connectors, list configured connectors, describe connector schemas, execute actions, update connector credentials, and delete connectors.
+- `connectors`: list available connectors, create connectors, list configured connectors, describe connector schemas, execute actions, update connector credentials, and delete connectors.
 
 Top-level commands include `login`, `login show`, `schema`, `version`, and `completion`.
 

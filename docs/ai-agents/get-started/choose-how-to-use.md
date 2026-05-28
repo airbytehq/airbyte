@@ -6,7 +6,7 @@ sidebar_label: Choose how to use Airbyte Agents
 
 # Choose how to use Airbyte Agents
 
-Airbyte Agents offers five interfaces. They all share the same platform, the same connectors, and the same [Context Store](../concepts/context-store), so you can start with one and add others as your needs grow.
+Airbyte Agents offers several interfaces. They all share the same platform, the same connectors, and the same [Context Store](../concepts/context-store), so you can start with one and add others as your needs grow.
 
 Use the flowchart below to find the best starting point, then read the section that matches your path.
 
@@ -68,7 +68,7 @@ Two primary surfaces:
 
 ## CLI
 
-**Best for:** Shell scripts, CI jobs, and AI-agent harnesses that can run command-line tools.
+**Best for:** Shell scripts, CI jobs, and agent harnesses that can run command-line tools.
 
 The [CLI](../interfaces/cli) (`airbyte-agent`) gives you a terminal interface for listing workspaces, adding connectors through browser credential flows, describing connector schemas, and executing connector actions. It accepts JSON input, prints JSON output, and includes schema discovery for agent workflows.
 
@@ -88,6 +88,6 @@ The [Agent API](../interfaces/api) exposes REST endpoints for managing connector
 
 ## All paths lead to the same data
 
-Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, CLI, API, and MCP server. You can mix and match interfaces as your needs evolve.
+Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in one interface is immediately available through the others. You can mix and match interfaces as your needs evolve.
 
 For a deeper look at how the platform is organized, see [System architecture](../concepts/architecture).

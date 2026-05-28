@@ -21,7 +21,7 @@ Run:
 airbyte-agent login
 ```
 
-The CLI opens your browser, signs you in through Keycloak, and starts a temporary callback server on `127.0.0.1` to complete the login. When login succeeds, it writes `$HOME/.airbyte-agent/settings.json` with `0600` permissions.
+The CLI opens your browser, signs you in to Airbyte Cloud, and starts a temporary callback server on `127.0.0.1` to complete the login. When login succeeds, it writes `$HOME/.airbyte-agent/settings.json` with `0600` permissions.
 
 If your account belongs to more than one organization, the browser flow may ask you which organization to use. To skip the picker, pass the organization UUID:
 
@@ -71,7 +71,6 @@ Use these variables for one-off overrides, CI, or headless environments:
 - **`AIRBYTE_WORKSPACE`**: Default workspace for commands that take a `workspace` parameter. Default: `default`.
 - **`AIRBYTE_API_HOST`**: Agent API base URL. Default: `https://api.airbyte.ai`.
 - **`AIRBYTE_WEBAPP_URL`**: Web app URL used by connector credential flows. Default: `https://app.airbyte.ai`.
-- **`AIRBYTE_KEYCLOAK_URL`**: Keycloak realm base URL used by browser login. Default: `https://cloud.airbyte.com/auth/realms/_airbyte-cloud-users`.
 - **`AIRBYTE_CREDENTIAL_TIMEOUT`**: Credential-flow timeout for `connectors create`, in seconds. Default: `180`.
 - **`AIRBYTE_ALLOW_DESTRUCTIVE`**: When truthy (`1`, `true`, `yes`, or `on`), skips the confirmation prompt on destructive commands such as `connectors delete`. Default: `false`.
 - **`AIRBYTE_TELEMETRY_MODE`**: Set to `disabled` to turn off telemetry. Default: settings file value.

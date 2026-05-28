@@ -88,7 +88,7 @@ Parameters:
 
 ### `connectors list-available`
 
-List connector types available to your organization:
+List connectors available to your organization:
 
 ```bash
 airbyte-agent connectors list-available --fields id,name,connector_name
@@ -109,7 +109,7 @@ airbyte-agent connectors create --json '{
 
 Parameters:
 
-- **`id`** (string, required: No): Connector type ID. Use this or `name`.
+- **`id`** (string, required: No): Connector ID. Use this or `name`.
 - **`name`** (string, required: No): Connector display name, such as `GitHub`. Use this or `id`.
 - **`workspace`** (string, required: No): Workspace name. Defaults to the saved workspace, then `default`.
 

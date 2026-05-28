@@ -9,11 +9,15 @@ A connector stores credentials and configuration for a third-party service in an
 
 `connectors create` opens a browser flow for third-party credential entry. The CLI doesn't accept third-party API keys, OAuth tokens, passwords, or other connector credentials as command parameters.
 
-> Never paste third-party credentials into the CLI. Use `connectors create` and complete credential entry in the browser. This keeps secrets out of shell history, logs, and agent transcripts.
+:::warning
+
+Never paste third-party credentials into the CLI. Use `connectors create` and complete credential entry in the browser. This keeps secrets out of shell history, logs, and agent transcripts.
+
+:::
 
 ## Find an available connector
 
-List the connector types available to your organization:
+List the connectors available to your organization:
 
 ```bash
 airbyte-agent connectors list-available --fields id,name,connector_name
@@ -32,18 +36,18 @@ airbyte-agent connectors create --json '{
 }'
 ```
 
-Create by connector type ID:
+Create by connector ID:
 
 ```bash
 airbyte-agent connectors create --json '{
   "workspace": "default",
-  "id": "<connector-type-id>"
+  "id": "<connector-id>"
 }'
 ```
 
 What happens:
 
-1. The CLI resolves the connector type.
+1. The CLI resolves the connector.
 2. It creates a short-lived browser credential session.
 3. It prints a `credentials_url` JSON object to stderr and opens your browser.
 4. You complete the third-party credential flow in the browser.
