@@ -765,6 +765,70 @@ class TestGoogleAdsRetriever:
             assert len(records) == 2
             assert call_count == 1
 
+    @pytest.mark.parametrize(
+        "stream_slices,expected_records,expected_calls",
+        [
+            pytest.param(
+                [
+                    StreamSlice(
+                        partition={"customer_id": "123"},
+                        cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-14"},
+                    ),
+                    StreamSlice(
+                        partition={"customer_id": "123"},
+                        cursor_slice={"start_time": "2022-01-15", "end_time": "2022-01-28"},
+                    ),
+                ],
+                [1, 0],
+                1,
+                id="same_customer_same_month_deduped",
+            ),
+            pytest.param(
+                [
+                    StreamSlice(
+                        partition={"customer_id": "123"},
+                        cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-14"},
+                    ),
+                    StreamSlice(
+                        partition={"customer_id": "456"},
+                        cursor_slice={"start_time": "2022-01-15", "end_time": "2022-01-28"},
+                    ),
+                ],
+                [1, 1],
+                2,
+                id="different_customers_not_deduped",
+            ),
+        ],
+    )
+    def test_historical_monthly_queries_are_deduped(self, stream_slices, expected_records, expected_calls):
+        requester = MagicMock()
+        requester.name = "test_stream"
+        requester._data_retention_cutoff = "2022-06-05"
+        requester.get_request_body_json.return_value = {
+            "query": "SELECT ad_group.id, segments.month, metrics.clicks FROM ad_group WHERE segments.month BETWEEN '2022-01-01' AND '2022-01-01' ORDER BY segments.month ASC"
+        }
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=requester,
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        call_count = 0
+
+        def mock_read_pages(records_generator_fn, stream_slice):
+            nonlocal call_count
+            call_count += 1
+            yield MagicMock()
+
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages):
+            records = [list(retriever._read_pages(MagicMock(), stream_slice)) for stream_slice in stream_slices]
+
+        assert [len(record_list) for record_list in records] == expected_records
+        assert call_count == expected_calls
+
     def test_split_slice_returns_correct_halves(self):
         """
         Verify that _split_slice correctly splits a date range in half.

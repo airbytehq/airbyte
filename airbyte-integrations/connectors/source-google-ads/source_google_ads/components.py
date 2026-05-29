@@ -98,6 +98,16 @@ def _to_first_of_month(date_str: str) -> str:
     return date_str[:7] + "-01"
 
 
+def _get_customer_id_from_slice(stream_slice: StreamSlice) -> Optional[str]:
+    customer_id = stream_slice.partition.get("customer_id")
+    if customer_id:
+        return customer_id
+    parent_slice = stream_slice.partition.get("parent_slice")
+    if isinstance(parent_slice, Mapping):
+        return parent_slice.get("customer_id")
+    return None
+
+
 GOOGLE_ADS_DATATYPE_MAPPING = {
     "INT64": "integer",
     "INT32": "integer",
@@ -686,6 +696,8 @@ class GoogleAdsRetriever(SimpleRetriever):
             self.requester.name = self.name
         if self.decoder and isinstance(self.record_selector.extractor, DpathExtractor):
             self.record_selector.extractor.decoder = self.decoder
+        self._requested_historical_months: Set[Tuple[Optional[str], str, str]] = set()
+        self._requested_historical_months_lock = threading.Lock()
         _mount_timeout_adapter(self.requester)
 
     def _read_pages(
@@ -693,7 +705,31 @@ class GoogleAdsRetriever(SimpleRetriever):
         records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
         stream_slice: StreamSlice,
     ) -> Iterable[Record]:
+        if self._is_duplicate_historical_month_slice(stream_slice):
+            yield from []
+            return
         yield from self._read_pages_with_slice_splitting(records_generator_fn, stream_slice, retry_count=0)
+
+    def _is_duplicate_historical_month_slice(self, stream_slice: StreamSlice) -> bool:
+        start_time = stream_slice.cursor_slice.get("start_time")
+        end_time = stream_slice.cursor_slice.get("end_time")
+        requester_cutoff = getattr(self.requester, "_data_retention_cutoff", None)
+        if not start_time or not end_time or not isinstance(requester_cutoff, str) or start_time > requester_cutoff:
+            return False
+
+        query = self.requester.get_request_body_json(stream_slice=stream_slice).get("query", "")
+        if "segments.month BETWEEN" not in query:
+            return False
+
+        start_month = _to_first_of_month(start_time)
+        end_month = _to_first_of_month(min(end_time, requester_cutoff))
+        cache_key = (_get_customer_id_from_slice(stream_slice), start_month, end_month)
+        with self._requested_historical_months_lock:
+            if cache_key in self._requested_historical_months:
+                return True
+            self._requested_historical_months.add(cache_key)
+
+        return False
 
     def _read_pages_with_slice_splitting(
         self,
