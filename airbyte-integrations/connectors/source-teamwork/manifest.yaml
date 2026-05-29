@@ -62,15 +62,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: cursor
           page_size_option:
             type: RequestOption
-            field_name: pageSize
+            field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ response.get('meta', {}).get('nextCursor', '') }}"
+            stop_condition: "{{ not response.get('meta', {}).get('nextCursor') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dateTime
@@ -81,6 +82,10 @@ definitions:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updatedAfter
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
