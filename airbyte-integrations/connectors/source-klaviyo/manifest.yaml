@@ -977,6 +977,70 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/lists_detailed"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: segments
+          http_method: GET
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        is_client_side_incremental: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
     flow_series_reports:
       type: DeclarativeStream
       name: flow_series_reports
@@ -1294,6 +1358,7 @@ streams:
   - $ref: "#/definitions/streams/metrics"
   - $ref: "#/definitions/streams/lists"
   - $ref: "#/definitions/streams/lists_detailed"
+  - $ref: "#/definitions/streams/segments"
   # Analytics streams
   - $ref: "#/definitions/streams/flow_series_reports"
   - $ref: "#/definitions/streams/campaign_values_reports"
@@ -1400,6 +1465,7 @@ metadata:
     metrics: false
     lists: false
     lists_detailed: false
+    segments: false
     flow_series_reports: false
     campaign_values_reports: false
   yamlComponents:
@@ -1429,6 +1495,9 @@ metadata:
         - errorHandler
         - incrementalSync
       lists_detailed:
+        - errorHandler
+        - incrementalSync
+      segments:
         - errorHandler
         - incrementalSync
       flow_series_reports:
@@ -3764,6 +3833,152 @@ schemas:
           - "null"
           - string
         format: date-time
+  segments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+          definition:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              condition_groups:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+          is_active:
+            type:
+              - "null"
+              - boolean
+          is_processing:
+            type:
+              - "null"
+              - boolean
+          is_starred:
+            type:
+              - "null"
+              - boolean
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          flow-triggers:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+          profiles:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+      updated:
+        type:
+          - "null"
+          - string
+        format: date-time
   flow_series_reports:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -4281,6 +4496,16 @@ api_budget:
           url_path_pattern: "^/api/lists/" # matches any path beginning with '/lists/' (e.g. '/lists/123')
           params:
             "additional-fields[list]": "profile_count"
+    # Segments
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 75 # burst: 75 calls per second
+          interval: PT1S
+        - limit: 750 # steady: 750 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/segments($|/)"
     # Flow Series Reports (XS tier)
     - type: MovingWindowCallRatePolicy
       rates:
@@ -4322,7 +4547,8 @@ api_budget:
 #| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
 #| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
 #| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | 1/s                     | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 1                                                                | With other streams (lists), not within stream as `step` not defined             |
-# Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
+#| segments          | https://developers.klaviyo.com/en/reference/get_segments             | L                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+# Note: As of 2024-11-11, `metrics`, `lists`, `lists_detailed` and `segments` are not supported by the Concurrent CDK as they do client side-filtering.
 
 # Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
 
