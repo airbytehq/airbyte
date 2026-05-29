@@ -2317,7 +2317,7 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
         return Field(
             name="fulfillments",
             arguments=arguments,
-            fields=[Field(name="edges", fields=[Field(name="node", fields=self.fulfillment_fields)])],
+            fields=self.fulfillment_fields,
         )
 
     def query(self, filter_query: Optional[str] = None) -> Query:

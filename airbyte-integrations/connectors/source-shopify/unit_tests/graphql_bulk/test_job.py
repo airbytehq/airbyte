@@ -449,6 +449,20 @@ def test_bulk_stream_parse_response(
         assert test_records == expected_result
 
 
+def test_fulfillment_bulk_query_uses_array_shape(auth_config) -> None:
+    query = Fulfillments(auth_config).job_manager.query.get(
+        "updated_at",
+        "2023-01-01T00:00:00+00:00",
+        "2023-01-02T00:00:00+00:00",
+    )
+
+    assert "fulfillments(\n          query:" in query
+    fulfillment_selection = query[query.index("fulfillments") : query.index("fulfillmentLineItems")]
+    assert "edges" not in fulfillment_selection
+    assert "node" not in fulfillment_selection
+    assert "fulfillmentLineItems {\n            edges" in query
+
+
 @pytest.mark.parametrize(
     "stream, stream_state, with_start_date, expected_start",
     [
