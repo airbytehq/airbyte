@@ -4,6 +4,7 @@ import json
 from collections import namedtuple
 
 import pytest
+import yaml
 from source_google_ads.components import CustomGAQuerySchemaLoader
 
 from airbyte_cdk.models import SyncMode
@@ -14,6 +15,7 @@ from unit_tests.mock_server.config import ConfigBuilder
 from unit_tests.mock_server.conftest import create_source
 from unit_tests.mock_server.helpers import (
     API_BASE,
+    MANIFEST_PATH,
     build_full_refresh_query,
     build_google_ads_query_error_response,
     build_stream_response,
@@ -234,3 +236,61 @@ def test_custom_query_unrecognized_field_error_fails_as_config_error(mocker):
     error = output.errors[0].trace.error
     assert error.failure_type.value == "config_error"
     assert error.message == "Unrecognized fields in the query: 'campaign.start_date', 'campaign.end_date'."
+
+
+def test_error_handler_400_filter_has_no_predicate():
+    """The 400 error filter must not include a predicate.
+
+    The CDK's HttpResponseFilter evaluates predicates on ALL responses using
+    response.json(), not only on responses matching http_codes. This defeats
+    bounded streaming for large 200 responses and causes OOM kills.
+    """
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    error_handler = manifest["definitions"]["base_error_handler"]
+    filter_400 = next(f for f in error_handler["response_filters"] if 400 in f.get("http_codes", []))
+    assert "predicate" not in filter_400, (
+        "The 400 error filter must not contain a predicate. "
+        "CDK evaluates predicates via response.json() on every response, "
+        "including large streaming 200 responses, causing OOM."
+    )
+
+
+def test_non_unrecognized_field_400_error_is_config_error(mocker):
+    """Any 400 error from the Google Ads API is classified as config_error."""
+    query = "SELECT campaign.id, invalid_resource.field FROM campaign"
+    stream_name = "custom_campaign_query"
+    config = ConfigBuilder().with_custom_queries([{"query": query, "table_name": stream_name}]).build()
+
+    data_type = namedtuple("DataType", ["name"])
+    node = namedtuple("Node", ["data_type", "enum_values", "is_repeated"])
+    fields_metadata = {
+        "campaign.id": node(data_type("INT64"), [], False),
+        "invalid_resource.field": node(data_type("STRING"), [], False),
+    }
+    mocker.patch.object(
+        CustomGAQuerySchemaLoader,
+        "google_ads_client",
+        return_value=mocker.Mock(get_fields_metadata=lambda fields: fields_metadata),
+    )
+
+    with HttpMocker() as http_mocker:
+        setup_full_refresh_parent_mocks(http_mocker)
+        http_mocker.post(
+            HttpRequest(
+                url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
+                body=json.dumps({"query": query}),
+            ),
+            build_google_ads_query_error_response(
+                query_error="QUERY_ERROR",
+                message="Error in query: invalid_resource is not a valid resource name.",
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+        source = create_source(config=config, catalog=catalog)
+        output = read(source, config=config, catalog=catalog)
+
+    assert len(output.records) == 0
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type.value == "config_error"
