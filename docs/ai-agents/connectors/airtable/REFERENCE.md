@@ -18,6 +18,17 @@ The Airtable connector supports the following entities and actions.
 
 Returns a list of all bases the user has access to
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "bases",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -67,6 +78,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Bases Context Store Search
 
 Search and filter bases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "bases",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -132,6 +163,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all tables in the specified base with their schema information
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "tables",
+  "action": "list",
+  "params": {
+    "base_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -189,6 +234,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tables Context Store Search
 
 Search and filter tables records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "tables",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -258,6 +323,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of records from the specified table
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "records",
+  "action": "list",
+  "params": {
+    "base_id": "<str>",
+    "table_id_or_name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -320,6 +400,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Records Get
 
 Returns a single record by ID from the specified table
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "records",
+  "action": "get",
+  "params": {
+    "base_id": "<str>",
+    "table_id_or_name": "<str>",
+    "record_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
