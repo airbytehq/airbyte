@@ -59,6 +59,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants
 import io.airbyte.integrations.destination.redshift.operation.RedshiftStagingStorageOperation
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftCatalogSanitizer
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDV2Migration
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftGenerationIdMigration
@@ -395,7 +396,7 @@ class RedshiftDestination : BaseConnector(), Destination {
         }
         val redshiftDestinationHandler =
             RedshiftDestinationHandler(databaseName, database, rawNamespace)
-        parsedCatalog = catalogParser.parseCatalog(catalog)
+        parsedCatalog = catalogParser.parseCatalog(RedshiftCatalogSanitizer.sanitize(catalog))
         val disableTypeDedupe =
             config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
         val redshiftMigrations: List<Migration<RedshiftState>> =
