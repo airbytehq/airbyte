@@ -4,7 +4,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 6.0.0
 
-This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months for built-in report streams or custom queries that use `segments.date` or `segments.week`.
+This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months for built-in report streams or custom queries that use `segments.date`. If both `start_date` and `end_date` are older than the retention window, the connector checks availability using the earliest retained date and syncs no records for the configured historical range.
 
 The affected built-in and custom queries streams are: `account_performance_report`, `ad_group`, `ad_group_ad`, `ad_group_ad_legacy`, `ad_group_bidding_strategy`, `campaign`, `campaign_bidding_strategy`, `campaign_budget`, `customer`, `display_keyword_view`, `geographic_view`, `geographic_view_with_metrics`, `keyword_view`, `shopping_performance_view`, `topic_view`, and `user_location_view`.
 

@@ -22,7 +22,8 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     - GAQL query generation with date filtering
     - Record transformation (PascalCase -> snake_case, flattening)
     """
-    config["end_date"] = "2021-01-10"
+    config["start_date"] = "2023-05-15"
+    config["end_date"] = "2023-05-16"
     config["conversion_window_days"] = 3
     config["credentials"]["access_token"] = "access_token"
     stream = find_stream("shopping_performance_view", config)
@@ -114,7 +115,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
 
     # Verify the GAQL query
     request_json = json.loads(request_history.last_request.text)
-    expected_query = "SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, segments.product_aggregator_id, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, campaign.name, campaign.status, segments.product_category_level1, segments.product_category_level2, segments.product_category_level3, segments.product_category_level4, segments.product_category_level5, segments.product_channel, segments.product_channel_exclusivity, segments.click_type, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, segments.product_custom_attribute2, segments.product_custom_attribute3, segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, segments.month, segments.product_item_id, segments.product_condition, segments.product_title, segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, segments.product_type_l4, segments.product_type_l5, segments.quarter, segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, segments.week, segments.year FROM shopping_performance_view WHERE segments.date BETWEEN '2021-01-01' AND '2021-01-10' ORDER BY segments.date ASC"
+    expected_query = "SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, segments.product_aggregator_id, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, campaign.name, campaign.status, segments.product_category_level1, segments.product_category_level2, segments.product_category_level3, segments.product_category_level4, segments.product_category_level5, segments.product_channel, segments.product_channel_exclusivity, segments.click_type, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, segments.product_custom_attribute2, segments.product_custom_attribute3, segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, segments.month, segments.product_item_id, segments.product_condition, segments.product_title, segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, segments.product_type_l4, segments.product_type_l5, segments.quarter, segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, segments.week, segments.year FROM shopping_performance_view WHERE segments.date BETWEEN '2023-05-15' AND '2023-05-16' ORDER BY segments.date ASC"
     assert request_json["query"] == expected_query
 
 
@@ -129,7 +130,8 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     - Incremental queries are properly transformed with date range filters
     - Record transformation matches expectations
     """
-    config_for_custom_query_tests["end_date"] = "2021-01-10"
+    config_for_custom_query_tests["start_date"] = "2023-05-15"
+    config_for_custom_query_tests["end_date"] = "2023-05-16"
     config_for_custom_query_tests["conversion_window_days"] = 1
     config_for_custom_query_tests["credentials"]["access_token"] = "access_token"
     streams = get_source(config=config_for_custom_query_tests).streams(config=config_for_custom_query_tests)
@@ -252,7 +254,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 
     # Verify the GAQL query
     request_json = json.loads(request_history.last_request.text)
-    expected_query = "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2021-01-01' AND '2021-01-10' ORDER BY segments.date ASC"
+    expected_query = "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2023-05-15' AND '2023-05-16' ORDER BY segments.date ASC"
     assert request_json["query"] == expected_query
 
 
@@ -511,6 +513,19 @@ def test_builtin_incremental_report_stream_enforces_37_month_retention(config):
 
     assert stream.cursor_field == "segments.date"
     assert cursor.state["segments.date"] == "2021-12-18"
+
+
+@freeze_time("2026-05-29")
+def test_builtin_incremental_report_stream_clamps_end_date_to_retention_window(config):
+    config["start_date"] = "2022-06-01"
+    config["end_date"] = "2022-06-05"
+    stream = find_stream("customer", config)
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+    slices = list(cursor.stream_slices())
+
+    assert cursor.state["segments.date"] == "2023-05-15"
+    assert slices == [{"start_time": "2023-05-15", "end_time": "2023-05-16"}]
 
 
 @freeze_time("2025-01-01")
