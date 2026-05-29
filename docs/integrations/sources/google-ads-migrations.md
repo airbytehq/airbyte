@@ -4,6 +4,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 6.0.0
 
+:::danger Risk of permanent data loss
+**Pay careful attention to this migration guide to avoid permanent data loss in your destination**.
+:::
+
 This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months for:
 
 1. Built-in streams that use `segments.date`:
@@ -30,10 +34,10 @@ The connector clamps configured date ranges to the retention window. `start_date
 
 ### Action required
 
-You do not need to refresh the source schema or reset affected streams for this change. Before upgrading, review whether you need to preserve synced Google Ads report data older than 37 months:
+You don't need to refresh the source schema or reset affected streams for this change. Before upgrading, review whether you need to preserve synced Google Ads report data older than 37 months. **If you don't do this, you risk permanent data loss in your destination**.
 
-- **Overwrite sync mode**: destination data is rebuilt from the connector's current output. After this update, records older than 37 months are no longer emitted and can be overwritten or removed from the destination. Store any historical data older than 37 months before upgrading if you need to keep it.
-- **Append Dedup sync mode**: existing deduplicated destination records older than 37 months are not overwritten by this connector change because the sync mode preserves prior records. This preservation is due to the selected sync mode; the connector no longer syncs those older records after upgrade.
+- **Full Refresh | Overwrite sync mode**: destination data is rebuilt from the connector's current output. After this update, records older than 37 months are no longer emitted and can be overwritten or removed from the destination. Store any historical data older than 37 months before upgrading if you need to keep it.
+- **Incremental | Append or Incremental | Append + Deduped sync modes**: existing deduplicated destination records older than 37 months are not overwritten by this connector change because the sync mode preserves prior records. This preservation is due to the selected sync mode; after upgrading, the connector can no longer sync those older records.
 
 <MigrationGuide />
 
