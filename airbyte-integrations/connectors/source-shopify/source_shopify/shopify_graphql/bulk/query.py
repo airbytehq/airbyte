@@ -2260,7 +2260,7 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
         "id",
         Field(name="countryCodeOfOrigin", alias="country_code_of_origin"),
         Field(name="harmonizedSystemCode", alias="harmonized_system_code"),
-        Field(name="price", alias="shop_money", fields=MoneyBagMixin.money_fields),
+        Field(name="price", alias="price_set", fields=MoneyBagMixin.money_bag_fields),
         Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
     ]
 
@@ -2280,7 +2280,7 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
         Field(name="originalUnitPriceSet", alias="price_set", fields=MoneyBagMixin.money_bag_fields),
         Field(name="product", fields=["id"]),
         Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
-        Field(name="variant", fields=["id", "inventoryManagement", "title"]),
+        Field(name="variant", fields=["id", "title"]),
     ]
 
     fulfillment_line_item_fields: List[Field] = [
@@ -2327,7 +2327,11 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
         for duty in duties:
             if duty.get("id"):
                 duty["id"] = self.tools.resolve_str_id(duty["id"])
-            duty["presentment_money"] = duty.get("shop_money")
+            price_set = duty.pop("price_set", None)
+            if price_set:
+                self._process_money_bag(price_set)
+                duty["shop_money"] = price_set.get("shop_money")
+                duty["presentment_money"] = price_set.get("presentment_money")
             if duty.get("tax_lines"):
                 duty["tax_lines"] = self._process_tax_lines(duty["tax_lines"])
         return duties

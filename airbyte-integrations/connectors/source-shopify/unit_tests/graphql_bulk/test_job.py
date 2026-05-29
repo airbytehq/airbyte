@@ -461,6 +461,8 @@ def test_fulfillment_bulk_query_uses_array_shape(auth_config) -> None:
     assert "edges" not in fulfillment_selection
     assert "node" not in fulfillment_selection
     assert "fulfillmentLineItems {\n            edges" in query
+    assert "inventoryManagement" not in query
+    assert "price_set: price {\n                      shop_money: shopMoney" in query
 
 
 @pytest.mark.parametrize(
