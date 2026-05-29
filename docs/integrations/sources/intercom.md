@@ -134,6 +134,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.14.0 | 2026-05-29 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Update the conversations stream to Intercom API v2.14 and add conversation handling time statistics. |
 | 0.13.24 | 2026-05-21 | | Fix sub-daily incremental syncs for `contacts`, `conversations`, and `tickets` |
 | 0.13.23 | 2026-05-19 | [78171](https://github.com/airbytehq/airbyte/pull/78171) | Promoted release candidate to GA |
 | 0.13.23-rc.1 | 2026-05-12 | [78023](https://github.com/airbytehq/airbyte/pull/78023) | Bump CDK to 7.18.1.post8.dev25490693965 for block_simultaneous_read regression validation |

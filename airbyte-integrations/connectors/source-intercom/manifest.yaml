@@ -500,7 +500,7 @@ definitions:
     conversations:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/searchconversations
+        https://developers.intercom.com/docs/references/2.14/rest-api/api.intercom.io/conversations/searchconversations
       name: conversations
       retriever:
         type: SimpleRetriever
@@ -510,7 +510,7 @@ definitions:
           http_method: POST
           request_headers:
             Accept: application/json
-            Intercom-Version: "2.11"
+            Intercom-Version: "2.14"
           request_body_json:
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
             # Intercom Search API timestamps are date-indexed. Keep incremental_sync second-precise for state/client-side filtering,
@@ -2680,6 +2680,31 @@ schemas:
               - "null"
               - integer
             description: The total count of conversation reopens
+          adjusted_handling_time:
+            type:
+              - "null"
+              - integer
+            description: The active handling time excluding idle periods when teammates are not actively working on the conversation.
+          assigned_team_first_response_time:
+            type:
+              - "null"
+              - array
+            description: Response time details for the assigned team.
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+          assigned_team_first_response_time_in_office_hours:
+            type:
+              - "null"
+              - array
+            description: Response time details for the assigned team within office hours.
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
           first_admin_reply_at:
             type:
               - "null"
@@ -2730,6 +2755,11 @@ schemas:
               - "null"
               - integer
             description: Timestamp of the last contact reply
+          handling_time:
+            type:
+              - "null"
+              - integer
+            description: Time from conversation assignment to conversation close in seconds.
           median_time_to_reply:
             type:
               - "null"
