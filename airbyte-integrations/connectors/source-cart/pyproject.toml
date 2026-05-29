@@ -25,7 +25,7 @@ source-cart = "source_cart.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
-pytest = "^8.0.0"
+pytest = "^9.0.3"
 requests-mock = "^1.9.3"
 
 
