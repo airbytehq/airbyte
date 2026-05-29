@@ -163,8 +163,8 @@ definitions:
       login_requester:
         type: HttpRequester
         url_base: >-
-          {{ 'https://' + config['host'] + '/api/public/v1/applications/' if
-          config['host'] else 'https://api.airbyte.com/v1/applications/'
+          {{ 'https://' + config['host'] + '/api/public/v1/applications' if
+          config['host'] else 'https://api.airbyte.com/v1/applications'
           }}/token
         authenticator:
           type: NoAuth
