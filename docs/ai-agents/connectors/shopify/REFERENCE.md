@@ -47,6 +47,17 @@ The Shopify connector supports the following entities and actions.
 
 Returns a list of customers from the store
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "customers",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -143,6 +154,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single customer by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "customers",
+  "action": "get",
+  "params": {
+    "customer_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -233,6 +258,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "customers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -312,6 +357,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Orders List
 
 Returns a list of orders from the store
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "orders",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -576,6 +632,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single order by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "orders",
+  "action": "get",
+  "params": {
+    "order_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -832,6 +902,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of products from the store
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "products",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -943,6 +1024,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single product by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "products",
+  "action": "get",
+  "params": {
+    "product_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1046,6 +1141,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of variants for a product
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "product_variants",
+  "action": "list",
+  "params": {
+    "product_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1126,6 +1235,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single product variant by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "product_variants",
+  "action": "get",
+  "params": {
+    "variant_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1197,6 +1320,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Product Variants Context Store Search
 
 Search and filter product variants records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "product_variants",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1276,6 +1419,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of images for a product
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "product_images",
+  "action": "list",
+  "params": {
+    "product_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1340,6 +1497,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single product image by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "product_images",
+  "action": "get",
+  "params": {
+    "product_id": 0,
+    "image_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1399,6 +1571,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Product Images Context Store Search
 
 Search and filter product images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "product_images",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1475,6 +1667,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Abandoned Checkouts List
 
 Returns a list of abandoned checkouts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "abandoned_checkouts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1603,6 +1806,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter abandoned checkouts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "abandoned_checkouts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1681,6 +1904,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of locations for the store
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "locations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1740,6 +1974,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Locations Get
 
 Retrieves a single location by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "locations",
+  "action": "get",
+  "params": {
+    "location_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1805,6 +2053,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Locations Context Store Search
 
 Search and filter locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "locations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1886,6 +2154,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of inventory levels for a specific location
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "inventory_levels",
+  "action": "list",
+  "params": {
+    "location_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1943,6 +2225,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Inventory Levels Context Store Search
 
 Search and filter inventory levels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "inventory_levels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "inventory_item_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2010,6 +2312,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of inventory items
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "inventory_items",
+  "action": "list",
+  "params": {
+    "ids": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2075,6 +2391,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single inventory item by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "inventory_items",
+  "action": "get",
+  "params": {
+    "inventory_item_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2132,6 +2462,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Inventory Items Context Store Search
 
 Search and filter inventory items records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "inventory_items",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2204,6 +2554,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Shop Get
 
 Retrieves the shop's configuration
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "shop",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 
@@ -2294,6 +2655,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter shop records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "shop",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2373,6 +2754,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Price Rules List
 
 Returns a list of price rules
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "price_rules",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -2456,6 +2848,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single price rule by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "price_rules",
+  "action": "get",
+  "params": {
+    "price_rule_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2531,6 +2937,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Price Rules Context Store Search
 
 Search and filter price rules records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "price_rules",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2612,6 +3038,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of discount codes for a price rule
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "discount_codes",
+  "action": "list",
+  "params": {
+    "price_rule_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2671,6 +3111,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single discount code by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "discount_codes",
+  "action": "get",
+  "params": {
+    "price_rule_id": 0,
+    "discount_code_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2725,6 +3180,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Discount Codes Context Store Search
 
 Search and filter discount codes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "discount_codes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2796,6 +3271,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of custom collections
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "custom_collections",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2860,6 +3346,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single custom collection by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "custom_collections",
+  "action": "get",
+  "params": {
+    "collection_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2917,6 +3417,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Custom Collections Context Store Search
 
 Search and filter custom collections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "custom_collections",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2990,6 +3510,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of smart collections
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "smart_collections",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3056,6 +3587,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single smart collection by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "smart_collections",
+  "action": "get",
+  "params": {
+    "collection_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3115,6 +3660,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Smart Collections Context Store Search
 
 Search and filter smart collections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "smart_collections",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3188,6 +3753,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of collects (links between products and collections)
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "collects",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3245,6 +3821,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single collect by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "collects",
+  "action": "get",
+  "params": {
+    "collect_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3297,6 +3887,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Collects Context Store Search
 
 Search and filter collects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "collects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3367,6 +3977,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Draft Orders List
 
 Returns a list of draft orders
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "draft_orders",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -3480,6 +4101,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single draft order by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "draft_orders",
+  "action": "get",
+  "params": {
+    "draft_order_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3587,6 +4222,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter draft orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "draft_orders",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3664,6 +4319,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Fulfillments List
 
 Returns a list of fulfillments for an order
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "fulfillments",
+  "action": "list",
+  "params": {
+    "order_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3770,6 +4439,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single fulfillment by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "fulfillments",
+  "action": "get",
+  "params": {
+    "order_id": 0,
+    "fulfillment_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3866,6 +4550,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter fulfillments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "fulfillments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3941,6 +4645,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Order Refunds List
 
 Returns a list of refunds for an order
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "order_refunds",
+  "action": "list",
+  "params": {
+    "order_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4034,6 +4752,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single refund by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "order_refunds",
+  "action": "get",
+  "params": {
+    "order_id": 0,
+    "refund_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4122,6 +4855,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter order refunds records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "order_refunds",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4191,6 +4944,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Transactions List
 
 Returns a list of transactions for an order
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "transactions",
+  "action": "list",
+  "params": {
+    "order_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4269,6 +5036,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single transaction by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "transactions",
+  "action": "get",
+  "params": {
+    "order_id": 0,
+    "transaction_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4344,6 +5126,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of tender transactions
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "tender_transactions",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4404,6 +5197,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tender Transactions Context Store Search
 
 Search and filter tender transactions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "tender_transactions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4479,6 +5292,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of countries
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "countries",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4532,6 +5356,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single country by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "countries",
+  "action": "get",
+  "params": {
+    "country_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4583,6 +5421,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Countries Context Store Search
 
 Search and filter countries records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "countries",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4650,6 +5508,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for the shop
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_shops",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4712,6 +5581,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single metafield by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_shops",
+  "action": "get",
+  "params": {
+    "metafield_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4768,6 +5651,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Shops Context Store Search
 
 Search and filter metafield shops records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_shops",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4847,6 +5750,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for a customer
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_customers",
+  "action": "list",
+  "params": {
+    "customer_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4913,6 +5830,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Customers Context Store Search
 
 Search and filter metafield customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_customers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4992,6 +5929,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for a product
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_products",
+  "action": "list",
+  "params": {
+    "product_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5058,6 +6009,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Products Context Store Search
 
 Search and filter metafield products records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_products",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -5137,6 +6108,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for an order
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_orders",
+  "action": "list",
+  "params": {
+    "order_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5203,6 +6188,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Orders Context Store Search
 
 Search and filter metafield orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_orders",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -5282,6 +6287,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for a draft order
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_draft_orders",
+  "action": "list",
+  "params": {
+    "draft_order_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5348,6 +6367,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Draft Orders Context Store Search
 
 Search and filter metafield draft orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_draft_orders",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -5427,6 +6466,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for a location
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_locations",
+  "action": "list",
+  "params": {
+    "location_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5493,6 +6546,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Locations Context Store Search
 
 Search and filter metafield locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_locations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -5572,6 +6645,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for a product variant
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_product_variants",
+  "action": "list",
+  "params": {
+    "variant_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5638,6 +6725,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Product Variants Context Store Search
 
 Search and filter metafield product variants records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_product_variants",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -5717,6 +6824,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for a smart collection
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_smart_collections",
+  "action": "list",
+  "params": {
+    "collection_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5783,6 +6904,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Smart Collections Context Store Search
 
 Search and filter metafield smart collections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_smart_collections",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -5862,6 +7003,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of metafields for a product image
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_product_images",
+  "action": "list",
+  "params": {
+    "product_id": 0,
+    "image_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5931,6 +7087,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Metafield Product Images Context Store Search
 
 Search and filter metafield product images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_product_images",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -6010,6 +7186,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of addresses for a customer
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "customer_address",
+  "action": "list",
+  "params": {
+    "customer_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -6080,6 +7270,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single customer address by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "customer_address",
+  "action": "get",
+  "params": {
+    "customer_id": 0,
+    "address_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -6147,6 +7352,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Fulfillment Orders List
 
 Returns a list of fulfillment orders for a specific order
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "fulfillment_orders",
+  "action": "list",
+  "params": {
+    "order_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -6218,6 +7437,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single fulfillment order by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "fulfillment_orders",
+  "action": "get",
+  "params": {
+    "fulfillment_order_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -6281,6 +7514,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Fulfillment Orders Context Store Search
 
 Search and filter fulfillment orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "fulfillment_orders",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

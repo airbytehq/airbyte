@@ -16,6 +16,17 @@ The Granola connector supports the following entities and actions.
 
 Returns a paginated list of meeting notes
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -88,6 +99,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single note by ID, including full details and optionally the transcript
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "get",
+  "params": {
+    "note_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -155,6 +180,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Notes Context Store Search
 
 Search and filter notes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
