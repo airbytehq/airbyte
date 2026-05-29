@@ -4,9 +4,12 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 6.0.0
 
-This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months for built-in report streams or custom queries that use `segments.date`. If both `start_date` and `end_date` are older than the retention window, the connector checks availability using the earliest retained date and syncs no records for the configured historical range.
+This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months for:
 
-The affected built-in and custom queries streams are: `account_performance_report`, `ad_group`, `ad_group_ad`, `ad_group_ad_legacy`, `ad_group_bidding_strategy`, `campaign`, `campaign_bidding_strategy`, `campaign_budget`, `click_view`, `customer`, `display_keyword_view`, `geographic_view`, `geographic_view_with_metrics`, `keyword_view`, `shopping_performance_view`, `topic_view`, and `user_location_view`.
+1. Built-in streams that use `segments.date`: `account_performance_report`, `ad_group`, `ad_group_ad`, `ad_group_ad_legacy`, `ad_group_bidding_strategy`, `campaign`, `campaign_bidding_strategy`, `campaign_budget`, `click_view`, `customer`, `display_keyword_view`, `geographic_view`, `geographic_view_with_metrics`, `keyword_view`, `shopping_performance_view`, `topic_view`, and `user_location_view`.
+2. Custom query streams that use `segments.date`.
+
+The connector clamps configured date ranges to the retention window. `start_date` is limited to at least 1110 days before the sync date, and `end_date` is limited to at least 1109 days before the sync date. If both `start_date` and `end_date` are older than these minimum values, the connector checks availability using the earliest retained date and syncs no records for the configured historical range. Review older `start_date` and `end_date` values before upgrading; you may need to adjust them if the connection was configured to sync only historical data outside the retained window.
 
 ### Action required
 
