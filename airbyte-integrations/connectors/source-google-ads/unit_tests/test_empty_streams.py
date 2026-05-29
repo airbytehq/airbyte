@@ -528,15 +528,34 @@ def test_builtin_incremental_report_stream_clamps_end_date_to_retention_window(c
     assert slices == [{"start_time": "2023-05-15", "end_time": "2023-05-16"}]
 
 
+@pytest.mark.parametrize(
+    "query, expected_start_date, expected_end_date",
+    [
+        pytest.param(
+            "SELECT campaign.name, segments.date FROM campaign ORDER BY segments.date",
+            "2023-05-15",
+            "2023-05-16",
+            id="regular_custom_query",
+        ),
+        pytest.param(
+            "SELECT click_view.gclid, segments.date FROM click_view ORDER BY segments.date",
+            "2026-02-28",
+            "2026-03-01",
+            id="click_view_custom_query",
+        ),
+    ],
+)
 @freeze_time("2026-05-29")
-def test_custom_query_stream_clamps_end_date_to_retention_window(config_for_custom_query_tests):
+def test_custom_query_stream_clamps_end_date_to_retention_window(
+    query, expected_start_date, expected_end_date, config_for_custom_query_tests
+):
     config = config_for_custom_query_tests.copy()
     config["start_date"] = "2022-06-01"
     config["end_date"] = "2022-06-05"
     stream_name = "test_query"
     config["custom_queries_array"] = [
         {
-            "query": "SELECT campaign.name, segments.date FROM campaign ORDER BY segments.date",
+            "query": query,
             "table_name": stream_name,
         }
     ]
@@ -547,8 +566,8 @@ def test_custom_query_stream_clamps_end_date_to_retention_window(config_for_cust
     cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
     slices = list(cursor.stream_slices())
 
-    assert cursor.state["segments.date"] == "2023-05-15"
-    assert slices == [{"start_time": "2023-05-15", "end_time": "2023-05-16"}]
+    assert cursor.state["segments.date"] == expected_start_date
+    assert slices == [{"start_time": expected_start_date, "end_time": expected_end_date}]
 
 
 @freeze_time("2025-01-01")
