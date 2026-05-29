@@ -24,10 +24,7 @@ def test_json_types_map_to_sql_types(json_type, sql_type):
 
 
 def test_airbyte_type_takes_precedence_over_json_format_and_type():
-    assert (
-        schema_to_sql_type({"type": "integer", "format": "date-time", "airbyte_type": "time_without_timezone"})
-        == "time"
-    )
+    assert schema_to_sql_type({"type": "integer", "format": "date-time", "airbyte_type": "time_without_timezone"}) == "time"
 
 
 def test_nullable_single_json_type_uses_non_null_type():
