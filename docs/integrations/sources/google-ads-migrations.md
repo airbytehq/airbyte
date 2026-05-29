@@ -4,32 +4,16 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 6.0.0
 
-This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months at monthly granularity.
+This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months for built-in report streams or custom queries that use `segments.date` or `segments.week`.
 
-The following built-in streams are affected when their configured start date or saved state is older than 37 months:
-
-- `account_performance_report`
-- `ad_group`
-- `ad_group_ad`
-- `ad_group_ad_legacy`
-- `ad_group_bidding_strategy`
-- `campaign`
-- `campaign_bidding_strategy`
-- `campaign_budget`
-- `customer`
-- `display_keyword_view`
-- `geographic_view`
-- `geographic_view_with_metrics`
-- `keyword_view`
-- `shopping_performance_view`
-- `topic_view`
-- `user_location_view`
-
-Custom queries that use `segments.date` or `segments.week` as their cursor segment are also affected.
+The affected built-in streams are: `account_performance_report`, `ad_group`, `ad_group_ad`, `ad_group_ad_legacy`, `ad_group_bidding_strategy`, `campaign`, `campaign_bidding_strategy`, `campaign_budget`, `customer`, `display_keyword_view`, `geographic_view`, `geographic_view_with_metrics`, `keyword_view`, `shopping_performance_view`, `topic_view`, and `user_location_view`.
 
 ### Action required
 
-After upgrading, refresh the source schema and clear data for the affected streams if you need destination tables to match the new retention-limited history.
+You do not need to refresh the source schema or reset affected streams for this change. Before upgrading, review whether you need to preserve synced Google Ads report data older than 37 months:
+
+- **Overwrite sync mode**: destination data is rebuilt from the connector's current output. After this update, records older than 37 months are no longer emitted and can be overwritten or removed from the destination. Store any historical data older than 37 months before upgrading if you need to keep it.
+- **Append Dedup sync mode**: existing deduplicated destination records older than 37 months are not overwritten by this connector change because the sync mode preserves prior records. This preservation is due to the selected sync mode; the connector no longer syncs those older records after upgrade.
 
 <MigrationGuide />
 
