@@ -462,8 +462,7 @@ class AzureBlobClientTest {
 
             val (batchClient, batch) = setupBatchDeleteMocks()
 
-            val batchSubException =
-                mockk<BlobStorageException> { every { statusCode } returns 403 }
+            val batchSubException = mockk<BlobStorageException> { every { statusCode } returns 403 }
             val batchException =
                 mockk<BlobBatchStorageException> {
                     every { batchExceptions } returns listOf(batchSubException)
