@@ -5,15 +5,23 @@
 from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
-from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
-from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, METADATA_RECORD_ID_FIELD
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_opengauss_datavec.config import OpenGaussDataVecIndexingModel, PasswordBasedAuthorizationModel
 from destination_opengauss_datavec.indexer import COPY_NULL_VALUE, OpenGaussDataVecIndexer, copy_value, rows_to_csv
-from destination_opengauss_datavec.row_builder import RowBuilder, chunk_id, document_id_for_chunk, embedding_value, metadata_value, record_emitted_at
+from destination_opengauss_datavec.row_builder import (
+    RowBuilder,
+    chunk_id,
+    document_id_for_chunk,
+    embedding_value,
+    metadata_value,
+    record_emitted_at,
+)
 from destination_opengauss_datavec.schema import MetadataColumn, SchemaBuilder, normalize_identifier, schema_to_sql_type
 from psycopg2.extras import Json
+
+from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, Chunk
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 
 
 class FakeCursor:
@@ -215,7 +223,15 @@ def test_row_builder_omits_content_and_records_bigint_errors():
         embedding=[1, 2, 3],
     )
 
-    assert builder.copy_columns(columns) == ["document_id", "chunk_id", "embedding", "category", "big_number", "_airbyte_extracted_at", "_airbyte_meta"]
+    assert builder.copy_columns(columns) == [
+        "document_id",
+        "chunk_id",
+        "embedding",
+        "category",
+        "big_number",
+        "_airbyte_extracted_at",
+        "_airbyte_meta",
+    ]
     row = list(builder.create_rows([chunk], columns))[0]
 
     assert row[0] == "ns1_Users_1"
@@ -350,8 +366,9 @@ def test_pre_sync_creates_tables_and_indexes():
 def test_index_uses_copy_with_rows():
     indexer = create_indexer(metadata_fields=["category"])
     connection = FakeConnection()
-    with patch("destination_opengauss_datavec.indexer.get_connection", return_value=connection), patch(
-        "psycopg2.sql.Composed.as_string", return_value="COPY statement"
+    with (
+        patch("destination_opengauss_datavec.indexer.get_connection", return_value=connection),
+        patch("psycopg2.sql.Composed.as_string", return_value="COPY statement"),
     ):
         indexer.pre_sync(configured_catalog())
 

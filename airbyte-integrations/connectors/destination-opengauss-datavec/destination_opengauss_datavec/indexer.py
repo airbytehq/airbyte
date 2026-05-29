@@ -14,8 +14,8 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
-from destination_opengauss_datavec.connection import OpenGaussSslConnectionOptions, get_connection
 from destination_opengauss_datavec.config import OpenGaussDataVecIndexingModel
+from destination_opengauss_datavec.connection import OpenGaussSslConnectionOptions, get_connection
 from destination_opengauss_datavec.row_builder import RowBuilder
 from destination_opengauss_datavec.schema import MetadataColumn, SchemaBuilder, StreamDestination, normalize_identifier
 
@@ -141,9 +141,7 @@ class OpenGaussDataVecIndexer(Indexer):
         if not self.omit_raw_text:
             columns.append(sql.SQL("{} text").format(sql.Identifier("content")))
         columns.append(sql.SQL("{} vector({})").format(sql.Identifier("embedding"), sql.SQL(str(self.embedding_dimensions))))
-        columns.extend(
-            sql.SQL("{} {}").format(sql.Identifier(column.column_name), sql.SQL(column.sql_type)) for column in metadata_columns
-        )
+        columns.extend(sql.SQL("{} {}").format(sql.Identifier(column.column_name), sql.SQL(column.sql_type)) for column in metadata_columns)
         columns.extend(
             [
                 sql.SQL("{} timestamp with time zone").format(sql.Identifier("_airbyte_extracted_at")),

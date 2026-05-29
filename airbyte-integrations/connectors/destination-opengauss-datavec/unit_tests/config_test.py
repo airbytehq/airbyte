@@ -3,9 +3,13 @@
 #
 
 import pytest
+from destination_opengauss_datavec.config import (
+    ConfigModel,
+    OpenGaussDataVecIndexingModel,
+    PasswordBasedAuthorizationModel,
+    SslModeVerifyCa,
+)
 from pydantic import ValidationError
-
-from destination_opengauss_datavec.config import ConfigModel, OpenGaussDataVecIndexingModel, PasswordBasedAuthorizationModel, SslModeVerifyCa
 
 
 def indexing_config(**overrides):
@@ -29,9 +33,7 @@ def test_indexing_config_applies_defaults():
 
 
 def test_indexing_config_accepts_verify_ca_ssl_mode():
-    config = OpenGaussDataVecIndexingModel.parse_obj(
-        indexing_config(ssl_mode={"mode": "verify-ca", "ca_certificate": "certificate"})
-    )
+    config = OpenGaussDataVecIndexingModel.parse_obj(indexing_config(ssl_mode={"mode": "verify-ca", "ca_certificate": "certificate"}))
 
     assert isinstance(config.ssl_mode, SslModeVerifyCa)
     assert config.ssl_mode.ca_certificate == "certificate"

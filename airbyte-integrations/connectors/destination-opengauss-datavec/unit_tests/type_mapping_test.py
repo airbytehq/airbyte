@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 from destination_opengauss_datavec.schema import schema_to_sql_type
 from destination_opengauss_datavec.type_mapping import AIRBYTE_TYPE_TO_SQL_TYPE, JSON_FORMAT_TO_SQL_TYPE, JSON_TYPE_TO_SQL_TYPE
 

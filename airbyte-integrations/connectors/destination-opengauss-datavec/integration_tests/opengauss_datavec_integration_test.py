@@ -8,8 +8,10 @@ from decimal import Decimal
 from typing import Any, Optional
 
 import psycopg2
-from psycopg2 import sql
 import pytest
+from destination_opengauss_datavec.destination import DestinationOpenGaussDataVec
+from destination_opengauss_datavec.schema import normalize_identifier
+from psycopg2 import sql
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -23,8 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_opengauss_datavec.destination import DestinationOpenGaussDataVec
-from destination_opengauss_datavec.schema import normalize_identifier
 
 
 NAMESPACE_STREAM_NAME = "integration_namespace_docs"
@@ -243,9 +243,7 @@ class TestOpenGaussDataVecIntegration:
 
     def test_write_omit_raw_text(self):
         config = {**self.config, "omit_raw_text": True}
-        catalog = ConfiguredAirbyteCatalog(
-            streams=[self._configured_stream("integration_omit_raw_text", DestinationSyncMode.overwrite)]
-        )
+        catalog = ConfiguredAirbyteCatalog(streams=[self._configured_stream("integration_omit_raw_text", DestinationSyncMode.overwrite)])
         messages = [self._record("integration_omit_raw_text", 1, "without raw text"), self._state("omit")]
 
         list(DestinationOpenGaussDataVec().write(config, catalog, messages))
@@ -462,9 +460,7 @@ class TestOpenGaussDataVecIntegration:
     def _contents(self, table_name: str, schema: Optional[str] = None):
         with self._connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(
-                    f'SELECT content FROM "{normalize_identifier(schema or self.schema)}"."{table_name}" ORDER BY document_id'
-                )
+                cursor.execute(f'SELECT content FROM "{normalize_identifier(schema or self.schema)}"."{table_name}" ORDER BY document_id')
                 return [row[0] for row in cursor.fetchall()]
 
     def _meta_changes(self, table_name: str):

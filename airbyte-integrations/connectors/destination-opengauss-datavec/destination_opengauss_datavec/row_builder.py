@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from psycopg2.extras import Json
 
-from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, METADATA_RECORD_ID_FIELD
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, Chunk
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
 from destination_opengauss_datavec.schema import MetadataColumn
 
