@@ -28,7 +28,7 @@ All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date is replicated.
 7. For **API Key**, enter your [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth).
 8. For **Product Catalog**, select your Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). The connector defaults to Product Catalog 2.0.
-9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 5. Higher values can increase throughput, but they also consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
+9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 3. Higher values can increase throughput, but they also consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
 10. Click **Set up source**.
 
 <HideInUI>
@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.36-rc.6 | 2026-05-29 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Revert the default worker count to 3 while keeping the local API budget limiter removed. |
 | 0.10.36-rc.5 | 2026-05-27 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove the local API budget limiter while keeping the default worker count at 5. |
 | 0.10.36-rc.4 | 2026-05-26 | [78435](https://github.com/airbytehq/airbyte/pull/78435) | Reduce default concurrent threads to 3 after rollout duration regressions at 5. |
 | 0.10.36-rc.3 | 2026-05-22 | [78366](https://github.com/airbytehq/airbyte/pull/78366) | Revert `default_concurrency` to 5, activate tier-aware `HTTPAPIBudget`, and document `subscription_tier` for GA rollout |
