@@ -196,7 +196,7 @@ class MarketoExportBase(IncrementalMarketoStream):
             MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
         )
 
-    def get_export_status(self, stream_slice):
+    def get_export_status(self, stream_slice) -> Mapping[str, Any]:
         return next(
             MarketoExportStatus(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
         )
@@ -220,8 +220,14 @@ class MarketoExportBase(IncrementalMarketoStream):
         return date_slices
 
     def sleep_till_export_completed(self, stream_slice: Mapping[str, Any]) -> bool:
+        terminal_status_messages = {
+            "Cancelled": "Marketo bulk export job is cancelled.",
+            "Failed": "Marketo bulk export job failed.",
+        }
+
         while True:
-            status = self.get_export_status(stream_slice)
+            export_status = self.get_export_status(stream_slice)
+            status = export_status["status"]
             self.logger.info(f"Export {self.name} from {stream_slice['startAt']} to {stream_slice['endAt']} status is {status}")
 
             if status == "Created":
@@ -229,9 +235,16 @@ class MarketoExportBase(IncrementalMarketoStream):
                 # not started, so enqueue the export.
                 self.start_export(stream_slice)
 
-            elif status in ["Cancelled", "Failed"]:
-                # Cancelled and failed exports fail the current sync.
-                raise Exception(status)
+            elif status in terminal_status_messages:
+                raise AirbyteTracedException(
+                    message=terminal_status_messages[status],
+                    internal_message=(
+                        f"Marketo bulk export job for stream '{self.name}' and export ID '{stream_slice['id']}' "
+                        f"from {stream_slice['startAt']} to {stream_slice['endAt']} ended with status {status}. "
+                        f"Status response: {json.dumps(export_status, sort_keys=True)}"
+                    ),
+                    failure_type=FailureType.system_error,
+                )
 
             elif status == "Completed":
                 return True
@@ -394,13 +407,13 @@ class MarketoExportStatus(MarketoStream):
     def path(self, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{self.export_id}/status.json"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> List[Mapping[str, Any]]:
         result = response.json().get(self.data_field)
         if not result:
             raise Exception(
                 f"Unexpected response from export status endpoint: '{self.data_field}' key missing. Response: {response.text[:500]}"
             )
-        return [result[0]["status"]]
+        return [result[0]]
 
 
 class Leads(MarketoExportBase):
