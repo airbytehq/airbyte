@@ -1,0 +1,2 @@
+{"type":"RECORD","record":{"stream":"this_is_a_very_long_stream_name_designed_to_exceed_sixty_two_characters_for_table_name_truncation","data":{"id":1,"title":"long stream name","body":"this stream should create a truncated table name with hash suffix","category":"long-name"},"emitted_at":1710000030000}}
+{"type":"STATE","state":{"data":{"phase":"long stream flushed"}}}
