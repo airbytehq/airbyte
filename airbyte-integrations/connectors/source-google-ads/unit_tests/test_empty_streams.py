@@ -428,12 +428,16 @@ def test_custom_query_partition_router_for_metrics(query, has_metrics, config_fo
         # State within retention - use state date
         # Both use state date since it's within the allowed range
         ("2024-12-01", "2024-12-01", "2024-12-01"),
-        # State before retention - click_view enforces retention, regular uses state
+        # State before click_view retention but inside regular 37-month retention
         # click_view: Ignores old state, uses 2024-10-03 (90-day limit)
         # regular: Uses state date 2024-01-01
         ("2024-01-01", "2024-10-03", "2024-01-01"),
+        # State before the configured start date
+        # click_view: Ignores old state, uses 2024-10-03 (90-day limit)
+        # regular: Uses config.start_date because it is later than 37-month retention
+        ("2021-01-01", "2024-10-03", "2023-06-01"),
     ],
-    ids=["no_state", "state_within_retention", "state_before_retention"],
+    ids=["no_state", "state_within_retention", "state_before_click_view_retention", "state_before_regular_retention"],
 )
 @freeze_time("2025-01-01")
 def test_custom_query_click_view_retention_and_step(
@@ -444,14 +448,10 @@ def test_custom_query_click_view_retention_and_step(
 
     This test freezes time to 2025-01-01 and verifies:
     - click_view queries: P1D step (1 day) - verifies step override in manifest (lines 1033-1053)
-    - click_view queries: 90-day retention via start_datetime override in manifest (lines 1054-1079)
-    - regular queries: P14D step (14 days) - default for incremental queries
-    - regular queries: use config.start_date for retention
+    - click_view queries: P1D step and 90-day retention via start_datetime override
+    - regular queries: P14D step and the later of config.start_date, state, and 37-month retention
 
-    Tests three state scenarios:
-    1. No state - uses retention dates
-    2. State within retention - uses state date
-    3. State before retention - click_view enforces retention, regular uses state
+    Tests state scenarios with no state, state inside retention, and state before configured start dates.
     """
     config = config_for_custom_query_tests.copy()
     config["start_date"] = "2023-06-01"
@@ -498,5 +498,28 @@ def test_custom_query_click_view_retention_and_step(
         f"State: {state_date}\n"
         f"Expected start date: {expected_start_date}\n"
         f"Actual start date: {actual_start_date}\n"
-        f"Click view should enforce 90-day retention (2024-10-03), regular queries use config.start_date or state."
+        f"Click view should enforce 90-day retention (2024-10-03), regular queries should not start before config.start_date or the 37-month retention window."
     )
+
+
+@freeze_time("2025-01-01")
+def test_builtin_incremental_report_stream_enforces_37_month_retention(config):
+    config["start_date"] = "2021-01-01"
+    stream = find_stream("campaign", config)
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+
+    assert stream.cursor_field == "segments.date"
+    assert cursor.state["segments.date"] == "2021-12-18"
+
+
+@freeze_time("2025-01-01")
+def test_click_view_stream_keeps_90_day_retention_when_adding_37_month_min_datetime(config):
+    config["start_date"] = "2021-01-01"
+    stream = find_stream("click_view", config)
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+
+    assert stream.cursor_field == "segments.date"
+    assert cursor.state["segments.date"] == "2024-10-03"
+    assert cursor._slice_range.days == 1
