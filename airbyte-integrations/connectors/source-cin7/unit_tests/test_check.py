@@ -2,10 +2,10 @@
 
 import logging
 
+from conftest import get_source
+
 from airbyte_cdk.models import Status
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
-from conftest import get_source
 
 
 CONFIG = {
