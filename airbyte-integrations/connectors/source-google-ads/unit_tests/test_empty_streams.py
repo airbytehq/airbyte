@@ -528,6 +528,29 @@ def test_builtin_incremental_report_stream_clamps_end_date_to_retention_window(c
     assert slices == [{"start_time": "2023-05-15", "end_time": "2023-05-16"}]
 
 
+@freeze_time("2026-05-29")
+def test_custom_query_stream_clamps_end_date_to_retention_window(config_for_custom_query_tests):
+    config = config_for_custom_query_tests.copy()
+    config["start_date"] = "2022-06-01"
+    config["end_date"] = "2022-06-05"
+    stream_name = "test_query"
+    config["custom_queries_array"] = [
+        {
+            "query": "SELECT campaign.name, segments.date FROM campaign ORDER BY segments.date",
+            "table_name": stream_name,
+        }
+    ]
+
+    streams = get_source(config=config).streams(config=config)
+    stream = next(filter(lambda s: s.name == stream_name, streams))
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+    slices = list(cursor.stream_slices())
+
+    assert cursor.state["segments.date"] == "2023-05-15"
+    assert slices == [{"start_time": "2023-05-15", "end_time": "2023-05-16"}]
+
+
 @freeze_time("2025-01-01")
 def test_click_view_stream_keeps_90_day_retention_when_adding_37_month_min_datetime(config):
     config["start_date"] = "2021-01-01"
