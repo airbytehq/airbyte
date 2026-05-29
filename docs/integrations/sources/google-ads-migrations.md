@@ -8,7 +8,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 **Pay careful attention to this migration guide to avoid permanent data loss in your destination**.
 :::
 
-This release limits Google Ads incremental report streams to the 37-month granular data retention window enforced by the Google Ads API. Airbyte no longer queries data older than 37 months for:
+Beginning June 1, 2026, the [Google Ads Data Retention Policy](https://support.google.com/google-ads/answer/15188209) makes hourly, daily, and weekly reporting data available for 37 months. Connector version 6.0.0 limits Google Ads incremental report streams to this 37-month granular data retention window. Airbyte no longer queries data older than 37 months for:
 
 1. Built-in streams that use `segments.date`:
    1. `account_performance_report`
@@ -30,7 +30,7 @@ This release limits Google Ads incremental report streams to the 37-month granul
    17. `user_location_view`
 2. Custom query streams that use `segments.date`.
 
-The connector clamps configured date ranges to the retention window. `start_date` is limited to at least 1110 days before the sync date, and `end_date` is limited to at least 1109 days before the sync date. If both `start_date` and `end_date` are older than these minimum values, the connector checks availability using the earliest retained date and syncs no records for the configured historical range. Review older `start_date` and `end_date` values before upgrading; you may need to adjust them if the connection was configured to sync only historical data outside the retained window.
+The connector clamps configured date ranges to fit inside the 37-month retention window. If your configured `start_date` is more than 37 months ago, the connector uses 37 months ago as the effective start. If both `start_date` and `end_date` fall outside the retention window, the connector emits no records for the configured historical range. Review your `start_date` and `end_date` settings before upgrading; you may need to adjust them if the connection was configured to sync only historical data outside the retained window.
 
 ### Action required
 
