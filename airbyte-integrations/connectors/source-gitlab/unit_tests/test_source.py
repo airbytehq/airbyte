@@ -37,7 +37,7 @@ def test_connection_invalid_projects_and_projects(config_with_project_groups, re
     source = get_source(config=config_with_project_groups)
     connection_status = source.check(logging.getLogger(), config_with_project_groups)
     assert connection_status.status == Status.FAILED
-    assert "Groups and/or projects that you provide are invalid or you don't have permission to view it." in connection_status.message
+    assert "Configured GitLab group or project is invalid, deleted, or inaccessible to the access token." in connection_status.message
 
 
 def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
