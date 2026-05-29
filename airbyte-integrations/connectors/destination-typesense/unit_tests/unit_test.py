@@ -5,10 +5,10 @@
 from unittest.mock import patch
 
 import pytest
+from destination_typesense.writer import TypesenseWriter
 from typesense.exceptions import ObjectAlreadyExists, ObjectNotFound
 
 from airbyte_cdk import AirbyteTracedException
-from destination_typesense.writer import TypesenseWriter
 
 
 @patch("typesense.Client")
