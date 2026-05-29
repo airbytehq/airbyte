@@ -103,6 +103,19 @@ class DatabricksAirbyteClient(
         execute(sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, targetTableName))
     }
 
+    /**
+     * Returns all column names for the given table in ordinal order, including Airbyte meta
+     * columns. Used by [DatabricksAggregateFactory] to determine the INSERT column list.
+     */
+    fun describeTable(tableName: TableName): List<String> =
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+            buildList {
+                while (rs.next()) {
+                    add(rs.getString("column_name"))
+                }
+            }
+        }
+
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columns =
             executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->

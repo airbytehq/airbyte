@@ -48,8 +48,8 @@ class DatabricksV2BeanFactory {
         return AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000L,
             maxEstBytesPerAgg = 250_000_000L,
-            maxEstBytesAllAggregates = 2_000_000_000L,
-            maxBufferedAggregates = 10,
+            maxEstBytesAllAggregates = 1_000_000_000L,
+            maxBufferedAggregates = 5,
         )
     }
 
