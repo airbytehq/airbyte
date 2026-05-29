@@ -1139,7 +1139,7 @@ definitions:
               "type": "MinMaxDatetime",
               "datetime": "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}",
               "datetime_format": "%Y-%m-%d",
-              "min_datetime": "{{ day_delta(-89, format='%Y-%m-%d') }}"
+              "min_datetime": "{{ day_delta(-1109, format='%Y-%m-%d') }}"
             }
           condition: >-
             {{

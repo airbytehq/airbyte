@@ -529,25 +529,25 @@ def test_builtin_incremental_report_stream_clamps_end_date_to_retention_window(c
 
 
 @pytest.mark.parametrize(
-    "query, expected_start_date, expected_end_date",
+    "query, expected_start_date, expected_slices",
     [
         pytest.param(
             "SELECT campaign.name, segments.date FROM campaign ORDER BY segments.date",
             "2023-05-15",
-            "2023-05-16",
+            [{"start_time": "2023-05-15", "end_time": "2023-05-16"}],
             id="regular_custom_query",
         ),
         pytest.param(
             "SELECT click_view.gclid, segments.date FROM click_view ORDER BY segments.date",
             "2026-02-28",
-            "2026-03-01",
+            [],
             id="click_view_custom_query",
         ),
     ],
 )
 @freeze_time("2026-05-29")
 def test_custom_query_stream_clamps_end_date_to_retention_window(
-    query, expected_start_date, expected_end_date, config_for_custom_query_tests
+    query, expected_start_date, expected_slices, config_for_custom_query_tests
 ):
     config = config_for_custom_query_tests.copy()
     config["start_date"] = "2022-06-01"
@@ -567,7 +567,7 @@ def test_custom_query_stream_clamps_end_date_to_retention_window(
     slices = list(cursor.stream_slices())
 
     assert cursor.state["segments.date"] == expected_start_date
-    assert slices == [{"start_time": expected_start_date, "end_time": expected_end_date}]
+    assert slices == expected_slices
 
 
 @freeze_time("2025-01-01")
