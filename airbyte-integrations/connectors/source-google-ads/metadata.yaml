@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 6.0.0
+  dockerImageTag: 5.0.2
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   externalDocumentationUrls:
@@ -69,31 +69,6 @@ data:
                 "user_location_view",
                 "ad_group_bidding_strategy",
                 "campaign_bidding_strategy",
-              ]
-      6.0.0:
-        message: This release limits incremental report streams and custom queries that use `segments.date` or `segments.week` to the 37-month granular data retention window enforced by the Google Ads API. Data older than 37 months will be skipped. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs. See the migration guide for full details.
-        upgradeDeadline: "2026-06-12"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              [
-                "account_performance_report",
-                "ad_group",
-                "ad_group_ad",
-                "ad_group_ad_legacy",
-                "ad_group_bidding_strategy",
-                "campaign",
-                "campaign_bidding_strategy",
-                "campaign_budget",
-                "customer",
-                "display_keyword_view",
-                "geographic_view",
-                "geographic_view_with_metrics",
-                "keyword_view",
-                "shopping_performance_view",
-                "topic_view",
-                "user_location_view",
-                "custom queries using segments.date or segments.week",
               ]
   suggestedStreams:
     streams:
