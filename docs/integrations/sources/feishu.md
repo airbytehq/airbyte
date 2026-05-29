@@ -64,6 +64,10 @@ The **records** stream returns all records from the specified Bitable table. Eac
 - This connector syncs records from a single Bitable table per configured source. To sync multiple tables, create a separate source for each.
 - Only full refresh sync is supported. Incremental sync is not available.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

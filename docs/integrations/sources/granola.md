@@ -103,6 +103,10 @@ The Granola API enforces rate limits. For Enterprise API keys, limits are applie
 
 The connector uses the API's burst limit to manage request volume and retries requests when a `429 Too Many Requests` response is received.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Granola API](https://docs.granola.ai/introduction). All API requests use the `https://public-api.granola.ai` endpoint.

@@ -78,6 +78,10 @@ The `todos` and `messages` streams use Basecamp's `projects/recordings.json` end
 - All requests are scoped to a single account (the connector's `url_base` is `https://3.basecampapi.com/{account_id}/`).
 - To sync multiple Basecamp accounts, create one Airbyte source per account.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

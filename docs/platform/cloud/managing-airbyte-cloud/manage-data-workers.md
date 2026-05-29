@@ -6,18 +6,18 @@ products: cloud-plus
 
 If you are on a capacity-based plan, you can monitor your data worker usage across your organization and understand how capacity enforcement affects your syncs. When all committed data workers are in use, newly triggered sync jobs are queued until capacity becomes available. To view data worker usage, you need the **organization admin** role.
 
-## How data workers map to syncs
+## How data workers map to syncs {#data-worker-consumption-by-source-type}
 
 Each running sync consumes a fraction of one data worker. The exact amount is derived from the job's resolved CPU requirements and divided by a platform-defined factor. Different source types have different resource profiles, so the capacity consumed per sync varies. The capacity per sync may also differ if your organization has custom resource overrides.
 
 The following table shows approximate data worker consumption based on current default resource profiles. These values are not contractual and may change as resource profiles are updated. Use the [usage chart](#open-the-usage-chart) as the authoritative view of your actual capacity consumption.
 
 | Source type | Default data workers per sync |
-| ---------- | ----------------------------- |
-| Database   | ~0.5                          |
-| File       | ~0.5                          |
-| API        | ~0.2                          |
-| Custom     | ~0.2                          |
+| ----------- | ----------------------------- |
+| Database    | ~0.5                          |
+| File        | ~0.2                          |
+| API         | ~0.2                          |
+| Custom      | ~0.2                          |
 
 ## Open the usage chart
 
@@ -61,6 +61,10 @@ An infrequent instance of maximum usage probably isn't a problem. If you're regu
 
 On connections with a manual schedule type, syncs that remain queued for 8 hours are automatically cancelled. On scheduled or cron connections, a queued sync waits until the next scheduled run arrives, at which point the older queued sync is replaced.
 
+### Manually queue a sync when capacity is exhausted
+
+If all committed data workers are in use and you click **Sync now** on a connection, Airbyte shows an **Insufficient capacity** confirmation before it queues the sync. To queue the sync until enough committed capacity is available, click **Queue sync**. To leave the connection unchanged, click **Cancel**.
+
 ### Optimize data worker usage
 
 If you can, it's preferable to optimize Airbyte by rescheduling connections outside of busy periods.
@@ -69,11 +73,11 @@ If you can, it's preferable to optimize Airbyte by rescheduling connections outs
 
 - **If your usage looks consistently high**, examine your scheduling patterns within a day. If a large number of connections start at the same time, data worker usage spikes.
 
-    - Stagger start times over a longer period to allow some connections to finish before others begin.
+  - Stagger start times over a longer period to allow some connections to finish before others begin.
 
-    - Avoid starting all your syncs at the top of the hour. Starting them at :15, :30, and :45 can more evenly distribute work.
+  - Avoid starting all your syncs at the top of the hour. Starting them at :15, :30, and :45 can more evenly distribute work.
 
-    - If a large number of connections run overnight, data workers might look fully utilized, but sit unused during daylight hours.
+  - If a large number of connections run overnight, data workers might look fully utilized, but sit unused during daylight hours.
 
 - **If sandbox/staging workspaces consume too much capacity**, consider reducing the frequency of syncs in less critical workspaces.
 

@@ -77,7 +77,35 @@ The Facebook Pages source connector supports the following [sync modes](https://
 - [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights)
 - [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights)
 
+## Reference
+
+This connector uses the [Meta Graph API](https://developers.facebook.com/docs/graph-api/) with the `https://graph.facebook.com/v24.0` endpoint.
+Airbyte requests the selected Page and Post fields from the connector catalog, and requests a fixed set of Page Insights and Post Insights metrics.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `access_token` | Yes | Long-lived Page access token for the Facebook Page. The connector also accepts a long-lived User access token that can generate a Page access token for the configured Page. |
+| `page_id` | Yes | Facebook Page ID. |
+| `page_size` | No | Number of records to request per page for the `post` and `post_insights` streams. Defaults to `100`. Valid values are `1` through `100`. |
+
 ## Limitations & Troubleshooting
+
+### "This application has not been approved to use this API" error
+
+This error means Meta rejected the API request because the app that generated the token isn't approved for the requested API, permission, or Page field.
+
+To resolve this error, use a token from an app that has access to the permissions required by the streams you sync:
+
+- `pages_read_engagement`
+- `pages_read_user_content`
+- `pages_show_list`
+- `read_insights`
+
+If you use your own Meta app, it might need [App Review](https://developers.facebook.com/docs/resp-plat-initiatives/appreview/tutorial/) and Advanced Access before it can use these permissions in production.
+The person who generates the token must also be able to perform the required task on the Page.
+For Page Insights, Meta requires access to a Page that you own or administer, or on which you can perform the `ANALYZE` task.
 
 ### "Please reduce the amount of data you're asking for" error
 
@@ -105,6 +133,10 @@ Facebook heavily throttles API tokens generated from Facebook Apps by default, m
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -112,6 +144,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |
 | 2.1.0 | 2026-02-09 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
 | 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |
 | 2.0.3 | 2025-12-01 | [70248](https://github.com/airbytehq/airbyte/pull/70248) | Use correct pagination parameter name (`limit` instead of `page_size`) |
