@@ -28,7 +28,4 @@ def test_oauth_authenticator_raises_config_error_for_invalid_grant(
         authenticator.get_access_token()
 
     assert exc_info.value.failure_type.name == "config_error"
-    assert (
-        exc_info.value.message
-        == "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
-    )
+    assert exc_info.value.message == "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
