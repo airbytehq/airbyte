@@ -60,6 +60,7 @@ import java.util.zip.GZIPOutputStream
 import kotlin.collections.plus
 import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
+import org.jetbrains.annotations.VisibleForTesting
 
 data class MsSqlServerCdcPosition(val lsn: String) : PartiallyOrdered<MsSqlServerCdcPosition> {
     override fun compareTo(other: MsSqlServerCdcPosition): Int {
@@ -67,7 +68,7 @@ data class MsSqlServerCdcPosition(val lsn: String) : PartiallyOrdered<MsSqlServe
     }
 }
 
-private data class CaptureInstance(
+internal data class CaptureInstance(
     val sourceSchema: String,
     val sourceTable: String,
     val captureInstanceName: String,
@@ -476,7 +477,8 @@ class MsSqlServerDebeziumOperations(
      * accessible to the user and map it to the Airbyte configured catalog to ensure the user have
      * access to all tables.
      */
-    private fun getAccessibleCaptureInstances(connection: Connection): List<CaptureInstance> {
+    @VisibleForTesting
+    internal fun getAccessibleCaptureInstances(connection: Connection): List<CaptureInstance> {
         val results = mutableListOf<CaptureInstance>()
         connection.createStatement().use { stmt ->
             stmt.executeQuery("EXEC sys.sp_cdc_help_change_data_capture").use { rs ->
@@ -521,14 +523,6 @@ class MsSqlServerDebeziumOperations(
                     val tableName = it.stream.name ?: return@mapNotNullTo null
                     namespace to tableName
                 }
-
-        // for testing
-        log.info {
-            "Validating CDC access. Configured streams: " +
-                configuredStreamsSet.joinToString(", ") { (s, t) -> "$s.$t" } +
-                ". Accessible: " +
-                captureInstanceSet.joinToString(", ") { (s, t) -> "$s.$t" }
-        }
 
         val missing = configuredStreamsSet - captureInstanceSet
 
