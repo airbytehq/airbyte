@@ -5,6 +5,14 @@
 from conftest import get_source
 
 
+def test_token_refresh_request_body(config):
+    source = get_source(config)
+    accounts_stream = next(stream for stream in source.streams(config=config) if stream.name == "accounts")
+    refresh_request_body = accounts_stream.retriever.requester.authenticator.get_refresh_request_body()
+
+    assert refresh_request_body == {"scope": "https://ads.microsoft.com/msads.manage offline_access"}
+
+
 def test_streams_config_based(config):
     streams = get_source(config).streams(config)
     assert len(streams) == 77
