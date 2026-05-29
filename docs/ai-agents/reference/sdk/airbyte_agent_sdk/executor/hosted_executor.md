@@ -119,7 +119,7 @@ Classes
             finally:
                 await executor.close()
 
-    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
+    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
     :   Execute connector via cloud API (ExecutorProtocol implementation).
         
         Accepts either an :class:`ExecutionConfig` or positional ``(entity, action)``
@@ -134,6 +134,12 @@ Classes
             config_or_entity: ExecutionConfig object *or* entity name string
             action: Action string (required when entity is a string)
             params: Optional parameters dict (only with string form)
+            select_fields: Optional allowlist of dot-notation fields to include
+                (only with string form)
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+                (only with string form)
+            skip_truncation: Disable long-text truncation for collection actions
+                (only with string form)
         
         Returns:
             ExecutionResult with success/failure status

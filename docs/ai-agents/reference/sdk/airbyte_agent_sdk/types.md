@@ -285,6 +285,9 @@ Classes
     `base_url: str`
     :   The type of the None singleton.
 
+    `context_store: airbyte_agent_sdk.schema.extensions.CacheConfig | None`
+    :   The type of the None singleton.
+
     `entities: list[airbyte_agent_sdk.types.EntityDefinition]`
     :   The type of the None singleton.
 

@@ -398,7 +398,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -410,6 +410,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -786,6 +789,69 @@ Classes
         
         Returns:
             TransactionalSendResponse
+
+<a id="TransactionalMessageContentsQuery"></a>
+
+`TransactionalMessageContentsQuery(connector: CustomerIoConnector)`
+:   Query class for TransactionalMessageContents entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `list(self, transactional_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[TransactionalMessageContent]]`
+    :   Returns all content variants (including language translations) for a transactional message template.
+        
+        Args:
+            transactional_id: The transactional message identifier
+            **kwargs: Additional parameters
+        
+        Returns:
+            TransactionalMessageContentsListResult
+
+    `update(self, transactional_id: str, content_id: str, body: str | None = None, from_id: int | None = None, reply_to_id: int | None | None = None, recipient: str | None = None, subject: str | None = None, preheader_text: str | None = None, body_amp: str | None = None, headers: list[TransactionalMessageContentsUpdateParamsHeadersItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.TransactionalMessageContent`
+    :   Updates the content of a specific variant of a transactional message template by content ID.
+        
+        Args:
+            body: HTML body content of the message
+            from_id: Sender identity ID
+            reply_to_id: Reply-to sender identity ID
+            recipient: Recipient expression (e.g. "\{\{customer.email\}\}")
+            subject: Email subject line
+            preheader_text: Email preheader/preview text
+            body_amp: AMP HTML body content
+            headers: Custom email headers as an array of name-value objects
+            transactional_id: The transactional message identifier
+            content_id: The content variant identifier
+            **kwargs: Additional parameters
+        
+        Returns:
+            TransactionalMessageContent
+
+<a id="TransactionalMessagesQuery"></a>
+
+`TransactionalMessagesQuery(connector: CustomerIoConnector)`
+:   Query class for TransactionalMessages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `get(self, transactional_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.TransactionalMessage`
+    :   Returns a single transactional message template by ID.
+        
+        Args:
+            transactional_id: The transactional message identifier
+            **kwargs: Additional parameters
+        
+        Returns:
+            TransactionalMessage
+
+    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[TransactionalMessage]]`
+    :   Returns a list of all transactional message templates in the workspace.
+        
+        Returns:
+            TransactionalMessagesListResult
 
 <a id="TransactionalPushQuery"></a>
 
