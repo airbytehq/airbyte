@@ -8,10 +8,10 @@ This page contains the setup guide and reference information for the [Google Sea
 
 ## Prerequisites
 
-- Google Account
-- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Property))
+- A Google Account with **Owner** or **Full User** permissions on the Google Search Console property. See [Google's permissions documentation](https://support.google.com/webmasters/answer/7687615) for details.
+- One or more verified properties in Google Search Console. Properties can be URL-prefix properties (for example, `https://example.com/`) or domain properties (for example, `sc-domain:example.com`).
 <!-- env:oss -->
-- Google Search Console API enabled for your project (**Airbyte Open Source** only)
+- The [Google Search Console API](https://console.cloud.google.com/apis/library/searchconsole.googleapis.com) enabled in your Google Cloud project (**Airbyte Open Source** only).
 <!-- /env:oss -->
 
 ## Setup guide
@@ -24,7 +24,9 @@ To authenticate the Google Search Console connector, you will need to use one of
 
 #### OAuth (Recommended for Airbyte Cloud)
 
-You can authenticate using your Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
+You can authenticate using your Google Account with OAuth. This option is recommended for **Airbyte Cloud** users because it simplifies authentication — you authorize the connection directly from the Airbyte UI without managing credentials manually.
+
+The connector requests the `webmasters.readonly` OAuth scope, which grants read-only access to your Search Console data.
 
 <!-- /env:cloud -->
 
@@ -133,24 +135,35 @@ The Google Search Console source connector supports the following [sync modes](h
 The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
 :::
 
-## Supported Streams
+## Supported streams
 
-- [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
-- [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) — this stream has a long sync time because it is very detailed; use with care
-- [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- Analytics report by custom dimensions
+This connector outputs the following streams. All search analytics streams use the [Search Analytics API](https://developers.google.com/webmaster-tools/v1/searchanalytics/query).
 
+| Stream name | API | Description |
+| :--- | :--- | :--- |
+| `sites` | [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get) | Lists verified site properties. Full Refresh only. |
+| `sitemaps` | [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list) | Lists submitted sitemaps for each site. Full Refresh only. |
+| `search_analytics_all_fields` | Search Analytics | Groups by date, country, device, page, and query. This is the most detailed report and may have a long sync time. |
+| `search_analytics_by_country` | Search Analytics | Groups by date and country. |
+| `search_analytics_by_date` | Search Analytics | Groups by date. |
+| `search_analytics_by_device` | Search Analytics | Groups by date and device. |
+| `search_analytics_by_page` | Search Analytics | Groups by date and page. |
+| `search_analytics_by_query` | Search Analytics | Groups by date and query. |
+| `search_analytics_page_report` | Search Analytics | Groups by date, country, device, and page. |
+| `search_analytics_site_report_by_page` | Search Analytics | Groups by date, country, and device. Aggregated by page. |
+| `search_analytics_site_report_by_site` | Search Analytics | Groups by date, country, and device. Aggregated by property. |
+| `search_analytics_keyword_page_report` | Search Analytics | Groups by date, country, device, query, and page. Filtered by search appearance keyword. |
+| `search_analytics_keyword_site_report_by_page` | Search Analytics | Groups by date, country, device, and query. Aggregated by page. Filtered by search appearance keyword. |
+| `search_analytics_keyword_site_report_by_site` | Search Analytics | Groups by date, country, device, and query. Aggregated by property. Filtered by search appearance keyword. |
+| Custom report streams | Search Analytics | User-defined reports with custom dimension groupings. See [Custom reports](#custom-reports). |
+
+Search analytics streams query across multiple search types including `web`, `news`, `image`, and `video`. Some streams also include `discover` and `googleNews` search types. Each record includes a `search_type` field indicating its source.
+
+:::note
+The `sites` and `sitemaps` streams support Full Refresh sync only. All search analytics streams support both Full Refresh and Incremental sync.
+:::
+
+<!-- markdownlint-disable-next-line MD022 -->
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
@@ -158,30 +171,22 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ### Custom reports
 
-Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed like following:
+Custom reports allow you to query the Search Analytics API with a custom set of dimensions. Results are grouped in the order that you supply the dimensions. To create a custom report:
 
-1. Click `Add` under the `Custom Reports` section
-2. Enter the `Name` of the report, this will be the name of the stream
-3. Select one or more `Dimensions` from the available dropdown list
+1. Click **Add** under the **Custom Reports** section.
+2. Enter a **Name** for the report. This name becomes the stream name.
+3. Select one or more **Dimensions** from the dropdown list.
 
-The available `Dimensions` are:
+The available dimensions are: `country`, `date`, `device`, `page`, and `query`.
 
-- `country`
-- `date`
-- `device`
-- `page`
-- `query`
+For example, to create a report grouped by country and then by date, enter:
 
-For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
+- **Name**: `country_date`
+- **Dimensions**: `country`, `date`
 
-- Name: country_date
-- Dimensions: ["country", "date"]
+The `date` dimension is always included in the query, whether you specify it or not. If you include `date` explicitly, you control its position in the grouping order. The primary key consists of the custom dimensions, `date`, `site_url`, and `search_type`.
 
-Please note, that for technical reasons `date` is the default dimension which will be included in your query whether you specify it or not. By specifying it you can change the order the results are grouped in. Primary key will consist of your custom dimensions and the default dimension along with `site_url` and `search_type`.
-
-The information you provide via the UI Custom report builder will then be transformed into a custom stream using its `Name`.
-
-You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
+You can use the [Google APIs Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
 
 ### Data Freshness
 
@@ -214,22 +219,29 @@ Expand to see details about Google Search Console connector limitations and trou
 
 #### Rate limiting
 
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+The connector automatically backs off when it encounters rate limit errors from the Search Analytics API. For full details on quota types, see Google's [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
-While Google's public documentation states that the Search Console API allows up to 1,200 requests per minute, most Google Cloud projects start with a lower default quota of 60 requests per minute. This is especially common for new projects or projects without billing enabled.
+Google enforces two types of quota for the Search Analytics API:
+
+- **QPS/QPM quota**: Up to 1,200 requests per minute per site and per user. Most new Google Cloud projects start with a lower default of 60 requests per minute.
+- **Load quota**: Measures internal resource consumption. Queries grouped or filtered by `page` and `query` are the most expensive. Reducing the date range or removing these dimensions lowers load.
 
 To check your actual quota limits:
 
 1. Go to your [Google Cloud Console](https://console.cloud.google.com/).
-2. Navigate to **APIs & Services** then **Quotas**.
+2. Navigate to **APIs & Services** > **Quotas**.
 3. Search for "Search Console API".
 4. Look for "Requests per minute per user" to see your current limit.
 
-If you need higher limits, you can enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **API Requests Per Minute** setting in the connector to match your actual quota.
+If you need higher limits, enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. Configure the **Search Analytics API Requests Per Minute** setting in the connector to match your actual quota.
 
 #### Data retention
 
-Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
+Google Search Console retains search analytics data for the last 16 months only. Any data older than 16 months is not accessible through the API. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
+
+#### Row limit
+
+The Search Analytics API returns only the top rows of data per query, with a maximum of 50,000 rows per request. For very large sites, some long-tail data may not be returned. This is a Google API limitation, not an Airbyte limitation.
 
 ### Troubleshooting
 
