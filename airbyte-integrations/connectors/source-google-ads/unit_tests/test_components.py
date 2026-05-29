@@ -118,7 +118,7 @@ class TestCustomGAQuerySchemaLoader:
     [
         pytest.param({"segments.month": "2023-04-01"}, {"segments.month": "2023-04-01", "segments.date": "2023-04-01"}, id="month"),
         pytest.param({"segments.quarter": "2023-04-01"}, {"segments.quarter": "2023-04-01", "segments.date": "2023-04-01"}, id="quarter"),
-        pytest.param({"segments.year": "2023-01-01"}, {"segments.year": "2023-01-01", "segments.date": "2023-01-01"}, id="year"),
+        pytest.param({"segments.year": 2023}, {"segments.year": 2023}, id="year_is_not_date_fallback"),
         pytest.param(
             {"segments.date": "2023-04-15", "segments.month": "2023-04-01"},
             {"segments.date": "2023-04-15", "segments.month": "2023-04-01"},
@@ -182,11 +182,11 @@ def _google_ads_requester(config):
             {
                 "customer_id": "customers/123",
                 "parent_slice": {"customer_id": "123", "parent_slice": {}},
-                "start_time": "2022-01-15",
-                "end_time": "2023-06-01",
+                "start_time": "2022-06-01",
+                "end_time": "2022-06-14",
             },
-            "SELECT ad_group.id, segments.date, metrics.clicks FROM ad_group WHERE segments.date BETWEEN '2022-06-05' AND '2023-06-01' ORDER BY segments.date ASC",
-            id="cross_boundary_slice_clamps_start_date",
+            "SELECT ad_group.id, segments.month, metrics.clicks FROM ad_group WHERE segments.month BETWEEN '2022-06-01' AND '2022-06-01' ORDER BY segments.month ASC",
+            id="boundary_month_not_dropped",
         ),
     ],
 )
@@ -247,11 +247,22 @@ class TestCustomGAQueryHttpRequester:
                 {
                     "customer_id": "customers/123",
                     "parent_slice": {"customer_id": "123", "parent_slice": {}},
-                    "start_time": "2022-01-15",
-                    "end_time": "2023-06-01",
+                    "start_time": "2022-06-01",
+                    "end_time": "2022-06-14",
                 },
-                "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2022-06-05' AND '2023-06-01' ORDER BY segments.date ASC",
-                id="cross_boundary_slice_clamps_start_date",
+                "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.month FROM campaign_budget WHERE segments.month BETWEEN '2022-06-01' AND '2022-06-01' ORDER BY segments.month ASC",
+                id="boundary_month_not_dropped",
+            ),
+            pytest.param(
+                {
+                    "customer_id": "customers/123",
+                    "parent_slice": {"customer_id": "123", "parent_slice": {}},
+                    "start_time": "2022-01-15",
+                    "end_time": "2022-01-31",
+                    "uses_week": True,
+                },
+                "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.month FROM campaign_budget WHERE segments.month BETWEEN '2022-01-01' AND '2022-01-01' ORDER BY segments.month ASC",
+                id="weekly_segment_uses_month",
             ),
         ],
     )
@@ -260,7 +271,9 @@ class TestCustomGAQueryHttpRequester:
     ):
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = (
-            "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget ORDER BY segments.date ASC"
+            "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.week FROM campaign_budget ORDER BY segments.week ASC"
+            if stream_slice.get("uses_week")
+            else "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget ORDER BY segments.date ASC"
         )
         requester = CustomGAQueryHttpRequester(
             name="test_custom_ga_query_http_requester",
@@ -926,6 +939,29 @@ def _get_google_ads_retriever_streams():
         if retriever.get("class_name") == _GOOGLE_ADS_RETRIEVER_CLASS and inc_sync:
             streams.append((stream_def["name"], inc_sync["datetime_format"]))
     return streams
+
+
+def test_incremental_stream_transform_overrides_include_granular_fallback():
+    expected_streams = {
+        "account_performance_report",
+        "ad_group_ad_legacy",
+        "campaign",
+        "campaign_budget",
+        "display_keyword_view",
+        "keyword_view",
+        "topic_view",
+        "user_location_view",
+    }
+    resolved_streams = get_source(_DEFAULT_CONFIG).resolved_manifest["streams"]
+    streams_by_name = {stream["name"]: stream for stream in resolved_streams}
+
+    for stream_name in expected_streams:
+        transformation_classes = [
+            transformation.get("class_name")
+            for transformation in streams_by_name[stream_name]["transformations"]
+            if transformation.get("type") == "CustomTransformation"
+        ]
+        assert "source_google_ads.components.GranularSegmentFallbackTransformation" in transformation_classes
 
 
 def _get_built_streams_with_google_ads_retriever(config):

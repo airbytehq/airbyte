@@ -475,6 +475,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -531,6 +533,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -595,6 +599,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -628,6 +634,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -746,6 +754,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -792,6 +802,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -822,6 +834,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -844,6 +858,8 @@ definitions:
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.GranularSegmentFallbackTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"

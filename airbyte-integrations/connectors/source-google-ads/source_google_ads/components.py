@@ -8,7 +8,7 @@ import logging
 import re
 import threading
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
@@ -84,8 +84,6 @@ REPORT_MAPPING = {
 
 DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
 
-GRANULAR_SEGMENT_TYPES = ("segments.date", "segments.week")
-
 # Google Ads enforces a 37-month retention window for granular (daily/weekly)
 # segment data.  Using 1110 days (37 × 30) is conservative — approximately
 # 36.5 months — so queries always stay within the allowed range.
@@ -93,7 +91,7 @@ DATA_RETENTION_PERIOD_DAYS = 1110
 
 
 def _get_data_retention_cutoff(fmt: str = "%Y-%m-%d") -> str:
-    return (datetime.utcnow() - timedelta(days=DATA_RETENTION_PERIOD_DAYS)).strftime(fmt)
+    return (datetime.now(timezone.utc) - timedelta(days=DATA_RETENTION_PERIOD_DAYS)).strftime(fmt)
 
 
 def _to_first_of_month(date_str: str) -> str:
@@ -205,7 +203,7 @@ class GranularSegmentFallbackTransformation(RecordTransformation):
     granularity.
     """
 
-    _FALLBACK_FIELDS = ("segments.month", "segments.quarter", "segments.year")
+    _FALLBACK_FIELDS = ("segments.month", "segments.quarter")
 
     def transform(
         self,
@@ -418,6 +416,7 @@ class GoogleAdsHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.stream_response = True
+        self._data_retention_cutoff = _get_data_retention_cutoff()
         _mount_timeout_adapter(self)
 
     def get_request_body_json(
@@ -440,15 +439,14 @@ class GoogleAdsHttpRequester(HttpRequester):
         if "start_time" in stream_slice and "end_time" in stream_slice:
             start_time = stream_slice["start_time"]
             end_time = stream_slice["end_time"]
-            cutoff = _get_data_retention_cutoff()
+            cutoff = self._data_retention_cutoff
 
-            if end_time <= cutoff:
-                monthly_fields = ["segments.month" if f == "segments.date" else f for f in fields]
+            if start_time <= cutoff:
+                monthly_fields = ["segments.month" if f in ("segments.date", "segments.week") else f for f in fields]
                 start_month = _to_first_of_month(start_time)
-                end_month = _to_first_of_month(end_time)
+                end_month = _to_first_of_month(min(end_time, cutoff))
                 query = f"SELECT {', '.join(monthly_fields)} FROM {resource_name} WHERE segments.month BETWEEN '{start_month}' AND '{end_month}' ORDER BY segments.month ASC"
             else:
-                start_time = max(start_time, cutoff)
                 query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{start_time}' AND '{end_time}' ORDER BY segments.date ASC"
         else:
             # For full refresh streams
@@ -982,6 +980,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
         super().__post_init__(parameters=parameters)
         self.query = GAQL.parse(parameters.get("query"))
         self.stream_response = True
+        self._data_retention_cutoff = _get_data_retention_cutoff()
         _mount_timeout_adapter(self)
 
     @staticmethod
@@ -993,8 +992,9 @@ class CustomGAQueryHttpRequester(HttpRequester):
 
     @staticmethod
     def is_custom_query_incremental(query: GAQL) -> bool:
-        time_segment_in_select, time_segment_in_where = ["segments.date" in clause for clause in [query.fields, query.where]]
-        return time_segment_in_select and not time_segment_in_where
+        selected_granular_time_segment = any(field in query.fields for field in ("segments.date", "segments.week"))
+        has_time_segment_filter = any(field in (query.where or "") for field in DATE_TYPES)
+        return selected_granular_time_segment and not has_time_segment_filter
 
     @staticmethod
     def _insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
@@ -1008,6 +1008,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
     @staticmethod
     def _insert_segments_month_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
         query = query.replace_field("segments.date", "segments.month")
+        query = query.replace_field("segments.week", "segments.month")
         if "segments.month" not in query.fields:
             query = query.append_field("segments.month")
         start_month = _to_first_of_month(start_date)
@@ -1045,13 +1046,11 @@ class CustomGAQueryHttpRequester(HttpRequester):
         if is_incremental:
             start_date = stream_slice["start_time"]
             end_date = stream_slice["end_time"]
-            cutoff = _get_data_retention_cutoff()
+            cutoff = self._data_retention_cutoff
 
-            if end_date <= cutoff:
-                return str(self._insert_segments_month_expr(self.query, start_date, end_date))
-            else:
-                start_date = max(start_date, cutoff)
-                return str(self._insert_segments_date_expr(self.query, start_date, end_date))
+            if start_date <= cutoff:
+                return str(self._insert_segments_month_expr(self.query, start_date, min(end_date, cutoff)))
+            return str(self._insert_segments_date_expr(self.query, start_date, end_date))
         else:
             return str(self.query)
 
