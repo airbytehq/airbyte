@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.databricksv2.client
 
+import com.databricks.sdk.WorkspaceClient
+import com.databricks.sdk.service.files.CreateDirectoryRequest
+import com.databricks.sdk.service.files.UploadRequest
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -18,6 +21,7 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.databricksv2.sql.DatabricksSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.io.InputStream
 import java.sql.ResultSet
 import javax.sql.DataSource
 
@@ -27,6 +31,7 @@ private val log = KotlinLogging.logger {}
 class DatabricksAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: DatabricksSqlGenerator,
+    private val workspaceClient: WorkspaceClient,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
 
     override suspend fun createNamespace(namespace: String) {
@@ -168,6 +173,38 @@ class DatabricksAirbyteClient(
             log.info { "  Modified: ${columnChangeset.columnsToChange.keys}" }
             execute(sqlGenerator.alterTable(tableName, columnChangeset))
         }
+    }
+
+    // -- Staging Operations --
+
+    /** Creates the Unity Catalog Volume and staging directory for the given table */
+    fun createStagingVolume(tableName: TableName, stagingDirectory: String) {
+        execute(sqlGenerator.createStagingVolume(tableName))
+        workspaceClient
+            .files()
+            .createDirectory(CreateDirectoryRequest().setDirectoryPath(stagingDirectory))
+    }
+
+    /** Uploads a file to a Unity Catalog Volume path. */
+    fun uploadToVolume(stagedFilePath: String, inputStream: InputStream) {
+        workspaceClient
+            .files()
+            .upload(
+                UploadRequest()
+                    .setFilePath(stagedFilePath)
+                    .setContents(inputStream)
+                    .setOverwrite(true),
+            )
+    }
+
+    /** Executes a COPY INTO statement to load a staged CSV file into the target table. */
+    fun copyFromVolume(tableName: TableName, stagedFilePath: String) {
+        execute(sqlGenerator.copyIntoFromVolume(tableName, stagedFilePath))
+    }
+
+    /** Deletes a staged file from a Unity Catalog Volume. */
+    fun deleteStagedFile(stagedFilePath: String) {
+        workspaceClient.files().delete(stagedFilePath)
     }
 
     private fun execute(sql: String) {

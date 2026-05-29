@@ -196,6 +196,35 @@ class DatabricksSqlGenerator(
         return "BEGIN TRANSACTION\n${statements.joinToString(";\n")};\nCOMMIT;"
     }
 
+    // -- Staging Operations --
+
+    /** Creates a Unity Catalog Volume for staging CSV files */
+    fun createStagingVolume(tableName: TableName): String =
+        "CREATE VOLUME IF NOT EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
+
+    /**
+     * Generates a COPY INTO statement to load a staged CSV file from a Unity Catalog Volume into
+     * the target table. Uses `inferSchema=false` so all CSV fields are read as STRING and
+     * Databricks implicitly casts them to the target column types. Empty fields are treated as NULL
+     * via the `nullValue` option.
+     */
+    fun copyIntoFromVolume(tableName: TableName, stagedFilePath: String): String =
+        """
+        |COPY INTO ${fullyQualifiedName(tableName)}
+        |FROM '$stagedFilePath'
+        |FILEFORMAT = CSV
+        |FORMAT_OPTIONS (
+        |    'header' = 'true',
+        |    'inferSchema' = 'false',
+        |    'escape' = '"',
+        |    'nullValue' = ''
+        |)
+        """.trimMargin()
+
+    /** Returns a [TableName] for the staging volume associated with the given table. */
+    internal fun stagingVolumeName(tableName: TableName): TableName =
+        TableName(namespace = tableName.namespace, name = "${tableName.name}_staging")
+
     // -- Internal Helpers --
 
     /** Generates a SELECT query that deduplicates source records using ROW_NUMBER() */

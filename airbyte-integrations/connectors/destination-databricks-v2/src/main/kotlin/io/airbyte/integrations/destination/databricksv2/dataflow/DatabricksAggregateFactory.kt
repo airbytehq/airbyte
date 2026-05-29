@@ -10,17 +10,15 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.databricksv2.client.DatabricksAirbyteClient
-import io.airbyte.integrations.destination.databricksv2.sql.DatabricksSqlGenerator
+import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
 import io.airbyte.integrations.destination.databricksv2.write.load.DatabricksInsertBuffer
 import jakarta.inject.Singleton
-import javax.sql.DataSource
 
 @Singleton
 class DatabricksAggregateFactory(
     private val databricksClient: DatabricksAirbyteClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
-    private val dataSource: DataSource,
-    private val sqlGenerator: DatabricksSqlGenerator,
+    private val config: DatabricksV2Configuration,
 ) : AggregateFactory {
 
     override fun create(key: StoreKey): Aggregate {
@@ -30,8 +28,8 @@ class DatabricksAggregateFactory(
             DatabricksInsertBuffer(
                 tableName = tableName,
                 columns = columns,
-                dataSource = dataSource,
-                sqlGenerator = sqlGenerator,
+                databricksClient = databricksClient,
+                config = config,
             )
         return DatabricksAggregate(buffer = buffer)
     }
