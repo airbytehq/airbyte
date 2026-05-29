@@ -16,10 +16,13 @@ import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfig
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
@@ -137,6 +140,31 @@ class AzureBlobClient(
     override suspend fun delete(keys: Set<String>) {
         if (keys.isEmpty()) return
 
+        try {
+            batchDelete(keys)
+        } catch (e: BlobStorageException) {
+            if (e.statusCode == 403) {
+                logger.info {
+                    "Batch delete returned 403; falling back to sequential per-blob delete"
+                }
+                sequentialDelete(keys)
+            } else {
+                throw e
+            }
+        } catch (e: BlobBatchStorageException) {
+            val hasAuthFailure = e.batchExceptions.any { it.statusCode == 403 }
+            if (hasAuthFailure) {
+                logger.info {
+                    "Batch delete returned 403; falling back to sequential per-blob delete"
+                }
+                sequentialDelete(keys)
+            } else {
+                throw e
+            }
+        }
+    }
+
+    private fun batchDelete(keys: Set<String>) {
         val batchClient = BlobBatchClientBuilder(serviceClient).buildClient()
 
         keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
@@ -156,13 +184,15 @@ class AzureBlobClient(
             } catch (e: BlobBatchStorageException) {
                 val nonNotFound = e.batchExceptions.filter { it.statusCode != 404 }
                 if (nonNotFound.isNotEmpty()) {
-                    val details =
-                        nonNotFound.joinToString("; ") {
-                            "status=${it.statusCode}, message=${it.message}"
-                        }
-                    throw RuntimeException("Azure batch delete had failures: $details", e)
+                    throw e
                 }
             }
+        }
+    }
+
+    private suspend fun sequentialDelete(keys: Set<String>) {
+        for (key in keys) {
+            delete(key)
         }
     }
 
