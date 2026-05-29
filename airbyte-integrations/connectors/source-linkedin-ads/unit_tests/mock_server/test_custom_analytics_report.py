@@ -199,11 +199,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.stream == "custom_statistics_report"
 
-        analytics_requests = [
-            request
-            for request in http_mocker._mocker.request_history
-            if urlparse(request.url).path == "/rest/adAnalytics"
-        ]
+        analytics_requests = [request for request in http_mocker._mocker.request_history if urlparse(request.url).path == "/rest/adAnalytics"]
         statistics_requests = []
         for request in analytics_requests:
             query_params = parse_qs(urlparse(request.url).query)
