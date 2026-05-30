@@ -43,6 +43,8 @@ class FakeCursor:
 
 
 class FakeConnection:
+    closed = 0
+
     def __init__(self):
         self.cursor_instance = FakeCursor()
 
@@ -53,6 +55,9 @@ class FakeConnection:
         return False
 
     def close(self):
+        pass
+
+    def commit(self):
         pass
 
     def cursor(self):

@@ -58,8 +58,8 @@ def test_get_connection_passes_database_credentials_and_ssl_options():
     ssl_options = OpenGaussSslConnectionOptions(config)
 
     with patch("destination_opengauss_datavec.connection.psycopg2.connect", return_value=connection) as connect:
-        with get_connection(config, ssl_options) as returned_connection:
-            assert returned_connection is connection
+        returned_connection = get_connection(config, ssl_options)
+        assert returned_connection is connection
 
     connect.assert_called_once_with(
         host="localhost",
@@ -68,7 +68,9 @@ def test_get_connection_passes_database_credentials_and_ssl_options():
         user="user",
         password="password",
         connect_timeout=20,
+        keepalives=1,
+        keepalives_idle=60,
+        keepalives_interval=10,
+        keepalives_count=5,
         sslmode="require",
     )
-    connection.__exit__.assert_called_once()
-    connection.close.assert_called_once()

@@ -41,23 +41,30 @@ class OpenGaussDataVecIndexer(Indexer):
         self.row_builder = RowBuilder(omit_raw_text)
         self.ssl_connection_options = OpenGaussSslConnectionOptions(config)
         self.streams: Dict[str, StreamDestination] = {}
+        self._conn = None
+
+    def _get_connection(self):
+        """Return the shared connection, reconnecting if it was lost."""
+        if self._conn is None or self._conn.closed:
+            self._conn = get_connection(self.config, self.ssl_connection_options)
+        return self._conn
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         """Prepare schema and stream tables before records start flowing."""
-        with get_connection(self.config, self.ssl_connection_options) as conn:
-            with conn.cursor() as cursor:
-                for configured_stream in catalog.streams:
-                    destination = self.schema_builder.create_stream_destination(configured_stream)
-                    self.streams[create_stream_identifier(configured_stream.stream)] = destination
-                    self._create_schema(cursor, destination.schema_name)
+        with self._get_connection().cursor() as cursor:
+            for configured_stream in catalog.streams:
+                destination = self.schema_builder.create_stream_destination(configured_stream)
+                self.streams[create_stream_identifier(configured_stream.stream)] = destination
+                self._create_schema(cursor, destination.schema_name)
 
-                    if destination.mode == DestinationSyncMode.overwrite:
-                        self._drop_table(cursor, destination.schema_name, destination.write_table_name)
-                        self._create_table(cursor, destination.schema_name, destination.write_table_name, destination.metadata_columns)
-                    else:
-                        self._create_table(cursor, destination.schema_name, destination.table_name, destination.metadata_columns)
-                        if destination.mode == DestinationSyncMode.append_dedup:
-                            self._create_document_id_index(cursor, destination.schema_name, destination.table_name)
+                if destination.mode == DestinationSyncMode.overwrite:
+                    self._drop_table(cursor, destination.schema_name, destination.write_table_name)
+                    self._create_table(cursor, destination.schema_name, destination.write_table_name, destination.metadata_columns)
+                else:
+                    self._create_table(cursor, destination.schema_name, destination.table_name, destination.metadata_columns)
+                    if destination.mode == DestinationSyncMode.append_dedup:
+                        self._create_document_id_index(cursor, destination.schema_name, destination.table_name)
+        self._get_connection().commit()
 
     def index(self, document_chunks: List[Chunk], namespace: Optional[str], stream: str) -> None:
         """Bulk load embedded chunks into the stream's final or staging table."""
@@ -69,15 +76,15 @@ class OpenGaussDataVecIndexer(Indexer):
         copy_columns = self.row_builder.copy_columns(destination.metadata_columns)
         rows = self.row_builder.create_rows(document_chunks, destination.metadata_columns)
 
-        with get_connection(self.config, self.ssl_connection_options) as conn:
-            with conn.cursor() as cursor:
-                copy_sql = sql.SQL("COPY {}.{} ({}) FROM STDIN WITH (FORMAT CSV, NULL {})").format(
-                    sql.Identifier(destination.schema_name),
-                    sql.Identifier(destination.write_table_name),
-                    sql.SQL(", ").join(sql.Identifier(column) for column in copy_columns),
-                    sql.Literal(COPY_NULL_VALUE),
-                )
-                cursor.copy_expert(copy_sql.as_string(cursor), rows_to_csv(rows))
+        with self._get_connection().cursor() as cursor:
+            copy_sql = sql.SQL("COPY {}.{} ({}) FROM STDIN WITH (FORMAT CSV, NULL {})").format(
+                sql.Identifier(destination.schema_name),
+                sql.Identifier(destination.write_table_name),
+                sql.SQL(", ").join(sql.Identifier(column) for column in copy_columns),
+                sql.Literal(COPY_NULL_VALUE),
+            )
+            cursor.copy_expert(copy_sql.as_string(cursor), rows_to_csv(rows))
+        self._get_connection().commit()
 
     def delete(self, delete_ids: List[str], namespace: Optional[str], stream: str) -> None:
         """Delete old chunks for append_dedup streams by document_id."""
@@ -89,43 +96,50 @@ class OpenGaussDataVecIndexer(Indexer):
         if destination.mode != DestinationSyncMode.append_dedup:
             return
 
-        with get_connection(self.config, self.ssl_connection_options) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    sql.SQL("DELETE FROM {}.{} WHERE document_id = ANY(%s)").format(
-                        sql.Identifier(destination.schema_name),
-                        sql.Identifier(destination.table_name),
-                    ),
-                    (delete_ids,),
-                )
+        with self._get_connection().cursor() as cursor:
+            cursor.execute(
+                sql.SQL("DELETE FROM {}.{} WHERE document_id = ANY(%s)").format(
+                    sql.Identifier(destination.schema_name),
+                    sql.Identifier(destination.table_name),
+                ),
+                (delete_ids,),
+            )
+        self._get_connection().commit()
 
     def post_sync(self):
-        """Promote overwrite staging tables after a successful sync."""
-        overwrite_streams = [destination for destination in self.streams.values() if destination.mode == DestinationSyncMode.overwrite]
-        if not overwrite_streams:
-            return []
-
-        with get_connection(self.config, self.ssl_connection_options) as conn:
-            with conn.cursor() as cursor:
-                for destination in overwrite_streams:
-                    self._drop_table(cursor, destination.schema_name, destination.table_name)
-                    cursor.execute(
-                        sql.SQL("ALTER TABLE {}.{} RENAME TO {}").format(
-                            sql.Identifier(destination.schema_name),
-                            sql.Identifier(destination.write_table_name),
-                            sql.Identifier(destination.table_name),
+        """Promote overwrite staging tables and close the shared connection."""
+        try:
+            overwrite_streams = [destination for destination in self.streams.values() if destination.mode == DestinationSyncMode.overwrite]
+            if overwrite_streams:
+                with self._get_connection().cursor() as cursor:
+                    for destination in overwrite_streams:
+                        self._drop_table(cursor, destination.schema_name, destination.table_name)
+                        cursor.execute(
+                            sql.SQL("ALTER TABLE {}.{} RENAME TO {}").format(
+                                sql.Identifier(destination.schema_name),
+                                sql.Identifier(destination.write_table_name),
+                                sql.Identifier(destination.table_name),
+                            )
                         )
-                    )
+                self._get_connection().commit()
+        finally:
+            if self._conn is not None:
+                self._conn.close()
+                self._conn = None
         return []
 
     def check(self) -> Optional[str]:
         """Validate that the configured database can be reached."""
+        conn = None
         try:
-            with get_connection(self.config, self.ssl_connection_options) as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute("SELECT 1")
+            conn = get_connection(self.config, self.ssl_connection_options)
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT 1")
         except Exception as e:
             return format_exception(e)
+        finally:
+            if conn is not None:
+                conn.close()
         return None
 
     def _create_schema(self, cursor, schema_name: str) -> None:

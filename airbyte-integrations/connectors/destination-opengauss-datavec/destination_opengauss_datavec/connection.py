@@ -2,19 +2,17 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
-from contextlib import closing, contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Optional
 
 import psycopg2
 
 from destination_opengauss_datavec.config import OpenGaussDataVecIndexingModel, SslModeVerifyCa
 
 
-@contextmanager
-def get_connection(config: OpenGaussDataVecIndexingModel, ssl_connection_options: "OpenGaussSslConnectionOptions") -> Iterator[Any]:
-    """Open a psycopg2 connection, commit/rollback the transaction, and close it."""
+def get_connection(config: OpenGaussDataVecIndexingModel, ssl_connection_options: "OpenGaussSslConnectionOptions") -> Any:
+    """Open and return a psycopg2 connection. Caller is responsible for commit/rollback/close."""
     connection_options = {
         "host": config.host,
         "port": config.port,
@@ -22,11 +20,13 @@ def get_connection(config: OpenGaussDataVecIndexingModel, ssl_connection_options
         "user": config.username,
         "password": config.credentials.password,
         "connect_timeout": 20,
+        "keepalives": 1,
+        "keepalives_idle": 60,
+        "keepalives_interval": 10,
+        "keepalives_count": 5,
     }
     connection_options.update(ssl_connection_options.build())
-    with closing(psycopg2.connect(**connection_options)) as conn:
-        with conn:
-            yield conn
+    return psycopg2.connect(**connection_options)
 
 
 class OpenGaussSslConnectionOptions:
