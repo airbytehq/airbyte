@@ -290,6 +290,10 @@ definitions:
               type:
                 - "null"
                 - object
+            view_count:
+              type:
+                - "null"
+                - integer
     collections:
       type: DeclarativeStream
       name: collections
@@ -1483,6 +1487,10 @@ streams:
             type:
               - "null"
               - object
+          view_count:
+            type:
+              - "null"
+              - integer
   - type: DeclarativeStream
     name: collections
     primary_key:
@@ -2692,6 +2700,10 @@ schemas:
         type:
           - "null"
           - object
+      view_count:
+        type:
+          - "null"
+          - integer
   collections:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
