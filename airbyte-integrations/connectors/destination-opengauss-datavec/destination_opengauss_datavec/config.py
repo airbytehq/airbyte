@@ -136,6 +136,7 @@ class OpenGaussDataVecIndexingModel(BaseModel):
             ssl_mode_schema = schema.get("properties", {}).get("ssl_mode", {})
             if "anyOf" in ssl_mode_schema:
                 ssl_mode_schema["oneOf"] = ssl_mode_schema.pop("anyOf")
+            ssl_mode_schema["type"] = "object"
 
 
 class ConfigModel(VectorDBConfigModel):
