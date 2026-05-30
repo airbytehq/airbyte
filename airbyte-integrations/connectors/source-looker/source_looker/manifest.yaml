@@ -527,7 +527,8 @@ definitions:
       type: DeclarativeStream
       name: role_groups
       primary_key:
-        - id
+        - - role_id
+        - - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -547,6 +548,12 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/roles"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - role_id
+              value: "{{ stream_partition['id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1244,6 +1251,26 @@ schemas:
         type:
           - "null"
           - string
+      permission_set:
+        type:
+          - "null"
+          - object
+      permission_set_id:
+        type:
+          - "null"
+          - string
+      model_set:
+        type:
+          - "null"
+          - object
+      model_set_id:
+        type:
+          - "null"
+          - string
+      users_url:
+        type:
+          - "null"
+          - string
   user_attributes:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1283,11 +1310,11 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      email:
+      id:
         type:
           - "null"
           - string
-      id:
+      email:
         type:
           - "null"
           - string
@@ -1295,6 +1322,38 @@ schemas:
         type:
           - "null"
           - string
+      first_name:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      display_name:
+        type:
+          - "null"
+          - string
+      is_disabled:
+        type:
+          - "null"
+          - boolean
+      group_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      role_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
   versions:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1547,7 +1606,7 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      external_group_id:
+      role_id:
         type:
           - "null"
           - string
@@ -1556,6 +1615,10 @@ schemas:
           - "null"
           - string
       name:
+        type:
+          - "null"
+          - string
+      external_group_id:
         type:
           - "null"
           - string
@@ -1710,6 +1773,14 @@ schemas:
           - "null"
           - string
       user_count:
+        type:
+          - "null"
+          - integer
+      externally_managed:
+        type:
+          - "null"
+          - boolean
+      external_group_id:
         type:
           - "null"
           - string
