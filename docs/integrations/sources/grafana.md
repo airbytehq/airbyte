@@ -17,6 +17,10 @@ Grafana is an observability and analytics platform that lets teams visualize, ex
 | teams | id | No pagination | ✅ |  ❌  |
 | users | userId | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,7 @@ Grafana is an observability and analytics platform that lets teams visualize, ex
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2026-04-28 | [77282](https://github.com/airbytehq/airbyte/pull/77282) | Update dependencies |
 | 0.0.7 | 2026-04-21 | [76617](https://github.com/airbytehq/airbyte/pull/76617) | Update dependencies |
 | 0.0.6 | 2026-03-31 | [74931](https://github.com/airbytehq/airbyte/pull/74931) | Update dependencies |
 | 0.0.5 | 2026-03-10 | [74658](https://github.com/airbytehq/airbyte/pull/74658) | Update dependencies |

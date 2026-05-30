@@ -23,6 +23,10 @@ API Reference: https://developers.yousign.com/reference/oas-specification
 | templates | id | DefaultPaginator | ✅ |  ✅  |
 | labels | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,7 @@ API Reference: https://developers.yousign.com/reference/oas-specification
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2026-04-28 | [77466](https://github.com/airbytehq/airbyte/pull/77466) | Update dependencies |
 | 0.0.37 | 2026-04-21 | [76817](https://github.com/airbytehq/airbyte/pull/76817) | Update dependencies |
 | 0.0.36 | 2026-03-17 | [75092](https://github.com/airbytehq/airbyte/pull/75092) | Update dependencies |
 | 0.0.35 | 2026-03-10 | [74670](https://github.com/airbytehq/airbyte/pull/74670) | Update dependencies |

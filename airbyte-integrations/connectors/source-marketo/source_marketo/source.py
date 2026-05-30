@@ -168,6 +168,12 @@ class MarketoExportBase(IncrementalMarketoStream):
     # The status is only updated once every 60 seconds
     poll_interval = 60
 
+    # Marketo's Bulk Extract API honors only a single date-range filter per export
+    # job. Subclasses set `filter_field` to the Marketo field that matches their
+    # `cursor_field`, so incremental slices are bounded by the same field used to
+    # advance the cursor.
+    filter_field = "createdAt"
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
@@ -204,7 +210,7 @@ class MarketoExportBase(IncrementalMarketoStream):
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
         for date_slice in date_slices:
-            param = {"fields": [], "filter": {"createdAt": date_slice}}
+            param = {"fields": [], "filter": {self.filter_field: date_slice}}
             param["fields"].extend(self.stream_fields)
             param["filter"].update(self.stream_filter)
 
@@ -404,6 +410,10 @@ class Leads(MarketoExportBase):
     """
 
     cursor_field = "updatedAt"
+    # Filter leads by `updatedAt` so that updates to pre-existing leads are
+    # captured by incremental syncs. Marketo's Bulk Lead Extract honors only a
+    # single filter per export, so the filter field must match the cursor.
+    filter_field = "updatedAt"
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config, self.name)

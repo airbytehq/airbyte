@@ -102,6 +102,10 @@ If your hosting environment supports higher throughput, you can increase the **N
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -109,6 +113,7 @@ If your hosting environment supports higher throughput, you can increase the **N
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.37 | 2026-04-28 | [77469](https://github.com/airbytehq/airbyte/pull/77469) | Update dependencies |
 | 0.5.36 | 2026-04-21 | [76804](https://github.com/airbytehq/airbyte/pull/76804) | Update dependencies |
 | 0.5.35 | 2026-04-14 | [76330](https://github.com/airbytehq/airbyte/pull/76330) | Promoted release candidate to GA |
 | 0.5.35-rc.2 | 2026-04-12 | [76253](https://github.com/airbytehq/airbyte/pull/76253) | Increase default concurrency from 4 to 5 for tuning iteration 2 |

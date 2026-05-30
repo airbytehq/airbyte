@@ -24,6 +24,10 @@ Docs : https://api.salesflare.com/docs
 | pipelines | id | No pagination | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -31,6 +35,7 @@ Docs : https://api.salesflare.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-04-28 | [77428](https://github.com/airbytehq/airbyte/pull/77428) | Update dependencies |
 | 0.0.46 | 2026-04-21 | [76734](https://github.com/airbytehq/airbyte/pull/76734) | Update dependencies |
 | 0.0.45 | 2026-03-31 | [75840](https://github.com/airbytehq/airbyte/pull/75840) | Update dependencies |
 | 0.0.44 | 2026-03-24 | [75335](https://github.com/airbytehq/airbyte/pull/75335) | Update dependencies |

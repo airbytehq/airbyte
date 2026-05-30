@@ -22,6 +22,10 @@ API Reference: https://api.watchmode.com/docs
 | titles | id | DefaultPaginator | ✅ |  ❌  |
 | releases | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -29,6 +33,7 @@ API Reference: https://api.watchmode.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2026-04-28 | [77499](https://github.com/airbytehq/airbyte/pull/77499) | Update dependencies |
 | 0.0.34 | 2026-04-21 | [76830](https://github.com/airbytehq/airbyte/pull/76830) | Update dependencies |
 | 0.0.33 | 2026-03-31 | [75731](https://github.com/airbytehq/airbyte/pull/75731) | Update dependencies |
 | 0.0.32 | 2026-03-17 | [75050](https://github.com/airbytehq/airbyte/pull/75050) | Update dependencies |

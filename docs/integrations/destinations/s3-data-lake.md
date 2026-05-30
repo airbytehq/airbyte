@@ -16,6 +16,9 @@ The S3 Data Lake connector requires two things.
     - Nessie
     - Polaris
 
+If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
+
 ## Setup guide
 
 Follow these steps to set up your S3 storage and Iceberg catalog permissions.
@@ -392,6 +395,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.49      | 2026-05-19 | [78232](https://github.com/airbytehq/airbyte/pull/78232)  | Upgrade CDK to 1.0.13 |
+| 0.3.48      | 2026-05-01 | [77677](https://github.com/airbytehq/airbyte/pull/77677)  | Add configurable flush batch size for aggregate publishing.                                                                     |
 | 0.3.47      | 2026-04-16 | [76410](https://github.com/airbytehq/airbyte/pull/76410) | Upgrade CDK to 1.0.9.                                                  |
 | 0.3.46      | 2026-03-30 |                                                           | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution. |
 | 0.3.45      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |

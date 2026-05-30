@@ -1122,6 +1122,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1205,6 +1208,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1288,6 +1294,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1407,9 +1416,9 @@ definitions:
     sponsored_brands_v3_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_brands_v3_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "purchasedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "purchasedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1548,9 +1557,9 @@ definitions:
     sponsored_display_campaigns_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_campaigns_report_stream_daily
-      primary_key: ["profileId", "reportDate", "campaignId"]
+      primary_key: ["profileId", "date", "campaignId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1735,9 +1744,9 @@ definitions:
     sponsored_display_adgroups_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_adgroups_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      primary_key: ["profileId", "date", "adGroupName", "adGroupId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1925,9 +1934,9 @@ definitions:
     sponsored_display_productads_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_productads_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      primary_key: ["profileId", "date", "adGroupName", "adId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2110,9 +2119,9 @@ definitions:
     sponsored_display_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "targetingId"]
+      primary_key: ["profileId", "date", "adGroupName", "targetingId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2253,9 +2262,9 @@ definitions:
     sponsored_display_asins_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_asins_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "promotedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "promotedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2371,9 +2380,9 @@ definitions:
     sponsored_products_campaigns_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_campaigns_report_stream_daily
-      primary_key: ["profileId", "reportDate", "campaignId"]
+      primary_key: ["profileId", "date", "campaignId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2497,9 +2506,9 @@ definitions:
     sponsored_products_adgroups_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_adgroups_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      primary_key: ["profileId", "date", "adGroupName", "adGroupId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2629,9 +2638,9 @@ definitions:
     sponsored_products_keywords_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_keywords_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      primary_key: ["profileId", "date", "adGroupName", "keywordId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2771,9 +2780,9 @@ definitions:
     sponsored_products_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      primary_key: ["profileId", "date", "adGroupName", "keywordId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2905,9 +2914,9 @@ definitions:
     sponsored_products_productads_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_productads_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      primary_key: ["profileId", "date", "adGroupName", "adId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3023,9 +3032,9 @@ definitions:
     sponsored_products_asins_keywords_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_asins_keywords_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "advertisedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3131,9 +3140,9 @@ definitions:
     sponsored_products_asins_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_asins_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "advertisedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3208,6 +3217,10 @@ definitions:
     end_time_option:
       field_name: endDate
       inject_into: body_json
+
+  incremental_sync_report_datetime_cursor_daily:
+    $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+    cursor_field: date
 
   transformation_report_add_fields:
     - type: AddFields
@@ -3496,7 +3509,7 @@ spec:
         title: Number of concurrent threads
         minimum: 2
         maximum: 20
-        default: 10
+        default: 14
         examples:
           - 2
           - 3
@@ -3550,11 +3563,11 @@ spec:
 # depending on the time.
 # https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
 #
-# We've set the default to 10 so we can leverage some concurrency, but this can be tuned as we
+# We've set the default to 12 so we can leverage some concurrency, but this can be tuned as we
 # continue to observe.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 14) }}"
   max_concurrency: 20
 
 schemas:

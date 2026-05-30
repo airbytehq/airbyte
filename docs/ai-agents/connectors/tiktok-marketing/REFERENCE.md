@@ -8,23 +8,37 @@ The Tiktok-Marketing connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Advertisers | [List](#advertisers-list), [Search](#advertisers-search) |
-| Campaigns | [List](#campaigns-list), [Search](#campaigns-search) |
-| Ad Groups | [List](#ad-groups-list), [Search](#ad-groups-search) |
-| Ads | [List](#ads-list), [Search](#ads-search) |
-| Audiences | [List](#audiences-list), [Search](#audiences-search) |
-| Creative Assets Images | [List](#creative-assets-images-list), [Search](#creative-assets-images-search) |
-| Creative Assets Videos | [List](#creative-assets-videos-list), [Search](#creative-assets-videos-search) |
-| Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Search](#advertisers-reports-daily-search) |
-| Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Search](#campaigns-reports-daily-search) |
-| Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Search](#ad-groups-reports-daily-search) |
-| Ads Reports Daily | [List](#ads-reports-daily-list), [Search](#ads-reports-daily-search) |
+| Advertisers | [List](#advertisers-list), [Context Store Search](#advertisers-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Context Store Search](#campaigns-context-store-search) |
+| Ad Groups | [List](#ad-groups-list), [Context Store Search](#ad-groups-context-store-search) |
+| Ads | [List](#ads-list), [Context Store Search](#ads-context-store-search) |
+| Audiences | [List](#audiences-list), [Context Store Search](#audiences-context-store-search) |
+| Creative Assets Images | [List](#creative-assets-images-list), [Context Store Search](#creative-assets-images-context-store-search) |
+| Creative Assets Videos | [List](#creative-assets-videos-list), [Context Store Search](#creative-assets-videos-context-store-search) |
+| Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Context Store Search](#advertisers-reports-daily-context-store-search) |
+| Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Context Store Search](#campaigns-reports-daily-context-store-search) |
+| Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Context Store Search](#ad-groups-reports-daily-context-store-search) |
+| Ads Reports Daily | [List](#ads-reports-daily-list), [Context Store Search](#ads-reports-daily-context-store-search) |
 
 ## Advertisers
 
 ### Advertisers List
 
 Get advertiser account information
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers",
+  "action": "list",
+  "params": {
+    "advertiser_ids": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -97,16 +111,42 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `promotion_center_city` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
 </details>
 
-### Advertisers Search
+### Advertisers Context Store Search
 
 Search and filter advertisers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "address": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.advertisers.search(
+await tiktok_marketing.advertisers.context_store_search(
     query={"filter": {"eq": {"address": "<str>"}}}
 )
 ```
@@ -119,7 +159,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "advertisers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"address": "<str>"}}}
     }
@@ -219,6 +259,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get campaigns for an advertiser
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -298,14 +352,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "advertiser_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.campaigns.search(
+await tiktok_marketing.campaigns.context_store_search(
     query={"filter": {"eq": {"advertiser_id": 0}}}
 )
 ```
@@ -318,7 +392,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"advertiser_id": 0}}}
     }
@@ -405,6 +479,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Groups List
 
 Get ad groups for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -552,14 +640,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Groups Search
+### Ad Groups Context Store Search
 
 Search and filter ad groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "adgroup_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ad_groups.search(
+await tiktok_marketing.ad_groups.context_store_search(
     query={"filter": {"eq": {"adgroup_id": 0}}}
 )
 ```
@@ -572,7 +680,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"adgroup_id": 0}}}
     }
@@ -639,6 +747,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ads List
 
 Get ads for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -739,14 +861,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ads Search
+### Ads Context Store Search
 
 Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_format": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ads.search(
+await tiktok_marketing.ads.context_store_search(
     query={"filter": {"eq": {"ad_format": "<str>"}}}
 )
 ```
@@ -759,7 +901,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_format": "<str>"}}}
     }
@@ -831,6 +973,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get custom audiences for an advertiser
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "audiences",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -892,14 +1048,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Audiences Search
+### Audiences Context Store Search
 
 Search and filter audiences records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "audiences",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "audience_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.audiences.search(
+await tiktok_marketing.audiences.context_store_search(
     query={"filter": {"eq": {"audience_id": "<str>"}}}
 )
 ```
@@ -912,7 +1088,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "audiences",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"audience_id": "<str>"}}}
     }
@@ -967,6 +1143,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Creative Assets Images List
 
 Search creative asset images for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_images",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1031,14 +1221,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Creative Assets Images Search
+### Creative Assets Images Context Store Search
 
 Search and filter creative assets images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_images",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "create_time": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.creative_assets_images.search(
+await tiktok_marketing.creative_assets_images.context_store_search(
     query={"filter": {"eq": {"create_time": "<str>"}}}
 )
 ```
@@ -1051,7 +1261,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "creative_assets_images",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"create_time": "<str>"}}}
     }
@@ -1110,6 +1320,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Creative Assets Videos List
 
 Search creative asset videos for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_videos",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1181,14 +1405,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Creative Assets Videos Search
+### Creative Assets Videos Context Store Search
 
 Search and filter creative assets videos records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_videos",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "create_time": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.creative_assets_videos.search(
+await tiktok_marketing.creative_assets_videos.context_store_search(
     query={"filter": {"eq": {"create_time": "<str>"}}}
 )
 ```
@@ -1201,7 +1445,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "creative_assets_videos",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"create_time": "<str>"}}}
     }
@@ -1262,6 +1506,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Advertisers Reports Daily List
 
 Get daily performance reports at the advertiser level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1365,14 +1630,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Advertisers Reports Daily Search
+### Advertisers Reports Daily Context Store Search
 
 Search and filter advertisers reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "advertiser_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.advertisers_reports_daily.search(
+await tiktok_marketing.advertisers_reports_daily.context_store_search(
     query={"filter": {"eq": {"advertiser_id": 0}}}
 )
 ```
@@ -1385,7 +1670,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "advertisers_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"advertiser_id": 0}}}
     }
@@ -1489,6 +1774,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get daily performance reports at the campaign level
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1590,14 +1896,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Reports Daily Search
+### Campaigns Reports Daily Context Store Search
 
 Search and filter campaigns reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "campaign_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.campaigns_reports_daily.search(
+await tiktok_marketing.campaigns_reports_daily.context_store_search(
     query={"filter": {"eq": {"campaign_id": 0}}}
 )
 ```
@@ -1610,7 +1936,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"campaign_id": 0}}}
     }
@@ -1711,6 +2037,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Groups Reports Daily List
 
 Get daily performance reports at the ad group level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1831,14 +2178,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Groups Reports Daily Search
+### Ad Groups Reports Daily Context Store Search
 
 Search and filter ad groups reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "adgroup_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ad_groups_reports_daily.search(
+await tiktok_marketing.ad_groups_reports_daily.context_store_search(
     query={"filter": {"eq": {"adgroup_id": 0}}}
 )
 ```
@@ -1851,7 +2218,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_groups_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"adgroup_id": 0}}}
     }
@@ -1989,6 +2356,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get daily performance reports at the ad level
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2111,14 +2499,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ads Reports Daily Search
+### Ads Reports Daily Context Store Search
 
 Search and filter ads reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ads_reports_daily.search(
+await tiktok_marketing.ads_reports_daily.context_store_search(
     query={"filter": {"eq": {"ad_id": 0}}}
 )
 ```
@@ -2131,7 +2539,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_id": 0}}}
     }

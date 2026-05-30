@@ -20,6 +20,10 @@ Less Annoying CRM connector  enables seamless data integration, allowing users t
 | events | EventId | DefaultPaginator | ✅ |  ✅  |
 | contact_events |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -27,6 +31,7 @@ Less Annoying CRM connector  enables seamless data integration, allowing users t
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-04-28 | [77396](https://github.com/airbytehq/airbyte/pull/77396) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76666](https://github.com/airbytehq/airbyte/pull/76666) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75705](https://github.com/airbytehq/airbyte/pull/75705) | Update dependencies |
 | 0.0.47 | 2026-03-24 | [74426](https://github.com/airbytehq/airbyte/pull/74426) | Update dependencies |

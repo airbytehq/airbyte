@@ -1038,6 +1038,14 @@ definitions:
                 header: Retry-After
             response_filters:
               - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                error_message_contains: "does not support querying for values data"
+                error_message: >-
+                  Skipping conversion metric because it does not support
+                  values data queries. Other metrics will continue syncing.
+              - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
                   - 429
@@ -1179,6 +1187,14 @@ definitions:
               - type: WaitTimeFromHeader
                 header: Retry-After
             response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                error_message_contains: "does not support querying for values data"
+                error_message: >-
+                  Skipping conversion metric because it does not support
+                  values data queries. Other metrics will continue syncing.
               - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:

@@ -71,6 +71,10 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -78,6 +82,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 1.2.53 | 2026-04-28 | [77334](https://github.com/airbytehq/airbyte/pull/77334) | Update dependencies |
 | 1.2.52 | 2026-04-21 | [76716](https://github.com/airbytehq/airbyte/pull/76716) | Update dependencies |
 | 1.2.51 | 2026-03-31 | [75648](https://github.com/airbytehq/airbyte/pull/75648) | Update dependencies |
 | 1.2.50 | 2026-03-24 | [74991](https://github.com/airbytehq/airbyte/pull/74991) | Update dependencies |

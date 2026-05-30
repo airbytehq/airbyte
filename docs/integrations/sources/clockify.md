@@ -2,6 +2,10 @@
 
 The Airbyte Source for [Clockify](https://clockify.me)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -9,6 +13,7 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.51 | 2026-04-28 | [77172](https://github.com/airbytehq/airbyte/pull/77172) | Update dependencies |
 | 0.4.50 | 2026-04-21 | [76573](https://github.com/airbytehq/airbyte/pull/76573) | Update dependencies |
 | 0.4.49 | 2026-03-17 | [75105](https://github.com/airbytehq/airbyte/pull/75105) | Update dependencies |
 | 0.4.48 | 2026-03-10 | [74433](https://github.com/airbytehq/airbyte/pull/74433) | Update dependencies |

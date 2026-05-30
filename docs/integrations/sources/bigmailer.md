@@ -21,6 +21,10 @@ An Airbyte connector for [BigMailer](https://bigmailer.com) would facilitate sea
 | suppression_lists |  | DefaultPaginator | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,7 @@ An Airbyte connector for [BigMailer](https://bigmailer.com) would facilitate sea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.48 | 2026-04-28 | [77179](https://github.com/airbytehq/airbyte/pull/77179) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [76500](https://github.com/airbytehq/airbyte/pull/76500) | Update dependencies |
 | 0.0.46 | 2026-03-31 | [75880](https://github.com/airbytehq/airbyte/pull/75880) | Update dependencies |
 | 0.0.45 | 2026-03-24 | [75318](https://github.com/airbytehq/airbyte/pull/75318) | Update dependencies |

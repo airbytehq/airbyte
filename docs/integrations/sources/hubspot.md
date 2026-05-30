@@ -240,6 +240,14 @@ Because of this, the `engagements` stream can be slow to sync if it hasn't synce
 
 This stream only syncs marketing forms.
 
+### Notes on the `list_memberships` stream
+
+The `list_memberships` stream reads memberships for every list returned by the `contact_lists` stream by calling HubSpot's `GET /crm/v3/lists/{listId}/memberships` endpoint. A few behaviors are worth knowing about:
+
+- The stream only supports full refresh. HubSpot's memberships endpoint doesn't expose a cursor suitable for incremental sync.
+- Records are keyed by the composite primary key `(recordId, listId)`. `listId` is emitted as a string so records serialize cleanly to Avro destinations.
+- Some lists returned by `contact_lists` reference an `objectTypeId` that isn't active for your portal (for example, Leads lists with `objectTypeId` `0-136`). HubSpot's memberships endpoint rejects those lists with a 400 `VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST`. The connector skips those lists so they don't fail the sync, and logs an entry for each one. If you need memberships for those object types, enable the corresponding object in HubSpot or sync the object directly from its own stream (for example, `leads`).
+
 ### Notes on the `Custom CRM` Objects
 
 Custom CRM Objects and Custom Web Analytics will appear as streams available for sync, alongside the standard objects listed above.
@@ -339,6 +347,10 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -346,10 +358,11 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.5.5 | 2026-04-22 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
 | 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
-| 6.5.3 | 2026-04-20 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
+| 6.5.3 | 2026-04-21 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
 | 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |
-| 6.5.1 | 2026-04-16 | [76395](https://github.com/airbytehq/airbyte/pull/76395) | Fix Avro serialization for `listId` in the `list_memberships` stream (emit as string) and ignore `400 VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST` responses so lists with an `objectTypeId` that is not active for the portal (e.g. Leads, `0-136`) are skipped instead of failing the sync |
+| 6.5.1 | 2026-04-20 | [76395](https://github.com/airbytehq/airbyte/pull/76395) | Emit `listId` as a string in the `list_memberships` stream, and skip lists whose `objectTypeId` is not active for the portal (for example, Leads) instead of failing the sync |
 | 6.5.0 | 2026-04-14 | [75281](https://github.com/airbytehq/airbyte/pull/75281) | Add new `list_memberships` stream via V3 Lists API |
 | 6.4.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 6.4.3 | 2026-04-08 | [76149](https://github.com/airbytehq/airbyte/pull/76149) | Added missing OAuth scopes `crm.objects.users.read` and `settings.users.read` for the `users` stream |

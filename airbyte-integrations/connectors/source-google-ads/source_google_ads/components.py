@@ -14,6 +14,7 @@ from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Map
 
 import anyascii
 import requests
+from requests.adapters import HTTPAdapter
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
 from airbyte_cdk.sources.declarative.decoders.composite_raw_decoder import JsonParser
@@ -35,6 +36,40 @@ from .google_ads import GoogleAds
 
 
 logger = logging.getLogger("airbyte")
+
+# Default socket-level timeout (in seconds) for all Google Ads API HTTP calls.
+# This is an idle timeout per recv() call, not a total request timeout,
+# so streaming responses that keep sending data are unaffected.
+DEFAULT_HTTP_TIMEOUT = 300  # 5 minutes
+
+
+class TimeoutHTTPAdapter(HTTPAdapter):
+    """
+    HTTP adapter that enforces a default socket timeout on every request.
+    Prevents workers from hanging indefinitely on unresponsive API calls.
+    """
+
+    def __init__(self, timeout: int = DEFAULT_HTTP_TIMEOUT, *args: Any, **kwargs: Any) -> None:
+        self.timeout = timeout
+        super().__init__(*args, **kwargs)
+
+    def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
+        kwargs.setdefault("timeout", self.timeout)
+        return super().send(request, **kwargs)
+
+
+def _mount_timeout_adapter(requester: Any) -> None:
+    """Mount `TimeoutHTTPAdapter` on a requester's HTTP session.
+
+    Ensures every Google Ads HTTP call has a default socket-level idle timeout,
+    including parent-stream fetches that route through the stock CDK `HttpRequester`
+    (e.g. `customer_client`, `customer_client_non_manager`, `accessible_accounts`).
+    """
+    http_client = getattr(requester, "_http_client", None)
+    session = getattr(http_client, "_session", None) if http_client is not None else None
+    if session is not None:
+        session.mount("https://", TimeoutHTTPAdapter(timeout=DEFAULT_HTTP_TIMEOUT))
+
 
 REPORT_MAPPING = {
     "account_performance_report": "customer",
@@ -343,6 +378,7 @@ class GoogleAdsHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.stream_response = True
+        _mount_timeout_adapter(self)
 
     def get_request_body_json(
         self,
@@ -515,6 +551,7 @@ class CriterionRetriever(SimpleRetriever):
         # available after the retriever is fully constructed; propagate it here.
         if hasattr(self.requester, "name"):
             self.requester.name = self.name
+        _mount_timeout_adapter(self.requester)
 
     def _read_pages(
         self,
@@ -601,6 +638,7 @@ class GoogleAdsRetriever(SimpleRetriever):
             self.requester.name = self.name
         if self.decoder and isinstance(self.record_selector.extractor, DpathExtractor):
             self.record_selector.extractor.decoder = self.decoder
+        _mount_timeout_adapter(self.requester)
 
     def _read_pages(
         self,
@@ -889,6 +927,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
         super().__post_init__(parameters=parameters)
         self.query = GAQL.parse(parameters.get("query"))
         self.stream_response = True
+        _mount_timeout_adapter(self)
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
@@ -1069,8 +1108,8 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         except ValueError:
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
-                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
-                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
             )
 
 

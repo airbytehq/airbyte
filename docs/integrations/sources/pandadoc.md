@@ -26,6 +26,10 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 | webhook_subscriptions | uuid | No pagination | ✅ |  ❌  |
 | webhook_events | uuid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,7 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-04-28 | [77355](https://github.com/airbytehq/airbyte/pull/77355) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76697](https://github.com/airbytehq/airbyte/pull/76697) | Update dependencies |
 | 0.0.50 | 2026-03-17 | [74964](https://github.com/airbytehq/airbyte/pull/74964) | Update dependencies |
 | 0.0.49 | 2026-03-10 | [74657](https://github.com/airbytehq/airbyte/pull/74657) | Update dependencies |

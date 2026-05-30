@@ -29,6 +29,10 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 | audio | record_id | DefaultPaginator | ✅ |  ❌  |
 | videos | record_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -36,6 +40,7 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-04-28 | [77263](https://github.com/airbytehq/airbyte/pull/77263) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76607](https://github.com/airbytehq/airbyte/pull/76607) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75688](https://github.com/airbytehq/airbyte/pull/75688) | Update dependencies |
 | 0.0.49 | 2026-03-17 | [74955](https://github.com/airbytehq/airbyte/pull/74955) | Update dependencies |

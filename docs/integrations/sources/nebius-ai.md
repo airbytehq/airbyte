@@ -19,6 +19,10 @@ API Reference: https://studio.nebius.com/docs/api-reference
 | batches | id | No pagination | ✅ |  ✅  |
 | batch_results | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -26,6 +30,7 @@ API Reference: https://studio.nebius.com/docs/api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2026-04-28 | [77306](https://github.com/airbytehq/airbyte/pull/77306) | Update dependencies |
 | 0.0.34 | 2026-04-21 | [75362](https://github.com/airbytehq/airbyte/pull/75362) | Update dependencies |
 | 0.0.33 | 2026-03-10 | [74594](https://github.com/airbytehq/airbyte/pull/74594) | Update dependencies |
 | 0.0.32 | 2026-03-03 | [74182](https://github.com/airbytehq/airbyte/pull/74182) | Update dependencies |
