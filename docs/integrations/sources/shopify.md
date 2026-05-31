@@ -194,6 +194,10 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -250,10 +254,6 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 </details>
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
@@ -261,7 +261,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.1 | 2026-05-29 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fixed the `discount_codes` stream so stores with more than 100 redeem codes per discount can sync the full code set. |
+| 3.4.1 | 2026-05-29 | [78513](https://github.com/airbytehq/airbyte/pull/78513) | Fixed the `discount_codes` stream so stores with more than 100 redeem codes per discount can sync the full code set. |
 | 3.4.0 | 2026-05-12 | [76192](https://github.com/airbytehq/airbyte/pull/76192) | Add `lookback_window_in_days` config option to re-fetch recent records during incremental syncs, preventing missing data from race conditions or late-arriving updates. |
 | 3.3.3 | 2026-05-11 | [77005](https://github.com/airbytehq/airbyte/pull/77005) | Fix some incremental GraphQL Bulk streams silently skipping parent records when a bulk job checkpoints mid-output. Use the parent cursor tracked by the bulk record producer to advance the next slice, not the child record's cursor. |
 | 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
