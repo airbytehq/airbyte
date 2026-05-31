@@ -38,6 +38,10 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 | Customer invoices payments list | ref | No pagination | ✅ |  ❌  |
 | Supplier invoices payments list | ref | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

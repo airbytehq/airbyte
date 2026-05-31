@@ -23,6 +23,10 @@ API Reference: https://developers.giphy.com/docs/api/endpoint/#trending
 | gifs_search | id | DefaultPaginator | ✅ |  ✅  |
 | stickers_search | uuid | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

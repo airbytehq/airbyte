@@ -57,6 +57,10 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 - [Report](https://engageapi.pendo.io/#2ac0699a-b653-4082-be11-563e5c0c9410)
 - [Guide](https://engageapi.pendo.io/#4f1e3ca1-fc41-4469-bf4b-da90ee8caf3d)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

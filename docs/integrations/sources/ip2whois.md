@@ -25,6 +25,10 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 - [API token](https://www.ip2whois.com/register)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

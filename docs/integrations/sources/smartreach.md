@@ -16,6 +16,10 @@ Docs : https://smartreach.io/api_docs#smartreach-api
 | campaigns | id | No pagination | ✅ |  ❌  |
 | prospects |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

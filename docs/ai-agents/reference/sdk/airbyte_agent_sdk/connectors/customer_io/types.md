@@ -2455,6 +2455,101 @@ Classes
     `transactional_message_id: Any`
     :   The type of the None singleton.
 
+<a id="TransactionalMessageContentsListParams"></a>
+
+`TransactionalMessageContentsListParams(*args, **kwargs)`
+:   Parameters for transactional_message_contents.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `transactional_id: str`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessageContentsUpdateParams"></a>
+
+`TransactionalMessageContentsUpdateParams(*args, **kwargs)`
+:   Parameters for transactional_message_contents.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `body_amp: str`
+    :   The type of the None singleton.
+
+    `content_id: str`
+    :   The type of the None singleton.
+
+    `from_id: int`
+    :   The type of the None singleton.
+
+    `headers: list[airbyte_agent_sdk.connectors.customer_io.types.TransactionalMessageContentsUpdateParamsHeadersItem]`
+    :   The type of the None singleton.
+
+    `preheader_text: str`
+    :   The type of the None singleton.
+
+    `recipient: str`
+    :   The type of the None singleton.
+
+    `reply_to_id: int | None`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `transactional_id: str`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessageContentsUpdateParamsHeadersItem"></a>
+
+`TransactionalMessageContentsUpdateParamsHeadersItem(*args, **kwargs)`
+:   Nested schema for TransactionalMessageContentsUpdateParams.headers_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessagesGetParams"></a>
+
+`TransactionalMessagesGetParams(*args, **kwargs)`
+:   Parameters for transactional_messages.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `transactional_id: str`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessagesListParams"></a>
+
+`TransactionalMessagesListParams(*args, **kwargs)`
+:   Parameters for transactional_messages.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
 <a id="TransactionalPushCreateParams"></a>
 
 `TransactionalPushCreateParams(*args, **kwargs)`

@@ -31,6 +31,10 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 | measurements_daily |  | DefaultPaginator | ✅ |  ❌  |
 | measurements_yearly |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

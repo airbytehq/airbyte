@@ -57,6 +57,10 @@ https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticat
 The procedure to generate the credentials and setup the necessary permissions is well described in this post from Magnetism blog:
 https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-application-user-in-dynamics-365
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
