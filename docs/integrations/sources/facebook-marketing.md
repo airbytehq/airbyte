@@ -381,6 +381,14 @@ If you sync multiple ad accounts in different timezones within a single connecti
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
+</HideInUI>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+<HideInUI>
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -468,10 +476,6 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 5. Verify with Facebook Ads Manager: compare values directly in Facebook Ads Manager at the ad or ad set level, where action values often appear correctly even if they’re missing in aggregated results.
 
 </HideInUI>
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
