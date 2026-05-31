@@ -183,6 +183,79 @@ Classes
     `contains: airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="AccountsCreateParams"></a>
+
+`AccountsCreateParams(*args, **kwargs)`
+:   Parameters for accounts.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_number: str`
+    :   The type of the None singleton.
+
+    `annual_revenue: float`
+    :   The type of the None singleton.
+
+    `billing_city: str`
+    :   The type of the None singleton.
+
+    `billing_country: str`
+    :   The type of the None singleton.
+
+    `billing_postal_code: str`
+    :   The type of the None singleton.
+
+    `billing_state: str`
+    :   The type of the None singleton.
+
+    `billing_street: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `industry: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `number_of_employees: int`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `website: str`
+    :   The type of the None singleton.
+
+<a id="AccountsDeleteParams"></a>
+
+`AccountsDeleteParams(*args, **kwargs)`
+:   Parameters for accounts.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="AccountsEqCondition"></a>
 
 `AccountsEqCondition(*args, **kwargs)`
@@ -827,6 +900,68 @@ Classes
     `website: str`
     :   Website URL for the account
 
+<a id="AccountsUpdateParams"></a>
+
+`AccountsUpdateParams(*args, **kwargs)`
+:   Parameters for accounts.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_number: str`
+    :   The type of the None singleton.
+
+    `annual_revenue: float`
+    :   The type of the None singleton.
+
+    `billing_city: str`
+    :   The type of the None singleton.
+
+    `billing_country: str`
+    :   The type of the None singleton.
+
+    `billing_postal_code: str`
+    :   The type of the None singleton.
+
+    `billing_state: str`
+    :   The type of the None singleton.
+
+    `billing_street: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `industry: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `number_of_employees: int`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `website: str`
+    :   The type of the None singleton.
+
 <a id="AirbyteSearchParams"></a>
 
 `AirbyteSearchParams(*args, **kwargs)`
@@ -912,6 +1047,73 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CampaignsCreateParams"></a>
+
+`CampaignsCreateParams(*args, **kwargs)`
+:   Parameters for campaigns.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `actual_cost: float`
+    :   The type of the None singleton.
+
+    `budgeted_cost: float`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `end_date: str`
+    :   The type of the None singleton.
+
+    `expected_response: float`
+    :   The type of the None singleton.
+
+    `expected_revenue: float`
+    :   The type of the None singleton.
+
+    `is_active: bool`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `number_sent: float`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `start_date: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="CampaignsDeleteParams"></a>
+
+`CampaignsDeleteParams(*args, **kwargs)`
+:   Parameters for campaigns.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="CampaignsGetParams"></a>
 
 `CampaignsGetParams(*args, **kwargs)`
@@ -943,6 +1145,62 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CampaignsUpdateParams"></a>
+
+`CampaignsUpdateParams(*args, **kwargs)`
+:   Parameters for campaigns.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `actual_cost: float`
+    :   The type of the None singleton.
+
+    `budgeted_cost: float`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `end_date: str`
+    :   The type of the None singleton.
+
+    `expected_response: float`
+    :   The type of the None singleton.
+
+    `expected_revenue: float`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `is_active: bool`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `number_sent: float`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `start_date: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
 <a id="CasesApiSearchParams"></a>
 
 `CasesApiSearchParams(*args, **kwargs)`
@@ -955,6 +1213,76 @@ Classes
     ### Class variables
 
     `q: str`
+    :   The type of the None singleton.
+
+<a id="CasesCreateParams"></a>
+
+`CasesCreateParams(*args, **kwargs)`
+:   Parameters for cases.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `contact_id: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `origin: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `priority: str`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `supplied_company: str`
+    :   The type of the None singleton.
+
+    `supplied_email: str`
+    :   The type of the None singleton.
+
+    `supplied_name: str`
+    :   The type of the None singleton.
+
+    `supplied_phone: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="CasesDeleteParams"></a>
+
+`CasesDeleteParams(*args, **kwargs)`
+:   Parameters for cases.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="CasesGetParams"></a>
@@ -986,6 +1314,65 @@ Classes
     ### Class variables
 
     `q: str`
+    :   The type of the None singleton.
+
+<a id="CasesUpdateParams"></a>
+
+`CasesUpdateParams(*args, **kwargs)`
+:   Parameters for cases.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `contact_id: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `origin: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `priority: str`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `supplied_company: str`
+    :   The type of the None singleton.
+
+    `supplied_email: str`
+    :   The type of the None singleton.
+
+    `supplied_name: str`
+    :   The type of the None singleton.
+
+    `supplied_phone: str`
+    :   The type of the None singleton.
+
+    `type: str`
     :   The type of the None singleton.
 
 <a id="ContactsAndCondition"></a>
@@ -1147,6 +1534,76 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ContactsCreateParams"></a>
+
+`ContactsCreateParams(*args, **kwargs)`
+:   Parameters for contacts.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `department: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `mailing_city: str`
+    :   The type of the None singleton.
+
+    `mailing_country: str`
+    :   The type of the None singleton.
+
+    `mailing_postal_code: str`
+    :   The type of the None singleton.
+
+    `mailing_state: str`
+    :   The type of the None singleton.
+
+    `mailing_street: str`
+    :   The type of the None singleton.
+
+    `mobile_phone: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="ContactsDeleteParams"></a>
+
+`ContactsDeleteParams(*args, **kwargs)`
+:   Parameters for contacts.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -1745,6 +2202,65 @@ Classes
     `title: str`
     :   Job title of the contact
 
+<a id="ContactsUpdateParams"></a>
+
+`ContactsUpdateParams(*args, **kwargs)`
+:   Parameters for contacts.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `department: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `mailing_city: str`
+    :   The type of the None singleton.
+
+    `mailing_country: str`
+    :   The type of the None singleton.
+
+    `mailing_postal_code: str`
+    :   The type of the None singleton.
+
+    `mailing_state: str`
+    :   The type of the None singleton.
+
+    `mailing_street: str`
+    :   The type of the None singleton.
+
+    `mobile_phone: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
 <a id="ContentVersionsDownloadParams"></a>
 
 `ContentVersionsDownloadParams(*args, **kwargs)`
@@ -1807,6 +2323,64 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="EventsCreateParams"></a>
+
+`EventsCreateParams(*args, **kwargs)`
+:   Parameters for events.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `duration_in_minutes: int`
+    :   The type of the None singleton.
+
+    `end_date_time: str`
+    :   The type of the None singleton.
+
+    `is_all_day_event: bool`
+    :   The type of the None singleton.
+
+    `location: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `show_as: str`
+    :   The type of the None singleton.
+
+    `start_date_time: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `what_id: str`
+    :   The type of the None singleton.
+
+    `who_id: str`
+    :   The type of the None singleton.
+
+<a id="EventsDeleteParams"></a>
+
+`EventsDeleteParams(*args, **kwargs)`
+:   Parameters for events.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="EventsGetParams"></a>
 
 `EventsGetParams(*args, **kwargs)`
@@ -1836,6 +2410,53 @@ Classes
     ### Class variables
 
     `q: str`
+    :   The type of the None singleton.
+
+<a id="EventsUpdateParams"></a>
+
+`EventsUpdateParams(*args, **kwargs)`
+:   Parameters for events.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `duration_in_minutes: int`
+    :   The type of the None singleton.
+
+    `end_date_time: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `is_all_day_event: bool`
+    :   The type of the None singleton.
+
+    `location: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `show_as: str`
+    :   The type of the None singleton.
+
+    `start_date_time: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `what_id: str`
+    :   The type of the None singleton.
+
+    `who_id: str`
     :   The type of the None singleton.
 
 <a id="LeadsAndCondition"></a>
@@ -2021,6 +2642,94 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="LeadsCreateParams"></a>
+
+`LeadsCreateParams(*args, **kwargs)`
+:   Parameters for leads.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `annual_revenue: float`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `company: str`
+    :   The type of the None singleton.
+
+    `country: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `industry: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `lead_source: str`
+    :   The type of the None singleton.
+
+    `mobile_phone: str`
+    :   The type of the None singleton.
+
+    `number_of_employees: int`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `postal_code: str`
+    :   The type of the None singleton.
+
+    `rating: str`
+    :   The type of the None singleton.
+
+    `state: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `street: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `website: str`
+    :   The type of the None singleton.
+
+<a id="LeadsDeleteParams"></a>
+
+`LeadsDeleteParams(*args, **kwargs)`
+:   Parameters for leads.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="LeadsEqCondition"></a>
@@ -2715,6 +3424,83 @@ Classes
     `website: str`
     :   Website URL for the lead's company
 
+<a id="LeadsUpdateParams"></a>
+
+`LeadsUpdateParams(*args, **kwargs)`
+:   Parameters for leads.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `annual_revenue: float`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `company: str`
+    :   The type of the None singleton.
+
+    `country: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `industry: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `lead_source: str`
+    :   The type of the None singleton.
+
+    `mobile_phone: str`
+    :   The type of the None singleton.
+
+    `number_of_employees: int`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `postal_code: str`
+    :   The type of the None singleton.
+
+    `rating: str`
+    :   The type of the None singleton.
+
+    `state: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `street: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `website: str`
+    :   The type of the None singleton.
+
 <a id="NotesApiSearchParams"></a>
 
 `NotesApiSearchParams(*args, **kwargs)`
@@ -2727,6 +3513,46 @@ Classes
     ### Class variables
 
     `q: str`
+    :   The type of the None singleton.
+
+<a id="NotesCreateParams"></a>
+
+`NotesCreateParams(*args, **kwargs)`
+:   Parameters for notes.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `is_private: bool`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="NotesDeleteParams"></a>
+
+`NotesDeleteParams(*args, **kwargs)`
+:   Parameters for notes.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="NotesGetParams"></a>
@@ -2758,6 +3584,32 @@ Classes
     ### Class variables
 
     `q: str`
+    :   The type of the None singleton.
+
+<a id="NotesUpdateParams"></a>
+
+`NotesUpdateParams(*args, **kwargs)`
+:   Parameters for notes.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `is_private: bool`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `title: str`
     :   The type of the None singleton.
 
 <a id="OpportunitiesAndCondition"></a>
@@ -2919,6 +3771,70 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OpportunitiesCreateParams"></a>
+
+`OpportunitiesCreateParams(*args, **kwargs)`
+:   Parameters for opportunities.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `amount: float`
+    :   The type of the None singleton.
+
+    `campaign_id: str`
+    :   The type of the None singleton.
+
+    `close_date: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `forecast_category_name: str`
+    :   The type of the None singleton.
+
+    `lead_source: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `next_step: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `probability: float`
+    :   The type of the None singleton.
+
+    `stage_name: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="OpportunitiesDeleteParams"></a>
+
+`OpportunitiesDeleteParams(*args, **kwargs)`
+:   Parameters for opportunities.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="OpportunitiesEqCondition"></a>
@@ -3516,6 +4432,59 @@ Classes
 
     `type_: str`
     :   Type of opportunity (e.g., New Business, Existing Business)
+
+<a id="OpportunitiesUpdateParams"></a>
+
+`OpportunitiesUpdateParams(*args, **kwargs)`
+:   Parameters for opportunities.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `amount: float`
+    :   The type of the None singleton.
+
+    `campaign_id: str`
+    :   The type of the None singleton.
+
+    `close_date: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `forecast_category_name: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `lead_source: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `next_step: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `probability: float`
+    :   The type of the None singleton.
+
+    `stage_name: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
 
 <a id="OpportunityStagesAndCondition"></a>
 
@@ -4150,6 +5119,57 @@ Classes
 
     * builtins.dict
 
+<a id="SobjectsCreateParams"></a>
+
+`SobjectsCreateParams(*args, **kwargs)`
+:   Parameters for sobjects.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `sobject_type: str`
+    :   The type of the None singleton.
+
+<a id="SobjectsDeleteParams"></a>
+
+`SobjectsDeleteParams(*args, **kwargs)`
+:   Parameters for sobjects.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `sobject_type: str`
+    :   The type of the None singleton.
+
+<a id="SobjectsGetParams"></a>
+
+`SobjectsGetParams(*args, **kwargs)`
+:   Parameters for sobjects.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fields: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `sobject_type: str`
+    :   The type of the None singleton.
+
 <a id="SobjectsListParams"></a>
 
 `SobjectsListParams(*args, **kwargs)`
@@ -4158,6 +5178,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="SobjectsUpdateParams"></a>
+
+`SobjectsUpdateParams(*args, **kwargs)`
+:   Parameters for sobjects.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `sobject_type: str`
+    :   The type of the None singleton.
 
 <a id="TasksAndCondition"></a>
 
@@ -4312,6 +5349,64 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.salesforce.types.TasksAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TasksCreateParams"></a>
+
+`TasksCreateParams(*args, **kwargs)`
+:   Parameters for tasks.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `activity_date: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `is_reminder_set: bool`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `priority: str`
+    :   The type of the None singleton.
+
+    `reminder_date_time: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `what_id: str`
+    :   The type of the None singleton.
+
+    `who_id: str`
+    :   The type of the None singleton.
+
+<a id="TasksDeleteParams"></a>
+
+`TasksDeleteParams(*args, **kwargs)`
+:   Parameters for tasks.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="TasksEqCondition"></a>
@@ -4886,6 +5981,53 @@ Classes
     `who_id: str`
     :   ID of the related person (Contact or Lead)
 
+<a id="TasksUpdateParams"></a>
+
+`TasksUpdateParams(*args, **kwargs)`
+:   Parameters for tasks.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `activity_date: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `is_reminder_set: bool`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `priority: str`
+    :   The type of the None singleton.
+
+    `reminder_date_time: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `what_id: str`
+    :   The type of the None singleton.
+
+    `who_id: str`
+    :   The type of the None singleton.
+
 <a id="UsersAndCondition"></a>
 
 `UsersAndCondition(*args, **kwargs)`
@@ -5049,6 +6191,68 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.salesforce.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersCreateParams"></a>
+
+`UsersCreateParams(*args, **kwargs)`
+:   Parameters for users.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `alias: str`
+    :   The type of the None singleton.
+
+    `department: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `email_encoding_key: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `is_active: bool`
+    :   The type of the None singleton.
+
+    `language_locale_key: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `locale_sid_key: str`
+    :   The type of the None singleton.
+
+    `manager_id: str`
+    :   The type of the None singleton.
+
+    `mobile_phone: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `profile_id: str`
+    :   The type of the None singleton.
+
+    `time_zone_sid_key: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `user_role_id: str`
+    :   The type of the None singleton.
+
+    `username: str`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -5718,3 +6922,68 @@ Classes
 
     `username: str`
     :   Username for logging into Salesforce (unique across all orgs)
+
+<a id="UsersUpdateParams"></a>
+
+`UsersUpdateParams(*args, **kwargs)`
+:   Parameters for users.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `alias: str`
+    :   The type of the None singleton.
+
+    `department: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `email_encoding_key: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `is_active: bool`
+    :   The type of the None singleton.
+
+    `language_locale_key: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `locale_sid_key: str`
+    :   The type of the None singleton.
+
+    `manager_id: str`
+    :   The type of the None singleton.
+
+    `mobile_phone: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `profile_id: str`
+    :   The type of the None singleton.
+
+    `time_zone_sid_key: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `user_role_id: str`
+    :   The type of the None singleton.
+
+    `username: str`
+    :   The type of the None singleton.

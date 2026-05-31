@@ -469,6 +469,10 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 </HideInUI>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -477,7 +481,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.2.13 | 2026-05-20 | [78060](https://github.com/airbytehq/airbyte/pull/78060) | Fixed sync failures on Ads Insights breakdown streams caused by invalid field requests; cap async-job status-poll batches at Meta's 50-per-batch limit when a parent job has many children. |
-| 5.2.12 | 2026-05-20 | [78060](https://github.com/airbytehq/airbyte/pull/78060) | Fixed sync failures on Ads Insights breakdown streams caused by invalid field requests; cap async-job status-poll batches at Meta's 50-per-batch limit when a parent job has many children. |
+| 5.2.12 | 2026-05-27 | [78451](https://github.com/airbytehq/airbyte/pull/78451) | Promoted release candidate to GA |
 | 5.2.12-rc.1 | 2026-05-20 | [75457](https://github.com/airbytehq/airbyte/pull/75457) | Bump facebook-business SDK from v23 to v25 to support Marketing API v25.0 before v23.0 sunset on June 9, 2026 |
 | 5.2.11 | 2026-04-28 | [76977](https://github.com/airbytehq/airbyte/pull/76977) | Bump airbyte-cdk to ^7.17.4; facebook-business updated to 23.0.3 via lockfile refresh |
 | 5.2.10 | 2026-04-27 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |

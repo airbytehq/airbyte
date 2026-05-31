@@ -21,6 +21,10 @@ API Reference: https://docs.imagga.com/#introduction
 | usage | uuid | DefaultPaginator | ❌ |  ❌  |
 | barcodes | uuid | DefaultPaginator | ❌ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

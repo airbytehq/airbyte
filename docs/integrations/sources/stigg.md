@@ -40,6 +40,10 @@ The Stigg source connector supports the following sync modes:
 - [Customers](https://docs.stigg.io/api-and-sdks/integration/backend/graphql#getting-customer-data) - Returns all customers in your Stigg account, including their billing information, payment method status, and subscription counts
 - [Subscriptions](https://docs.stigg.io/api-and-sdks/integration/backend/graphql#getting-a-subscription) - Returns all subscriptions in your Stigg account, including status, billing period, and trial information
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -22,6 +22,10 @@ Integrate seamlessly with Drip using this Airbyte connector, enabling smooth dat
 | tags | tags | DefaultPaginator | ✅ |  ❌  |
 | webhooks | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

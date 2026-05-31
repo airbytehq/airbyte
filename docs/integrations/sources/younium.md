@@ -39,6 +39,10 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 - [Products](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Products)
 - [Invoices](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Invoices)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

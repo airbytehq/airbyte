@@ -13,6 +13,10 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 | sets | id | No pagination | ✅ |  ❌  |
 | symbols | symbol | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -53,6 +53,10 @@ Generates a stream named `wide` with a configurable number of columns (1–1000,
 | **Max Concurrency** | integer | _(auto)_ | Maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance automatically. |
 | **Column Count** | integer | 50 | Wide mode only. The number of columns to generate, including the `id` column. Minimum 1, maximum 1000. |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
