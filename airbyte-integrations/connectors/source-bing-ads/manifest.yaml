@@ -17698,16 +17698,6 @@ schemas:
           - "null"
           - number
 
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 100
-          interval: PT1M
-      matchers: []
-  status_codes_for_ratelimit_hit: [429]
-
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
