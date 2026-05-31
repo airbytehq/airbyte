@@ -207,3 +207,15 @@ two separate rate limit policies:
 The error handler uses dual backoff on 429 responses: first the `Retry-After` header, then exponential
 backoff as fallback. This dual approach is necessary because HubSpot does not always include the
 `Retry-After` header on 429 responses.
+
+## Incremental Stream Considerations
+
+The HubSpot API supports incremental data access via the CRM Search API with `lastmodifieddate` filtering and dedicated incremental endpoints. The connector uses Python custom components referenced from the manifest. The connector already supports incremental sync for most high-volume CRM streams (contacts, companies, deals, tickets, etc.).
+
+**Connector type:** Python custom components (hybrid manifest + Python)
+
+**Analysis status:** Streams are Python-defined via custom components. The connector is mature with extensive incremental support already in place.
+
+### Future incremental stream candidates
+
+- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.

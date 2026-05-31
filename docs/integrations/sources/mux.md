@@ -27,6 +27,10 @@ Visit `https://docs.mux.com/api-reference` for API documentation
 | video_uploads | id | DefaultPaginator | ✅ |  ❌  |
 | video_signing-keys | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

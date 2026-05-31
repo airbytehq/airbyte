@@ -27,6 +27,10 @@ API Reference: https://docs.signnow.com/docs/signnow/welcome
 | crm_groups | id | DefaultPaginator | ✅ |  ✅  |
 | signing_links | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

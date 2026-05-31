@@ -9,13 +9,13 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
 
-def test_oauth_connector_input_specification_omits_scopes():
+def test_oauth_connector_input_specification_includes_default_scope():
     source = SourceAsana(catalog=None, config=None, state=None)
 
     spec = source.spec(None)
     oauth_spec = spec.advanced_auth.oauth_config_specification.oauth_connector_input_specification
 
-    assert oauth_spec.scopes is None
+    assert oauth_spec.scopes == [{"scope": "default"}]
 
 
 def test_task_query_result_limit_error_message(requests_mock, config):

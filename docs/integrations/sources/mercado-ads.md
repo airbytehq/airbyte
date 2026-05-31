@@ -33,6 +33,10 @@ Get ad analytics from all Mercado Ads placements
 | product_items | advertiser_id.campaign_id.item_id | DefaultPaginator | ✅ |  ❌  |
 | product_items_metrics | date.advertiser_id.campaign_id.item_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

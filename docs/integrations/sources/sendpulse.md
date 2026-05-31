@@ -19,6 +19,10 @@ Airbyte connector for [SendPulse](https://sendpulse.com/) allows you to seamless
 | balance_details |  | No pagination | ✅ |  ❌  |
 | balance | currency | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

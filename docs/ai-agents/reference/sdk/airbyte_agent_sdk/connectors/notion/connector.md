@@ -83,6 +83,17 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, children: list[BlocksCreateParamsChildrenItem], block_id: str, **kwargs) ‑> list[airbyte_agent_sdk.connectors.notion.models.Block]`
+    :   Creates and appends new children blocks to the specified parent block or page
+        
+        Args:
+            children: Array of block objects to append (max 100). Each block must specify a type and corresponding content.
+            block_id: Block or page ID to append children to
+            **kwargs: Additional parameters
+        
+        Returns:
+            list[Block]
+
     `get(self, block_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Block`
     :   Retrieves a block object using the ID specified
         
@@ -104,6 +115,37 @@ Classes
         
         Returns:
             BlocksListResult
+
+    `update(self, block_id: str, paragraph: BlocksUpdateParamsParagraph | None = None, heading_1: BlocksUpdateParamsHeading1 | None = None, heading_2: BlocksUpdateParamsHeading2 | None = None, heading_3: BlocksUpdateParamsHeading3 | None = None, bulleted_list_item: BlocksUpdateParamsBulletedListItem | None = None, numbered_list_item: BlocksUpdateParamsNumberedListItem | None = None, to_do: BlocksUpdateParamsToDo | None = None, toggle: BlocksUpdateParamsToggle | None = None, code: BlocksUpdateParamsCode | None = None, quote: BlocksUpdateParamsQuote | None = None, callout: BlocksUpdateParamsCallout | None = None, bookmark: BlocksUpdateParamsBookmark | None = None, embed: BlocksUpdateParamsEmbed | None = None, equation: BlocksUpdateParamsEquation | None = None, image: BlocksUpdateParamsImage | None = None, video: BlocksUpdateParamsVideo | None = None, file: BlocksUpdateParamsFile | None = None, pdf: BlocksUpdateParamsPdf | None = None, audio: BlocksUpdateParamsAudio | None = None, table: BlocksUpdateParamsTable | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Block`
+    :   Updates the content of a block based on its type
+        
+        Args:
+            paragraph: Updated paragraph content
+            heading_1: Updated heading 1 content
+            heading_2: Updated heading 2 content
+            heading_3: Updated heading 3 content
+            bulleted_list_item: Updated bulleted list item
+            numbered_list_item: Updated numbered list item
+            to_do: Updated to-do content
+            toggle: Updated toggle content
+            code: Updated code block content
+            quote: Updated quote content
+            callout: Updated callout content
+            bookmark: Updated bookmark
+            embed: Updated embed
+            equation: Updated equation
+            image: Media file. Use external URL or file upload.
+            video: Media file. Use external URL or file upload.
+            file: Media file. Use external URL or file upload.
+            pdf: Media file. Use external URL or file upload.
+            audio: Media file. Use external URL or file upload.
+            table: Updated table properties
+            archived: Set to true to archive the block (API version 2025-09-03)
+            block_id: Block ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Block
 
 <a id="CommentsQuery"></a>
 
@@ -143,6 +185,18 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, rich_text: list[CommentsCreateParamsRichTextItem], parent: dict[str, Any] | None = None, discussion_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Comment`
+    :   Creates a comment on a page or block, or replies to an existing discussion thread
+        
+        Args:
+            parent: Parent of the comment. Provide exactly one of page_id or block_id. Mutually exclusive with discussion_id.
+            discussion_id: ID of an existing discussion thread to reply to. Mutually exclusive with parent.
+            rich_text: Content of the comment as rich text
+            **kwargs: Additional parameters
+        
+        Returns:
+            Comment
 
     `list(self, block_id: str, start_cursor: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.NotionExecuteResultWithMeta[list[Comment], CommentsListResultMeta]`
     :   Returns a list of comments for a specified block or page
@@ -226,6 +280,23 @@ Classes
         
         Returns:
             DataSourcesListResult
+
+    `update(self, data_source_id: str, title: list[DataSourcesUpdateParamsTitleItem] | None = None, description: list[DataSourcesUpdateParamsDescriptionItem] | None = None, properties: dict[str, Any] | None = None, icon: DataSourcesUpdateParamsIcon | None | None = None, cover: DataSourcesUpdateParamsCover | None | None = None, archived: bool | None = None, in_trash: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.DataSource`
+    :   Updates a data source's title, description, icon, properties, or trash status
+        
+        Args:
+            title: Updated title of the data source as rich text
+            description: Updated description of the data source as rich text
+            properties: Data source property schema to update. Keys are property names or IDs. Set a property to null to remove it.
+            icon: Icon. Supports emoji, external URL, file upload, custom emoji, and Notion native icons. Set to null to remove.
+            cover: Cover image. Supports external URL or file upload. Set to null to remove.
+            archived: Set to true to archive the data source
+            in_trash: Set to true to move the data source to trash
+            data_source_id: Data source ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            DataSource
 
 <a id="NotionConnector"></a>
 
@@ -366,7 +437,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -378,6 +449,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -448,6 +522,20 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, parent: dict[str, Any], properties: dict[str, Any] | None = None, children: list[dict[str, Any]] | None = None, icon: PagesCreateParamsIcon | None | None = None, cover: PagesCreateParamsCover | None | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Page`
+    :   Creates a new page as a child of an existing page or data source
+        
+        Args:
+            parent: Parent of the page. Provide exactly one of page_id, database_id, data_source_id, or workspace.
+            properties: Page properties. For pages under a page, use title property. For data source pages, match the data source schema.
+            children: Content blocks to add to the page (max 100)
+            icon: Icon. Supports emoji, external URL, file upload, custom emoji, and Notion native icons. Set to null to remove.
+            cover: Cover image. Supports external URL or file upload. Set to null to remove.
+            **kwargs: Additional parameters
+        
+        Returns:
+            Page
+
     `get(self, page_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Page`
     :   Retrieves a page object using the ID specified
         
@@ -470,6 +558,21 @@ Classes
         
         Returns:
             PagesListResult
+
+    `update(self, page_id: str, properties: dict[str, Any] | None = None, icon: PagesUpdateParamsIcon | None | None = None, cover: PagesUpdateParamsCover | None | None = None, archived: bool | None = None, in_trash: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Page`
+    :   Updates page properties, icon, cover, or archived status
+        
+        Args:
+            properties: Page property values to update. Keys must match the page's property schema.
+            icon: Icon. Supports emoji, external URL, file upload, custom emoji, and Notion native icons. Set to null to remove.
+            cover: Cover image. Supports external URL or file upload. Set to null to remove.
+            archived: Set to true to archive the page, false to un-archive
+            in_trash: Set to true to move the page to trash, false to restore
+            page_id: Page ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Page
 
 <a id="UsersQuery"></a>
 

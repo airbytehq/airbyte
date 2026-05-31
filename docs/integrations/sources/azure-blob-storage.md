@@ -304,6 +304,10 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 - Requires Airbyte version 1.2.0 or later (1.7.0+ for metadata support)
 - Only works with file-based destinations that support file transfer
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

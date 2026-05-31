@@ -26,6 +26,10 @@ Generate API Key [here](https://app.bitly.com/settings/api/) or go to Settings �
 | organization_shorten_counts |  | No pagination | ✅ |  ❌  |
 | qr_codes | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
