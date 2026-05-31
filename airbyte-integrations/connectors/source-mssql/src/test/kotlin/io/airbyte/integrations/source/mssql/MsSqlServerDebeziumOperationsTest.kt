@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class MsSqlServerDebeziumOperationsTest {
@@ -195,9 +194,7 @@ class MsSqlServerDebeziumOperationsTest {
                             )
                         }
                     )
-                    schemaHistory?.let {
-                        put(MsSqlServerDebeziumOperations.MSSQL_DB_HISTORY, it)
-                    }
+                    schemaHistory?.let { put(MsSqlServerDebeziumOperations.MSSQL_DB_HISTORY, it) }
                 }
             )
         }
@@ -210,12 +207,7 @@ class MsSqlServerDebeziumOperationsTest {
     private fun stream(name: String): Stream {
         val idField = io.airbyte.cdk.discover.EmittedField("id", IntFieldType)
         return Stream(
-            id =
-                StreamIdentifier.from(
-                    StreamDescriptor()
-                        .withName(name)
-                        .withNamespace("dbo")
-                ),
+            id = StreamIdentifier.from(StreamDescriptor().withName(name).withNamespace("dbo")),
             schema = setOf(idField),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = listOf(idField),
