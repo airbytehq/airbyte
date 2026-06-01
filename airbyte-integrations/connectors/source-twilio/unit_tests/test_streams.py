@@ -133,14 +133,7 @@ class TestIncrementalTwilioStream:
                 "/Accounts/AC123/Messages.json",
                 "DateSent>",
                 "DateSent<",
-                {
-                    "states": [
-                        {
-                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
-                            "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
-                        }
-                    ]
-                },
+                {"date_sent": "2022-11-13 12:11:10Z"},
                 [
                     ("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z"),
                 ],
@@ -204,6 +197,40 @@ class TestIncrementalTwilioStream:
         assert accounts_matcher.called, "Accounts endpoint was not called"
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_prefers_global_cursor_over_partition_state(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+
+        matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [{"sid": "SM1", "date_sent": "2022-11-16 01:00:00Z"}]},
+            status_code=200,
+            additional_matcher=lambda req: parse_qs(urlparse(req.url).query, keep_blank_values=True).get("DateSent>")
+            == ["2022-11-15 00:00:00Z"],
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "state": {"date_sent": "2022-11-15 00:00:00Z"},
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-01-01 00:00:00Z"},
+                        }
+                    ],
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        records = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state).records
+
+        assert matcher.called
+        assert len(records) == 1
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_pagination_limit_error_message(self, requests_mock):
