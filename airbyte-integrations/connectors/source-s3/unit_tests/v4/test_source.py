@@ -52,3 +52,6 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_v3_nested_fields_are_not_required(self) -> None:
         spec = self._source.spec()
         assert not spec.connectionSpecification["properties"]["provider"]["required"]
+
+    def test_concurrency_level_is_capped(self) -> None:
+        assert SourceS3._concurrency_level == 20
