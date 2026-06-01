@@ -59,7 +59,7 @@ class ChangeEventWithMetadataTest {
             "User-facing message must not leak Jackson class names; got: ${translated.message}",
         )
         // The original cause chain (containing the Jackson exception) must be preserved for logs.
-        val chain = generateSequence(translated.cause as Throwable?) { it.cause }.toList()
+        val chain = generateSequence(translated.cause) { it.cause }.toList()
         Assertions.assertTrue(
             chain.any { it is StreamConstraintsException },
             "Original StreamConstraintsException must be preserved in cause chain.",
