@@ -35,6 +35,26 @@ def _create_account_record(account_id: int, name: str = "Test Account") -> dict:
     }
 
 
+def _create_campaign_record(
+    campaign_id: int,
+    account_id: int,
+    name: str = "Test Campaign",
+    status: str = "ACTIVE",
+    last_modified: str = "2024-06-01T00:00:00.000Z",
+) -> dict:
+    return {
+        "id": campaign_id,
+        "account": f"urn:li:sponsoredAccount:{account_id}",
+        "name": name,
+        "status": status,
+        "type": "TEXT_AD",
+        "campaignGroup": f"urn:li:sponsoredCampaignGroup:{campaign_id}",
+        "created": "2024-01-01T00:00:00.000Z",
+        "lastModified": last_modified,
+        "version": {"versionTag": "1"},
+    }
+
+
 def _create_creative_record(
     creative_id: int,
     account_id: int,
@@ -106,8 +126,8 @@ class TestAdCreativeAnalyticsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "Creative 1")]),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
         )
 
         http_mocker.get(
@@ -140,8 +160,8 @@ class TestAdCreativeAnalyticsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "Creative 1")]),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
         )
 
         http_mocker.get(
@@ -178,8 +198,8 @@ class TestAdCreativeAnalyticsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "Creative 1")]),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
         )
 
         http_mocker.get(
@@ -211,7 +231,7 @@ class TestAdCreativeAnalyticsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.empty_page(),
         )
 
@@ -239,8 +259,8 @@ class TestAdCreativeAnalyticsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "Creative 1")]),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
         )
 
         http_mocker.get(
@@ -272,8 +292,8 @@ class TestAdCreativeAnalyticsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "Creative 1")]),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
         )
 
         http_mocker.get(
