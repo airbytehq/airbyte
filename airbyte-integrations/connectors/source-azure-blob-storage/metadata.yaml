@@ -12,13 +12,28 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.8.17
+  dockerImageTag: 0.8.18
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
   externalDocumentationUrls:
     - title: API versions
       url: https://learn.microsoft.com/en-us/rest/api/storageservices/previous-azure-storage-service-versions
       type: api_reference
+    - title: Azure Storage versioning
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/versioning-for-the-azure-storage-services
+      type: api_release_history
+    - title: GPv1 storage account retirement FAQ
+      url: https://learn.microsoft.com/en-us/azure/storage/common/general-purpose-version-1-account-migration-frequently-asked-questions
+      type: api_deprecations
+    - title: GPv1 storage account migration overview
+      url: https://learn.microsoft.com/en-us/azure/storage/common/general-purpose-version-1-account-migration-overview
+      type: api_deprecations
+    - title: Microsoft identity platform breaking changes
+      url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
+      type: authentication_guide
+    - title: Prevent Shared Key authorization
+      url: https://learn.microsoft.com/en-us/azure/storage/common/shared-key-authorization-prevent
+      type: authentication_guide
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
   license: ELv2
