@@ -239,16 +239,39 @@ class PostgresSourceDebeziumOperations(
                 mappedValue =
                     if (rawArray == null || rawArray is NullNode) null
                     else {
-                        Jsons.arrayNode().also { arr ->
-                            (rawArray as ArrayNode).forEach {
-                                val mappingResult =
-                                    mapValue(it, (field.type as ArrayFieldType<*>).elementFieldType)
-                                arr.add(mappingResult.getOrNull())
-                                if (mappingResult.isFailure) {
-                                    changes[EmittedField(field.id, field.type)] =
-                                        FieldValueChange.DESERIALIZATION_FAILURE_PARTIAL
+                        val resolvedArray: ArrayNode? =
+                            when (rawArray) {
+                                is ArrayNode -> rawArray
+                                else -> {
+                                    // Debezium may emit array-typed columns as text
+                                    // (e.g. "{1,2,3}") instead of a JSON array.
+                                    try {
+                                        val parsed = Jsons.readTree(rawArray.asText())
+                                        parsed as? ArrayNode
+                                    } catch (_: Exception) {
+                                        null
+                                    }
                                 }
                             }
+                        if (resolvedArray != null) {
+                            Jsons.arrayNode().also { arr ->
+                                resolvedArray.forEach {
+                                    val mappingResult =
+                                        mapValue(
+                                            it,
+                                            (field.type as ArrayFieldType<*>).elementFieldType
+                                        )
+                                    arr.add(mappingResult.getOrNull())
+                                    if (mappingResult.isFailure) {
+                                        changes[EmittedField(field.id, field.type)] =
+                                            FieldValueChange.DESERIALIZATION_FAILURE_PARTIAL
+                                    }
+                                }
+                            }
+                        } else {
+                            changes[EmittedField(field.id, field.type)] =
+                                FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
+                            null
                         }
                     }
             } else {
