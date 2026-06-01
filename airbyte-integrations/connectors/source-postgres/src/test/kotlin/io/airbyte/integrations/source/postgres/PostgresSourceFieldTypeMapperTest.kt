@@ -251,6 +251,16 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "hstore('size', NULL)" to "\"{\\\"size\\\":null}\""
             )
         )
+        scalarAndArray(
+            "UUID",
+            LeafAirbyteSchemaType.STRING,
+            mapOf(
+                "'11111111-1111-1111-1111-111111111111'::uuid" to
+                    "\"11111111-1111-1111-1111-111111111111\"",
+                "'22222222-2222-2222-2222-222222222222'::uuid" to
+                    "\"22222222-2222-2222-2222-222222222222\"",
+            )
+        )
 
         // Date/time types
         scalarAndArray(
