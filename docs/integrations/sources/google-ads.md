@@ -292,7 +292,9 @@ More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discu
 Streams that include metric fields (e.g., clicks, impressions, cost, conversions) may return fewer rows than dimension-only streams for the same resource. This is because the [Google Ads API omits rows where all metrics are zero](https://developers.google.com/google-ads/api/docs/reporting/zero-impressions) when metrics are included in the query. The omitted rows represent entity/segment combinations with no recorded activity.
 :::
 
-For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+For incremental streams, data is synced up to the previous day using your Google Ads account time zone, because Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad#segments.date) without time. Some reports also can't load data in real time due to [Google Ads limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+
+Starting in connector version 6.0.0, report streams and custom queries that use `segments.date` are limited to the 37-month granular data retention window enforced by the [Google Ads Data Retention Policy](https://support.google.com/google-ads/answer/15188209). The connector skips data older than 37 months. If your configured `start_date` is more than 37 months ago, the connector uses 37 months ago as the effective start. If both `start_date` and `end_date` fall outside the 37-month window, the connector emits no records for that historical range. If you're upgrading from version 5.x or earlier, see the [migration guide](/integrations/sources/google-ads-migrations) for guidance on preserving historical destination data.
 
 ### Primary Key Selection Method
 
@@ -317,7 +319,7 @@ SELECT
 FROM ad_group
 ```
 
-Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the `SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by day.
+Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` are synced one day at a time. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 
@@ -364,16 +366,20 @@ In essence, the conversion window is a tool for measuring the effectiveness of a
 
 In the case of configuring the Google Ads source connector, each time a sync is run the connector will retrieve all conversions that were active within the specified conversion window. For example, if you set a conversion window of 30 days, each time a sync is run, the connector will pull all conversions that were active within the past 30 days. Due to this mechanism, it may seem like the same campaigns, ad groups, or ads have different conversion numbers. However, in reality, each data record accurately reflects the number of conversions for that particular resource at the time of extracting the data from the Google Ads API.
 
+</HideInUI>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+<HideInUI>
+
 ## Performance considerations
 
 This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
 
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -382,6 +388,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |
+| 5.0.2 | 2026-05-29 | [78514](https://github.com/airbytehq/airbyte/pull/78514) | Remove the Google Ads 400 response filter predicate to avoid buffering large streaming responses. |
 | 5.0.1 | 2026-05-26 | [78419](https://github.com/airbytehq/airbyte/pull/78419) | Classify unrecognized fields in custom GAQL queries as configuration errors. |
 | 5.0.0 | 2026-04-20 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
 | 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |
