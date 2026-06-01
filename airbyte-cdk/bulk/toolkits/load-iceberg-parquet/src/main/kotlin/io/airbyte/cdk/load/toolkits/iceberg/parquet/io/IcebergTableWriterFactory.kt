@@ -55,7 +55,8 @@ class IcebergTableWriterFactory {
         table: Table,
         generationId: String,
         importType: ImportType,
-        schema: Schema
+        schema: Schema,
+        equalityDeleteKeyTracker: EqualityDeleteKeyTracker? = null,
     ): BaseTaskWriter<Record> {
         assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
@@ -99,7 +100,8 @@ class IcebergTableWriterFactory {
                     appenderFactory = appenderFactory,
                     targetFileSize = targetFileSize,
                     outputFileFactory = outputFileFactory,
-                    format = format
+                    format = format,
+                    equalityDeleteKeyTracker = equalityDeleteKeyTracker,
                 )
             else -> throw IllegalArgumentException("Unsupported import type $importType")
         }
@@ -171,7 +173,8 @@ class IcebergTableWriterFactory {
         appenderFactory: GenericAppenderFactory,
         outputFileFactory: OutputFileFactory,
         targetFileSize: Long,
-        identifierFieldIds: Set<Int>
+        identifierFieldIds: Set<Int>,
+        equalityDeleteKeyTracker: EqualityDeleteKeyTracker?,
     ): BaseTaskWriter<Record> {
         return if (table.spec().isUnpartitioned) {
             UnpartitionedDeltaWriter(
@@ -183,7 +186,8 @@ class IcebergTableWriterFactory {
                 io = table.io(),
                 targetFileSize = targetFileSize,
                 schema = schema,
-                identifierFieldIds = identifierFieldIds
+                identifierFieldIds = identifierFieldIds,
+                equalityDeleteKeyTracker = equalityDeleteKeyTracker,
             )
         } else {
             PartitionedDeltaWriter(
@@ -195,7 +199,8 @@ class IcebergTableWriterFactory {
                 io = table.io(),
                 targetFileSize = targetFileSize,
                 schema = schema,
-                identifierFieldIds = identifierFieldIds
+                identifierFieldIds = identifierFieldIds,
+                equalityDeleteKeyTracker = equalityDeleteKeyTracker,
             )
         }
     }

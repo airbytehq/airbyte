@@ -5,9 +5,12 @@
 package io.airbyte.integrations.destination.s3_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.EqualityDeleteBloomFilter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.EqualityDeleteKeyTracker
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
@@ -20,6 +23,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
+import org.apache.iceberg.types.TypeUtil
 
 private val logger = KotlinLogging.logger {}
 
@@ -36,6 +40,7 @@ class S3DataLakeStreamLoader(
 ) : StreamLoader {
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
+    private var equalityDeleteKeyTracker: EqualityDeleteKeyTracker? = null
 
     // If we're executing a truncate, then force the schema change.
     internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
@@ -83,43 +88,49 @@ class S3DataLakeStreamLoader(
             }
         }
 
+        equalityDeleteKeyTracker = createEqualityDeleteKeyTracker()
         val state =
             S3DataLakeStreamState(
                 table = table,
                 schema = targetSchema,
+                equalityDeleteKeyTracker = equalityDeleteKeyTracker,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
     override suspend fun teardown(completedSuccessfully: Boolean) {
-        if (completedSuccessfully) {
-            // Doing it first to make sure that data coming in the current batch is written to the
-            // main branch
-            logger.info {
-                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
-            }
-            // We've modified the table over the sync (i.e. adding new snapshots)
-            // so we need to refresh here to get the latest table metadata.
-            // In principle, this doesn't matter, but the iceberg SDK throws an error about
-            // stale table metadata without this.
-            table.refresh()
-            // Commit all pending schema updates in order (important for two-phase commits)
-            computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
-            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
-
-            if (stream.isSingleGenerationTruncate()) {
+        try {
+            if (completedSuccessfully) {
+                // Doing it first to make sure that data coming in the current batch is written to
+                // the main branch
                 logger.info {
-                    "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
+                    "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
                 }
-                val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
-                //  Doing it again to push the deletes from the staging to main branch
-                logger.info {
-                    "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
-                        "Pushing these updates to the '$mainBranchName' branch."
-                }
+                // We've modified the table over the sync (i.e. adding new snapshots)
+                // so we need to refresh here to get the latest table metadata.
+                // In principle, this doesn't matter, but the iceberg SDK throws an error about
+                // stale table metadata without this.
+                table.refresh()
+                // Commit all pending schema updates in order (important for two-phase commits)
+                computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
                 table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+
+                if (stream.isSingleGenerationTruncate()) {
+                    logger.info {
+                        "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
+                    }
+                    val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
+                    icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
+                    //  Doing it again to push the deletes from the staging to main branch
+                    logger.info {
+                        "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
+                            "Pushing these updates to the '$mainBranchName' branch."
+                    }
+                    table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+                }
             }
+        } finally {
+            equalityDeleteKeyTracker?.logSummary("stream teardown")
         }
     }
 
@@ -135,4 +146,22 @@ class S3DataLakeStreamLoader(
             incomingSchema,
             columnTypeChangeBehavior,
         )
+
+    private fun createEqualityDeleteKeyTracker(): EqualityDeleteKeyTracker? {
+        val bloomFilterConfig = icebergConfiguration.primaryKeyBloomFilter
+        val isDedupe = stream.tableSchema.importType is Dedupe
+        val identifierFieldIds = targetSchema.identifierFieldIds()
+        if (!bloomFilterConfig.enabled || !isDedupe || identifierFieldIds.isEmpty()) {
+            return null
+        }
+
+        return EqualityDeleteBloomFilter(
+            streamName = stream.mappedDescriptor.toString(),
+            deleteSchema = TypeUtil.select(targetSchema, identifierFieldIds),
+            expectedItems = bloomFilterConfig.expectedItems,
+            numberOfBits = bloomFilterConfig.numberOfBits,
+            numberOfHashFunctions = bloomFilterConfig.numberOfHashFunctions,
+            logIntervalRecords = bloomFilterConfig.logIntervalRecords,
+        )
+    }
 }

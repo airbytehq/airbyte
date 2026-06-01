@@ -8,6 +8,8 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
 
+    implementation 'org.apache.commons:commons-collections4:4.5.0'
+
     // Hadoop Configuration class used by Iceberg
     implementation 'org.apache.hadoop:hadoop-common:3.4.1'
 

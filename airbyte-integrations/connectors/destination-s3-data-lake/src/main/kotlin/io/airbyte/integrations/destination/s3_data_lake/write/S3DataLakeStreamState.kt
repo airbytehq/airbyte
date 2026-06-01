@@ -4,10 +4,12 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.write
 
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.EqualityDeleteKeyTracker
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 
 class S3DataLakeStreamState(
     val table: Table,
     val schema: Schema,
+    val equalityDeleteKeyTracker: EqualityDeleteKeyTracker? = null,
 )
