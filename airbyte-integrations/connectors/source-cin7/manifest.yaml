@@ -24,7 +24,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - bank_accounts
+    - sale_list
 
 definitions:
   streams:
@@ -39,6 +39,15 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: ref/accountBank
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: FAIL
+                failure_type: config_error
+                error_message: "Cin7 credentials lack Financials > Bank accounts permission for the bank_accounts stream."
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
             api-auth-applicationkey: "{{ config[\"api_key\"] }}"
