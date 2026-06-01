@@ -73,7 +73,7 @@ internal class RedshiftInsertBufferTest {
     @BeforeEach
     fun setUp() {
         coEvery { redshiftClient.uploadToS3(any(), any(), any()) } just Runs
-        coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } returns 1L
+        coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } just Runs
         coEvery { redshiftClient.deleteFromS3(any(), any()) } just Runs
 
         buffer = RedshiftInsertBuffer(tableName, columns, redshiftClient, configuration)

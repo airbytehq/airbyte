@@ -15,7 +15,6 @@ import io.airbyte.integrations.destination.redshift.connect.S3Connect
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import kotlin.time.Duration.Companion.minutes
 import software.amazon.awssdk.services.s3.S3Client
 
 /** Micronaut Factory for creating and wiring Redshift destination beans. */
@@ -63,8 +62,7 @@ class RedshiftBeanFactory {
         AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000_000L,
             maxEstBytesPerAgg = 150_000_000L,
-            maxEstBytesAllAggregates = 1_000_000_000L,
-            stalenessDeadlinePerAgg = 10.minutes,
+            maxEstBytesAllAggregates = 1_500_000_000L,
             maxBufferedAggregates = 10,
         )
 }

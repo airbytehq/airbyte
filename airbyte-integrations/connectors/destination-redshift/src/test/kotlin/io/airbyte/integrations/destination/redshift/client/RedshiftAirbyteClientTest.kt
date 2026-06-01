@@ -67,7 +67,6 @@ internal class RedshiftAirbyteClientTest {
         every { mockConnection.prepareStatement(any()) } returns mockPreparedStatement
         every { mockConnection.close() } returns Unit
         every { mockStatement.close() } returns Unit
-        every { mockStatement.updateCount } returns 0
         every { mockPreparedStatement.close() } returns Unit
         every { mockResultSet.close() } returns Unit
 
@@ -678,11 +677,9 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
         } returns "COPY SQL"
         every { mockStatement.execute("COPY SQL") } returns false
-        every { mockStatement.updateCount } returns 500
 
-        val result = client.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+        client.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
 
-        assertEquals(500L, result)
         verify {
             sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
         }

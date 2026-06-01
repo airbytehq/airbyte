@@ -117,18 +117,15 @@ class RedshiftInsertBuffer(
             redshiftClient.uploadToS3(s3Config.s3BucketName, s3Key, csvBytes)
 
             // Step 3: Execute COPY
-            val loadedRows =
-                redshiftClient.copyFromS3(
-                    tableName = tableName,
-                    s3Path = s3Path,
-                    accessKeyId = s3Config.accessKeyId,
-                    secretAccessKey = s3Config.secretAccessKey,
-                    region = s3Config.s3BucketRegion,
-                )
+            redshiftClient.copyFromS3(
+                tableName = tableName,
+                s3Path = s3Path,
+                accessKeyId = s3Config.accessKeyId,
+                secretAccessKey = s3Config.secretAccessKey,
+                region = s3Config.s3BucketRegion,
+            )
 
-            logger.info {
-                "Loaded $loadedRows row(s) into ${tableName.namespace}.${tableName.name}"
-            }
+            logger.info { "Loaded data into ${tableName.namespace}.${tableName.name}" }
 
             // Step 4: Cleanup S3 staging file
             if (purgeStagingData) {
