@@ -368,3 +368,85 @@ class TestLinkedinAdsStream:
 
         assert len(records) == 2
         assert records == expected_records
+
+    @pytest.mark.parametrize(
+        ("stream_name", "query", "pivot_values", "expected_data"),
+        [
+            pytest.param(
+                "ad_campaign_analytics",
+                "q=analytics&pivot=(value:CAMPAIGN)",
+                ["urn:li:sponsoredCampaign:1111"],
+                {
+                    "sponsoredCampaign": "1111",
+                    "pivot": "CAMPAIGN",
+                    "string_of_pivot_values": "urn:li:sponsoredCampaign:1111",
+                },
+                id="campaign_analytics",
+            ),
+            pytest.param(
+                "ad_creative_analytics",
+                "q=analytics&pivot=(value:CREATIVE)",
+                ["urn:li:sponsoredCreative:2222"],
+                {
+                    "sponsoredCreative": "2222",
+                    "pivot": "CREATIVE",
+                    "string_of_pivot_values": "urn:li:sponsoredCreative:2222",
+                },
+                id="creative_analytics",
+            ),
+            pytest.param(
+                "ad_member_country_analytics",
+                "q=statistics&pivots=List(CAMPAIGN,MEMBER_COUNTRY_V2)",
+                ["urn:li:sponsoredCampaign:1111", "urn:li:geo:103644278"],
+                {
+                    "sponsoredCampaign": "1111",
+                    "pivot": "MEMBER_COUNTRY_V2",
+                    "string_of_pivot_values": "urn:li:geo:103644278",
+                },
+                id="statistics_analytics",
+            ),
+        ],
+    )
+    def test_analytics_streams_batch_campaign_partitions(self, requests_mock, stream_name, query, pivot_values, expected_data):
+        config = {**TEST_CONFIG}
+        stream = find_stream(stream_name, config)
+
+        requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+        requests_mock.get(
+            "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,"
+            "COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
+            json={
+                "elements": [
+                    {"id": 1111, "lastModified": "2021-01-15"},
+                    {"id": 2222, "lastModified": "2021-01-16"},
+                ]
+            },
+        )
+        requests_mock.get(
+            "https://api.linkedin.com/rest/adAnalytics?"
+            f"{query}&timeGranularity=(value:DAILY)&campaigns=List(urn%3Ali%3AsponsoredCampaign%3A1111,"
+            "urn%3Ali%3AsponsoredCampaign%3A2222)&dateRange=(start:(year:2021,month:1,day:1),"
+            "end:(year:2021,month:1,day:31))",
+            complete_qs=False,
+            json={
+                "elements": [
+                    {
+                        "clicks": 100,
+                        "impressions": 19090,
+                        "pivotValues": pivot_values,
+                        "dateRange": {
+                            "start": {"month": 1, "day": 2, "year": 2023},
+                            "end": {"month": 1, "day": 2, "year": 2023},
+                        },
+                    }
+                ]
+            },
+        )
+
+        partition = next(iter(stream.generate_partitions()))
+        records = list(partition.read())
+
+        assert partition.to_slice()["campaign_id"] == "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222"
+        assert len(records) == 1
+        for field, value in expected_data.items():
+            assert records[0].data[field] == value

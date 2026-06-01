@@ -172,16 +172,7 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
 
 @dataclass
 class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
-    """Partition router that batches parent campaign records for efficient LinkedIn adAnalytics API calls.
-
-    Instead of creating one API request per campaign (which causes partition explosion for accounts
-    with many campaigns), this router groups campaign IDs into batches and creates one partition
-    per batch. Each partition contains a pre-formatted URL-encoded URN list for use in LinkedIn's
-    List() query parameter syntax.
-
-    This is safe for CAMPAIGN-pivot analytics streams because the API returns separate records
-    per campaign in the response, with each record's pivotValues containing the specific campaign URN.
-    """
+    """Partition router that batches parent campaign records for efficient LinkedIn adAnalytics API calls."""
 
     parent_stream_configs: List[ParentStreamConfig] = field(default_factory=list)
     config: Config = field(default_factory=dict)
@@ -234,7 +225,6 @@ class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
                         yield self._create_batch_slice(batch, partition_field, last_parent_partition)
                         batch = []
 
-            # Yield any remaining records in the final batch
             if batch:
                 yield self._create_batch_slice(batch, partition_field, last_parent_partition)
 
@@ -246,7 +236,7 @@ class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
         partition_field: str,
         parent_partition: Mapping[str, Any],
     ) -> StreamSlice:
-        """Create a StreamSlice containing batched URL-encoded campaign URNs."""
+        """Create a `StreamSlice` containing batched URL-encoded campaign URNs."""
         urns = ",".join(f"{self.urn_prefix}{campaign_id}" for campaign_id in batch)
         return StreamSlice(
             partition={
@@ -536,6 +526,14 @@ def transform_pivot_values(record: Dict) -> Mapping[str, Any]:
     return record
 
 
+def transform_campaign_statistics_pivot_values(record: Dict) -> Mapping[str, Any]:
+    pivot_values = record.get("pivotValues", [])
+    if len(pivot_values) > 1 and pivot_values[0].startswith("urn:li:sponsoredCampaign:"):
+        record["sponsoredCampaign"] = pivot_values[0].split(":")[-1]
+        record["pivotValues"] = pivot_values[1:]
+    return record
+
+
 def transform_data(records: List) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
@@ -555,6 +553,7 @@ def transform_data(records: List) -> Iterable[Mapping]:
             record = transform_variables(record)
 
         if "pivotValues" in record:
+            record = transform_campaign_statistics_pivot_values(record)
             record = transform_pivot_values(record)
 
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
