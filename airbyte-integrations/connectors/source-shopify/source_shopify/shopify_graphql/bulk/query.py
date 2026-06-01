@@ -7,7 +7,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from string import Template
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
