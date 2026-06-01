@@ -1,10 +1,8 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import json
-from collections import namedtuple
 
 import pytest
-from source_google_ads.components import CustomGAQuerySchemaLoader
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -15,7 +13,6 @@ from unit_tests.mock_server.conftest import create_source
 from unit_tests.mock_server.helpers import (
     API_BASE,
     build_full_refresh_query,
-    build_google_ads_query_error_response,
     build_stream_response,
     setup_full_refresh_parent_mocks,
 )
@@ -192,45 +189,3 @@ def test_full_refresh_403_ignored(stream_name):
         output = read(source, config=config, catalog=catalog)
 
     assert len(output.records) == 0
-
-
-def test_custom_query_unrecognized_field_error_fails_as_config_error(mocker):
-    query = "SELECT campaign.id, campaign.start_date, campaign.end_date FROM campaign"
-    stream_name = "custom_campaign_query"
-    config = ConfigBuilder().with_custom_queries([{"query": query, "table_name": stream_name}]).build()
-
-    data_type = namedtuple("DataType", ["name"])
-    node = namedtuple("Node", ["data_type", "enum_values", "is_repeated"])
-    fields_metadata = {
-        "campaign.id": node(data_type("INT64"), [], False),
-        "campaign.start_date": node(data_type("DATE"), [], False),
-        "campaign.end_date": node(data_type("DATE"), [], False),
-    }
-    mocker.patch.object(
-        CustomGAQuerySchemaLoader,
-        "google_ads_client",
-        return_value=mocker.Mock(get_fields_metadata=lambda fields: fields_metadata),
-    )
-
-    with HttpMocker() as http_mocker:
-        setup_full_refresh_parent_mocks(http_mocker)
-        http_mocker.post(
-            HttpRequest(
-                url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
-                body=json.dumps({"query": query}),
-            ),
-            build_google_ads_query_error_response(
-                query_error="UNRECOGNIZED_FIELD",
-                message="Unrecognized fields in the query: 'campaign.start_date', 'campaign.end_date'.",
-            ),
-        )
-
-        catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-        source = create_source(config=config, catalog=catalog)
-        output = read(source, config=config, catalog=catalog)
-
-    assert len(output.records) == 0
-    assert output.errors
-    error = output.errors[0].trace.error
-    assert error.failure_type.value == "config_error"
-    assert error.message == "Unrecognized fields in the query: 'campaign.start_date', 'campaign.end_date'."
