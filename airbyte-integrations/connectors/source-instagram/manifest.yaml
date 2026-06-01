@@ -741,6 +741,19 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 20) }}"
   max_concurrency: 50
 
+# Facebook Graph API BUC (Business Use Case) rate limits are dynamic and impression-based.
+# This budget acts as a safety net to prevent excessive request bursts.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 200
+          interval: PT1M
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
 metadata:
   autoImportSchema:
     Media: true

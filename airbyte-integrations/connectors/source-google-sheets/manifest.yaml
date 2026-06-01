@@ -430,6 +430,17 @@ spec:
       - credentials
     additionalProperties: true
     properties:
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up syncs
+          for spreadsheets with multiple sheets, but may hit rate limits. Google Sheets
+          API limits to 300 read requests per minute (~5 req/sec).
+        default: 2
+        minimum: 1
+        maximum: 10
+        order: 9
       batch_size:
         type: integer
         title: Row Batch Size
@@ -650,7 +661,19 @@ spec:
               - client_secret
 
 
+# Rate limits: https://developers.google.com/sheets/api/limits
+# - 300 read requests per minute per project (~5 req/sec)
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 300
+          interval: PT1M
+      matchers: []  # Applies to all endpoints
+  status_codes_for_ratelimit_hit: [429]
+
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 4
-  max_concurrency: 4
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10
