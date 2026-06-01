@@ -4974,6 +4974,7 @@ spec:
         type: string
         description: Attribution window for views.
         enum:
+          - none
           - 1_HOUR
           - 3_HOUR
           - 6_HOUR

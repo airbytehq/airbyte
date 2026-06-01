@@ -2683,7 +2683,9 @@ spec:
     predicate_value: OAuth Credentials
     oauth_config_specification:
       oauth_connector_input_specification:
-        consent_url: "https://app.asana.com/-/oauth_authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}"
+        scopes:
+          - scope: "default"
+        consent_url: "https://app.asana.com/-/oauth_authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
         access_token_url: "https://app.asana.com/-/oauth_token"
         access_token_headers:
           Content-Type: "application/x-www-form-urlencoded"

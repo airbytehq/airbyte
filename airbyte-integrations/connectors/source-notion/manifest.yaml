@@ -270,7 +270,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 5
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 10
 
 spec:
@@ -346,6 +346,18 @@ spec:
                   for more information on how to obtain this token.
                 type: string
                 airbyte_secret: true
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: >-
+          Number of worker threads to use for the sync. Higher values can speed
+          up large syncs but may increase rate-limit pressure against Notion's
+          limit of approximately three requests per second per integration.
+        minimum: 1
+        maximum: 10
+        default: 3
+        examples: [1, 3, 10]
+        order: 2
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

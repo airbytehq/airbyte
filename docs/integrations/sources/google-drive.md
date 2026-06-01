@@ -319,6 +319,10 @@ By default, this stream is enabled and retrieves information about **users and g
 - Ensure the **Google Admin SDK API** is enabled.
 - The authenticated user must have the necessary Google Admin Directory permissions.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

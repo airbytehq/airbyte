@@ -100,6 +100,10 @@ Linear currently allows up to 2,500 API key requests per user per hour and 5,000
 
 The connector retrieves data that the authenticated user has access to. If you cannot see certain teams, projects, or issues in your synced data, verify that your Linear account has the appropriate permissions.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Linear GraphQL API](https://linear.app/developers/graphql). All API requests use the `https://api.linear.app/graphql` endpoint.

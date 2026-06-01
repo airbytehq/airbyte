@@ -20,6 +20,17 @@ The Notion connector supports the following entities and actions.
 
 Returns a paginated list of users for the workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -77,6 +88,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "user_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -130,6 +155,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "avatar_url": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -203,6 +248,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns pages shared with the integration using the search endpoint
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "pages",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -274,6 +330,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pages Create
 
 Creates a new page as a child of an existing page or data source
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "pages",
+  "action": "create",
+  "params": {
+    "parent": {},
+    "properties": {},
+    "children": [],
+    "icon": {},
+    "cover": {}
+  }
+}'
+```
 
 #### Python SDK
 
@@ -350,6 +424,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a page object using the ID specified
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "pages",
+  "action": "get",
+  "params": {
+    "page_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -412,6 +500,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pages Update
 
 Updates page properties, icon, cover, or archived status
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "pages",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "icon": {},
+    "cover": {},
+    "archived": true,
+    "in_trash": true,
+    "page_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -490,6 +597,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pages Context Store Search
 
 Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "pages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -577,6 +704,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns data sources shared with the integration using the search endpoint
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "data_sources",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -663,6 +801,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a data source object using the ID specified
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "data_sources",
+  "action": "get",
+  "params": {
+    "data_source_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -739,6 +891,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Data Sources Update
 
 Updates a data source's title, description, icon, properties, or trash status
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "data_sources",
+  "action": "update",
+  "params": {
+    "title": [],
+    "description": [],
+    "properties": {},
+    "icon": {},
+    "cover": {},
+    "archived": true,
+    "in_trash": true,
+    "data_source_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -866,6 +1039,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter data sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "data_sources",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -957,6 +1150,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Blocks List
 
 Returns a paginated list of child blocks for the specified block
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "blocks",
+  "action": "list",
+  "params": {
+    "block_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1056,6 +1263,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Blocks Create
 
 Creates and appends new children blocks to the specified parent block or page
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "blocks",
+  "action": "create",
+  "params": {
+    "children": [],
+    "block_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1397,6 +1619,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a block object using the ID specified
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "blocks",
+  "action": "get",
+  "params": {
+    "block_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1486,6 +1722,41 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Blocks Update
 
 Updates the content of a block based on its type
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "blocks",
+  "action": "update",
+  "params": {
+    "paragraph": {},
+    "heading_1": {},
+    "heading_2": {},
+    "heading_3": {},
+    "bulleted_list_item": {},
+    "numbered_list_item": {},
+    "to_do": {},
+    "toggle": {},
+    "code": {},
+    "quote": {},
+    "callout": {},
+    "bookmark": {},
+    "embed": {},
+    "equation": {},
+    "image": {},
+    "video": {},
+    "file": {},
+    "pdf": {},
+    "audio": {},
+    "table": {},
+    "archived": true,
+    "block_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1881,6 +2152,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter blocks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "blocks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2023,6 +2314,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of comments for a specified block or page
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "comments",
+  "action": "list",
+  "params": {
+    "block_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2090,6 +2395,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Create
 
 Creates a comment on a page or block, or replies to an existing discussion thread
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "comments",
+  "action": "create",
+  "params": {
+    "parent": {},
+    "discussion_id": "<str>",
+    "rich_text": []
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2169,6 +2490,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Context Store Search
 
 Search and filter comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_by": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

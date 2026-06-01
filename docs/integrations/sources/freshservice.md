@@ -69,6 +69,10 @@ For more details, please read [How to find your API key](https://api.freshservic
 
 Your Freshservice domain is the subdomain of your Freshservice account URL. For example, if you access Freshservice at `https://your-company.freshservice.com`, then your domain name is `your-company.freshservice.com`.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Freshservice REST API v2](https://api.freshservice.com/). All API requests must use HTTPS.

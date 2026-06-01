@@ -1,16 +1,22 @@
-# PyAirbyte MCP Server
+---
+sidebar_label: Replication MCP Server
+---
+
+# Airbyte Replication MCP Server
 
 :::note
 This MCP server implementation is experimental and may change without notice between minor versions of PyAirbyte. The API may be modified or entirely refactored in future versions.
 :::
 
-The PyAirbyte MCP (Model Context Protocol) server provides a standardized interface for managing Airbyte connectors through MCP-compatible clients. This experimental feature allows you to list connectors, validate configurations, and run sync operations using the MCP protocol.
+The Airbyte Replication MCP (Model Context Protocol) server provides a standardized interface for managing Airbyte data replication connections through MCP-compatible clients. This PyAirbyte-powered experimental feature allows you to list connectors, validate configurations, and run sync operations using the MCP protocol.
+
+Use it to manage Airbyte replication workflows. It is not the primary interface agents should use to work with data. The [Agent MCP](/ai-agents/interfaces/mcp/) is the primary way agents use Airbyte to work with data.
 
 ## Documentation
 
-For complete setup instructions, troubleshooting guidance, and detailed documentation, please refer to the authoritative PyAirbyte MCP documentation:
+For complete setup instructions, troubleshooting guidance, and detailed documentation, please refer to the authoritative Airbyte Replication MCP documentation:
 
-**[PyAirbyte MCP Server Documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html)**
+**[Airbyte Replication MCP Server Documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html)**
 
 The PyAirbyte documentation includes:
 
@@ -23,18 +29,18 @@ The PyAirbyte documentation includes:
 
 ## Quick Start
 
-To get started with the PyAirbyte MCP server:
+To get started with the Airbyte Replication MCP server:
 
 1. Install `uv`: `brew install uv`
 2. Create a dotenv secrets file with your Airbyte Cloud credentials and connector configurations
 3. Register the MCP server with your MCP client using `uvx --python=3.11 --from=airbyte@latest airbyte-mcp`
 4. Test the connection using your MCP client
 
-For detailed instructions on each step, see the [PyAirbyte MCP documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html).
+For detailed instructions on each step, see the [Airbyte Replication MCP documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html).
 
 ## Helpful Prompts
 
-Here are some things you can do with the PyAirbyte MCP server, across local and Airbyte Cloud use cases:
+Here are some things you can do with the Airbyte Replication MCP server, across local and Airbyte Cloud use cases:
 
 1. "Use your MCP tools to list all available Airbyte connectors."
 2. "Use your MCP tools to get information about the Airbyte Stripe connector."

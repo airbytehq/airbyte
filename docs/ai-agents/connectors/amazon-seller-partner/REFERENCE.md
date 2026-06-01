@@ -21,6 +21,20 @@ The Amazon-Seller-Partner connector supports the following entities and actions.
 
 Returns a list of orders based on the specified parameters.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "orders",
+  "action": "list",
+  "params": {
+    "MarketplaceIds": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -113,6 +127,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns the order indicated by the specified order ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "orders",
+  "action": "get",
+  "params": {
+    "orderId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -147,6 +175,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Orders Context Store Search
 
 Search and filter orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "orders",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "AmazonOrderId": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -274,6 +322,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns detailed order item information for the order indicated by the specified order ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "order_items",
+  "action": "list",
+  "params": {
+    "orderId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -359,6 +421,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Order Items Context Store Search
 
 Search and filter order items records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "order_items",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ASIN": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -492,6 +574,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns financial event groups for a given date range.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "list_financial_event_groups",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -552,6 +645,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### List Financial Event Groups Context Store Search
 
 Search and filter list financial event groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "list_financial_event_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "AccountTail": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -632,6 +745,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### List Financial Events List
 
 Returns financial events for a given date range.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "list_financial_events",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -717,6 +841,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### List Financial Events Context Store Search
 
 Search and filter list financial events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "list_financial_events",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "AdhocDisbursementEventList": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -846,6 +990,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search for items in the Amazon catalog by keywords or identifiers.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "catalog_items",
+  "action": "list",
+  "params": {
+    "marketplaceIds": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -916,6 +1074,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves details for an item in the Amazon catalog by ASIN.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "catalog_items",
+  "action": "get",
+  "params": {
+    "asin": "<str>",
+    "marketplaceIds": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -978,6 +1151,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reports List
 
 Returns report details for the reports that match the specified filters.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "reports",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1042,6 +1226,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reports Get
 
 Returns report details including status and report document ID for a specified report.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-seller-partner",
+  "entity": "reports",
+  "action": "get",
+  "params": {
+    "reportId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
