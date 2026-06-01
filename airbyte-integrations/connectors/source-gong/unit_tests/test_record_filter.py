@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-"""Unit tests for the `isPrivate` record filter on `source-gong` streams.
+"""Unit tests for selected `source-gong` manifest behavior.
 
 Gong requires any integration that lists calls to drop calls where `isPrivate` is `true`.
 The `calls` and `extensiveCalls` streams each declare a `RecordFilter` in `manifest.yaml`
@@ -8,6 +8,10 @@ that enforces this requirement. These tests mock the Gong API responses and asse
 filter actually drops the private records at sync time.
 """
 
+import time
+from unittest.mock import Mock
+
+import pytest
 import requests_mock
 from _helpers import get_source
 
@@ -75,6 +79,50 @@ def _sync(stream_name: str):
     source = get_source(config=_CONFIG)
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
     return read(source, _CONFIG, catalog)
+
+
+@pytest.mark.parametrize(
+    "stream_name,method,url,success_response",
+    [
+        pytest.param(
+            "calls",
+            "get",
+            "https://api.gong.io/v2/calls",
+            {"calls": [_public_call("public-1")], "records": {"totalRecords": 1, "currentPageSize": 1}},
+            id="calls_get",
+        ),
+        pytest.param(
+            "extensiveCalls",
+            "post",
+            "https://api.gong.io/v2/calls/extensive",
+            {"calls": [_public_extensive_call("public-1")], "records": {"totalRecords": 1, "currentPageSize": 1}},
+            id="extensive_calls_post",
+        ),
+    ],
+)
+def test_stream_retries_429_with_retry_after(stream_name, method, url, success_response, monkeypatch):
+    sleep_mock = Mock()
+    monkeypatch.setattr(time, "sleep", sleep_mock)
+
+    responses = [
+        {
+            "status_code": 429,
+            "headers": {"Retry-After": "7"},
+            "json": {"error": "Too many requests"},
+        },
+        {
+            "status_code": 200,
+            "json": success_response,
+        },
+    ]
+
+    with requests_mock.Mocker() as request_mocker:
+        getattr(request_mocker, method)(url, responses)
+        output = _sync(stream_name)
+
+    sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
+    assert any(7 <= duration <= 10 for duration in sleep_durations), f"expected Retry-After backoff, got {sleep_durations!r}"
+    assert output.records
 
 
 def test_calls_stream_drops_private_calls():
