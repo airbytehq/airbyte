@@ -344,7 +344,7 @@ class RedshiftAirbyteClient(
         }
         try {
             dataSource.connection.use { connection ->
-                connection.createStatement().use { stmt -> stmt.execute(query) }
+                connection.createStatement().use { it.execute(query) }
             }
         } catch (e: SQLException) {
             if (

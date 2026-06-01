@@ -272,13 +272,9 @@ class RedshiftInsertBuffer(
  */
 private class CompressionOutputStream(
     out: OutputStream,
-    bufferSize: Int = DEFAULT_BUFFER_SIZE,
+    bufferSize: Int = 65_536,
 ) : GZIPOutputStream(out, bufferSize) {
     init {
         def.setLevel(5)
-    }
-
-    companion object {
-        private const val DEFAULT_BUFFER_SIZE = 65_536 // 64 KB
     }
 }
