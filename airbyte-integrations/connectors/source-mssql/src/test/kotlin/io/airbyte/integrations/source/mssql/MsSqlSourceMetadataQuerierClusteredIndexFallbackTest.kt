@@ -20,14 +20,13 @@ import org.junit.jupiter.api.Test
  * Unit tests for the resilient-fallback behavior of
  * [MsSqlSourceMetadataQuerier.memoizedClusteredIndexKeys].
  *
- * Regression coverage for oncall #12766 / airbyte #78529: against SQL Server-compatible
- * engines such as CData Connect Server, the bulk system-catalog scan over
- * `sys.tables / sys.indexes / sys.index_columns` is rejected with
- * "Insufficient filtering condition in WHERE clause for system table 'indexes'".
- * Previously the connector promoted that error to a [RuntimeException], failing
+ * Regression coverage for oncall #12766 / airbyte #78529: against SQL Server-compatible engines
+ * such as CData Connect Server, the bulk system-catalog scan over `sys.tables / sys.indexes /
+ * sys.index_columns` is rejected with "Insufficient filtering condition in WHERE clause for system
+ * table 'indexes'". Previously the connector promoted that error to a [RuntimeException], failing
  * every sync; after the fix it must log a warning and return an empty map so that
- * [MsSqlSourceMetadataQuerier.getOrderedColumnForSync] can fall through to the
- * primary-key / logical-PK paths.
+ * [MsSqlSourceMetadataQuerier.getOrderedColumnForSync] can fall through to the primary-key /
+ * logical-PK paths.
  */
 class MsSqlSourceMetadataQuerierClusteredIndexFallbackTest {
 
@@ -47,9 +46,7 @@ class MsSqlSourceMetadataQuerierClusteredIndexFallbackTest {
                 every { executeQuery(any()) } throws cdataLikeException
             }
         val mockConnection =
-            mockk<Connection>(relaxed = true) {
-                every { createStatement() } returns mockStatement
-            }
+            mockk<Connection>(relaxed = true) { every { createStatement() } returns mockStatement }
         // Non-empty namespaces drives MsSqlSourceMetadataQuerier.streamNamespaces() to
         // return the configured list directly, so we don't have to mock memoizedTableNames.
         val mockConfig =
