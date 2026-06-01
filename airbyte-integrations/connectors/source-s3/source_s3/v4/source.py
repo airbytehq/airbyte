@@ -7,7 +7,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import orjson
 
@@ -32,7 +32,7 @@ from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
 from source_s3.v4.config import Config
-from source_s3.v4.cursor import Cursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
@@ -48,6 +48,22 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 class SourceS3(FileBasedSource):
     _concurrency_level = DEFAULT_CONCURRENCY
+    # Smaller inter-worker record queue keeps peak RSS down on streams with
+    # large records (e.g. multi-KB JSONL blobs). Combined with the malloc-arena
+    # cap in run.py this keeps the concurrent read path well under the 2 Gi pod
+    # limit on the affected dictionary-style streams. Throughput unchanged in
+    # measurements (workers were never actually the bottleneck; main thread is).
+    _concurrent_record_queue_maxsize = 1_000
+
+    def streams(self, config: Mapping[str, Any]) -> List[Any]:
+        # If the caller pinned a concurrency level in the spec, apply it before the
+        # CDK builds the concurrent source. Otherwise keep the class-level default
+        # (DEFAULT_CONCURRENCY). Useful as an operational knob on connections that
+        # hit the source pod memory limit on very large file streams.
+        configured = config.get("concurrency_level") if isinstance(config, Mapping) else None
+        if configured:
+            self._concurrency_level = int(configured)
+        return super().streams(config)
 
     @classmethod
     def read_config(cls, config_path: str) -> Mapping[str, Any]:
@@ -221,7 +237,7 @@ class SourceS3(FileBasedSource):
             stream_reader=stream_reader,
             availability_strategy=SourceS3AvailabilityStrategy(stream_reader),
             spec_class=Config,
-            cursor_cls=Cursor,
+            cursor_cls=FileBasedConcurrentCursor,
             # This is needed early. (We also will provide it again later.)
             catalog=configured_catalog,
             # These will be provided later, after we have wrapped proper error handling.
