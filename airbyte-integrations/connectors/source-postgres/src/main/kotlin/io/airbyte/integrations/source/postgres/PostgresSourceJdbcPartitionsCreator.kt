@@ -20,7 +20,6 @@ import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.MODE_PROPERTY
 import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.airbyte.cdk.read.PartitionsCreatorFactory.TryAcquireResourcesResult
 import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectQuerier
