@@ -312,11 +312,21 @@ class MsSqlSourceMetadataQuerier(
                     table to clusteredIndexColumnNames
                 }
                 .toMap()
-        } catch (e: Exception) {
-            throw RuntimeException(
-                "SQL Server clustered index discovery query failed: ${e.message}",
-                e
-            )
+        } catch (e: SQLException) {
+            // Some SQL Server-compatible engines (notably CData Connect Server's TDS
+            // endpoint, and similar virtualization layers) reject the bulk system-catalog
+            // scan with "Insufficient filtering condition in WHERE clause for system
+            // table 'indexes'" because they require a per-table predicate on
+            // sys.indexes / sys.index_columns. Treat any SQL-side failure here as
+            // "no clustered-index information available" so getOrderedColumnForSync
+            // falls through to the primary-key / logical-PK fallback rather than
+            // failing the whole sync.
+            log.warn(e) {
+                "Failed to discover SQL Server clustered index keys; " +
+                    "falling back to primary key for ordered column selection. " +
+                    "Reason: ${e.message}"
+            }
+            return@lazy emptyMap()
         }
     }
 
