@@ -22,9 +22,9 @@ from unittest.mock import patch
 import requests_mock as rm
 from freezegun import freeze_time
 from mock_server.config import ConfigBuilder
-from mock_server.response_builder import create_oauth_response
+from mock_server.response_builder import build_error_response, create_oauth_response
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -412,6 +412,84 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         # Verify state message was emitted with updated cursor
         state_messages = output.state_messages
         assert len(state_messages) > 0, "Expected state message to be emitted"
+
+    @HttpMocker()
+    def test_search_analytics_400_errors_use_sanitized_messages(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response([{"keys": ["FAQ"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}])
+                )
+
+            context.status_code = 400
+            return build_error_response(400, "Unsupported searchAppearance filter value: FAQ").body
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        trace_messages = [message for message in output.trace_messages if hasattr(message, "trace") and message.trace.error]
+
+        assert trace_messages
+        assert trace_messages[0].trace.error.message == "Google Search Console API rejected the Search Analytics request."
+        assert trace_messages[0].trace.error.internal_message
+        assert "Unsupported searchAppearance filter value: FAQ" in trace_messages[0].trace.error.internal_message
+        assert trace_messages[0].trace.error.failure_type == FailureType.config_error
+
+    @HttpMocker()
+    def test_faq_search_appearance_is_handled_as_discovered_value(self, http_mocker: HttpMocker) -> None:
+        """Validate current FAQ behavior before Google's upstream deprecation removes this value."""
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+        keyword_filter_expressions: List[Any] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [
+                            {"keys": ["FAQ"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["PRODUCT_SNIPPETS"], "clicks": 20, "impressions": 200, "ctr": 0.1, "position": 2.0},
+                        ]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                search_appearance = body["dimensionFilterGroups"][0]["filters"][0]["expression"]
+                keyword_filter_expressions.append(search_appearance)
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row(
+                                "2024-01-01", "usa", "DESKTOP", f"{search_appearance} query", "https://example.com/page1"
+                            )
+                        ]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        assert {"FAQ", "PRODUCT_SNIPPETS"}.issubset(set(keyword_filter_expressions))
+        assert {"FAQ", "PRODUCT_SNIPPETS"}.issubset({record.record.data["search_appearance"] for record in records})
 
     @HttpMocker()
     def test_empty_or_null_search_appearance_partitions_are_skipped(self, http_mocker: HttpMocker) -> None:
