@@ -665,7 +665,6 @@ def filfillment_order_jsonl_content_example():
 def fulfillment_jsonl_content_example():
     return """{"__typename":"Order","id":"gid://shopify/Order/1","updatedAt":"2023-04-24T18:00:10Z"}
 {"__typename":"Fulfillment","id":"gid://shopify/Fulfillment/2","createdAt":"2023-04-24T18:00:09Z","updatedAt":"2023-04-24T18:00:10Z","name":"#1001.1","status":"CLOSED","location":{"id":"gid://shopify/Location/3"},"service":{"serviceName":"manual"},"trackingInfo":[{"company":"UPS","number":"1Z999","url":"https://example.com/track"}],"__parentId":"gid://shopify/Order/1"}
-{"__typename":"FulfillmentLineItem","fulfillment_line_items":{},"id":"gid://shopify/FulfillmentLineItem/4","quantity":2,"line_item":{"id":"gid://shopify/LineItem/5","name":"Widget","quantity":2,"sku":"SKU-1","taxable":true,"title":"Widget","unfulfilledQuantity":0,"vendor":"Vendor","price_set":{"shop_money":{"amount":"10.50","currency_code":"USD"},"presentment_money":{"amount":"10.50","currency_code":"USD"}},"duties":[{"id":"gid://shopify/Duty/9","country_code_of_origin":"US","harmonized_system_code":"123456","price_set":{"shop_money":{"amount":"1.25","currency_code":"USD"},"presentment_money":{"amount":"1.25","currency_code":"USD"}},"tax_lines":[]}],"variant":{"id":"gid://shopify/ProductVariant/6","title":"Blue"},"product":{"id":"gid://shopify/Product/7"}},"__parentId":"gid://shopify/Fulfillment/2"}
 {"__typename":"Order","id":"gid://shopify/Order/8","updatedAt":"2023-04-24T18:00:11Z"}
 """
 

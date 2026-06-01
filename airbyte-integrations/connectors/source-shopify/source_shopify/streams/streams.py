@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -38,6 +38,7 @@ from source_shopify.shopify_graphql.bulk.query import (
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 
 from airbyte_cdk import HttpSubStream
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
@@ -457,6 +458,44 @@ class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
 
 class Fulfillments(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Fulfillment = Fulfillment
+
+    def _request_fulfillment_line_items(
+        self,
+        fulfillment: MutableMapping[str, Any],
+        order_id: Optional[str],
+    ) -> Iterable[MutableMapping[str, Any]]:
+        fulfillment_id = fulfillment.get("admin_graphql_api_id") or fulfillment.get("id")
+        has_next_page = True
+        after = None
+        while has_next_page:
+            _, response = self._http_client.send_request(
+                http_method="POST",
+                url=f"{self.url_base}{self.path()}",
+                json={"query": self.job_manager.query.fulfillment_line_items_query(fulfillment_id, after)},
+                request_kwargs={},
+                headers=self.request_headers(stream_state=None),
+            )
+            fulfillment_line_items = response.json().get("data", {}).get("fulfillment", {}).get("fulfillmentLineItems", {})
+            for edge in fulfillment_line_items.get("edges", []):
+                yield edge.get("node", {})
+            page_info = fulfillment_line_items.get("pageInfo", {})
+            has_next_page = page_info.get("hasNextPage", False)
+            after = page_info.get("endCursor")
+
+    def _get_fulfillment_line_items(
+        self, fulfillment: MutableMapping[str, Any], order_id: Optional[str]
+    ) -> Iterable[MutableMapping[str, Any]]:
+        yield from self._request_fulfillment_line_items(fulfillment, order_id)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        self.job_manager.query._get_fulfillment_line_items = self._get_fulfillment_line_items
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def _sort_key_for_record(self, record: Mapping[str, Any]) -> Tuple[Union[str, int], Union[str, int]]:
         updated_at = record.get("updated_at") or self.default_state_comparison_value

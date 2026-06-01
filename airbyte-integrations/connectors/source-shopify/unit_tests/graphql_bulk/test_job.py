@@ -438,6 +438,41 @@ def test_bulk_stream_parse_response(
     test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
     # mocking the result url with jsonl content
     requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    if isinstance(stream, Fulfillments):
+        stream._get_fulfillment_line_items = lambda fulfillment, order_id: [
+            {
+                "id": "gid://shopify/FulfillmentLineItem/4",
+                "quantity": 2,
+                "line_item": {
+                    "id": "gid://shopify/LineItem/5",
+                    "name": "Widget",
+                    "quantity": 2,
+                    "sku": "SKU-1",
+                    "taxable": True,
+                    "title": "Widget",
+                    "unfulfilledQuantity": 0,
+                    "vendor": "Vendor",
+                    "price_set": {
+                        "shop_money": {"amount": "10.50", "currency_code": "USD"},
+                        "presentment_money": {"amount": "10.50", "currency_code": "USD"},
+                    },
+                    "duties": [
+                        {
+                            "id": "gid://shopify/Duty/9",
+                            "country_code_of_origin": "US",
+                            "harmonized_system_code": "123456",
+                            "price_set": {
+                                "shop_money": {"amount": "1.25", "currency_code": "USD"},
+                                "presentment_money": {"amount": "1.25", "currency_code": "USD"},
+                            },
+                            "tax_lines": [],
+                        }
+                    ],
+                    "variant": {"id": "gid://shopify/ProductVariant/6", "title": "Blue"},
+                    "product": {"id": "gid://shopify/Product/7"},
+                },
+            }
+        ]
     # mocking nested api call to get data from result url
     requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
     # parsing result from completed job
@@ -457,12 +492,25 @@ def test_fulfillment_bulk_query_uses_array_shape(auth_config) -> None:
     )
 
     assert "fulfillments(\n          query:" in query
-    fulfillment_selection = query[query.index("fulfillments") : query.index("fulfillmentLineItems")]
+    fulfillment_selection = query[query.index("fulfillments") :]
     assert "edges" not in fulfillment_selection
     assert "node" not in fulfillment_selection
-    assert "fulfillmentLineItems {\n            edges" in query
+    assert "fulfillmentLineItems" not in query
     assert "inventoryManagement" not in query
-    assert "price_set: price {\n                      shop_money: shopMoney" in query
+
+
+def test_fulfillment_line_items_query_uses_fulfillment_root(auth_config) -> None:
+    query = Fulfillments(auth_config).job_manager.query.fulfillment_line_items_query(
+        "gid://shopify/Fulfillment/2",
+        "cursor",
+    )
+
+    assert 'fulfillment(\n    id: "gid://shopify/Fulfillment/2"\n  )' in query
+    assert 'fulfillmentLineItems(\n      first: 250\n      after: "cursor"\n    )' in query
+    assert "pageInfo" in query
+    assert "price_set: originalUnitPriceSet {\n              shop_money: shopMoney" in query
+    assert "price_set: price" in query
+    assert "inventoryManagement" not in query
 
 
 @pytest.mark.parametrize(

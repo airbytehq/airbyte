@@ -2255,6 +2255,7 @@ class MoneyBagMixin:
 class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
     query_name = "orders"
     sort_key = "UPDATED_AT"
+    fulfillment_line_items_page_size = 250
 
     duty_fields: List[Field] = [
         "id",
@@ -2299,7 +2300,6 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
         "status",
         "totalQuantity",
         "updatedAt",
-        Field(name="fulfillmentLineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=fulfillment_line_item_fields)])]),
         Field(name="location", fields=["id"]),
         Field(name="order", fields=["id"]),
         Field(name="originAddress", alias="origin_address", fields=["address1", "address2", "city", "countryCode", "provinceCode", "zip"]),
@@ -2309,7 +2309,7 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
 
     record_composition = {
         "new_record": "Order",
-        "record_components": ["Fulfillment", "FulfillmentLineItem"],
+        "record_components": ["Fulfillment"],
     }
 
     def _fulfillment_field(self, filter_query: Optional[str]) -> Field:
@@ -2322,6 +2322,27 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
 
     def query(self, filter_query: Optional[str] = None) -> Query:
         return self.build(self.query_name, ["__typename", "id", "updatedAt", self._fulfillment_field(filter_query)])
+
+    def fulfillment_line_items_query(self, fulfillment_id: str, after: Optional[str] = None) -> str:
+        arguments = [Argument(name="id", value=f'"{fulfillment_id}"')]
+        line_item_arguments = [Argument(name="first", value=str(self.fulfillment_line_items_page_size))]
+        if after:
+            line_item_arguments.append(Argument(name="after", value=f'"{after}"'))
+        query = Query(
+            name="fulfillment",
+            arguments=arguments,
+            fields=[
+                Field(
+                    name="fulfillmentLineItems",
+                    arguments=line_item_arguments,
+                    fields=[
+                        Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+                        Field(name="edges", fields=[Field(name="node", fields=self.fulfillment_line_item_fields)]),
+                    ],
+                )
+            ],
+        )
+        return self.resolve(query)
 
     def _process_duties(self, duties: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
         for duty in duties:
@@ -2350,7 +2371,19 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
             line_items.append(line_item)
         return line_items
 
-    def _process_fulfillment(self, fulfillment: MutableMapping[str, Any], order_id: Optional[str]) -> MutableMapping[str, Any]:
+    def _get_fulfillment_line_items(
+        self,
+        fulfillment: MutableMapping[str, Any],
+        order_id: Optional[str],
+    ) -> Iterable[MutableMapping[str, Any]]:
+        yield from []
+
+    def _process_fulfillment(
+        self,
+        fulfillment: MutableMapping[str, Any],
+        order_id: Optional[str],
+        fulfillment_line_items: Optional[Iterable[MutableMapping[str, Any]]] = None,
+    ) -> MutableMapping[str, Any]:
         fulfillment["admin_graphql_api_id"] = fulfillment.get("id")
         fulfillment["id"] = self.tools.resolve_str_id(fulfillment.get("id"))
         fulfillment["createdAt"] = self.tools.from_iso8601_to_rfc3339(fulfillment, "createdAt")
@@ -2367,8 +2400,14 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
         fulfillment["tracking_numbers"] = [info.get("number") for info in tracking_info if info.get("number")]
         fulfillment["tracking_urls"] = [info.get("url") for info in tracking_info if info.get("url")]
         record_components = fulfillment.pop("record_components", {})
-        fulfillment_line_items = fulfillment.pop("fulfillment_line_items", fulfillment.pop("fulfillmentLineItems", []))
+        fulfillment_line_items = list(
+            fulfillment_line_items
+            if fulfillment_line_items is not None
+            else fulfillment.pop("fulfillment_line_items", fulfillment.pop("fulfillmentLineItems", []))
+        )
         fulfillment_line_items.extend(record_components.get("FulfillmentLineItem", []))
+        if not fulfillment_line_items:
+            fulfillment_line_items.extend(self._get_fulfillment_line_items(fulfillment, order_id))
         fulfillment["line_items"] = self._process_fulfillment_line_items(fulfillment_line_items)
         fulfillment.pop("order", None)
         fulfillment.pop(BULK_PARENT_KEY, None)
@@ -2379,15 +2418,8 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         record_components = record.get("record_components", {})
         fulfillments = record_components.get("Fulfillment", [])
-        fulfillment_line_items = record_components.get("FulfillmentLineItem", [])
-        line_items_by_fulfillment_id: Dict[str, List[MutableMapping[str, Any]]] = {}
-        for line_item in fulfillment_line_items:
-            line_items_by_fulfillment_id.setdefault(line_item.get(BULK_PARENT_KEY), []).append(line_item)
         if fulfillments:
             for fulfillment in fulfillments:
-                fulfillment["fulfillment_line_items"] = line_items_by_fulfillment_id.get(
-                    fulfillment.get("admin_graphql_api_id", fulfillment.get("id")), []
-                )
                 yield self._process_fulfillment(fulfillment, record.get("id"))
 
 
