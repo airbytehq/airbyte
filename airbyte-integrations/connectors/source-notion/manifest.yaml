@@ -253,7 +253,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 10
 
 spec:
@@ -338,8 +338,8 @@ spec:
           limit of approximately three requests per second per integration.
         minimum: 1
         maximum: 10
-        default: 5
-        examples: [1, 5, 10]
+        default: 3
+        examples: [1, 3, 10]
         order: 2
   advanced_auth:
     auth_flow_type: oauth2.0
