@@ -624,7 +624,7 @@ definitions:
             q: analytics
             pivot: "(value:CREATIVE)"
             timeGranularity: "(value:DAILY)"
-            creatives: "List(urn%3Ali%3AsponsoredCreative%3A{{ stream_partition.get('creative_id').split(':')[-1] }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -645,13 +645,15 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: creative_id
-                stream:
-                  $ref: "#/definitions/streams/creatives"
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: end_date
@@ -670,7 +672,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCreative
-              value: "{{ stream_partition.get('creative_id').split(':')[-1] }}"
+              value: "{{ record.get('pivotValues', [''])[0].split(':')[-1] }}"
               value_type: string
         - type: AddFields
           fields:
@@ -700,10 +702,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:IMPRESSION_DEVICE_TYPE)"
+            q: statistics
+            pivots: "List(CAMPAIGN,IMPRESSION_DEVICE_TYPE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -724,7 +726,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -749,7 +753,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -779,10 +783,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_COMPANY_SIZE)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_COMPANY_SIZE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -803,7 +807,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -828,7 +834,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -858,10 +864,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_COUNTRY_V2)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_COUNTRY_V2)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -882,7 +888,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -907,7 +915,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -937,10 +945,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_JOB_FUNCTION)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_JOB_FUNCTION)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -961,7 +969,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -986,7 +996,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -1016,10 +1026,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_JOB_TITLE)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_JOB_TITLE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -1040,7 +1050,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1065,7 +1077,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -1095,10 +1107,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_INDUSTRY)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_INDUSTRY)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -1119,7 +1131,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1144,7 +1158,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -1174,10 +1188,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_SENIORITY)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_SENIORITY)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -1198,7 +1212,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1223,7 +1239,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -1253,10 +1269,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_REGION_V2)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_REGION_V2)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -1277,7 +1293,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1302,7 +1320,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -1332,10 +1350,10 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:MEMBER_COMPANY)"
+            q: statistics
+            pivots: "List(CAMPAIGN,MEMBER_COMPANY)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -1356,7 +1374,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1381,7 +1401,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -1818,6 +1838,7 @@ spec:
                 - MEMBER_COMPANY
                 - PLACEMENT_NAME
                 - IMPRESSION_DEVICE_TYPE
+                - CAMPAIGN
             time_granularity:
               title: Time Granularity
               description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
