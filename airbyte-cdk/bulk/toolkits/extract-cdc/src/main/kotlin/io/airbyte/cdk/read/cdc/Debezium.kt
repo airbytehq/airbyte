@@ -102,17 +102,16 @@ data class ResetDebeziumWarmStartState(val reason: String) : InvalidDebeziumWarm
 @JvmInline value class DebeziumSchemaHistory(val wrapped: List<HistoryRecord>)
 
 /**
- * Deserialize a Debezium change event payload (key or value), translating Jackson
- * stream-constraint failures into a [SystemErrorException] whose user-facing message names the
- * connector-level limit and the remediation, without leaking Jackson internals. Other parse
- * failures fall through to the existing null-event handling so a single malformed event does not
- * abort the entire CDC stream.
+ * Deserialize a Debezium change event payload (key or value), translating Jackson stream-constraint
+ * failures into a [SystemErrorException] whose user-facing message names the connector-level limit
+ * and the remediation, without leaking Jackson internals. Other parse failures fall through to the
+ * existing null-event handling so a single malformed event does not abort the entire CDC stream.
  *
  * The wrapping is defensive: [Jsons] is configured with `maxStringLength = Int.MAX_VALUE`, so this
  * branch should not fire under normal operation.
  *
- * @param parser exposed for unit tests so the wrapping behavior can be exercised without
- *   producing a multi-gigabyte input.
+ * @param parser exposed for unit tests so the wrapping behavior can be exercised without producing
+ * a multi-gigabyte input.
  */
 internal fun readDebeziumPayload(
     raw: String,

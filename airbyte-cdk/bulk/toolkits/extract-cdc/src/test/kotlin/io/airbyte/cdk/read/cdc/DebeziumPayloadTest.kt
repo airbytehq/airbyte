@@ -17,9 +17,9 @@ class DebeziumPayloadTest {
 
     /**
      * Reproduces oncall#12768 at the unit level: when the underlying Jackson parser hits a
-     * [StreamConstraintsException] while reading a Debezium event payload, the wrapping logic
-     * in [readDebeziumPayload] must surface a [SystemErrorException] with an actionable message
-     * that does not leak Jackson class names.
+     * [StreamConstraintsException] while reading a Debezium event payload, the wrapping logic in
+     * [readDebeziumPayload] must surface a [SystemErrorException] with an actionable message that
+     * does not leak Jackson class names.
      */
     @Test
     fun readDebeziumPayload_wraps_StreamConstraintsException_with_actionable_message() {
@@ -61,8 +61,8 @@ class DebeziumPayloadTest {
 
     /**
      * Unrelated parse failures should NOT raise the "row exceeds limit" error; they should fall
-     * through to the existing null-event behaviour so a single malformed event does not abort
-     * the CDC stream.
+     * through to the existing null-event behaviour so a single malformed event does not abort the
+     * CDC stream.
      */
     @Test
     fun readDebeziumPayload_returns_null_on_unrelated_parse_failures() {

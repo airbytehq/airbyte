@@ -37,13 +37,13 @@ class ChangeEventWithMetadata(private val event: ChangeEvent<String?, String?>) 
     companion object {
         /**
          * Deserialize a Debezium change event payload (key or value), translating Jackson
-         * stream-constraint failures into a runtime exception with an actionable message that
-         * does not leak Jackson internals. The wrapping is defensive: the global [Jsons] mapper
-         * already allows arbitrarily large strings, so this branch should not fire under normal
-         * operation. Other Jackson parse failures bubble up unchanged.
+         * stream-constraint failures into a runtime exception with an actionable message that does
+         * not leak Jackson internals. The wrapping is defensive: the global [Jsons] mapper already
+         * allows arbitrarily large strings, so this branch should not fire under normal operation.
+         * Other Jackson parse failures bubble up unchanged.
          *
-         * @param parser exposed for unit tests so the wrapping behavior can be exercised
-         *   without producing a multi-gigabyte input.
+         * @param parser exposed for unit tests so the wrapping behavior can be exercised without
+         * producing a multi-gigabyte input.
          */
         @JvmStatic
         internal fun parseDebeziumPayload(

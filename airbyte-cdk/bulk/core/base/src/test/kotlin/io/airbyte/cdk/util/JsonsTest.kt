@@ -8,8 +8,8 @@ class JsonsTest {
 
     /**
      * Reproducer for oncall#12768: a single CDC row contained a column value larger than the
-     * Jackson default 20 MiB cap, causing Jackson to throw StreamConstraintsException. The bulk
-     * CDK mapper must accept arbitrarily large string values.
+     * Jackson default 20 MiB cap, causing Jackson to throw StreamConstraintsException. The bulk CDK
+     * mapper must accept arbitrarily large string values.
      */
     @Test
     fun deserializeAcceptsStringValueLargerThan100MiB() {

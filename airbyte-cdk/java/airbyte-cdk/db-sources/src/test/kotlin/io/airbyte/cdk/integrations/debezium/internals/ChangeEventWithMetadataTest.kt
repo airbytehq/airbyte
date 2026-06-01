@@ -16,14 +16,14 @@ class ChangeEventWithMetadataTest {
 
     /**
      * Reproduces oncall#12768 at the unit level: when the configured Jackson parser hits a
-     * [StreamConstraintsException] while reading a Debezium event payload, the wrapping logic
-     * in [ChangeEventWithMetadata.parseDebeziumPayload] must surface an actionable
-     * [RuntimeException] that names the connector-level limit and the remediation, without
-     * leaking Jackson class names.
+     * [StreamConstraintsException] while reading a Debezium event payload, the wrapping logic in
+     * [ChangeEventWithMetadata.parseDebeziumPayload] must surface an actionable [RuntimeException]
+     * that names the connector-level limit and the remediation, without leaking Jackson class
+     * names.
      *
-     * A tiny [ObjectMapper] is injected as the parser so the constraint trips with a small
-     * input — the production [Jsons] mapper now allows arbitrarily large strings and would not
-     * trip without a multi-gigabyte payload.
+     * A tiny [ObjectMapper] is injected as the parser so the constraint trips with a small input —
+     * the production [Jsons] mapper now allows arbitrarily large strings and would not trip without
+     * a multi-gigabyte payload.
      */
     @Test
     fun parseDebeziumPayload_wraps_StreamConstraintsException_with_actionable_message() {
@@ -68,8 +68,7 @@ class ChangeEventWithMetadataTest {
 
     /**
      * A generic JSON parse failure (no [StreamConstraintsException] in the cause chain) must be
-     * rethrown unchanged. The "row exceeds limit" branch must not fire for unrelated parse
-     * errors.
+     * rethrown unchanged. The "row exceeds limit" branch must not fire for unrelated parse errors.
      */
     @Test
     fun parseDebeziumPayload_does_not_wrap_unrelated_parse_failures() {
