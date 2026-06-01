@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9a5346ac-42ee-485d-a791-d079f92ccdfc
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-criteo-marketing
   githubIssueLabel: source-criteo-marketing
   icon: icon.svg
@@ -24,6 +24,13 @@ data:
   name: Criteo Marketing
   releaseDate: 2026-02-04
   releaseStage: alpha
+  breakingChanges:
+    0.0.5:
+      message: "ad_spend_daily stream: primary key expanded to include AdsetId and AdId; AdvertiserCost type changed from string to number; Day, CampaignId, AdvertiserId fields made nullable; dimension names corrected (day→Day, AdSetId→AdsetId). Existing destinations may require a schema reset for the ad_spend_daily table."
+      scopedImpact:
+        - scopeType: stream
+          impactedScopes:
+            - "ad_spend_daily"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/criteo-marketing
   tags:
