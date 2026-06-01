@@ -334,21 +334,17 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date
+        cursor_field: last_modified_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: date_start
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_end
+          field_name: last_modified_time
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
@@ -392,21 +388,17 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date
+        cursor_field: last_modified_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: date_start
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_end
+          field_name: last_modified_time
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
@@ -450,21 +442,17 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date
+        cursor_field: last_modified_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: date_start
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_end
+          field_name: last_modified_time
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
@@ -508,21 +496,17 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date
+        cursor_field: last_modified_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: date_start
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_end
+          field_name: last_modified_time
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
@@ -566,21 +550,17 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date
+        cursor_field: last_modified_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: date_start
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_end
+          field_name: last_modified_time
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
@@ -624,21 +604,17 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: date
+        cursor_field: last_modified_time
         cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: date_start
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_end
+          field_name: last_modified_time
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
