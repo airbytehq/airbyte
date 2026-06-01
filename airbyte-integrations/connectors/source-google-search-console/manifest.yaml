@@ -325,7 +325,7 @@ definitions:
     type: DefaultErrorHandler
     backoff_strategies:
       - type: ConstantBackoffStrategy
-        backoff_time_in_seconds: 45
+        backoff_time_in_seconds: 60
         jitter_range_in_seconds: 15
     response_filters:
       - type: HttpResponseFilter
