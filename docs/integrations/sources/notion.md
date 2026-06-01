@@ -126,6 +126,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.9 | 2026-06-01 | [78048](https://github.com/airbytehq/airbyte/pull/78048) | Improve the permission error message for the Users stream when the Notion integration lacks user information capabilities. |
 | 4.0.8 | 2026-06-01 | [78543](https://github.com/airbytehq/airbyte/pull/78543) | Set final default concurrency to 3 with configurable worker count |
 | 4.0.8-rc.5 | 2026-05-27 | [78500](https://github.com/airbytehq/airbyte/pull/78500) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
 | 4.0.8-rc.4 | 2026-05-26 | [78433](https://github.com/airbytehq/airbyte/pull/78433) | Reduce default concurrency to 4 while preserving configurable worker count and Notion API budget |
