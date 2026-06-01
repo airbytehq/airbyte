@@ -324,8 +324,11 @@ definitions:
   search_analytics_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
+      # Per-worker random jitter via inline Jinja: drawn uniformly from [45, 74] each retry
+      # to de-synchronize concurrent worker wake-ups during rate-limit storms.
+      # See airbytehq/oncall#12246.
       - type: ConstantBackoffStrategy
-        backoff_time_in_seconds: 60
+        backoff_time_in_seconds: "{{ [45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74] | random }}"
     response_filters:
       - type: HttpResponseFilter
         action: RATE_LIMITED

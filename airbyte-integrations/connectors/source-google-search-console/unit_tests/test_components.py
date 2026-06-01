@@ -232,3 +232,35 @@ def test_complete_oauth_output_specification_contains_refresh_and_access_token()
     output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
     assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
     assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"
+
+
+def test_search_analytics_backoff_uses_jinja_random_jitter():
+    """The `search_analytics_error_handler` backoff strategy must produce per-call random
+    integer wait times in [45, 74] so that concurrent workers waking from a rate-limit storm
+    do not synchronize. See airbytehq/oncall#12246.
+    """
+    from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+        ConstantBackoffStrategy as ConstantBackoffStrategyModel,
+    )
+    from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import (
+        ModelToComponentFactory,
+    )
+
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+    strategy_def = manifest["definitions"]["search_analytics_error_handler"]["backoff_strategies"][0]
+
+    assert strategy_def["type"] == "ConstantBackoffStrategy"
+    assert "| random" in strategy_def["backoff_time_in_seconds"], "expected an inline Jinja random filter on backoff_time_in_seconds"
+
+    factory = ModelToComponentFactory()
+    strategy = factory.create_component(
+        model_type=ConstantBackoffStrategyModel,
+        component_definition={"type": "ConstantBackoffStrategy", **strategy_def},
+        config={},
+    )
+
+    samples = [strategy.backoff_time(None, 1) for _ in range(500)]
+    assert all(isinstance(s, int) for s in samples), "expected integer backoff values"
+    assert all(45 <= s <= 74 for s in samples), f"sample out of [45, 74]: {[s for s in samples if not (45 <= s <= 74)][:5]}"
+    assert len(set(samples)) >= 20, f"expected broad coverage of the 30-value range, got only {len(set(samples))} distinct values"
