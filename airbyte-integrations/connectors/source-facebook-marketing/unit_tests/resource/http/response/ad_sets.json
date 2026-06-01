@@ -40,7 +40,13 @@
         "conversions": 12,
         "last_sig_edit_ts": 1734947501,
         "attribution_windows": ["7d_click", "1d_view"]
-      }
+      },
+      "attribution_spec": [
+        {
+          "event_type": "OFFSITE_CONVERSIONS",
+          "window_days": 7
+        }
+      ]
     }
   ]
 }
