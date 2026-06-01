@@ -320,6 +320,7 @@ spec:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 20
 
 metadata:
   assist: {}
