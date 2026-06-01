@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_datastore"
 
 [tool.poetry.dependencies]
-python = "^3.11,<3.13"
+python = "^3.11,<3.14"
 airbyte-cdk = "^2"
 google-cloud-datastore = "^2.19"
 google-auth = "^2.28"
@@ -27,7 +27,7 @@ source-datastore = "source_datastore.run:run"
 [tool.poetry.group.dev.dependencies]
 mock = "^5.1.0"
 pytest-mock = "^3.6"
-pytest = "^6.2"
+pytest = "^8.0"
 
 
 [tool.poe]
