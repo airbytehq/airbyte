@@ -159,7 +159,8 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("ssl_mode")
     @JsonSchemaTitle("SSL Mode")
     @JsonPropertyDescription(
-        "The encryption method which is used when communicating with the database.",
+        "The encryption method used when communicating with the database. Airbyte Cloud requires " +
+            "require, verify-ca, verify-full, or an SSH tunnel.",
     )
     @JsonSchemaInject(json = """{"order":8,"default":"require","group":"security"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
@@ -259,19 +260,21 @@ sealed interface EncryptionSpecification
 
 @JsonSchemaTitle("disable")
 @JsonSchemaDescription(
-    "To force communication without encryption.",
+    "To force communication without encryption. Airbyte Cloud requires an SSH tunnel for this mode.",
 )
 data object EncryptionDisable : EncryptionSpecification
 
 @JsonSchemaTitle("allow")
 @JsonSchemaDescription(
-    "To allow encrypted communication, but not require it.",
+    "To allow encrypted communication, but not require it. Airbyte Cloud requires an SSH " +
+        "tunnel for this mode.",
 )
 data object EncryptionAllow : EncryptionSpecification
 
 @JsonSchemaTitle("prefer")
 @JsonSchemaDescription(
-    "To allow unencrypted communication only when the source doesn't support encryption.",
+    "To allow unencrypted communication only when the source doesn't support encryption. " +
+        "Airbyte Cloud requires an SSH tunnel for this mode.",
 )
 data object EncryptionPrefer : EncryptionSpecification
 

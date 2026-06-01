@@ -224,7 +224,7 @@ This is a good solution if:
 ### SSL Modes
 
 <FieldAnchor field="ssl_mode">
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+Airbyte Cloud requires encrypted communication. If you do not use an SSH tunnel, choose `require`, `verify-ca`, or `verify-full`. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 
 Here is a breakdown of available SSL connection modes:
 
@@ -359,6 +359,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |-------------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.0-rc.12 | 2026-05-25 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     | Clarify Airbyte Cloud SSL mode requirements in source configuration and validation errors.                                                                                  |
 | 3.8.0-rc.11 | 2026-05-14 | [78102](https://github.com/airbytehq/airbyte/pull/78102) | Remove internal github links from error messages.                                                                                                                          |
 | 3.8.0-rc.10 | 2026-05-11 | [77706](https://github.com/airbytehq/airbyte/pull/77706) | Prevent table filenode query from running outside max db connections control.                                                                                              |
 | 3.8.0-rc.9  | 2026-05-05 | [77805](https://github.com/airbytehq/airbyte/pull/77805) | Make the hidden additional properties fields in spec optional. No functional change.                                                                                       |
