@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from google.cloud import datastore
-
 from source_datastore.source import SourceDatastore
 from source_datastore.streams import DatastoreStream
 
@@ -18,8 +17,7 @@ FAKE_CREDS = {
     "project_id": "my-project",
     "private_key_id": "key123",
     "private_key": (
-        "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA2a2rwplBQLF29amygykEMmYz0+"
-        "Oe9Dp9cPNW1VpHrHFiM/3H\n-----END RSA PRIVATE KEY-----\n"
+        "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA2a2rwplBQLF29amygykEMmYz0+Oe9Dp9cPNW1VpHrHFiM/3H\n-----END RSA PRIVATE KEY-----\n"
     ),
     "client_email": "sa@my-project.iam.gserviceaccount.com",
     "client_id": "123456",

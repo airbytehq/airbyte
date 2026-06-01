@@ -8,13 +8,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from google.cloud import datastore
-
-from source_datastore.streams import DatastoreStream, _infer_json_type, _serialize_value, _key_to_str
+from source_datastore.streams import DatastoreStream, _infer_json_type, _key_to_str, _serialize_value
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_key(project, kind, identifier):
     return datastore.Key(kind, identifier, project=project)
@@ -34,6 +34,7 @@ def _make_stream(kind="Product", namespace=None):
 # ---------------------------------------------------------------------------
 # _serialize_value
 # ---------------------------------------------------------------------------
+
 
 def test_serialize_datetime_utc():
     dt = datetime(2024, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
@@ -80,6 +81,7 @@ def test_serialize_primitive_passthrough():
 # _infer_json_type
 # ---------------------------------------------------------------------------
 
+
 def test_infer_bool():
     # bool before int
     assert _infer_json_type(True) == {"type": ["null", "boolean"]}
@@ -121,6 +123,7 @@ def test_infer_dict():
 # _key_to_str
 # ---------------------------------------------------------------------------
 
+
 def test_key_to_str_with_id():
     key = _make_key("proj", "Order", 99)
     assert _key_to_str(key) == "Order/99"
@@ -134,6 +137,7 @@ def test_key_to_str_with_name():
 # ---------------------------------------------------------------------------
 # DatastoreStream — class properties
 # ---------------------------------------------------------------------------
+
 
 def test_stream_name_lowercased():
     assert _make_stream(kind="MyKind").name == "mykind"
@@ -157,6 +161,7 @@ def test_source_defined_cursor_is_false():
 
 def test_supported_sync_modes_always_includes_incremental():
     from airbyte_cdk.models import SyncMode
+
     s = _make_stream()
     assert SyncMode.incremental in s.supported_sync_modes
     assert SyncMode.full_refresh in s.supported_sync_modes
@@ -170,6 +175,7 @@ def test_cursor_field_default_empty():
 # ---------------------------------------------------------------------------
 # get_json_schema — dynamic sampling
 # ---------------------------------------------------------------------------
+
 
 def test_get_json_schema_includes_meta_fields():
     client = MagicMock(spec=datastore.Client)
@@ -189,12 +195,15 @@ def test_get_json_schema_includes_meta_fields():
 def test_get_json_schema_infers_entity_properties():
     client = MagicMock(spec=datastore.Client)
     key = _make_key("proj", "Product", 1)
-    entity = _make_entity(key, {
-        "name": "Widget",
-        "price": 9.99,
-        "in_stock": True,
-        "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
-    })
+    entity = _make_entity(
+        key,
+        {
+            "name": "Widget",
+            "price": 9.99,
+            "in_stock": True,
+            "updated_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+        },
+    )
 
     mock_query = MagicMock()
     mock_query.fetch.return_value = [entity]
@@ -228,6 +237,7 @@ def test_get_json_schema_does_not_overwrite_meta_fields():
 
 def test_get_json_schema_samples_limit():
     from source_datastore.streams import _SCHEMA_SAMPLE_SIZE
+
     client = MagicMock(spec=datastore.Client)
     mock_query = MagicMock()
     mock_query.fetch.return_value = []
@@ -241,6 +251,7 @@ def test_get_json_schema_samples_limit():
 # ---------------------------------------------------------------------------
 # read_records
 # ---------------------------------------------------------------------------
+
 
 def test_read_records_full_refresh():
     from airbyte_cdk.models import SyncMode
@@ -293,10 +304,12 @@ def test_read_records_serializes_datetime():
     client.query.return_value = mock_query
 
     stream = DatastoreStream(client=client, kind="Order", namespace="prod")
-    records = list(stream.read_records(
-        sync_mode=SyncMode.full_refresh,
-        cursor_field=["updated_at"],
-    ))
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.full_refresh,
+            cursor_field=["updated_at"],
+        )
+    )
 
     assert records[0]["updated_at"] == "2024-03-15T10:00:00+00:00"
     assert records[0]["_namespace"] == "prod"
@@ -311,11 +324,13 @@ def test_read_records_incremental_adds_filter():
     client.query.return_value = mock_query
 
     stream = DatastoreStream(client=client, kind="Product", namespace=None)
-    list(stream.read_records(
-        sync_mode=SyncMode.incremental,
-        cursor_field=["updated_at"],
-        stream_state={"updated_at": "2024-01-01T00:00:00+00:00"},
-    ))
+    list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            cursor_field=["updated_at"],
+            stream_state={"updated_at": "2024-01-01T00:00:00+00:00"},
+        )
+    )
 
     mock_query.add_filter.assert_called_once()
 
@@ -329,11 +344,13 @@ def test_read_records_incremental_no_state_no_filter():
     client.query.return_value = mock_query
 
     stream = DatastoreStream(client=client, kind="Product", namespace=None)
-    list(stream.read_records(
-        sync_mode=SyncMode.incremental,
-        cursor_field=["updated_at"],
-        stream_state={},
-    ))
+    list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            cursor_field=["updated_at"],
+            stream_state={},
+        )
+    )
 
     mock_query.add_filter.assert_not_called()
 
@@ -355,6 +372,7 @@ def test_read_records_no_cursor_no_filter():
 # ---------------------------------------------------------------------------
 # get_updated_state
 # ---------------------------------------------------------------------------
+
 
 def test_get_updated_state_uses_active_cursor():
     from airbyte_cdk.models import SyncMode

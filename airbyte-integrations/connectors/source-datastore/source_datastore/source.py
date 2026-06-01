@@ -6,11 +6,11 @@ import json
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
 from google.cloud import datastore
 from google.oauth2 import service_account
 
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
 from source_datastore.streams import DatastoreStream
 
 
@@ -31,9 +31,7 @@ def _build_client(config: Mapping[str, Any]) -> datastore.Client:
 class SourceDatastore(AbstractSource):
     logger = logging.getLogger("airbyte")
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         try:
             client = _build_client(config)
             kinds = config.get("kinds", [])
@@ -49,7 +47,4 @@ class SourceDatastore(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = _build_client(config)
         namespace = config.get("namespace") or None
-        return [
-            DatastoreStream(client=client, kind=kind, namespace=namespace)
-            for kind in config["kinds"]
-        ]
+        return [DatastoreStream(client=client, kind=kind, namespace=namespace) for kind in config["kinds"]]

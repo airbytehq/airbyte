@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_datastore"
 
 [tool.poetry.dependencies]
-python = "^3.11,<3.14"
+python = "^3.11,<3.12"
 airbyte-cdk = "^2"
 google-cloud-datastore = "^2.19"
 google-auth = "^2.28"

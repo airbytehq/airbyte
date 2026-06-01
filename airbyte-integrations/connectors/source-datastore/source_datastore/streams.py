@@ -6,9 +6,11 @@ import base64
 from datetime import datetime, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+from google.cloud import datastore
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from google.cloud import datastore
+
 
 # Number of entities sampled per Kind during discover() to infer schema columns.
 _SCHEMA_SAMPLE_SIZE = 100
@@ -148,17 +150,8 @@ class DatastoreStream(Stream):
 
         query = self._client.query(kind=self._kind, namespace=self._namespace)
 
-        if (
-            sync_mode == SyncMode.incremental
-            and self._active_cursor
-            and stream_state
-            and stream_state.get(self._active_cursor)
-        ):
-            query.add_filter(
-                filter=datastore.query.PropertyFilter(
-                    self._active_cursor, ">=", stream_state[self._active_cursor]
-                )
-            )
+        if sync_mode == SyncMode.incremental and self._active_cursor and stream_state and stream_state.get(self._active_cursor):
+            query.add_filter(filter=datastore.query.PropertyFilter(self._active_cursor, ">=", stream_state[self._active_cursor]))
 
         # Datastore's fetch() handles server-side pagination transparently.
         for entity in query.fetch():

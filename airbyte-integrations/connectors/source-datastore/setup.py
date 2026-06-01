@@ -4,6 +4,7 @@
 
 from setuptools import find_packages, setup
 
+
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "google-cloud-datastore>=2.19",
