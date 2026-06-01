@@ -360,6 +360,11 @@ open class MsSqlServerJdbcPartitionFactory(
                 }
                 return null
             }
+            if (sv.cursor == null || sv.cursor.isNull) {
+                log.info { "State has no cursor value for stream ${stream.name}, resetting stream" }
+                streamState.reset()
+                return coldStart(streamState)
+            }
 
             // Cursor read phase (incremental read)
             val cursor: EmittedField? = stream.fields.find { it.id == sv.cursorField.first() }
@@ -372,12 +377,7 @@ open class MsSqlServerJdbcPartitionFactory(
             }
             // Convert cursor JsonNode to proper type (handles timestamp formatting, binary
             // decoding, etc.)
-            val cursorCheckpoint: JsonNode =
-                if (sv.cursor == null || sv.cursor.isNull) {
-                    Jsons.nullNode()
-                } else {
-                    stateValueToJsonNode(cursor, sv.cursor.asText())
-                }
+            val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursor.asText())
 
             val upperBound = streamState.cursorUpperBound
             if (upperBound != null) {
