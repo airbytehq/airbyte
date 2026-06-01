@@ -163,6 +163,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.9 | 2026-05-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Reduced request sizes for high-cardinality ad-level audience reports to avoid TikTok query-too-large errors. |
 | 5.0.8 | 2026-04-29 | [76062](https://github.com/airbytehq/airbyte/pull/76062) | Add support for TopView and Reach & Frequency campaigns by including all buying types in campaigns stream |
 | 5.0.7 | 2026-04-28 | [77465](https://github.com/airbytehq/airbyte/pull/77465) | Update dependencies |
 | 5.0.6 | 2026-04-21 | [76807](https://github.com/airbytehq/airbyte/pull/76807) | Update dependencies |
