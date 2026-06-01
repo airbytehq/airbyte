@@ -1,3 +1,7 @@
+## Version 1.0.4
+
+Raise Jackson `maxStringLength` to `Int.MAX_VALUE` so the bulk CDK's shared `ObjectMapper` can deserialize CDC payloads larger than the previous 20 MiB Jackson default.
+
 ## Version 1.0.3
 
 Use AIRBYTE_EDITION env var instead of DEPLOYMENT_MODE for the AIRBYTE_CLOUD_DEPLOYMENT feature flag, matching the platform's current environment variable.
