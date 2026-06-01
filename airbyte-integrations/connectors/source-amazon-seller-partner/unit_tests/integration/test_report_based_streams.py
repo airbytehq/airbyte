@@ -1260,3 +1260,141 @@ class TestSalesAndTrafficReportRequestBody:
 
         output = self._read(stream_name, config().with_asin_granularity("SKU"))
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestQueryEndDateDayAlignment:
+    """
+    Regression tests for airbytehq/oncall#12765.
+
+    When a prior sync ends mid-day, the connector's `ConcurrentCursor` state ends up at
+    an off-midnight timestamp (e.g. `2026-05-19T13:27:00Z`). The next sync inherits this
+    drifted state as the lower boundary of its first slice, so subsequent P1D slices are
+    `(drifted_lower, drifted_lower + P1D - 1s)` — neither start nor end land on midnight.
+
+    The bug: AddFields previously copied `stream_slice.cursor_slice.end_time` verbatim
+    into the cursor field (`queryEndDate` / `endDate`). With drifted slices this produced
+    off-midnight cursor values like `2026-05-20T13:26:59Z`, which BigQuery's MERGE
+    comparator then ranked as STRICTLY GREATER than a later day-aligned refresh value of
+    `2026-05-19T23:59:59Z` and silently skipped the row update.
+
+    The fix anchors the cursor field to the slice's start-of-day boundary
+    (`<start_date>T23:59:59Z`), so emitted records always carry a stable day-aligned
+    cursor value regardless of any drift in the underlying slice end_time.
+    """
+
+    @staticmethod
+    def _read(
+        stream_name: str,
+        config_: ConfigBuilder,
+        state: Optional[List[AirbyteStateMessage]] = None,
+        expecting_exception: bool = False,
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_request_body, download_response_stream_name",
+        [
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "queryEndDate",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T13:27:00Z",
+                    "dataEndTime": "2023-01-30T13:00:00Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"asinGranularity": "PARENT"},
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                id="get_sales_and_traffic_report",
+            ),
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT_BY_DATE",
+                "queryEndDate",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T13:27:00Z",
+                    "dataEndTime": "2023-01-30T13:00:00Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                id="get_sales_and_traffic_report_by_date",
+            ),
+            pytest.param(
+                "GET_VENDOR_SALES_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_SALES_REPORT",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_VENDOR_SALES_REPORT",
+                id="get_vendor_sales_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_off_midnight_state_when_incremental_read_then_cursor_field_is_day_aligned(
+        self,
+        stream_name: str,
+        cursor_field: str,
+        create_report_request_body: dict,
+        download_response_stream_name: str,
+        http_mocker: HttpMocker,
+    ) -> None:
+        """
+        Reproduces airbytehq/oncall#12765:
+        1. Seeds the connector with off-midnight state (`2023-01-29T13:27:00Z`),
+           simulating a prior sync that ended mid-day.
+        2. Caps the run with `replication_end_date=2023-01-30T13:00:00Z` so a single
+           drifted P1D slice `(2023-01-29T13:27:00Z, 2023-01-30T13:00:00Z)` is generated.
+        3. Asserts that every emitted record carries `cursor_field=2023-01-29T23:59:59Z`,
+           i.e. the day boundary of the slice's start_time — NOT the raw drifted end_time
+           (`2023-01-30T13:00:00Z`) that the pre-fix manifest would have produced.
+        """
+        drifted_state_cursor_value = "2023-01-29T13:27:00Z"
+        expected_day_aligned_cursor_value = "2023-01-29T23:59:59Z"
+
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: drifted_state_cursor_value}).build()
+
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_request_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(download_response_stream_name, data_format="json"),
+        )
+
+        output = self._read(
+            stream_name,
+            config().with_end_date(pendulum.parse("2023-01-30T13:00:00Z")),
+            state=initial_state,
+        )
+
+        assert len(output.records) > 0, f"Expected at least one record for {stream_name}, got 0"
+        for record in output.records:
+            actual = record.record.data.get(cursor_field)
+            assert actual == expected_day_aligned_cursor_value, (
+                f"{stream_name}: cursor field `{cursor_field}` must stay day-aligned despite "
+                f"off-midnight slice boundaries. Expected {expected_day_aligned_cursor_value!r}, "
+                f"got {actual!r}. This indicates the cursor field is being populated from the raw "
+                f"drifted slice end_time, which causes BigQuery destination MERGE to skip row "
+                f"updates on refresh. See airbytehq/oncall#12765."
+            )

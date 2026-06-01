@@ -2918,7 +2918,10 @@ definitions:
             - path: ["date"]
               value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}"
             - path: ["queryEndDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              # Anchor to the day boundary of the slice's start_time so the cursor field
+              # stays day-aligned even when the slice's raw end_time drifts off midnight
+              # after a mid-day sync termination. See airbytehq/oncall#12765.
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             - path: ["marketplaceId"]
               value: "{{ config['marketplace_id'] }}"
       schema_loader:
@@ -3021,7 +3024,10 @@ definitions:
         - type: AddFields
           fields:
             - path: ["queryEndDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              # Anchor to the day boundary of the slice's start_time so the cursor field
+              # stays day-aligned even when the slice's raw end_time drifts off midnight
+              # after a mid-day sync termination. See airbytehq/oncall#12765.
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3065,7 +3071,10 @@ definitions:
         - type: AddFields
           fields:
             - path: ["endDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              # Anchor to the day boundary of the slice's start_time so the cursor field
+              # stays day-aligned even when the slice's raw end_time drifts off midnight
+              # after a mid-day sync termination. See airbytehq/oncall#12765.
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
