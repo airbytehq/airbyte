@@ -33,13 +33,13 @@ TEST_CONFIG: dict = {
 def test_analytics_stream_slices(requests_mock):
     expected_partitions = [
         {
-            "campaign_id": 123,
+            "campaign_id": "urn%3Ali%3AsponsoredCampaign%3A123",
             "start_time": "2021-01-01",
             "end_time": "2021-01-31",
             "parent_slice": {"account_id": 1, "parent_slice": {}},
         },
         {
-            "campaign_id": 123,
+            "campaign_id": "urn%3Ali%3AsponsoredCampaign%3A123",
             "start_time": "2021-01-31",
             "end_time": "2021-03-01",
             "parent_slice": {"account_id": 1, "parent_slice": {}},
