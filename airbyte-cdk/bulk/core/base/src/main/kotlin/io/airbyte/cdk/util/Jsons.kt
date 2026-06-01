@@ -3,6 +3,7 @@ package io.airbyte.cdk.util
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN
+import com.fasterxml.jackson.core.StreamReadConstraints
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.cfg.JsonNodeFeature
@@ -29,6 +30,12 @@ object Jsons : ObjectMapper() {
         configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
         configure(WRITE_BIGDECIMAL_AS_PLAIN, true)
         configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
+        // Jackson's default maxStringLength is 20 MiB. Match the platform-internal precedent
+        // (Int.MAX_VALUE) so a single oversized CDC row (e.g. a >100 MiB column value) does not
+        // abort a sync. See oncall#12768.
+        factory.setStreamReadConstraints(
+            StreamReadConstraints.builder().maxStringLength(Int.MAX_VALUE).build(),
+        )
     }
 
     fun objectNode(): ObjectNode = createObjectNode()
