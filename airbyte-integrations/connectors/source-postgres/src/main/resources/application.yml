@@ -16,7 +16,13 @@ airbyte:
         min-fetch-size: 10
         default-fetch-size: 1024
         max-fetch-size: 1000000000
-        memory-capacity-ratio: 0.3
+        # Target only 10% of the JVM heap for JDBC ResultSet buffering, and hard-cap each
+        # per-query buffer at 500 MiB. This mirrors the legacy Java CDK fix
+        # (airbytehq/airbyte#69336) and prevents the bulk-cdk fetchSize estimator from
+        # picking a multi-million-row fetchSize when wide-row tables (TEXT/JSON/BYTEA)
+        # cause the sample-based maxRowBytes to underestimate the row-size tail.
+        memory-capacity-ratio: 0.1
+        max-memory-bytes-per-query: 524288000
         estimated-record-overhead-bytes: 16
         estimated-field-overhead-bytes: 16
         namespace-kind: SCHEMA
