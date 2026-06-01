@@ -99,7 +99,7 @@ class JdbcPartitionsCreatorTest {
                     ),
             )
         val expectedPartitions = 5 // adjust this as needed based on inputs
-        val expectedFetchSize = 681 // adjust this as needed based on inputs
+        val expectedFetchSize = 113 // adjust this as needed based on inputs
         val factory = sharedState.factory()
         val initialPartition =
             factory.create(stream.bootstrap(opaqueStateValue = null)).asPartition()
@@ -177,7 +177,7 @@ class JdbcPartitionsCreatorTest {
                     ),
             )
         val expectedPartitions = 5 // adjust this as needed based on inputs
-        val expectedFetchSize = 681 // adjust this as needed based on inputs
+        val expectedFetchSize = 113 // adjust this as needed based on inputs
         val factory = sharedState.factory()
         val initialPartition =
             factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()
@@ -291,7 +291,7 @@ class JdbcPartitionsCreatorTest {
                         )
                     ),
             )
-        val expectedFetchSize = 681 // adjust this as needed based on inputs
+        val expectedFetchSize = 113 // adjust this as needed based on inputs
         val factory = sharedState.factory()
         val initialPartition =
             factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()

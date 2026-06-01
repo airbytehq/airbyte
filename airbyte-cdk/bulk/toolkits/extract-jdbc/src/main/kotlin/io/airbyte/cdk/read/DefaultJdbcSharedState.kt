@@ -42,6 +42,7 @@ class DefaultJdbcSharedState(
             constants.defaultFetchSize,
             constants.maxFetchSize,
             constants.memoryCapacityRatio,
+            constants.maxMemoryBytesPerQuery,
         )
 
     override fun rowByteSizeEstimator(): JdbcSharedState.RowByteSizeEstimator =

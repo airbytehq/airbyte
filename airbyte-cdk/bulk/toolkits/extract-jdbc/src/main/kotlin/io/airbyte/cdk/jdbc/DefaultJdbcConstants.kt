@@ -22,6 +22,13 @@ data class DefaultJdbcConstants(
     val maxFetchSize: Int = FETCH_SIZE_UPPER_BOUND,
     /** How much of the JVM heap can we fill up with [java.sql.ResultSet] data. */
     val memoryCapacityRatio: Double = MEM_CAPACITY_RATIO,
+    /**
+     * Hard cap on the per-query [java.sql.ResultSet] buffer budget, in bytes. This caps the value
+     * derived from [memoryCapacityRatio] / `maxConcurrency` so that a sample-based row-size
+     * underestimate (e.g. a wide-row table whose tail rows are larger than anything in the
+     * sample) cannot produce a fetchSize that, multiplied by the true row size, blows the heap.
+     */
+    val maxMemoryBytesPerQuery: Long = MAX_MEMORY_BYTES_PER_QUERY,
     /** Estimated bytes used as overhead for each row in a [java.sql.ResultSet]. */
     val estimatedRecordOverheadBytes: Long = RECORD_OVERHEAD_BYTES,
     /** Estimated bytes used as overhead for each column value in a [java.sql.ResultSet]. */
@@ -60,9 +67,19 @@ data class DefaultJdbcConstants(
         // Memory estimate defaults.
         const val RECORD_OVERHEAD_BYTES = 16L
         const val FIELD_OVERHEAD_BYTES = 16L
-        // We're targeting use of 60% of the available memory in order to allow
-        // for some headroom for other garbage collection.
-        const val MEM_CAPACITY_RATIO: Double = 0.6
+        // We're targeting use of 10% of the available memory for JDBC ResultSet buffering in
+        // order to leave headroom for record processing, output framing, GC, and concurrent
+        // partition readers. The legacy Java CDK uses the same 10% ratio (see
+        // airbyte-cdk/java/.../FetchSizeConstants.kt). Multiplied by [MAX_MEMORY_BYTES_PER_QUERY],
+        // this gives a defense-in-depth bound on per-query buffer demand.
+        const val MEM_CAPACITY_RATIO: Double = 0.1
+        // Hard cap on the per-query ResultSet buffer. The estimator divides the total memory
+        // budget by `maxConcurrency`, but partition readers across streams may run
+        // concurrently regardless of that configured value, and the row-size sample can
+        // underestimate the tail. Capping per-query buffer at 500 MB matches the legacy Java CDK
+        // fix and bounds total buffer demand to N_readers * 500 MB even when the per-query
+        // share computed from `memoryCapacityRatio` is much larger.
+        const val MAX_MEMORY_BYTES_PER_QUERY: Long = 500L shl 20 // 500 MiB
         val MAX_SEQUENTIAL_QUERY_LIMIT_NULL: Long? = null
     }
 }
