@@ -75,7 +75,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| 1.1.26 | 2026-06-01 | [78536](https://github.com/airbytehq/airbyte/pull/78536) | Fix `events` stream truncation under PostHog's 1000-row `/events/` API cap: follow the response `next` cursor instead of offset pagination |
+| 1.1.26 | 2026-06-01 | [78536](https://github.com/airbytehq/airbyte/pull/78536) | Fix `events` stream truncation under PostHog's 1000-row `/events/` API cap: paginate by timestamp keyset (`before`=last event) instead of offset pagination |
 | 1.1.25 | 2025-02-01 | [53032](https://github.com/airbytehq/airbyte/pull/53032) | Update dependencies |
 | 1.1.24 | 2025-01-25 | [52536](https://github.com/airbytehq/airbyte/pull/52536) | Update dependencies |
 | 1.1.23 | 2025-01-18 | [51856](https://github.com/airbytehq/airbyte/pull/51856) | Update dependencies |

@@ -126,9 +126,6 @@ definitions:
           start_time_option:
             field_name: after
             inject_into: request_parameter
-          end_time_option:
-            field_name: before
-            inject_into: request_parameter
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -153,11 +150,13 @@ definitions:
           field_name: "limit"
         pagination_strategy:
           type: "CursorPagination"
-          cursor_value: "{{ response.get('next') }}"
-          stop_condition: "{{ not response.get('next') }}"
-          page_size: 10000
+          cursor_value: "{{ response['results'][-1]['timestamp'] if response['results'] else '' }}"
+          stop_condition: "{{ not response['results'] }}"
+          page_size: 1000
         page_token_option:
-          type: RequestPath
+          type: RequestOption
+          field_name: "before"
+          inject_into: "request_parameter"
 
 streams:
   - "#/definitions/projects_stream"
