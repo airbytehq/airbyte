@@ -5,8 +5,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * [FetchSizeEstimator] is used to estimate the value of the JDBC fetchSize parameter to fill up a
- * portion of the JVM heap defined by [memoryCapacityRatio], up to a hard
- * [maxMemoryBytesPerQuery] cap.
+ * portion of the JVM heap defined by [memoryCapacityRatio], up to a hard [maxMemoryBytesPerQuery]
+ * cap.
  */
 class DefaultJdbcFetchSizeEstimator(
     val maxMemoryBytes: Long,

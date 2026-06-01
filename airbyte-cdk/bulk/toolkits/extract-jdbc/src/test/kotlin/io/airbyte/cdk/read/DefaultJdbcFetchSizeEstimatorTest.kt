@@ -39,13 +39,13 @@ class DefaultJdbcFetchSizeEstimatorTest {
     }
 
     /**
-     * Reproduces the failure mode from oncall#12767 / airbytehq/airbyte#69336: with a heap of
-     * 8 GiB, ratio 0.3, and `maxConcurrency = 1` (source-postgres STDIO mode), the pre-fix
-     * estimator would derive a per-query budget of ~2.4 GiB. When divided by a sample-derived
-     * `maxRowBytes` of ~400 bytes (the wide-row tail is missed by the sample), the resulting
-     * fetchSize is in the millions. The fix caps the per-query budget at
-     * [DefaultJdbcConstants.MAX_MEMORY_BYTES_PER_QUERY] (500 MiB), so the fetchSize for a
-     * 400-byte sampled row is bounded at 500 MiB / 400 B ≈ 1.31M rows regardless of heap.
+     * Reproduces the failure mode from oncall#12767 / airbytehq/airbyte#69336: with a heap of 8
+     * GiB, ratio 0.3, and `maxConcurrency = 1` (source-postgres STDIO mode), the pre-fix estimator
+     * would derive a per-query budget of ~2.4 GiB. When divided by a sample-derived `maxRowBytes`
+     * of ~400 bytes (the wide-row tail is missed by the sample), the resulting fetchSize is in the
+     * millions. The fix caps the per-query budget at
+     * [DefaultJdbcConstants.MAX_MEMORY_BYTES_PER_QUERY] (500 MiB), so the fetchSize for a 400-byte
+     * sampled row is bounded at 500 MiB / 400 B ≈ 1.31M rows regardless of heap.
      */
     @Test
     fun testPerQueryBufferCapAppliesWithLargeHeap() {
@@ -72,9 +72,9 @@ class DefaultJdbcFetchSizeEstimatorTest {
     }
 
     /**
-     * When the heap and ratio combine to a budget smaller than the cap, the cap is a no-op and
-     * the legacy formula applies. This guards against the cap being too aggressive on small
-     * containers (e.g. local dev / unit tests).
+     * When the heap and ratio combine to a budget smaller than the cap, the cap is a no-op and the
+     * legacy formula applies. This guards against the cap being too aggressive on small containers
+     * (e.g. local dev / unit tests).
      */
     @Test
     fun testPerQueryBufferCapIsNoOpOnSmallHeap() {

@@ -25,8 +25,8 @@ data class DefaultJdbcConstants(
     /**
      * Hard cap on the per-query [java.sql.ResultSet] buffer budget, in bytes. This caps the value
      * derived from [memoryCapacityRatio] / `maxConcurrency` so that a sample-based row-size
-     * underestimate (e.g. a wide-row table whose tail rows are larger than anything in the
-     * sample) cannot produce a fetchSize that, multiplied by the true row size, blows the heap.
+     * underestimate (e.g. a wide-row table whose tail rows are larger than anything in the sample)
+     * cannot produce a fetchSize that, multiplied by the true row size, blows the heap.
      */
     val maxMemoryBytesPerQuery: Long = MAX_MEMORY_BYTES_PER_QUERY,
     /** Estimated bytes used as overhead for each row in a [java.sql.ResultSet]. */
