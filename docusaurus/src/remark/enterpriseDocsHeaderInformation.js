@@ -17,9 +17,7 @@ const getEnterpriseConnectorRegistryInfo = async (dockerRepository) => {
     const registry = await fetchRegistry();
 
     const registryEntry = registry.find(
-      (r) =>
-        r.dockerRepository_oss === dockerRepository ||
-        r.dockerRepository_cloud === dockerRepository,
+      (r) => r.dockerRepository === dockerRepository,
     );
     if (!registryEntry) {
       return {
@@ -28,8 +26,7 @@ const getEnterpriseConnectorRegistryInfo = async (dockerRepository) => {
       };
     }
     return {
-      version:
-        registryEntry.dockerImageTag_oss || registryEntry.dockerImageTag_cloud,
+      version: registryEntry.dockerImageTag || FALLBACK_VERSION,
       definitionId: registryEntry.definitionId || FALLBACK_DEFINITION_ID,
     };
   } catch (error) {

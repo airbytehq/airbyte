@@ -6,23 +6,23 @@ This page guides you through the process of setting up the [Pinecone](https://pi
 
 There are three parts to this:
 
-- Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-- Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported.)
-- Indexing - store the vectors in a vector database for similarity search
+- Processing - Split individual records into chunks so they fit the context window, and decide which fields to use as context and which are supplementary metadata.
+- Embedding - Convert the text into a vector representation using a pre-trained model.
+- Indexing - Store the vectors in a Pinecone index for similarity search.
 
 ## Prerequisites
 
-To use the Pinecone destination, you'll need:
+To use the Pinecone destination, you need:
 
-- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
-- A Pinecone project with a pre-created index with the correct dimensionality based on your embedding method
+- A [Pinecone account](https://app.pinecone.io/) with a pre-created index. The index dimensions must match your chosen embedding method.
+- An account with API access for your chosen embedding provider (OpenAI, Cohere, Azure OpenAI, or an OpenAI-compatible service). Not required if using the Fake embeddings option for testing.
 
-You'll need the following information to configure the destination:
+You need the following information to configure the destination:
 
-- **Embedding service API Key** - The API key for your OpenAI or Cohere account
-- **Pinecone API Key** - The API key for your Pinecone account
-- **Pinecone Environment** - The name of the Pinecone environment to use
-- **Pinecone Index name** - The name of the Pinecone index to load data into
+- **Embedding service API Key** - The API key for your embedding provider account.
+- **Pinecone API Key** - The API key for your Pinecone project. You can find this in the [Pinecone console](https://docs.pinecone.io/guides/get-started/authentication).
+- **Pinecone Environment** - The environment for your Pinecone project (for example, `us-east-1-aws`).
+- **Pinecone Index name** - The name of the Pinecone index to load data into.
 
 ## Supported sync modes
 
@@ -49,7 +49,7 @@ All other fields are ignored.
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry. Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
+Each record is split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of the configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Metadata fields can only be used for filtering, not for retrieval, and must be of type string, number, boolean, or list of strings. All other values are ignored. Pinecone limits total metadata to 40 KB per record. The connector reserves approximately 10 KB for internal fields, leaving about 30 KB for user-defined metadata per entry. The chunking process uses the [LangChain Python library](https://python.langchain.com/docs/get_started/introduction).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
@@ -61,17 +61,29 @@ The stream name gets added as a metadata field `_ab_stream` to each document. If
 
 The connector can use one of the following embedding methods:
 
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+1. **OpenAI** - Uses the [OpenAI API](https://platform.openai.com/docs/guides/embeddings) to produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration is constrained by the [OpenAI rate limits](https://platform.openai.com/docs/guides/rate-limits/overview).
 
-2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+2. **Cohere** - Uses the [Cohere API](https://docs.cohere.com/reference/embed) to produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
 
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+3. **Azure OpenAI** - Uses an Azure-hosted OpenAI deployment. Requires your Azure endpoint URL and API key.
+
+4. **OpenAI-compatible** - Uses any API that implements the OpenAI embeddings interface. Configure a custom base URL to point to your preferred provider.
+
+For testing purposes, you can use the **Fake embeddings** integration, which generates random embeddings with **1536 dimensions**. This is suitable for testing a data pipeline without incurring embedding costs.
 
 ### Indexing
 
-To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/quickstart) to create a project and an index before running the destination. All streams will be indexed into the same index, the `_ab_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document.
+Before running the destination, use the [Pinecone console or API](https://docs.pinecone.io/guides/get-started/quickstart) to create an index. The index dimensions must match your embedding method:
 
-OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
+| Embedding method | Dimensions |
+| :--- | :--- |
+| OpenAI (`text-embedding-ada-002`) | 1536 |
+| Cohere (`embed-english-light-v2.0`) | 1024 |
+| Azure OpenAI | Depends on the deployed model |
+| OpenAI-compatible | Depends on the model |
+| Fake | 1536 |
+
+All streams are indexed into the same index. The `_ab_stream` metadata field distinguishes between streams. The connector supports both serverless and pod-based indexes.
 
 ## Namespace support
 
@@ -84,6 +96,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.48 | 2026-03-17 | [75170](https://github.com/airbytehq/airbyte/pull/75170) | Add logging to check and write operations and fix `__init__` bug |
+| 0.1.47 | 2026-03-17 | [75136](https://github.com/airbytehq/airbyte/pull/75136) | Emit TRACE error instead of LOG on write failure for proper error surfacing |
 | 0.1.46 | 2025-10-21 | [68334](https://github.com/airbytehq/airbyte/pull/68334) | Update dependencies |
 | 0.1.45 | 2025-10-14 | [61096](https://github.com/airbytehq/airbyte/pull/61096) | Update dependencies |
 | 0.1.44 | 2025-05-17 | [57171](https://github.com/airbytehq/airbyte/pull/57171) | Update dependencies |
@@ -128,8 +142,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.1.5 | 2024-06-25 | [40430](https://github.com/airbytehq/airbyte/pull/40430) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40150](https://github.com/airbytehq/airbyte/pull/40150) | Update dependencies |
 | 0.1.3 | 2024-06-06 | [39148](https://github.com/airbytehq/airbyte/pull/39148) | [autopull] Upgrade base image to v1.2.2 |
-| 0.1.2   | 2023-05-17 | [#38336](https://github.com/airbytehq/airbyte/pull/338336) | Fix for regression:Custom namespaces not created automatically
-| 0.1.1   | 2023-05-14 | [#38151](https://github.com/airbytehq/airbyte/pull/38151) | Add airbyte source tag for attribution
+| 0.1.2 | 2023-05-17 | [38336](https://github.com/airbytehq/airbyte/pull/38336) | Fix for regression: Custom namespaces not created automatically |
+| 0.1.1 | 2023-05-14 | [38151](https://github.com/airbytehq/airbyte/pull/38151) | Add airbyte source tag for attribution |
 | 0.1.0   | 2023-05-06 | [#37756](https://github.com/airbytehq/airbyte/pull/37756) | Add support for Pinecone Serverless                                                                                          |
 | 0.0.24  | 2023-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities.                                                                 |
 | 0.0.23  | 2023-03-22 | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Bump versions to latest, resolves test failures.                                                                             |
@@ -151,9 +165,9 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.0.7   | 2023-09-13 | [#30382](https://github.com/airbytehq/airbyte/pull/30382) | Promote to certified/beta                                                                                                    |
 | 0.0.6   | 2023-09-09 | [#30193](https://github.com/airbytehq/airbyte/pull/30193) | Improve documentation                                                                                                        |
 | 0.0.5   | 2023-09-07 | [#30133](https://github.com/airbytehq/airbyte/pull/30133) | Refactor internal structure of connector                                                                                     |
-| 0.0.4   | 2023-09-05 | [#30086](https://github.com/airbytehq/airbyte/pull/30079) | Switch to GRPC client for improved performance.                                                                              |
+| 0.0.4   | 2023-09-05 | [30086](https://github.com/airbytehq/airbyte/pull/30086) | Switch to GRPC client for improved performance.                                                                              |
 | 0.0.3   | 2023-09-01 | [#30079](https://github.com/airbytehq/airbyte/pull/30079) | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade. |
-| 0.0.2   | 2023-08-31 | [#29442](https://github.com/airbytehq/airbyte/pull/29946) | Improve test coverage                                                                                                        |
+| 0.0.2   | 2023-08-31 | [29946](https://github.com/airbytehq/airbyte/pull/29946) | Improve test coverage                                                                                                        |
 | 0.0.1   | 2023-08-29 | [#29539](https://github.com/airbytehq/airbyte/pull/29539) | Pinecone connector with some embedders                                                                                       |
 
 </details>

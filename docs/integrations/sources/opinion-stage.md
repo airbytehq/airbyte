@@ -14,6 +14,10 @@ The Airbyte connector for [OpinionStage](https://opinionstage.com) enables seaml
 | responses | id | DefaultPaginator | ✅ |  ❌  |
 | questions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -21,6 +25,11 @@ The Airbyte connector for [OpinionStage](https://opinionstage.com) enables seaml
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-04-28 | [77381](https://github.com/airbytehq/airbyte/pull/77381) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76668](https://github.com/airbytehq/airbyte/pull/76668) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75649](https://github.com/airbytehq/airbyte/pull/75649) | Update dependencies |
+| 0.0.48 | 2026-03-17 | [74959](https://github.com/airbytehq/airbyte/pull/74959) | Update dependencies |
+| 0.0.47 | 2026-03-10 | [74655](https://github.com/airbytehq/airbyte/pull/74655) | Update dependencies |
 | 0.0.46 | 2026-02-24 | [73812](https://github.com/airbytehq/airbyte/pull/73812) | Update dependencies |
 | 0.0.45 | 2026-02-10 | [73114](https://github.com/airbytehq/airbyte/pull/73114) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [72155](https://github.com/airbytehq/airbyte/pull/72155) | Update dependencies |

@@ -57,7 +57,7 @@ jobs:
       connector-version: ${{ steps.connector-version.outputs.connector-version }}
     steps:
       - name: Checkout to get commit SHA
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ inputs.repo || github.repository }}
           ref: refs/pull/${{ inputs.pr }}/head
@@ -72,7 +72,12 @@ jobs:
       - name: Get job variables
         id: job-vars
         run: |
-          echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID"
+          # Append ?pr=N for "Back to pull request" link in GitHub Actions UI
+          if [[ -n "${{ inputs.pr }}" ]]; then
+            RUN_URL="${RUN_URL}?pr=${{ inputs.pr }}"
+          fi
+          echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
           echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
 
       - name: Resolve connector name
@@ -148,6 +153,7 @@ jobs:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
       with-semver-suffix: preview
       gitref: refs/pull/${{ inputs.pr }}/head
+      pr: ${{ format('{0}', inputs.pr) }}
     secrets: inherit
 
   post-completion:
@@ -175,6 +181,7 @@ jobs:
 
       - name: Prepare message variables
         id: message-vars
+        if: needs.publish.result == 'success'
         run: |
           CONNECTOR_NAME="${{ needs.init.outputs.connector-name }}"
           # Use the actual docker-image-tag from the publish workflow output
@@ -192,7 +199,8 @@ jobs:
           echo "oss_registry_url=https://connectors.airbyte.com/files/metadata/airbyte/$CONNECTOR_NAME/$DOCKER_TAG/oss.json" >> $GITHUB_OUTPUT
           echo "cloud_registry_url=https://connectors.airbyte.com/files/metadata/airbyte/$CONNECTOR_NAME/$DOCKER_TAG/cloud.json" >> $GITHUB_OUTPUT
 
-      - name: Append completion comment
+      - name: Append completion comment (success)
+        if: needs.publish.result == 'success'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ needs.init.outputs.comment-id }}
@@ -208,3 +216,12 @@ jobs:
             > **Registry JSON:**
             > - [OSS Registry](${{ steps.message-vars.outputs.oss_registry_url }})
             > - [Cloud Registry](${{ steps.message-vars.outputs.cloud_registry_url }})
+
+      - name: Append completion comment (failure)
+        if: needs.publish.result != 'success'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ needs.init.outputs.comment-id }}
+          issue-number: ${{ needs.init.outputs.pr-number }}
+          body: |
+            ${{ steps.status.outputs.status_emoji }} **Pre-release Publish ${{ steps.status.outputs.status_text }}** for `${{ needs.init.outputs.connector-name }}`.

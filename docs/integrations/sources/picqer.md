@@ -35,6 +35,10 @@ Configure the API key as your username and leave password field as blank
 | vatgroups | idvatgroup | DefaultPaginator | ✅ |  ❌  |
 | stats |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -42,6 +46,10 @@ Configure the API key as your username and leave password field as blank
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.54 | 2026-04-28 | [77383](https://github.com/airbytehq/airbyte/pull/77383) | Update dependencies |
+| 0.0.53 | 2026-04-21 | [76703](https://github.com/airbytehq/airbyte/pull/76703) | Update dependencies |
+| 0.0.52 | 2026-03-31 | [75846](https://github.com/airbytehq/airbyte/pull/75846) | Update dependencies |
+| 0.0.51 | 2026-03-17 | [74458](https://github.com/airbytehq/airbyte/pull/74458) | Update dependencies |
 | 0.0.50 | 2026-03-03 | [73199](https://github.com/airbytehq/airbyte/pull/73199) | Update dependencies |
 | 0.0.49 | 2026-02-03 | [72648](https://github.com/airbytehq/airbyte/pull/72648) | Update dependencies |
 | 0.0.48 | 2026-01-20 | [72188](https://github.com/airbytehq/airbyte/pull/72188) | Update dependencies |

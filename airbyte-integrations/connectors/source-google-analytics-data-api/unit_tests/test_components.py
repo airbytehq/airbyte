@@ -2,9 +2,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
 from typing import Dict, List, Union
 
 import pytest
+import yaml
 
 
 _CONFIG = {
@@ -225,3 +227,28 @@ def test_not_expression_dimension_filter_config_transformation(components_module
     }
 
     assert config["custom_reports_array"][0]["dimensionFilter"] == expected_dimension_filter
+
+
+def test_complete_oauth_output_specification_contains_refresh_and_access_token():
+    """Verify that complete_oauth_output_specification declares both refresh_token and access_token,
+    and that extract_output matches.
+
+    Both tokens must be listed so the platform correctly merges the OAuth response into the
+    connector config when users create sources via the public API with secretId.
+
+    Regression test for https://github.com/airbytehq/oncall/issues/11935
+    """
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+
+    oauth_spec = manifest["spec"]["advanced_auth"]["oauth_config_specification"]
+
+    # extract_output should list both refresh_token and access_token
+    extract_output = oauth_spec["oauth_connector_input_specification"]["extract_output"]
+    assert "refresh_token" in extract_output, "refresh_token must be in extract_output"
+    assert "access_token" in extract_output, "access_token must be in extract_output"
+
+    # complete_oauth_output_specification must match extract_output
+    output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
+    assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
+    assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"

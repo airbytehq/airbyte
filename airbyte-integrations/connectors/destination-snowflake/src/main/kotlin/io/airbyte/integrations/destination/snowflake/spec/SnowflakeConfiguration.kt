@@ -20,6 +20,7 @@ data class SnowflakeConfiguration(
     val cdcDeletionMode: CdcDeletionMode,
     val legacyRawTablesOnly: Boolean,
     val internalTableSchema: String,
+    val trimSpace: Boolean,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
 ) : DestinationConfiguration()
@@ -80,6 +81,7 @@ class SnowflakeConfigurationFactory :
                 } else {
                     pojo.internalTableSchema!!
                 },
+            trimSpace = pojo.trimSpace ?: true,
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1
         )

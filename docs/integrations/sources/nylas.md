@@ -26,6 +26,10 @@ The Nylas platform provides an integration layer that makes it easy to connect a
 | scheduled_messages | schedule_id | No pagination | ✅ |  ❌  |
 | threads | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,10 @@ The Nylas platform provides an integration layer that makes it easy to connect a
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.55 | 2026-04-28 | [77332](https://github.com/airbytehq/airbyte/pull/77332) | Update dependencies |
+| 0.0.54 | 2026-04-21 | [76680](https://github.com/airbytehq/airbyte/pull/76680) | Update dependencies |
+| 0.0.53 | 2026-03-31 | [75739](https://github.com/airbytehq/airbyte/pull/75739) | Update dependencies |
+| 0.0.52 | 2026-03-10 | [74611](https://github.com/airbytehq/airbyte/pull/74611) | Update dependencies |
 | 0.0.51 | 2026-03-03 | [74183](https://github.com/airbytehq/airbyte/pull/74183) | Update dependencies |
 | 0.0.50 | 2026-02-17 | [73547](https://github.com/airbytehq/airbyte/pull/73547) | Update dependencies |
 | 0.0.49 | 2026-02-10 | [73063](https://github.com/airbytehq/airbyte/pull/73063) | Update dependencies |

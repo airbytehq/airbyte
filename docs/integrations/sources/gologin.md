@@ -22,6 +22,10 @@ Postman API Reference: https://documenter.getpostman.com/view/21126834/Uz5GnvaL#
 | user_balance | uuid | DefaultPaginator | ✅ |  ❌  |
 | user_timezones | uuid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -29,6 +33,10 @@ Postman API Reference: https://documenter.getpostman.com/view/21126834/Uz5GnvaL#
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2026-04-28 | [77242](https://github.com/airbytehq/airbyte/pull/77242) | Update dependencies |
+| 0.0.32 | 2026-04-21 | [76589](https://github.com/airbytehq/airbyte/pull/76589) | Update dependencies |
+| 0.0.31 | 2026-03-31 | [75674](https://github.com/airbytehq/airbyte/pull/75674) | Update dependencies |
+| 0.0.30 | 2026-03-17 | [74562](https://github.com/airbytehq/airbyte/pull/74562) | Update dependencies |
 | 0.0.29 | 2026-02-24 | [73767](https://github.com/airbytehq/airbyte/pull/73767) | Update dependencies |
 | 0.0.28 | 2026-02-17 | [73087](https://github.com/airbytehq/airbyte/pull/73087) | Update dependencies |
 | 0.0.27 | 2026-01-20 | [71930](https://github.com/airbytehq/airbyte/pull/71930) | Update dependencies |

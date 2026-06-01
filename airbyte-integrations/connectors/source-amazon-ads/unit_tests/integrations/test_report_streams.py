@@ -334,3 +334,82 @@ class TestDisplayReportStreams:
         assert len(output.records) == 2
         assert all("date" in record.record.data for record in output.records)
         assert [record.record.data["date"] for record in output.records] == ["2023-01-01", "2023-01-02"]
+
+    @pytest.mark.parametrize(
+        "stream_name",
+        [
+            "sponsored_brands_v3_report_stream_daily",
+            "sponsored_display_campaigns_report_stream_daily",
+            "sponsored_products_campaigns_report_stream_daily",
+        ],
+    )
+    def test_daily_stream_uses_date_as_cursor(self, requests_mock, config, mock_oauth, mock_profiles, stream_name):
+        """
+        Verify that daily streams use the 'date' field from the API response as the cursor field
+        instead of the synthetic 'reportDate'. This ensures correct deduplication when using
+        incremental + dedup sync mode with a 30-day step.
+        """
+        report_id = f"report-id-{stream_name}-date-cursor"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        report_data = gzip.compress(b'[{"date": "2023-01-15", "campaignId": "c1"}, {"date": "2023-01-16", "campaignId": "c2"}]')
+        requests_mock.get(
+            download_url,
+            content=report_data,
+            status_code=200,
+        )
+        output = self._read(config, stream_name, SyncMode.incremental)
+        assert len(output.records) == 2
+        # Daily streams should use 'date' as cursor field, not 'reportDate'
+        dates = [record.record.data["date"] for record in output.records]
+        assert dates == ["2023-01-15", "2023-01-16"]
+        # reportDate is still populated (from stream_interval.end_time via the shared transformation)
+        assert "reportDate" in output.records[0].record.data
+        # Verify the cursor state uses 'date' field
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["date"] is not None
+
+    def test_non_daily_stream_uses_report_date_as_cursor(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """
+        Verify that non-daily (SUMMARY) streams continue to use 'reportDate' as the cursor field
+        with the value set from stream_interval.end_time.
+        """
+        report_id = "report-id-brands-v3-summary"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        report_data = gzip.compress(b'[{"campaignId": "c1", "impressions": 100}]')
+        requests_mock.get(
+            download_url,
+            content=report_data,
+            status_code=200,
+        )
+        output = self._read(config, "sponsored_brands_v3_report_stream", SyncMode.incremental)
+        assert len(output.records) == 1
+        # SUMMARY streams should still use 'reportDate' as cursor, set from stream_interval.end_time
+        assert "reportDate" in output.records[0].record.data
+        assert output.records[0].record.data["reportDate"] is not None
+        # Verify cursor state uses 'reportDate' field
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["reportDate"] is not None

@@ -1,29 +1,40 @@
 ---
+plan: all
 sidebar_position: 1
 ---
 
-# Agent Engine
+# Airbyte Agents
 
-Airbyte's Agent Engine is a data layer for AI agents. Use the Agent Engine as a cloud platform to manage connectors, credentials, and data replication for your agents. You can also use Airbyte's open source agent connectors as standalone Python packages, import them into your AI agents, and manage storage and credentials yourself.
+Airbyte Agents is a data and context layer for AI agents. It gives your agents real-time access to business data through open source, type-safe connectors, managed credentials, and low-latency search. Use it as a cloud platform or import connectors directly into your own agents.
 
-:::info New and growing
-The Agent engine is new and growing. Airbyte is actively seeking feedback. Expect this platform and its library of connectors to grow and change rapidly.
-:::
+[Sign up free at app.airbyte.ai](https://app.airbyte.ai) or [get started with the docs](/ai-agents/get-started/).
 
-<Grid columns="3">
+## Try it now
 
-<CardWithIcon title="About Agent Engine" description="Learn what the Agent Engine does, who its for, and how you can use it." ctaText="About" ctaLink="/ai-agents/about/" icon="fa-cloud" />
+<QuickInstall />
 
-<CardWithIcon title="Tutorials" description="Get started with the Agent Engine and its connectors. Even if you've never built an AI agent before, you can have one working for you in 15 minutes or less." ctaText="Tutorials" ctaLink="/ai-agents/tutorials/" icon="fa-cloud" />
+## Dive into the docs
 
-<CardWithIcon title="Platform" description="Use Airbyte's Agent Engine to store and manage credentials, run connectors, and power agentic search." ctaText="Platform docs" ctaLink="/ai-agents/platform/" icon="fa-lock" />
+<Grid columns="2">
+
+<CardWithIcon title="Get started" description="New to Airbyte Agents? Learn what the product is, choose the right interface, or jump straight into building." ctaText="Get started" ctaLink="/ai-agents/get-started/" icon="fa-rocket" />
+
+<CardWithIcon title="Core concepts" description="Understand the building blocks: the Connect-Ask-Act model, agent operations, the Context Store, and system architecture." ctaText="Core concepts" ctaLink="/ai-agents/concepts/" icon="fa-lightbulb" />
 
 </Grid>
 
-<Grid columns="3">
+<Grid columns="2">
 
-<CardWithIcon title="API docs" description="Use our API to set up connectors, authentication, execute operations, and your customers." ctaText="API docs" ctaLink="/ai-agents/api/" icon="fa-cloud" />
+<CardWithIcon title="Interfaces" description="Choose how to work with your data across the interfaces Airbyte Agents supports." ctaText="Interfaces" ctaLink="/ai-agents/interfaces/" icon="fa-plug" />
 
-<CardWithIcon title="Connectors" description="Browse our catalog of connectors, copy code samples, and start powering your agents." ctaText="Connectors" ctaLink="/ai-agents/connectors/" icon="fa-python" />
+<CardWithIcon title="Agent connectors" description="Browse the catalog of open-source connectors that equip agents to call third-party APIs." ctaText="Agent connectors" ctaLink="/ai-agents/connectors/" icon="fa-puzzle-piece" />
+
+</Grid>
+
+<Grid columns="2">
+
+<CardWithIcon title="Reference" description="API and SDK reference documentation." ctaText="Reference" ctaLink="/ai-agents/reference/" icon="fa-book" />
+
+<CardWithIcon title="Account and administration" description="Manage billing, plans, payments, and usage." ctaText="Administration" ctaLink="/ai-agents/admin/" icon="fa-gear" />
 
 </Grid>

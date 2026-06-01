@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
@@ -37,7 +37,7 @@ object MsSqlServerCursorCutoffTimeProvider {
      * @param nowInstant The current instant (for testing)
      * @return The cutoff time as JsonNode, or null if not applicable
      */
-    fun getCutoffTime(cursorField: Field, nowInstant: Instant = Instant.now()): JsonNode? {
+    fun getCutoffTime(cursorField: EmittedField, nowInstant: Instant = Instant.now()): JsonNode? {
 
         return when (cursorField.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType -> {
@@ -102,7 +102,7 @@ object MsSqlServerCursorCutoffTimeProvider {
     }
 
     /** Checks if a cursor field type supports the "Exclude Today's Data" feature. */
-    fun isTemporalType(cursorField: Field): Boolean {
+    fun isTemporalType(cursorField: EmittedField): Boolean {
         val schemaType = cursorField.type.airbyteSchemaType
         return schemaType is LeafAirbyteSchemaType &&
             schemaType in
