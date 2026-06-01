@@ -24,6 +24,10 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 - [Telephony](hhttps://developer.genesys.cloud/telephony/telephony-apis)
 - [Users](https://developer.genesys.cloud/useragentman/users/)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

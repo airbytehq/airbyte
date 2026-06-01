@@ -27,6 +27,10 @@ API Reference: https://api-reference.shutterstock.com/#overview
 | user_details | id | DefaultPaginator | ✅ |  ❌  |
 | user_subscriptions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

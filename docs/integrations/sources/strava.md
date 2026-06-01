@@ -120,6 +120,10 @@ The Strava source connector supports the following [sync modes](https://docs.air
 Strava API has limitations to 100 requests every 15 minutes, 1000 daily.
 More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.com/docs/rate-limits).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

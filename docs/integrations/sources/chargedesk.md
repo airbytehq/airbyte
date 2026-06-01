@@ -23,6 +23,10 @@ You can find more about the API here https://chargedesk.com/api-docs
 | subscriptions | subscription_id | DefaultPaginator | ✅ |  ✅  |
 | products | product_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

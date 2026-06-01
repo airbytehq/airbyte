@@ -64,17 +64,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Twilio API reference](https://www.twilio.com/docs/usage/api).
 
-## SDK installation
+## Interfaces
+
+Use the Twilio connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "accounts",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -264,7 +313,7 @@ async def twilio_execute(entity: str, action: str, params: dict | None = None):
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
@@ -366,6 +415,10 @@ async def twilio_execute(entity: str, action: str, params: dict | None = None):
 ## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 

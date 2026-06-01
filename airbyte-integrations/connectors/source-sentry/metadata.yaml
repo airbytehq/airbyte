@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 0.9.21
+  dockerImageTag: 0.9.22
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   externalDocumentationUrls:
@@ -72,4 +72,7 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
 metadataSpecVersion: "1.0"

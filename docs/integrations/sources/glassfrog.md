@@ -43,6 +43,10 @@ This Source is capable of syncing the following Streams:
 3. In the API tab, enter the label for your new API key (e.g. `Airbyte`) and clik on the button `Create new API Key`.
 4. Use the created secret key to configure your source!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

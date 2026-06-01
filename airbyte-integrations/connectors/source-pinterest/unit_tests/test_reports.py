@@ -8,8 +8,9 @@ import os
 
 import pytest
 from freezegun import freeze_time
+from jsonschema import ValidationError, validate
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_analytics_columns, get_source, read_from_stream
 
@@ -52,9 +53,9 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
             "status_code": 500,
             "json": {"message": "internal error"},
         },
-        {  # 400 treated as retryable by your error handler
+        {
             "status_code": 400,
-            "json": {"code": 1, "message": "transient creation error"},
+            "json": {"code": 1, "message": "Retry after 5 seconds"},
         },
         {  # finally succeed creating the job
             "status_code": 200,
@@ -92,6 +93,22 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
     expected_record = {"metric": 1}
 
     assert records[0] == expected_record
+
+
+def test_non_rate_limit_400_fails_with_config_error(requests_mock, test_config):
+    ad_account_id = "123"
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": ad_account_id}]})
+    requests_mock.post(
+        f"https://api.pinterest.com/v5/ad_accounts/{ad_account_id}/reports",
+        status_code=400,
+        json={"code": 1, "message": "Invalid request."},
+    )
+
+    output = read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, expecting_exception=True)
+
+    assert output.errors
+    assert output.errors[0].trace.error.message == "Pinterest analytics request is invalid."
+    assert output.errors[0].trace.error.failure_type == FailureType.config_error
 
 
 def test_streams(test_config):
@@ -201,3 +218,36 @@ def test_custom_reports_status_filters(requests_mock, test_config, status_fields
     records = [record.record.data for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental).records]
 
     assert records == [{"spend": 1}]
+
+
+@pytest.mark.parametrize(
+    "field_name,valid_statuses,invalid_statuses",
+    [
+        pytest.param(
+            "campaign_statuses",
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="campaign_statuses",
+        ),
+        pytest.param(
+            "ad_group_statuses",
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="ad_group_statuses",
+        ),
+        pytest.param(
+            "ad_statuses",
+            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED"],
+            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="ad_statuses",
+        ),
+    ],
+)
+def test_custom_report_status_filters_allow_at_most_six_values(test_config, field_name, valid_statuses, invalid_statuses):
+    status_schema = (
+        get_source(test_config).spec(None).connectionSpecification["properties"]["custom_reports"]["items"]["properties"][field_name]
+    )
+
+    validate(valid_statuses, status_schema)
+    with pytest.raises(ValidationError):
+        validate(invalid_statuses, status_schema)

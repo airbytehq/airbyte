@@ -54,6 +54,10 @@ The following fields are required fields for the connector to work:
 - `category`: The category you want headlines for.
 - `sort_by`: How to sort the results.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

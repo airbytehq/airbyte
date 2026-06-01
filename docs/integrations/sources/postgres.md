@@ -346,9 +346,11 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                    |
 | composite type                        | string         |                                                                                                                                                      |
 
-
 </HideInUI>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -357,6 +359,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |-------------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.0-rc.12 | 2026-05-31 | [78484](https://github.com/airbytehq/airbyte/pull/78484) | Upgrade to the latest CDK to fix a resource leak bug in CDK 1.1.7 .                                                                                                        |
 | 3.8.0-rc.11 | 2026-05-14 | [78102](https://github.com/airbytehq/airbyte/pull/78102) | Remove internal github links from error messages.                                                                                                                          |
 | 3.8.0-rc.10 | 2026-05-11 | [77706](https://github.com/airbytehq/airbyte/pull/77706) | Prevent table filenode query from running outside max db connections control.                                                                                              |
 | 3.8.0-rc.9  | 2026-05-05 | [77805](https://github.com/airbytehq/airbyte/pull/77805) | Make the hidden additional properties fields in spec optional. No functional change.                                                                                       |

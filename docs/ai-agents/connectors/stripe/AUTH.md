@@ -2,47 +2,15 @@
 
 This page documents the authentication and configuration options for the Stripe agent connector.
 
-## Authentication
+## Hosted mode (most cases)
 
-### Open source execution
+In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
-In open source mode, you provide API credentials directly to the connector.
-
-#### OAuth
+### OAuth
 This authentication method isn't available for this connector.
 
-#### Token
 
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Stripe API Key (starts with sk_test_ or sk_live_) |
-
-Example request:
-
-```python
-from airbyte_agent_sdk.connectors.stripe import StripeConnector
-from airbyte_agent_sdk.connectors.stripe.models import StripeAuthConfig
-
-connector = StripeConnector(
-    auth_config=StripeAuthConfig(
-        api_key="<Your Stripe API Key (starts with sk_test_ or sk_live_)>"
-    )
-)
-```
-
-### Hosted execution
-
-In hosted mode, you first create a connector via the Airbyte Agent API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
-
-#### OAuth
-This authentication method isn't available for this connector.
-
-#### Bring your own OAuth flow
-This authentication method isn't available for this connector.
-
-#### Token
+### Token
 Create a connector with Token credentials.
 
 
@@ -78,11 +46,48 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-#### Execution
+### Execution
 
-After creating the connector, execute operations using either the Python SDK or API.
-If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
+After creating the connector, execute operations using the CLI, Python SDK, or API.
+If your Airbyte client can access multiple organizations, set the default organization with `airbyte-agent organizations use`, include `organization_id` in `AirbyteAuthConfig`, or include `X-Organization-Id` in raw API calls.
 
+**CLI**
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "<entity>",
+  "action": "<action>",
+  "params": {}
+}'
+```
 
 **Python SDK**
 
@@ -278,4 +283,32 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
   -d '{"entity": "<entity>", "action": "<action>", "params": {}}'
 ```
 
+
+## Open source mode
+
+In open source mode, provide API credentials directly to the connector.
+
+### OAuth
+This authentication method isn't available for this connector.
+
+### Token
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `api_key` | `str` | Yes | Your Stripe API Key (starts with sk_test_ or sk_live_) |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.stripe import StripeConnector
+from airbyte_agent_sdk.connectors.stripe.models import StripeAuthConfig
+
+connector = StripeConnector(
+    auth_config=StripeAuthConfig(
+        api_key="<Your Stripe API Key (starts with sk_test_ or sk_live_)>"
+    )
+)
+```
 

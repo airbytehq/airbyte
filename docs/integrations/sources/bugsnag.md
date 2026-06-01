@@ -27,6 +27,10 @@ You need to generate the `auth_token` to get started. Personal Auth Tokens can b
 | releases | id | DefaultPaginator | ✅ |  ✅  |
 | trace_fields | display_id.project_id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
