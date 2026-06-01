@@ -32,6 +32,10 @@ Refer `https://docs.appfigures.com/api/reference/v2/authentication` for more det
 | reports_adspend |  | No pagination | ✅ |  ❌  |
 | reports_ratings |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

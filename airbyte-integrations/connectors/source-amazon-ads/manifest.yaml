@@ -3509,7 +3509,7 @@ spec:
         title: Number of concurrent threads
         minimum: 2
         maximum: 20
-        default: 12
+        default: 14
         examples:
           - 2
           - 3
@@ -3567,7 +3567,7 @@ spec:
 # continue to observe.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 12) }}"
+  default_concurrency: "{{ config.get('num_workers', 14) }}"
   max_concurrency: 20
 
 schemas:

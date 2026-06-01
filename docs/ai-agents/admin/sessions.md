@@ -32,8 +32,8 @@ The Sessions table lists the most recent sessions first. Each row represents one
 - **Output Tokens**: The total tokens the agent produced, across every turn in the session.
 - **Date**: When the session last updated. Sessions that are still running show the most recent activity time. Dates display in your browser's local [time zone](../concepts/time-zones).
 - **Actions**: Per-row buttons to review or resume the session.
-    - Click the **View** icon to open the session and see its messages and tool calls.
-    - Click the **Chat** icon to jump to the chat or automation the session belongs to.
+  - Click the **View** icon to open the session and see its messages and tool calls.
+  - Click the **Chat** icon to jump to the chat or automation the session belongs to.
 
 Use the **Type**, **Status**, and **Connectors** filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors.
 
@@ -49,7 +49,7 @@ Chats you hold inside the Automation Builder, while designing or editing an auto
 
 ### Automation {#automation}
 
-An Automation session is one run of an automation. The session starts when the automation's trigger fires (a schedule, a webhook, or a manual run) and ends when the automation finishes. Automations don't have a user in the loop, so their sessions are typically a sequence of tool calls and internal reasoning rather than a back-and-forth conversation.
+An Automation session is one run of an automation. The session starts when you start a manual run or when scheduled, and ends when the automation finishes. Automations don't have a user in the loop, so their sessions are typically a sequence of tool calls and internal reasoning rather than a back-and-forth conversation.
 
 Each run of an automation is its own session. If the same automation runs on a schedule, each scheduled run appears as a separate row in the Sessions table.
 

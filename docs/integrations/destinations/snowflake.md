@@ -21,8 +21,8 @@ By default, Snowflake allows users to connect to the service from any computer o
 A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
 policy to allow or deny access to a single IP address or a list of addresses.
 
-If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses
-is on the allowed list
+If you're using Airbyte Cloud, add Airbyte's
+[IP addresses](/platform/operating-airbyte/ip-allowlist) to your Snowflake network policy allowlist.
 
 To determine whether a network policy is set on your account or for a specific user, execute the
 _SHOW PARAMETERS_ command.
@@ -288,6 +288,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.43          | 2026-05-19 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
+| 4.0.42          | 2026-05-11 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
 | 4.0.41          | 2026-05-06 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
 | 4.0.40-rc.1     | 2026-04-27 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
 | 4.0.39          | 2026-03-13 | [74715](https://github.com/airbytehq/airbyte/pull/74715)   | Drop temp table after successful upsert to prevent duplicate records                                                                                                                   |

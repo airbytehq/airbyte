@@ -47,6 +47,10 @@ This source is capable of syncing the following core streams:
 - [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
 - [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

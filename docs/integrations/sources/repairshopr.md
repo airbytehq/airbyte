@@ -28,6 +28,10 @@ With this connector we can extract data from various streams such as customers ,
 | products | id | DefaultPaginator | ✅ |  ❌  |
 | tickets | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

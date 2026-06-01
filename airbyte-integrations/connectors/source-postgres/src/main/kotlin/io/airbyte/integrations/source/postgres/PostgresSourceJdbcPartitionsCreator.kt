@@ -20,6 +20,7 @@ import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.MODE_PROPERTY
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
@@ -30,6 +31,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.use
 
@@ -43,6 +45,24 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+    private val acquiredResources = AtomicReference<AcquiredResources>()
+
+    /**
+     * Querying for a table's filenode makes it necessary to acquire a DB connection allowance
+     * resource.
+     */
+    override fun tryAcquireResources(): PartitionsCreatorFactory.TryAcquireResourcesStatus {
+        val acquiredResources: AcquiredResources =
+            partitionFactory.sharedState.tryAcquireResourcesForCreatorFactory()
+                ?: return PartitionsCreatorFactory.TryAcquireResourcesStatus.RETRY_LATER
+        this.acquiredResources.set(acquiredResources)
+        return PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN
+    }
+
+    override fun releaseResources() {
+        acquiredResources.getAndSet(null)?.close()
+    }
+
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         PostgresSourceJdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }

@@ -106,6 +106,10 @@ The connector handles Track's API rate limit of 10,000 requests per 5 minutes. W
 | users | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

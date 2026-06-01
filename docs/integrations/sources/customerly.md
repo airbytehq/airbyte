@@ -13,6 +13,10 @@ Connector for customerly.io
 | users | user_id.email | DefaultPaginator | ✅ |  ✅  |
 | leads | crmhero_user_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

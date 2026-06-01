@@ -2,7 +2,7 @@
 
 The Customer-Io agent connector is a Python package that equips AI agents to interact with Customer-Io through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-Connector for the Customer.io App API, providing read access to campaigns, newsletters, segments, messages, activities, sender identities, snippets, collections, reporting webhooks, and exports. Customer.io is a messaging platform that lets you send automated emails, push notifications, SMS, and in-app messages based on customer behavior. This connector retrieves data from the App API (not the Track API) and requires a Bearer-type App API key generated in your Customer.io workspace settings.
+Connector for the Customer.io App API, providing read access to campaigns, newsletters, segments, messages, activities, sender identities, snippets, collections, reporting webhooks, exports, and transactional message templates. Customer.io is a messaging platform that lets you send automated emails, push notifications, SMS, and in-app messages based on customer behavior. This connector retrieves data from the App API (not the Track API) and requires a Bearer-type App API key generated in your Customer.io workspace settings.
 
 
 ## Example prompts
@@ -28,6 +28,10 @@ The Customer-Io connector is optimized to handle prompts like these.
 - Send an SMS notification to +15551234567
 - Send a push notification to user 123
 - Trigger broadcast campaign 42
+- List all transactional message templates
+- Get the details of transactional message 5
+- Show the content variants of transactional template 3
+- Update the subject of transactional content 139 in template 3
 - Which campaigns are currently active?
 - Find newsletters sent in the last month
 - What are the most recent email deliveries?
@@ -63,6 +67,8 @@ This connector supports the following entities and actions. For more details, se
 | Collections | [List](./REFERENCE.md#collections-list), [Create](./REFERENCE.md#collections-create), [Get](./REFERENCE.md#collections-get), [Update](./REFERENCE.md#collections-update) |
 | Reporting Webhooks | [List](./REFERENCE.md#reporting-webhooks-list), [Create](./REFERENCE.md#reporting-webhooks-create), [Get](./REFERENCE.md#reporting-webhooks-get), [Update](./REFERENCE.md#reporting-webhooks-update) |
 | Exports | [List](./REFERENCE.md#exports-list), [Create](./REFERENCE.md#exports-create), [Get](./REFERENCE.md#exports-get) |
+| Transactional Messages | [List](./REFERENCE.md#transactional-messages-list), [Get](./REFERENCE.md#transactional-messages-get) |
+| Transactional Message Contents | [List](./REFERENCE.md#transactional-message-contents-list), [Update](./REFERENCE.md#transactional-message-contents-update) |
 | Transactional Email | [Create](./REFERENCE.md#transactional-email-create) |
 | Transactional Sms | [Create](./REFERENCE.md#transactional-sms-create) |
 | Transactional Push | [Create](./REFERENCE.md#transactional-push-create) |
@@ -74,17 +80,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Customer-Io API reference](https://customer.io/docs/api/app/).
 
-## SDK installation
+## Interfaces
+
+Use the Customer-Io connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaigns",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -274,7 +329,7 @@ async def customer_io_execute(entity: str, action: str, params: dict | None = No
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
@@ -376,6 +431,10 @@ async def customer_io_execute(entity: str, action: str, params: dict | None = No
 ## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 

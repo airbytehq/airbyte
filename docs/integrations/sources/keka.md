@@ -22,6 +22,10 @@ The Keka Connector for Airbyte allows seamless integration with the Keka platfor
 | Leave Type | identifier | DefaultPaginator | ✅ |  ❌  |
 | Leave Request |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

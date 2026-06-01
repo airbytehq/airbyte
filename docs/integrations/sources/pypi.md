@@ -24,6 +24,10 @@ In addition, PyPI reserves the right to temporarily or permanently prohibit a co
 
 Try not to make a lot of requests (thousands) in a short amount of time (minutes). Generally PyPI can handle it, but it’s preferred to make requests in serial over a longer amount of time if possible.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

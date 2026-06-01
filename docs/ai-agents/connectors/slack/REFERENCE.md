@@ -30,6 +30,17 @@ The Slack connector supports the following entities and actions.
 
 Returns a list of all users in the Slack workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -98,6 +109,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "user": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -163,6 +188,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -268,6 +313,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all channels in the Slack workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -349,6 +405,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a single channel by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "get",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -425,6 +495,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channels Create
 
 Creates a new public or private channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "is_private": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -506,6 +591,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Renames an existing channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "update",
+  "params": {
+    "channel": "<str>",
+    "name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -585,6 +685,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channels Context Store Search
 
 Search and filter channels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "context_team_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -706,6 +826,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns messages from a channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "list",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -823,6 +957,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter channel messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -916,6 +1070,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Threads List
 
 Returns messages in a thread (thread replies from conversations.replies endpoint)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "list",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1036,6 +1204,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter threads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1126,6 +1314,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Posts a message to a public channel, private channel, or direct message conversation
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "text": "<str>",
+    "thread_ts": "<str>",
+    "reply_broadcast": true,
+    "unfurl_links": true,
+    "unfurl_media": true,
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1135,7 +1344,9 @@ await slack.messages.create(
     thread_ts="<str>",
     reply_broadcast=True,
     unfurl_links=True,
-    unfurl_media=True
+    unfurl_media=True,
+    blocks=[],
+    mrkdwn=True
 )
 ```
 
@@ -1154,7 +1365,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "thread_ts": "<str>",
         "reply_broadcast": True,
         "unfurl_links": True,
-        "unfurl_media": True
+        "unfurl_media": True,
+        "blocks": [],
+        "mrkdwn": True
     }
 }'
 ```
@@ -1170,6 +1383,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `reply_broadcast` | `boolean` | No | Also post reply to channel when replying to a thread |
 | `unfurl_links` | `boolean` | No | Enable unfurling of primarily text-based content |
 | `unfurl_media` | `boolean` | No | Enable unfurling of media content |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
 
 
 <details>
@@ -1196,13 +1411,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates an existing message in a channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "update",
+  "params": {
+    "channel": "<str>",
+    "ts": "<str>",
+    "text": "<str>",
+    "blocks": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
 await slack.messages.update(
     channel="<str>",
     ts="<str>",
-    text="<str>"
+    text="<str>",
+    blocks=[]
 )
 ```
 
@@ -1218,7 +1451,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "params": {
         "channel": "<str>",
         "ts": "<str>",
-        "text": "<str>"
+        "text": "<str>",
+        "blocks": []
     }
 }'
 ```
@@ -1231,6 +1465,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `channel` | `string` | Yes | Channel ID containing the message |
 | `ts` | `string` | Yes | Timestamp of the message to update |
 | `text` | `string` | Yes | New message text content |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
 
 
 <details>
@@ -1256,6 +1491,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages Delete
 
 Deletes a message from a channel. When used with a bot token, may only delete messages posted by that bot.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "delete",
+  "params": {
+    "channel": "<str>",
+    "ts": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1310,6 +1560,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channel Topics Create
 
 Sets the topic for a channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_topics",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "topic": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1393,6 +1658,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Sets the purpose for a channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_purposes",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "purpose": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1474,6 +1754,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channel Invites Create
 
 Invites one or more users to a public or private channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_invites",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "users": "<str>",
+    "force": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1560,6 +1856,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Adds a reaction (emoji) to a message
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "reactions",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>",
+    "name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1612,6 +1924,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reactions Delete
 
 Removes a reaction (emoji) from a message
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "reactions",
+  "action": "delete",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>",
+    "name": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1668,6 +1996,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Sends an ephemeral message to a user in a channel. Ephemeral messages are visible only to the target user and do not persist across sessions.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "ephemeral_messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "user": "<str>",
+    "text": "<str>",
+    "thread_ts": "<str>",
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1676,7 +2023,8 @@ await slack.ephemeral_messages.create(
     user="<str>",
     text="<str>",
     thread_ts="<str>",
-    blocks="<str>"
+    blocks=[],
+    mrkdwn=True
 )
 ```
 
@@ -1694,7 +2042,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "user": "<str>",
         "text": "<str>",
         "thread_ts": "<str>",
-        "blocks": "<str>"
+        "blocks": [],
+        "mrkdwn": True
     }
 }'
 ```
@@ -1708,7 +2057,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `user` | `string` | Yes | ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument. |
 | `text` | `string` | Yes | Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided. |
 | `thread_ts` | `string` | No | Provide another message's ts value to post this ephemeral message in a thread. The thread must already be active. |
-| `blocks` | `string` | No | A JSON-based array of structured blocks, presented as a URL-encoded string. |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
 
 
 <details>
@@ -1730,6 +2080,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Schedules a message for delivery to a channel at a specified time in the future. Messages can be scheduled up to 120 days in advance.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "scheduled_messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "text": "<str>",
+    "post_at": 0,
+    "thread_ts": "<str>",
+    "reply_broadcast": true,
+    "unfurl_links": true,
+    "unfurl_media": true,
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1740,7 +2112,9 @@ await slack.scheduled_messages.create(
     thread_ts="<str>",
     reply_broadcast=True,
     unfurl_links=True,
-    unfurl_media=True
+    unfurl_media=True,
+    blocks=[],
+    mrkdwn=True
 )
 ```
 
@@ -1760,7 +2134,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "thread_ts": "<str>",
         "reply_broadcast": True,
         "unfurl_links": True,
-        "unfurl_media": True
+        "unfurl_media": True,
+        "blocks": [],
+        "mrkdwn": True
     }
 }'
 ```
@@ -1777,6 +2153,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `reply_broadcast` | `boolean` | No | Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel. Defaults to false. |
 | `unfurl_links` | `boolean` | No | Pass true to enable unfurling of primarily text-based content. |
 | `unfurl_media` | `boolean` | No | Pass false to disable unfurling of media content. |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
 
 
 <details>
@@ -1800,6 +2178,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channel Archives Create
 
 Archives a conversation. Not all types of conversations can be archived.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_archives",
+  "action": "create",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1849,6 +2241,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channel Kicks Create
 
 Removes a user from a public or private channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_kicks",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "user": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1903,6 +2310,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Pins a message to a particular channel. Both channel and timestamp are required.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "pins",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1954,6 +2376,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Bookmarks Create
 
 Adds a bookmark (link) to a channel. Bookmarks appear in the channel header for easy access.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "bookmarks",
+  "action": "create",
+  "params": {
+    "channel_id": "<str>",
+    "title": "<str>",
+    "type": "<str>",
+    "link": "<str>",
+    "emoji": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

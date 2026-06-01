@@ -68,17 +68,42 @@ Report streams use `date` as the cursor field and default to `(date, campaignId)
 
 ## Performance considerations
 
-- Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` and `500` responses; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
+- Apple's API returns `401 Unauthorized` when an access token is invalid or expired. The connector automatically refreshes expired access tokens and retries the failed request.
+- Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` rate-limit responses and `500` server errors; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
 - For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
 - Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Reference
+
+This connector uses the [Apple Ads Campaign Management API v5](https://developer.apple.com/documentation/apple_ads). Airbyte calls `https://api.searchads.apple.com/api/v5` and sends the selected Apple Ads organization in the `X-AP-Context` header as `orgId={orgId}`.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `org_id` | Yes | Apple Ads organization ID to sync. |
+| `client_id` | Yes | OAuth client ID for the Apple Ads API user. |
+| `client_secret` | Yes | OAuth client secret for the Apple Ads API user. |
+| `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
+| `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
+| `timezone` | Yes | Reporting time zone. Valid values are `UTC` and `ORTZ`. |
+| `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
+| `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. |
+| `token_refresh_endpoint` | Yes | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
+| `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 1.1.4 | 2026-05-12 | [78029](https://github.com/airbytehq/airbyte/pull/78029) | Refresh expired OAuth access tokens before retrying failed Apple Ads API requests |
 | 1.1.3 | 2026-05-05 | [76973](https://github.com/airbytehq/airbyte/pull/76973) | Fix `ads_report_daily` broken incremental sync, remove incorrect keyword error predicate, and enable concurrent partition processing to reduce heartbeat timeouts |
 | 1.1.2 | 2026-04-28 | [77141](https://github.com/airbytehq/airbyte/pull/77141) | Update dependencies |
 | 1.1.1 | 2026-04-21 | [76507](https://github.com/airbytehq/airbyte/pull/76507) | Update dependencies |
@@ -98,7 +123,7 @@ Report streams use `date` as the cursor field and default to `(date, campaignId)
 | 0.8.10 | 2025-10-14 | [67979](https://github.com/airbytehq/airbyte/pull/67979) | Update dependencies |
 | 0.8.9 | 2025-10-07 | [67173](https://github.com/airbytehq/airbyte/pull/67173) | Update dependencies |
 | 0.8.8 | 2025-09-30 | [66272](https://github.com/airbytehq/airbyte/pull/66272) | Update dependencies |
-| 0.8.7 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
+| 0.8.7 | 2025-09-15 | [66197](https://github.com/airbytehq/airbyte/pull/66197) | Update to CDK v7 |
 | 0.8.6 | 2025-08-23 | [65312](https://github.com/airbytehq/airbyte/pull/65312) | Update dependencies |
 | 0.8.5 | 2025-08-09 | [64663](https://github.com/airbytehq/airbyte/pull/64663) | Update dependencies |
 | 0.8.4 | 2025-07-19 | [63453](https://github.com/airbytehq/airbyte/pull/63453) | Update dependencies |

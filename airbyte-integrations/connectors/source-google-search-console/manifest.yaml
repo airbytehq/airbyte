@@ -406,7 +406,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1003,7 +1003,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1088,7 +1088,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1352,7 +1352,7 @@ dynamic_streams:
             inject_into: body_json
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25000
+            page_size: 5000
             inject_on_first_request: true
         record_selector:
           type: RecordSelector
@@ -1468,7 +1468,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 60
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 100
 
 schemas:

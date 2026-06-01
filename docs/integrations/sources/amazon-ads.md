@@ -157,6 +157,10 @@ If you need better sync performance and are not experiencing rate limiting error
 | `array`                  | `array`      |
 | `object`                 | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -164,7 +168,9 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 8.0.3-rc.1 | 2026-05-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Tune default concurrency from 10 to 12 (`num_workers`) for progressive rollout |
+| 8.0.3 | 2026-05-18 | [78162](https://github.com/airbytehq/airbyte/pull/78162) | Promoted release candidate to GA |
+| 8.0.3-rc.2 | 2026-05-12 | [78055](https://github.com/airbytehq/airbyte/pull/78055) | Concurrency tuning iteration 2: bump default `num_workers` from 12 to 14 for progressive rollout |
+| 8.0.3-rc.1 | 2026-05-11 | [78010](https://github.com/airbytehq/airbyte/pull/78010) | Concurrency tuning iteration 1: bump default `num_workers` from 10 to 12 for progressive rollout |
 | 8.0.2 | 2026-05-05 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Skip profiles without Amazon Attribution access on attribution report performance streams instead of failing the sync |
 | 8.0.1 | 2026-04-28 | [77149](https://github.com/airbytehq/airbyte/pull/77149) | Update dependencies |
 | 8.0.0 | 2026-04-22 | [75490](https://github.com/airbytehq/airbyte/pull/75490) | Use `date` field from API response as cursor and primary key for daily report streams instead of synthetic `reportDate`. Fixes ~96% data loss from incorrect deduplication. |

@@ -30,6 +30,8 @@ import io.debezium.annotation.VisibleForTesting
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -557,7 +559,8 @@ class MySqlSourceJdbcPartitionFactory(
             }
     }
 
-    private fun <T> calculateBoundaries(
+    @VisibleForTesting
+    internal fun <T> calculateBoundaries(
         opaqueStateValues: List<OpaqueStateValue>,
         lowerBound: T?,
         upperBound: T
@@ -574,6 +577,8 @@ class MySqlSourceJdbcPartitionFactory(
             lowerBound is String? && upperBound is String ->
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
             lowerBound is Double? && upperBound is Double ->
+                internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
+            lowerBound is BigDecimal? && upperBound is BigDecimal ->
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
             lowerBound is OffsetDateTime? && upperBound is OffsetDateTime ->
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
@@ -632,6 +637,26 @@ class MySqlSourceJdbcPartitionFactory(
         }
         val lbs: List<Double> = listOf(effectiveLowerBound) + queryPlan
         val ubs: List<Double?> = queryPlan + null
+        return lbs.zip(ubs).toMap()
+    }
+
+    @VisibleForTesting
+    internal fun internalCalculateBoundaries(
+        opaqueStateValues: List<OpaqueStateValue>,
+        lowerBound: BigDecimal?,
+        upperBound: BigDecimal,
+    ): Map<BigDecimal, BigDecimal?> {
+        val num = opaqueStateValues.size
+        val queryPlan: MutableList<BigDecimal> = mutableListOf()
+        val effectiveLowerBound = lowerBound ?: Long.MIN_VALUE.toBigDecimal()
+        val eachStep: BigDecimal =
+            upperBound.subtract(effectiveLowerBound).divide(num.toBigDecimal(), RoundingMode.DOWN)
+        for (i in 1..(num - 1)) {
+            queryPlan.add(effectiveLowerBound.add(eachStep.multiply(i.toBigDecimal())))
+        }
+        val lbs: List<BigDecimal> = listOf(effectiveLowerBound) + queryPlan
+        val ubs: List<BigDecimal?> = queryPlan + null
+        log.info { "partitions: ${lbs.zip(ubs)}" }
         return lbs.zip(ubs).toMap()
     }
 
