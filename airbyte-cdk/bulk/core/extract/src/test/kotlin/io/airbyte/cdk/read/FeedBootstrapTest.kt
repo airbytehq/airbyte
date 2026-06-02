@@ -285,8 +285,7 @@ class FeedBootstrapTest {
             StateManager(
                 global = globalFeed,
                 initialGlobalState = Jsons.objectNode(),
-                initialStreamStates =
-                    mapOf(stream to null, viewStreamWithCdcInSchema to null),
+                initialStreamStates = mapOf(stream to null, viewStreamWithCdcInSchema to null),
             )
         val bootstrap =
             FeedBootstrap.create(
