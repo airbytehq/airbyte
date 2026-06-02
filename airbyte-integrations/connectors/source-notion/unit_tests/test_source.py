@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from requests import Response
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from unit_tests.conftest import get_source
 
@@ -66,3 +67,27 @@ def test_error_handler_maps_429_to_rate_limited(status_code, expected_action):
 
     result = retriever.requester.error_handler.interpret_response(mocked_response)
     assert result.response_action == expected_action
+
+
+def test_users_stream_403_restricted_resource_error_message():
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    stream = _get_stream_by_name("users", config)
+    retriever = _get_retriever(stream)
+
+    mocked_response = MagicMock(spec=Response, status_code=403)
+    mocked_response.ok = False
+    mocked_response.headers = {"Content-Type": "application/json"}
+    mocked_response.json.return_value = {
+        "object": "error",
+        "status": 403,
+        "code": "restricted_resource",
+        "message": "Insufficient permissions for this endpoint.",
+    }
+
+    result = retriever.requester.error_handler.interpret_response(mocked_response)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert (
+        result.error_message
+        == "Notion integration lacks read user information for the Users stream. Enable it in Notion or disable the Users stream."
+    )

@@ -48,6 +48,10 @@ Supported Data Streams:
 | twitter_posts | id | No pagination | ✅ |  ❌  |
 | youtube_posts | videoId | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -55,6 +59,7 @@ Supported Data Streams:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2026-06-02 | [78839](https://github.com/airbytehq/airbyte/pull/78839) | Update dependencies |
 | 0.0.22 | 2026-04-28 | [77342](https://github.com/airbytehq/airbyte/pull/77342) | Update dependencies |
 | 0.0.21 | 2026-04-21 | [76677](https://github.com/airbytehq/airbyte/pull/76677) | Update dependencies |
 | 0.0.20 | 2026-03-31 | [75807](https://github.com/airbytehq/airbyte/pull/75807) | Update dependencies |

@@ -21,6 +21,10 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 | report_widgets | Hash | No pagination | ✅ |  ❌  |
 | users | Hash | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,7 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-02 | [79065](https://github.com/airbytehq/airbyte/pull/79065) | Update dependencies |
 | 0.0.52 | 2026-04-28 | [77510](https://github.com/airbytehq/airbyte/pull/77510) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76793](https://github.com/airbytehq/airbyte/pull/76793) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75859](https://github.com/airbytehq/airbyte/pull/75859) | Update dependencies |
