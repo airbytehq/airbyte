@@ -26,6 +26,10 @@ Docs : https://finnworlds.com/
 | commodities | commodity_name.datetime | No pagination | ✅ |  ❌  |
 | benchmark | datetime.country.benchmark | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,8 @@ Docs : https://finnworlds.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-02 | [78714](https://github.com/airbytehq/airbyte/pull/78714) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77241](https://github.com/airbytehq/airbyte/pull/77241) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76557](https://github.com/airbytehq/airbyte/pull/76557) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75758](https://github.com/airbytehq/airbyte/pull/75758) | Update dependencies |
 | 0.0.47 | 2026-03-17 | [74684](https://github.com/airbytehq/airbyte/pull/74684) | Update dependencies |

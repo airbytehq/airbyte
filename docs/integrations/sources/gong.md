@@ -59,17 +59,25 @@ This source syncs the following streams:
 | Stream | Sync Mode | Description |
 | :----- | :-------- | :---------- |
 | [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
-| [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps |
-| [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences |
-| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, and media |
+| [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps. Private calls are excluded. |
+| [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences. Transcripts for private calls are excluded. |
+| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, and media. Private calls are excluded. |
 | [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
 | [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
+
+### Private calls
+
+Starting with version 1.1.0, the connector excludes calls marked as private (`isPrivate: true` in the Gong API) from the `calls` and `extensive calls` streams. Because `call transcripts` is a substream of `calls`, transcripts for private calls are also excluded. Gong requires this behavior for OAuth app listing approval, and the Gong API does not expose a server-side filter for this field, so the connector applies the filter client-side after fetching records.
 
 ### Performance considerations
 
 The Gong connector should not run into Gong API limitations under normal usage. Gong limits API access to 3 calls per second and 10,000 calls per day. If you exceed these limits, the API returns HTTP status code 429 with a `Retry-After` header indicating when to retry.
 
 The call transcripts stream fetches transcripts one call at a time as a substream of the calls stream. On the initial sync for accounts with a large number of calls, this may take longer than a bulk-fetch approach. Subsequent incremental syncs only fetch transcripts for new calls.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -78,7 +86,14 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.2 | 2026-06-02 | [77254](https://github.com/airbytehq/airbyte/pull/77254) | Update dependencies |
+| 1.2.1 | 2026-05-07 | [77858](https://github.com/airbytehq/airbyte/pull/77858) | Expose num_workers config field for user-configurable concurrency |
+| 1.2.0 | 2026-05-07 | [77859](https://github.com/airbytehq/airbyte/pull/77859) | Promoted release candidate to GA |
+| 1.2.0-rc.3 | 2026-05-05 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Revert default_concurrency from 5 to 4 based on Phase 2 results |
+| 1.2.0-rc.2 | 2026-04-28 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Increase default_concurrency from 4 to 5 based on Phase 1 health check results |
+| 1.2.0-rc.1 | 2026-04-27 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Add concurrency support with default_concurrency=4; enable progressive rollout |
 | 1.1.1 | 2026-04-21 | [76593](https://github.com/airbytehq/airbyte/pull/76593) | Update dependencies |
+| 1.1.0 | 2026-04-20 | [76454](https://github.com/airbytehq/airbyte/pull/76454) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |
 | 1.1.0 | 2026-04-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |
 | 1.0.1 | 2026-04-10 | [76229](https://github.com/airbytehq/airbyte/pull/76229) | Set deadlineAction to auto_upgrade for 1.0.0 breaking change |
 | 1.0.0 | 2026-03-30 | [75248](https://github.com/airbytehq/airbyte/pull/75248) | Fix schema bugs in `extensiveCalls` stream: define `context` as array type and widen `value` field to accept string, number, boolean, object, and array types. This is a breaking change for users syncing the `extensiveCalls` stream. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations). |

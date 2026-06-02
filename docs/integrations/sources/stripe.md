@@ -306,6 +306,10 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -313,6 +317,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.3 | 2026-04-28 | [77424](https://github.com/airbytehq/airbyte/pull/77424) | Update dependencies |
 | 6.0.2 | 2026-04-21 | [76777](https://github.com/airbytehq/airbyte/pull/76777) | Update dependencies |
 | 6.0.1 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 6.0.0 | 2026-04-13 | [76095](https://github.com/airbytehq/airbyte/pull/76095) | Fix missing records in `invoice_line_items` and `subscription_items` incremental streams by replacing `DpathFlattenFields` with `RecordExpander` to correctly expand nested line items from Stripe events. This is a breaking change — previously synced data for these streams may be incomplete. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-600) for details. |

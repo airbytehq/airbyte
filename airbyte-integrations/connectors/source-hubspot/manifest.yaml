@@ -109,6 +109,7 @@ definitions:
         action: RATE_LIMITED
         http_codes:
           - 429
+        failure_type: transient_error
         error_message: >-
           HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
       - type: HttpResponseFilter
@@ -116,12 +117,14 @@ definitions:
         http_codes:
           - 502
           - 503
+        failure_type: transient_error
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
         action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
+        failure_type: config_error
         error_message: >-
           Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
       # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
@@ -129,12 +132,14 @@ definitions:
         action: FAIL
         http_codes:
           - 530
+        failure_type: config_error
         error_message: >-
           The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
       - type: HttpResponseFilter
         action: FAIL
         http_codes:
           - 403
+        failure_type: config_error
         error_message: >-
           Access denied (403). The authenticated user does not have permissions to access the resource.
           Verify your scopes: {{ parameters.required_scopes }} to access stream {{ parameters.name }}.
@@ -155,6 +160,7 @@ definitions:
         action: FAIL
         http_codes:
           - 400
+        failure_type: system_error
         error_message: >-
           Bad request (400). Please verify your credentials and try again.
 

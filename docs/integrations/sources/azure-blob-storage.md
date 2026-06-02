@@ -304,6 +304,10 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 - Requires Airbyte version 1.2.0 or later (1.7.0+ for metadata support)
 - Only works with file-based destinations that support file transfer
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -311,6 +315,8 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.18 | 2026-06-02 | [78559](https://github.com/airbytehq/airbyte/pull/78559) | Update dependencies |
+| 0.8.17 | 2026-04-28 | [77147](https://github.com/airbytehq/airbyte/pull/77147) | Update dependencies |
 | 0.8.16 | 2026-04-21 | [75028](https://github.com/airbytehq/airbyte/pull/75028) | Update dependencies |
 | 0.8.15 | 2026-03-10 | [74507](https://github.com/airbytehq/airbyte/pull/74507) | Update dependencies |
 | 0.8.14 | 2026-03-03 | [74178](https://github.com/airbytehq/airbyte/pull/74178) | Update dependencies |

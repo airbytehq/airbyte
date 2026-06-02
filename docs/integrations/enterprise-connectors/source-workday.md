@@ -38,6 +38,10 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 7. Enter the Report IDs for the reports you want to sync with this connector.
 8. Click **Set up source**.
 
+## Configuration
+
+You can set **Number of concurrent threads** to control how many worker threads Airbyte uses during the sync. Valid values are `1` through `20`. The default is `10`.
+
 ## Supported sync modes
 
 The Workday source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):

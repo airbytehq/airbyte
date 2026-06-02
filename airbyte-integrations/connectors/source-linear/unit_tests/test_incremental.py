@@ -184,3 +184,28 @@ def test_default_start_date_is_roughly_two_years_ago() -> None:
     delta = abs((parsed - expected).total_seconds())
     # +/- 2 days tolerance for leap years and clock drift.
     assert delta < 2 * 24 * 3600, f"expected ~2 years ago, got {gte!r} (delta={delta}s)"
+
+
+def test_flat_api_key_config_migrates_to_api_key_credentials() -> None:
+    """Existing flat API key configs must keep using API key auth."""
+    config = {"api_key": "test-api-key"}
+
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=config)
+
+    assert src._config["credentials"] == {
+        "auth_type": "API Key",
+        "api_key": "test-api-key",
+    }
+
+
+def test_flat_api_key_config_after_migration_can_build_auth_header() -> None:
+    """The migrated API key must be available to CHECK stream requests."""
+    config = {"api_key": "test-api-key"}
+
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=config)
+    streams = {s.name: s for s in src.streams(config=config)}
+    stream = streams["issues"]
+    partition = next(iter(stream.generate_partitions()))
+    headers = partition._retriever.requester._request_headers()
+
+    assert headers["Authorization"] == "test-api-key"

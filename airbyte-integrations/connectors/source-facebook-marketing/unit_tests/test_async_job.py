@@ -555,7 +555,7 @@ class TestInsightAsyncJob:
             primary_key=pk,
         )
 
-        with pytest.raises(AirbyteTracedException, match="Cannot split by fields") as exc_info:
+        with pytest.raises(AirbyteTracedException, match="Unable to split the Facebook Insights request") as exc_info:
             job._split_job()
 
         from airbyte_cdk.models import FailureType
@@ -579,7 +579,7 @@ class TestInsightAsyncJob:
         )
         mocker.patch.object(job._edge_object, "get_insights", side_effect=RuntimeError("API down"))
 
-        with pytest.raises(AirbyteTracedException, match="Failed to start ID-collection job") as exc_info:
+        with pytest.raises(AirbyteTracedException, match="Facebook Insights API request failed during data retrieval") as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
@@ -648,7 +648,9 @@ class TestInsightAsyncJob:
         mocker.patch.object(job._edge_object, "get_insights", return_value=failed_run)
         mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
 
-        with pytest.raises(AirbyteTracedException, match="ID-collection failed for level=campaign") as exc_info:
+        with pytest.raises(
+            AirbyteTracedException, match="Facebook Insights API returned a transient failure during data retrieval"
+        ) as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
@@ -680,7 +682,9 @@ class TestInsightAsyncJob:
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
 
-        with pytest.raises(AirbyteTracedException, match="Failed to fetch ID-collection results") as exc_info:
+        with pytest.raises(
+            AirbyteTracedException, match="Facebook Insights API returned an invalid response during data retrieval"
+        ) as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
@@ -712,7 +716,9 @@ class TestInsightAsyncJob:
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
 
-        with pytest.raises(AirbyteTracedException, match="No child IDs at level=campaign") as exc_info:
+        with pytest.raises(
+            AirbyteTracedException, match="Facebook Insights API returned no data for the requested breakdown level"
+        ) as exc_info:
             job._split_by_edge_class(Campaign)
 
         assert exc_info.value.failure_type == FailureType.system_error
@@ -758,7 +764,7 @@ class TestInsightAsyncJob:
 
         mocker.patch("source_facebook_marketing.streams.async_job.ab_datetime_now", side_effect=advancing_now)
 
-        with pytest.raises(AirbyteTracedException, match="ID-collection timed out") as exc_info:
+        with pytest.raises(AirbyteTracedException, match="Facebook Insights API request timed out during data retrieval") as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error

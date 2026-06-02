@@ -127,6 +127,10 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 | `object`         | `object`     |                                                                                 |
 | `string`         | `string`     |                                                                                 |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -134,6 +138,7 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 2.0.0 | 2026-04-22 | [76476](https://github.com/airbytehq/airbyte/pull/76476) | Fix `leads` stream to filter Bulk Lead Extract on `updatedAt` so incremental syncs capture updates to pre-existing leads. See the [migration guide](/integrations/sources/marketo-migrations) for details. |
 | 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
 | 1.6.1 | 2026-03-25 | [74088](https://github.com/airbytehq/airbyte/pull/74088) | Fix CSV column misalignment when syncing leads containing CJK characters |
 | 1.6.0 | 2026-03-19 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |

@@ -230,6 +230,60 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
         }
 }
 
+/**
+ * For views (no TABLESAMPLE support) or streams without an ordered column, use non-resumable cursor
+ * incremental.
+ */
+class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: DefaultJdbcStreamState,
+    val cursor: EmittedField,
+    val cursorLowerBound: JsonNode,
+    val isLowerBoundIncluded: Boolean, // always false
+    val cursorCutoffTime: JsonNode? = null,
+) :
+    MsSqlServerJdbcPartition(selectQueryGenerator, streamState),
+    JdbcCursorPartition<DefaultJdbcStreamState> {
+
+    override val completeState: OpaqueStateValue
+        get() =
+            MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                cursor,
+                getEffectiveCursorCheckpoint(
+                    cursorCutoffTime,
+                    streamState.cursorUpperBound,
+                    cursorLowerBound
+                ),
+            )
+
+    override val cursorUpperBoundQuery: SelectQuery
+        get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
+
+    val cursorUpperBoundQuerySpec: SelectQuerySpec
+        get() =
+            if (cursorCutoffTime != null) {
+                // When excluding today's data, apply cutoff constraint to upper bound query too
+                SelectQuerySpec(
+                    SelectColumnMaxValue(cursor),
+                    from,
+                    Where(Lesser(cursor, cursorCutoffTime))
+                )
+            } else {
+                SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+            }
+
+    override val nonResumableQuerySpec: SelectQuerySpec
+        get() {
+            // upperBound shouldn't be null in incremental syncs
+            val upperBound: JsonNode = streamState.cursorUpperBound!!
+            return SelectQuerySpec(
+                SelectColumns(stream.fields),
+                from,
+                Where(And(Greater(cursor, cursorLowerBound), LesserOrEqual(cursor, upperBound)))
+            )
+        }
+}
+
 sealed class MsSqlServerJdbcResumablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
@@ -430,9 +484,6 @@ sealed class MsSqlServerJdbcCursorPartition(
                 SelectQuerySpec(SelectColumnMaxValue(cursor), from)
             }
 
-    // Override samplingQuery to avoid TABLESAMPLE for cursor-based operations
-    // TABLESAMPLE fails on views and isn't needed for cursor-based incremental reads
-    // which are typically small (only new/changed data)
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
         val querySpec =

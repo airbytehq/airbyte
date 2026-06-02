@@ -374,6 +374,66 @@ def test_availability_strategy(config):
     assert stream.availability_strategy is None
 
 
+def test_leads_bulk_export_filters_on_updated_at(config, requests_mock, mocker):
+    """
+    The Leads bulk export must filter on `updatedAt` (matching the stream's
+    cursor field) so that updates to pre-existing leads are captured by
+    incremental syncs. Marketo's Bulk Lead Extract honors only a single filter
+    per export; filtering on `createdAt` silently drops any lead whose
+    `createdAt` is earlier than the cursor even when its `updatedAt` moves
+    into the sync window.
+    """
+    mocker.patch("time.sleep")
+
+    # Avoid the describe-endpoint call affecting field selection.
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        json={"result": []},
+    )
+    requests_mock.register_uri(
+        "POST",
+        f"{config['domain_url'].rstrip('/')}/bulk/v1/leads/export/create.json",
+        json={"result": [{"exportId": "lead-export-id", "status": "Created", "format": "CSV"}]},
+    )
+
+    leads_stream = Leads(config)
+    list(leads_stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=None))
+
+    create_calls = [req for req in requests_mock.request_history if req.method == "POST" and req.path.endswith("/leads/export/create.json")]
+    assert create_calls, "Expected at least one Leads export/create POST"
+
+    for call in create_calls:
+        filter_ = call.json()["filter"]
+        assert "updatedAt" in filter_, (
+            "Leads bulk export must filter on `updatedAt` to match the cursor field; " f"got filter keys: {list(filter_.keys())}"
+        )
+        assert "createdAt" not in filter_, (
+            "Leads bulk export must not filter on `createdAt`; Marketo honors only "
+            "one filter per export and using `createdAt` silently drops lead updates."
+        )
+
+
+def test_activities_bulk_export_preserves_created_at_filter(send_email_stream, requests_mock, mocker):
+    """
+    Activities are immutable events, so filtering their bulk export on
+    `createdAt` matches vendor expectations. This test guards against
+    accidentally changing the activities filter alongside the Leads fix.
+    """
+    mocker.patch("time.sleep")
+
+    list(send_email_stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=None))
+
+    create_calls = [
+        req for req in requests_mock.request_history if req.method == "POST" and req.path.endswith("/activities/export/create.json")
+    ]
+    assert create_calls, "Expected at least one activities export/create POST"
+
+    for call in create_calls:
+        filter_ = call.json()["filter"]
+        assert "createdAt" in filter_
+        assert "updatedAt" not in filter_
+
+
 def test_path(config):
     stream = MarketoStream(config)
     assert stream.path() == "rest/v1/marketo_stream.json"
