@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 from components import parse_vtt_content
 
 
@@ -41,13 +40,7 @@ from components import parse_vtt_content
             id="standard_with_speakers",
         ),
         pytest.param(
-            (
-                "WEBVTT\n"
-                "\n"
-                "1\n"
-                "00:00:05.000 --> 00:00:08.500\n"
-                "This line has no speaker attribution.\n"
-            ),
+            ("WEBVTT\n\n1\n00:00:05.000 --> 00:00:08.500\nThis line has no speaker attribution.\n"),
             [
                 {
                     "sequence_number": 1,
@@ -60,14 +53,7 @@ from components import parse_vtt_content
             id="no_speaker",
         ),
         pytest.param(
-            (
-                "WEBVTT\n"
-                "\n"
-                "1\n"
-                "00:00:05.000 --> 00:00:08.500\n"
-                "Alice: First line of text\n"
-                "continues on the next line.\n"
-            ),
+            ("WEBVTT\n\n1\n00:00:05.000 --> 00:00:08.500\nAlice: First line of text\ncontinues on the next line.\n"),
             [
                 {
                     "sequence_number": 1,
@@ -80,13 +66,7 @@ from components import parse_vtt_content
             id="multiline_cue_text",
         ),
         pytest.param(
-            (
-                "WEBVTT\r\n"
-                "\r\n"
-                "1\r\n"
-                "00:00:01,500 --> 00:00:04,000\r\n"
-                "Bob: Windows line endings with comma timestamps.\r\n"
-            ),
+            ("WEBVTT\r\n\r\n1\r\n00:00:01,500 --> 00:00:04,000\r\nBob: Windows line endings with comma timestamps.\r\n"),
             [
                 {
                     "sequence_number": 1,
@@ -173,13 +153,7 @@ from components import parse_vtt_content
             id="sequence_numbers_increment",
         ),
         pytest.param(
-            (
-                "WEBVTT\n"
-                "\n"
-                "1\n"
-                "00:00:01.000 --> 00:00:03.000\n"
-                "https://example.com: this looks like a speaker but the name is a URL\n"
-            ),
+            ("WEBVTT\n\n1\n00:00:01.000 --> 00:00:03.000\nhttps://example.com: this looks like a speaker but the name is a URL\n"),
             [
                 {
                     "sequence_number": 1,

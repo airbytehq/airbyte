@@ -5,6 +5,7 @@
 import sys
 from pathlib import Path
 
+
 # Add the connector root to sys.path so that `components` can be imported directly,
 # mirroring how the CDK resolves `source_declarative_manifest.components` at runtime.
 _CONNECTOR_ROOT = Path(__file__).parent.parent
