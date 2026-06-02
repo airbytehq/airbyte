@@ -14729,6 +14729,13 @@ streams:
         grant_type: "account_credentials"
         type: CustomAuthenticator
       path: "/phone/call_history"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes: [403]
+            error_message: "Zoom Phone is not enabled for this account. This stream requires a Zoom Phone license. Remove this stream from your connection to sync other Zoom data without a Phone license."
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -14918,6 +14925,13 @@ streams:
         grant_type: "account_credentials"
         type: CustomAuthenticator
       path: "/phone/recordings"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes: [403]
+            error_message: "Zoom Phone is not enabled for this account. This stream requires a Zoom Phone license. Remove this stream from your connection to sync other Zoom data without a Phone license."
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -15104,6 +15118,13 @@ streams:
         grant_type: "account_credentials"
         type: CustomAuthenticator
       path: "/phone/recordings"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes: [403]
+            error_message: "Zoom Phone is not enabled for this account. This stream requires a Zoom Phone license. Remove this stream from your connection to sync other Zoom data without a Phone license."
       type: HttpRequester
     paginator:
       type: DefaultPaginator
