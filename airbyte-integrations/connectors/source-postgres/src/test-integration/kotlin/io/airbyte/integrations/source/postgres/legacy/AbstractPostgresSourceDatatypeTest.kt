@@ -400,18 +400,25 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                 TestDataHolder.builder()
                     .sourceType(type)
                     .airbyteType(JsonSchemaType.NUMBER)
+                    // Non-finite values (Infinity/-Infinity/NaN) are rejected at the source
+                    // and surface as null with RETRIEVAL_FAILURE_TOTAL (JDBC) or
+                    // DESERIALIZATION_FAILURE_TOTAL (CDC) in the record's change metadata.
                     .addInsertValues(
                         "'123'",
                         "'1234567890.1234567'",
                         "null",
-                    ) // Postgres source does not support these special values yet
-                    // https://github.com/airbytehq/airbyte/issues/8902
-                    // "'-Infinity'", "'Infinity'", "'NaN'", "null")
+                        "'-Infinity'",
+                        "'Infinity'",
+                        "'NaN'",
+                    )
                     .addExpectedValues(
                         "123.0",
                         "1.2345678901234567E9",
                         null,
-                    ) // "-Infinity", "Infinity", "NaN", null)
+                        null,
+                        null,
+                        null,
+                    )
                     .build(),
             )
         }
@@ -467,8 +474,14 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                 TestDataHolder.builder()
                     .sourceType(type)
                     .airbyteType(JsonSchemaType.NUMBER)
-                    .addInsertValues("null", "3.4145")
-                    .addExpectedValues(null, "3.4145")
+                    .addInsertValues(
+                        "null",
+                        "3.4145",
+                        "'-Infinity'",
+                        "'Infinity'",
+                        "'NaN'",
+                    )
+                    .addExpectedValues(null, "3.4145", null, null, null)
                     .build(),
             )
         }
@@ -1070,8 +1083,12 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                         )
                         .build(),
                 )
-                .addInsertValues("'{131070.237689,231072.476596593}'")
-                .addExpectedValues("[131070.234,231072.48]")
+                // A row whose array contains any non-finite element nulls the entire array.
+                .addInsertValues(
+                    "'{131070.237689,231072.476596593}'",
+                    "'{1.0,Infinity,-Infinity,NaN}'",
+                )
+                .addExpectedValues("[131070.234,231072.48]", null)
                 .build(),
         )
 
@@ -1089,8 +1106,11 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                         )
                         .build(),
                 )
-                .addInsertValues("'{131070.237689,231072.476596593}'")
-                .addExpectedValues("[131070.237689,231072.476596593]")
+                .addInsertValues(
+                    "'{131070.237689,231072.476596593}'",
+                    "'{1.0,Infinity,-Infinity,NaN}'",
+                )
+                .addExpectedValues("[131070.237689,231072.476596593]", null)
                 .build(),
         )
 
