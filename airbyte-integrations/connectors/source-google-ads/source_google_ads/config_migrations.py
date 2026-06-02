@@ -16,6 +16,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import GAQL
 
+
 logger = logging.getLogger("airbyte")
 
 

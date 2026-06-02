@@ -6,7 +6,6 @@ import json
 from typing import Any, Mapping
 
 import pytest
-
 from source_google_ads.config_migrations import DEPRECATED_FIELDS, MigrateDeprecatedFields
 from source_google_ads.source import SourceGoogleAds
 
