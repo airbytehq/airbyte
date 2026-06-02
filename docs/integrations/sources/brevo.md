@@ -91,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.2.33 | 2026-06-02 | [78599](https://github.com/airbytehq/airbyte/pull/78599) | Update dependencies |
 | 0.2.32 | 2026-04-28 | [77161](https://github.com/airbytehq/airbyte/pull/77161) | Update dependencies |
 | 0.2.31 | 2026-04-21 | [76844](https://github.com/airbytehq/airbyte/pull/76844) | Bump SDM base image to stable 7.17.2 |
 | 0.2.30 | 2026-04-01 | [75946](https://github.com/airbytehq/airbyte/pull/75946) | Bump SDM base image for memory monitor (CDK PR #962) |

@@ -6,7 +6,7 @@ sidebar_label: Choose how to use Airbyte Agents
 
 # Choose how to use Airbyte Agents
 
-Airbyte Agents offers four interfaces. They all share the same platform, the same connectors, and the same [Context Store](../concepts/context-store), so you can start with one and add others as your needs grow.
+Airbyte Agents offers several interfaces. They all share the same platform, the same connectors, and the same [Context Store](../concepts/context-store), so you can start with one and add others as your needs grow.
 
 Use the flowchart below to find the best starting point, then read the section that matches your path.
 
@@ -15,11 +15,13 @@ flowchart TD
     START(["How do you want to use Airbyte Agents?"])
     START -->|"I already use Claude, Cursor, or ChatGPT"| MCP["MCP server"]
     START -->|"I'm building a Python agent"| SDK["Python SDK"]
+    START -->|"I want a shell-first or agent-harness tool"| CLI["CLI"]
     START -->|"No code needed"| WEB["Web app"]
     START -->|"Non-Python backend or custom admin"| API["Agent API"]
 
     click MCP "#mcp-server"
     click SDK "#python-sdk"
+    click CLI "#cli"
     click WEB "#web-app"
     click API "#agent-api"
 ```
@@ -64,6 +66,18 @@ Two primary surfaces:
 
 **Get started:** Sign up at [app.airbyte.ai](https://app.airbyte.ai), add a connector on the Connectors page, and open New Chat.
 
+## CLI
+
+**Best for:** Shell scripts, CI jobs, and agent harnesses that can run command-line tools.
+
+The [CLI](../interfaces/cli) (`airbyte-agent`) gives you a terminal interface for listing workspaces, adding connectors through browser credential flows, describing connector schemas, and executing connector actions. It accepts JSON input, prints JSON output, and includes schema discovery for agent workflows.
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+**Get started:** see the [CLI docs](../interfaces/cli) for install, authentication, connector creation, execution, and agent usage.
+
 ## Agent API
 
 **Best for:** backend engineers, non-Python stacks, custom admin flows, and embedding the authentication module in your application.
@@ -74,6 +88,6 @@ The [Agent API](../interfaces/api) exposes REST endpoints for managing connector
 
 ## All paths lead to the same data
 
-Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, API, and MCP server. You can mix and match interfaces as your needs evolve.
+Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in one interface is immediately available through the others. You can mix and match interfaces as your needs evolve.
 
 For a deeper look at how the platform is organized, see [System architecture](../concepts/architecture).

@@ -26,6 +26,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2026-06-02 | [78764](https://github.com/airbytehq/airbyte/pull/78764) | Update dependencies |
 | 0.0.2 | 2026-04-28 | [77278](https://github.com/airbytehq/airbyte/pull/77278) | Update dependencies |
 | 0.0.1 | 2025-11-24 | | Initial release by [@interzoid](https://github.com/interzoid) via Connector Builder |
 

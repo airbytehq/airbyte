@@ -5092,29 +5092,3 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers') or config.get('num_threads') or 4 }}"
   max_concurrency: 50
-
-api_budget:
-  type: HTTPAPIBudget
-  status_codes_for_ratelimit_hit: [429]
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - interval: "PT60S"
-          limit: 300
-      matchers:
-        # ad account analytics (NOT user_account/analytics)
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/analytics"
-        # campaign analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/campaigns/analytics"
-        # ad group analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ad_groups/analytics"
-        # ad analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ads/analytics"
