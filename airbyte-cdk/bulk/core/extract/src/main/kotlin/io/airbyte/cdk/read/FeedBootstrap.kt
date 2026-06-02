@@ -168,10 +168,14 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
                 stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
 
+        private val shouldDecorateRecordData: Boolean =
+            feed is Stream &&
+                (isTriggerBasedCdc || precedingGlobalFeed?.streams?.contains(stream) == true)
+
         private val defaultRecordData: ObjectNode =
             Jsons.objectNode().also { recordData: ObjectNode ->
                 stream.schema.forEach { recordData.putNull(it.id) }
-                if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
+                if (shouldDecorateRecordData) {
                     metaFieldDecorator.decorateRecordData(
                         timestamp = outputDataChannel.recordEmittedAt.atOffset(ZoneOffset.UTC),
                         globalStateValue =
@@ -234,7 +238,7 @@ sealed class FeedBootstrap<T : Feed>(
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(
-                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder)
+                    recordData.toProtobuf(recordFields, defaultRecordData, valueVBuilder)
                 )
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
@@ -248,7 +252,7 @@ sealed class FeedBootstrap<T : Feed>(
                     rm.addChanges(c)
                 }
                 acceptWithChanges(
-                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder),
+                    recordData.toProtobuf(recordFields, defaultRecordData, valueVBuilder),
                     rm
                 )
             }
@@ -290,6 +294,17 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
                 stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
 
+        private val shouldDecorateRecordData: Boolean =
+            feed is Stream &&
+                (isTriggerBasedCdc || precedingGlobalFeed?.streams?.contains(stream) == true)
+
+        private val recordFields =
+            if (shouldDecorateRecordData) {
+                stream.schema
+            } else {
+                stream.schema - metaFieldDecorator.globalMetaFields
+            }
+
         private val defaultRecordData: AirbyteRecordMessageProtobuf.Builder =
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.name)
@@ -302,7 +317,7 @@ sealed class FeedBootstrap<T : Feed>(
                 }
                 .also { builder ->
                     val decoratingFields: NativeRecordPayload = mutableMapOf()
-                    if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
+                    if (shouldDecorateRecordData) {
                         metaFieldDecorator.decorateRecordData(
                             timestamp =
                                 socketProtobufOutputConsumer.recordEmittedAt.atOffset(
@@ -317,13 +332,13 @@ sealed class FeedBootstrap<T : Feed>(
                         )
                     }
 
-                    // Unlike STDIO mode, in socket mode we always include all scehma fields
-                    // Including decorating field even when it has NULL value.
+                    // Unlike STDIO mode, in socket mode we always include all schema fields
+                    // including decorating fields even when they have NULL values.
                     // This is necessary because in PROTOBUF mode we don't have field names so
                     // the sorted order of fields is used to determine the field position on the
                     // other side.
                     val encoder = AirbyteValueProtobufEncoder()
-                    stream.schema
+                    recordFields
                         .sortedBy { it.id }
                         .forEach { field ->
                             val decodedValueForProto =
