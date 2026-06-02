@@ -23,7 +23,7 @@ application {
 }
 
 val hikariCpVersion = "7.0.2"
-val redshiftJdbcVersion = "2.1.0.30"
+val redshiftJdbcVersion = "2.2.7"
 val awsSdkV2Version = "2.31.1"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
@@ -31,6 +31,9 @@ val junitPlatformVersion = "1.13.4"
 dependencies {
     // Redshift JDBC driver
     implementation("com.amazon.redshift:redshift-jdbc42:$redshiftJdbcVersion")
+
+    // High-performance CSV writer for staging files
+    implementation("de.siegmar:fastcsv:4.0.0")
     
     // Connection pooling
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")

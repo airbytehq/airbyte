@@ -676,7 +676,7 @@ internal class RedshiftAirbyteClientTest {
         every {
             sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
         } returns "COPY SQL"
-        every { mockStatement.execute("COPY SQL") } returns true
+        every { mockStatement.execute("COPY SQL") } returns false
 
         client.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
 

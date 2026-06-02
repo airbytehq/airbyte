@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test
  * Full end-to-end acceptance test for the Redshift destination in S3 staging mode.
  *
  * Runs the connector as a process via the CDK test harness and verifies typed final-table output.
- * Config is read from the `secrets/config_staging.json` secrets file, which must contain valid
+ * Config is read from the `secrets/test_cluster.json` secrets file, which must contain valid
  * Redshift cluster + S3 staging credentials.
  */
 abstract class RedshiftBaseAcceptanceTest(

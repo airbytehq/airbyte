@@ -21,6 +21,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -41,6 +42,8 @@ class RedshiftAirbyteClient(
     private val sqlGenerator: RedshiftSqlGenerator,
     private val s3Client: S3Client,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
+
+    private val describeTableCache = ConcurrentHashMap<TableName, List<String>>()
 
     override suspend fun createNamespace(namespace: String) {
         try {
@@ -178,12 +181,14 @@ class RedshiftAirbyteClient(
      * layout)
      */
     fun describeTable(tableName: TableName): List<String> =
-        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-            val columns = mutableListOf<String>()
-            while (rs.next()) {
-                columns.add(rs.getString(COLUMN_NAME_COLUMN))
+        describeTableCache.getOrPut(tableName) {
+            executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+                val columns = mutableListOf<String>()
+                while (rs.next()) {
+                    columns.add(rs.getString(COLUMN_NAME_COLUMN))
+                }
+                columns
             }
-            columns
         }
 
     override fun computeSchema(
@@ -203,6 +208,8 @@ class RedshiftAirbyteClient(
         if (columnChangeset.isNoop()) {
             return
         }
+
+        describeTableCache.remove(tableName)
 
         log.info { "Summary of table alterations for ${tableName.namespace}.${tableName.name}:" }
         log.info { "  Added columns: ${columnChangeset.columnsToAdd}" }
