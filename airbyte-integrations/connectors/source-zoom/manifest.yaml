@@ -14925,7 +14925,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 300
+        page_size: 300  # Zoom Phone endpoints support up to 300 (default 30); use max to reduce request count
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
@@ -15111,7 +15111,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 300
+        page_size: 300  # Zoom Phone endpoints support up to 300 (default 30); use max to reduce request count
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
