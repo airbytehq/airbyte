@@ -194,8 +194,6 @@ class ProtobufConverter(
 
             // Step 3: Create AirbyteValue of the target type using the raw value
             createAirbyteValue(rawValue, targetClass)
-        } catch (e: ProtobufTypeMismatchException) {
-            throw e
         } catch (_: Exception) {
             // Add parsing error to metadata
             enrichedValue.changes.add(

@@ -24,7 +24,6 @@ import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.ProtobufTypeMismatchException
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
@@ -67,7 +66,6 @@ import java.util.UUID
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -685,7 +683,7 @@ class ProtobufRecordConversionTest {
     }
 
     @Test
-    fun `throws ProtobufTypeMismatchException when date field uses wrong setter`() {
+    fun `nullifies value with metadata when date field uses wrong protobuf setter`() {
         // Create an invalid date using setString() instead of the proper date setter
         val invalidDateValue =
             AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("invalid-date")
@@ -722,17 +720,27 @@ class ProtobufRecordConversionTest {
         val invalidDateRecord = buildModifiedRecord(invalidDateProtoValues.map { it.build() })
         every { record.rawData } returns invalidDateRecord
 
-        // Assert that ProtobufTypeMismatchException is thrown
-        val exception =
-            assertThrows(ProtobufTypeMismatchException::class.java) {
-                converter.convert(ConversionInput(record, PartitionKey("test-key")))
-            }
+        val result = converter.convert(ConversionInput(record, PartitionKey("test-key")))
 
-        // Verify the error message contains expected information
-        assertTrue(exception.message!!.contains("stream 'dummy'"))
-        assertTrue(exception.message!!.contains("column 'date_col'"))
-        assertTrue(exception.message!!.contains("Expected AirbyteType: DateType"))
-        assertTrue(exception.message!!.contains("Actual protobuf ValueCase: STRING"))
+        // Date field should be nullified due to type mismatch
+        assertTrue(result.containsKey("mapped_date_col"))
+        assertTrue(result.get("mapped_date_col") is io.airbyte.cdk.load.data.NullValue)
+
+        // Check that error was tracked in meta object
+        val metaValue = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
+        val changesArray = metaValue.values["changes"] as ArrayValue
+        assertTrue(changesArray.values.isNotEmpty())
+
+        // Verify that the type mismatch is recorded as a DESTINATION_SERIALIZATION_ERROR
+        val changes = changesArray.values.filterIsInstance<ObjectValue>()
+        val dateError =
+            changes.find { (it.values["field"] as StringValue).value == "date_col" }
+        assertNotNull(dateError)
+        assertEquals("NULLED", (dateError!!.values["change"] as StringValue).value)
+        assertEquals(
+            "DESTINATION_SERIALIZATION_ERROR",
+            (dateError.values["reason"] as StringValue).value
+        )
     }
 
     private fun buildModifiedRecord(
