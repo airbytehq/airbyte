@@ -3191,6 +3191,114 @@ definitions:
         schema:
           $ref: "#/schemas/sponsored_products_asins_targets_report_stream_daily"
 
+    sponsored_products_search_term_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_search_term_report_stream
+      primary_key:
+        ["profileId", "date", "campaignId", "adGroupId", "keywordId", "searchTerm"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sp search term report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["searchTerm"]
+              columns:
+                - "date"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignBudgetCurrencyCode"
+                - "campaignBudgetType"
+                - "portfolioId"
+                - "adGroupId"
+                - "adGroupName"
+                - "keyword"
+                - "keywordId"
+                - "matchType"
+                - "targeting"
+                - "searchTerm"
+                - "impressions"
+                - "clicks"
+                - "clickThroughRate"
+                - "costPerClick"
+                - "cost"
+                - "purchases7d"
+                - "sales7d"
+                - "unitsSoldClicks7d"
+                - "acosClicks7d"
+                - "roasClicks7d"
+                - "purchasesSameSku7d"
+              reportTypeId: spSearchTerm
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_search_term_report_stream"
+
+    sponsored_brands_search_term_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_search_term_report_stream
+      primary_key:
+        ["profileId", "date", "campaignId", "adGroupId", "searchTerm"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb search term report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["searchTerm"]
+              columns:
+                - "date"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignBudgetCurrencyCode"
+                - "campaignBudgetType"
+                - "adGroupId"
+                - "adGroupName"
+                - "keywordText"
+                - "matchType"
+                - "searchTerm"
+                - "impressions"
+                - "viewableImpressions"
+                - "clicks"
+                - "viewClickThroughRate"
+                - "cost"
+                - "purchases"
+                - "purchasesClicks"
+                - "sales"
+                - "salesClicks"
+                - "unitsSold"
+              reportTypeId: sbSearchTerm
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_search_term_report_stream"
+
   incremental_sync_report_datetime_cursor:
     type: DatetimeBasedCursor
     cursor_field: reportDate
@@ -3399,6 +3507,9 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_productads_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream_daily"
+
+  - $ref: "#/definitions/streams/sponsored_products_search_term_report_stream"
+  - $ref: "#/definitions/streams/sponsored_brands_search_term_report_stream"
 
 spec:
   type: Spec
@@ -9601,6 +9712,230 @@ schemas:
           - "null"
           - integer
     title: sponsored_products_targets_report_stream_daily
+    type:
+      - "null"
+      - object
+
+  sponsored_products_search_term_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      portfolioId:
+        type:
+          - "null"
+          - integer
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      keyword:
+        type:
+          - "null"
+          - string
+      keywordId:
+        type:
+          - "null"
+          - integer
+      matchType:
+        type:
+          - "null"
+          - string
+      targeting:
+        type:
+          - "null"
+          - string
+      searchTerm:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      clickThroughRate:
+        type:
+          - "null"
+          - number
+      costPerClick:
+        type:
+          - "null"
+          - number
+      cost:
+        type:
+          - "null"
+          - number
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      sales7d:
+        type:
+          - "null"
+          - number
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      acosClicks7d:
+        type:
+          - "null"
+          - number
+      roasClicks7d:
+        type:
+          - "null"
+          - number
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_search_term_report_stream
+    type:
+      - "null"
+      - object
+
+  sponsored_brands_search_term_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      keywordText:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      searchTerm:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      viewableImpressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      viewClickThroughRate:
+        type:
+          - "null"
+          - number
+      cost:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      unitsSold:
+        type:
+          - "null"
+          - integer
+    title: sponsored_brands_search_term_report_stream
     type:
       - "null"
       - object
