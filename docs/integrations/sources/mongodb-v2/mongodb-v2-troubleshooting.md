@@ -72,8 +72,8 @@ available version that **Lookup** may return.
 
 :::warning
 
-Post Image can increase the size of change stream events because the full document is included in the event. For very 
-large documents, change stream events may exceed MongoDB’s 16 MiB BSON limit and fail with BSONObjectTooLarge errors. 
+Post Image can increase the size of change stream events because the full document is included in the event. For very
+large documents, change stream events may exceed MongoDB’s 16 MiB BSON limit and fail with BSONObjectTooLarge errors.
 This risk can also apply to Lookup when the full document and change event metadata are large.
 
 :::
