@@ -2,7 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
+
 import pytest
+import yaml
 from conftest import create_zip_from_csv, find_stream, get_source
 from freezegun import freeze_time
 
@@ -19,6 +22,15 @@ TEST_CONFIG = {
     "reports_start_date": "2020-01-01",
     "tenant_id": "common",
 }
+
+
+def test_asset_group_performance_report_request_is_available_for_custom_reports():
+    manifest = yaml.safe_load((Path(__file__).parent.parent / "manifest.yaml").read_text())
+
+    custom_reports_properties = manifest["spec"]["connection_specification"]["properties"]["custom_reports"]["items"]["properties"]
+    report_request_options = custom_reports_properties["reporting_object"]["enum"]
+
+    assert "AssetGroupPerformanceReportRequest" in report_request_options
 
 
 @freeze_time("2024-01-01")

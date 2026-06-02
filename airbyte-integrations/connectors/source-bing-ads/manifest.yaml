@@ -17612,6 +17612,7 @@ spec:
               type: string
               enum:
                 - AccountPerformanceReportRequest
+                - AssetGroupPerformanceReportRequest
                 - AdDynamicTextPerformanceReportRequest
                 - AdExtensionByAdReportRequest
                 - AdExtensionByKeywordReportRequest
