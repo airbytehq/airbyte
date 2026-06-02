@@ -68,6 +68,7 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+- [Segments](https://developers.klaviyo.com/en/v2024-10-15/reference/get_segments)
 
 ### Analytics streams
 
