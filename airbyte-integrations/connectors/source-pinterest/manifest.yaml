@@ -4992,8 +4992,8 @@ spec:
                 enum: ["INDIVIDUAL", "HOUSEHOLD"]
               order: 8
             campaign_statuses:
-              title: "Campaign statuses"
-              description: "List of campaign status values for filtering custom report rows. Pinterest allows up to 6 values."
+              title: "Campaign statuses (max 6 values)"
+              description: "Select at most 6 campaign status values for filtering custom report rows."
               type: [array, "null"]
               items:
                 type: string
@@ -5010,8 +5010,8 @@ spec:
               maxItems: 6
               order: 9
             ad_group_statuses:
-              title: "Ad group statuses"
-              description: "List of ad group status values for filtering custom report rows. Pinterest allows up to 6 values."
+              title: "Ad group statuses (max 6 values)"
+              description: "Select at most 6 ad group status values for filtering custom report rows."
               type: [array, "null"]
               items:
                 type: string
@@ -5028,8 +5028,8 @@ spec:
               maxItems: 6
               order: 10
             ad_statuses:
-              title: "Ad statuses"
-              description: "List of ad status values for filtering custom report rows. Pinterest allows up to 6 values."
+              title: "Ad statuses (max 6 values)"
+              description: "Select at most 6 ad status values for filtering custom report rows."
               type: [array, "null"]
               items:
                 type: string
@@ -5130,6 +5130,25 @@ spec:
                   {%- endfor -%}
                   {{- migrated_reports -}}
             condition: "{{ config.get('custom_reports', False) }}"
+    validations:
+      - type: DpathValidator
+        field_path: ["custom_reports", "*", "campaign_statuses"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateStatusFilterMaxItems
+          field_name: campaign_statuses
+      - type: DpathValidator
+        field_path: ["custom_reports", "*", "ad_group_statuses"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateStatusFilterMaxItems
+          field_name: ad_group_statuses
+      - type: DpathValidator
+        field_path: ["custom_reports", "*", "ad_statuses"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateStatusFilterMaxItems
+          field_name: ad_statuses
 
 streams:
   # Full refresh streams

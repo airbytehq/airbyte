@@ -251,3 +251,31 @@ def test_custom_report_status_filters_allow_at_most_six_values(test_config, fiel
     validate(valid_statuses, status_schema)
     with pytest.raises(ValidationError):
         validate(invalid_statuses, status_schema)
+
+
+@pytest.mark.parametrize(
+    "field_name,invalid_statuses",
+    [
+        pytest.param(
+            "campaign_statuses",
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="campaign_statuses",
+        ),
+        pytest.param(
+            "ad_group_statuses",
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="ad_group_statuses",
+        ),
+        pytest.param(
+            "ad_statuses",
+            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="ad_statuses",
+        ),
+    ],
+)
+def test_custom_report_status_filters_explain_value_limit(test_config, field_name, invalid_statuses):
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [{"name": "status_filter_report", field_name: invalid_statuses}]
+
+    with pytest.raises(ValueError, match=rf"{field_name} allows at most 6 values\."):
+        get_source(config).streams(config)
