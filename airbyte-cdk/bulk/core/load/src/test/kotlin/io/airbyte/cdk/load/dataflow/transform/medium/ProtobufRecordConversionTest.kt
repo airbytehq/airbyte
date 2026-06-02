@@ -733,8 +733,7 @@ class ProtobufRecordConversionTest {
 
         // Verify that the type mismatch is recorded as a DESTINATION_SERIALIZATION_ERROR
         val changes = changesArray.values.filterIsInstance<ObjectValue>()
-        val dateError =
-            changes.find { (it.values["field"] as StringValue).value == "date_col" }
+        val dateError = changes.find { (it.values["field"] as StringValue).value == "date_col" }
         assertNotNull(dateError)
         assertEquals("NULLED", (dateError!!.values["change"] as StringValue).value)
         assertEquals(
