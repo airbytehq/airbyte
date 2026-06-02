@@ -101,6 +101,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.2 | 2026-06-02 | [78663](https://github.com/airbytehq/airbyte/pull/78663) | Update dependencies |
 | 0.2.1 | 2026-04-28 | [77201](https://github.com/airbytehq/airbyte/pull/77201) | Update dependencies |
 | 0.2.0 | 2026-04-22 | [76475](https://github.com/airbytehq/airbyte/pull/76475) | Add `sessions_insights` stream for analytics (message counts, session size, AI-generated classification); add optional `start_date` config to filter `sessions`, `sessions_insights`, and `session_messages` by creation time |
 | 0.1.1 | 2026-04-21 | [76504](https://github.com/airbytehq/airbyte/pull/76504) | Update dependencies |
