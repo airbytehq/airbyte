@@ -44,7 +44,8 @@ For more information about MongoDB's document size limits, see the [MongoDB docu
 When using CDC (Incremental sync mode), the **Update Capture Mode** setting determines how Airbyte retrieves the full
 document content for update events. The default mode is **Lookup**, but Lookup and Post Image have important behavioral differences:
 
-### **Lookup** (default): 
+### **Lookup** (default)
+
 Lookup fetches the document’s latest available state when the update event is processed.
 
 If a document is updated multiple times in rapid succession, or if multiple updates happen between syncs, Airbyte may
