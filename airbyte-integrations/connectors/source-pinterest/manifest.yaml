@@ -53,12 +53,17 @@ definitions:
     response_filters:
       - type: HttpResponseFilter
         action: RETRY
+        http_codes: [400]
         predicate: "{{ response.get('message', '') is string and 'Retry after' in response.get('message', '') }}"
       - type: HttpResponseFilter
-        action: FAIL
+        action: RETRY
         http_codes: [400]
-        failure_type: config_error
-        error_message: "Pinterest analytics request is invalid."
+        failure_type: transient_error
+        predicate: >-
+          {{ response.get('code') == 12 or
+          (response.get('message', '') is string and
+          'something went wrong' in response.get('message', '') | lower) }}
+        error_message: "Pinterest API request failed due to a temporary error."
 
   # Requester
   requester:

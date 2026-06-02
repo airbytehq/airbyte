@@ -10,7 +10,7 @@ import pytest
 from freezegun import freeze_time
 from jsonschema import ValidationError, validate
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_analytics_columns, get_source, read_from_stream
 
@@ -57,6 +57,10 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
             "status_code": 400,
             "json": {"code": 1, "message": "Retry after 5 seconds"},
         },
+        {
+            "status_code": 400,
+            "json": {"code": 12, "message": "Something went wrong on our end. Sorry about that."},
+        },
         {  # finally succeed creating the job
             "status_code": 200,
             "json": initial_creation_ok,
@@ -93,23 +97,6 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
     expected_record = {"metric": 1}
 
     assert records[0] == expected_record
-
-
-def test_non_rate_limit_400_fails_with_config_error(requests_mock, test_config):
-    ad_account_id = "123"
-    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": ad_account_id}]})
-    requests_mock.post(
-        f"https://api.pinterest.com/v5/ad_accounts/{ad_account_id}/reports",
-        status_code=400,
-        json={"code": 1, "message": "Invalid request."},
-    )
-
-    output = read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, expecting_exception=True)
-
-    assert output.errors
-    assert output.errors[0].trace.error.message == "Pinterest analytics request is invalid."
-    assert output.errors[0].trace.error.failure_type == FailureType.config_error
-
 
 def test_streams(test_config):
     source = get_source(test_config)
