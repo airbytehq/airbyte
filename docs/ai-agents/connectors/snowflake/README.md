@@ -3,9 +3,15 @@
 The Snowflake agent connector is a Python package that equips AI agents to interact with Snowflake through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Connects to Snowflake via the SQL REST API (POST /api/v2/statements) to query
-metadata about databases, schemas, tables, views, warehouses, and columns.
-Uses Programmatic Access Token (PAT) authentication. All operations execute
-SHOW commands through the Snowflake SQL API and return structured result sets.
+metadata about databases, schemas, tables, views, warehouses, and columns,
+to read records from tables and views, and to create, update, and delete
+records in tables. Uses Programmatic Access Token (PAT) authentication.
+Metadata operations execute SHOW commands; record operations execute the SQL
+statement you provide. This connector is experimental (beta): record actions
+run arbitrary SQL bounded only by the connected PAT's Snowflake role, so scope
+that role to least privilege (read-only for read-only use cases).
+Parameterized bind variables (the SQL API `bindings` field / `?` placeholders)
+are not supported in this beta; inline literal values into the statement.
 
 
 ## Example prompts
@@ -18,19 +24,17 @@ The Snowflake connector is optimized to handle prompts like these.
 - List all views
 - Show me the warehouses
 - What columns does my data have?
+- Get the record with id 42 from the users table
+- List all records from the orders table
+- Insert a new row into the customers table
+- Update the email for user 7 in the users table
+- Delete the record with id 99 from the logs table
 - Find all tables in the ANALYTICS database
 - Which warehouses are currently running?
 - Show me all views in the PUBLIC schema
 - What databases were created this month?
-
-## Unsupported prompts
-
-The Snowflake connector isn't currently able to handle prompts like these.
-
-- Create a new database
-- Drop a table
-- Run a custom SQL query
-- Insert data into a table
+- Find all orders placed in the last 30 days
+- Search for users with email ending in @example.com
 
 ## Entities and actions
 
@@ -44,6 +48,7 @@ This connector supports the following entities and actions. For more details, se
 | Views | [List](./REFERENCE.md#views-list) |
 | Warehouses | [List](./REFERENCE.md#warehouses-list) |
 | Columns | [List](./REFERENCE.md#columns-list) |
+| Record | [Get](./REFERENCE.md#record-get), [List](./REFERENCE.md#record-list), [Create](./REFERENCE.md#record-create), [Update](./REFERENCE.md#record-update), [Delete](./REFERENCE.md#record-delete) |
 | Result Partitions | [Get](./REFERENCE.md#result-partitions-get) |
 
 

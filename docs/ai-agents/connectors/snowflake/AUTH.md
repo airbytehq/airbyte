@@ -20,6 +20,14 @@ Create a connector with Token credentials.
 |------------|------|----------|-------------|
 | `programmatic_access_token` | `str` | Yes | Snowflake Programmatic Access Token (PAT) for authentication. Generate one via ALTER USER ADD PROGRAMMATIC ACCESS TOKEN in Snowflake. |
 
+`replication_config` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `database` | `str` | Yes | The database for Airbyte to access data. |
+| `warehouse` | `str` | Yes | The warehouse for Airbyte to access data. |
+| `role` | `str` | Yes | The role for Airbyte to access Snowflake. |
+
 Example request:
 
 
@@ -33,6 +41,11 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     "name": "My Snowflake Connector",
     "credentials": {
       "programmatic_access_token": "<Snowflake Programmatic Access Token (PAT) for authentication. Generate one via ALTER USER ADD PROGRAMMATIC ACCESS TOKEN in Snowflake.>"
+    },
+    "replication_config": {
+      "database": "<The database for Airbyte to access data.>",
+      "warehouse": "<The warehouse for Airbyte to access data.>",
+      "role": "<The role for Airbyte to access Snowflake.>"
     }
   }'
 ```
