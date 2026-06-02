@@ -34,7 +34,11 @@ EVENTS_SLICE = {
 # 2500 events, strictly descending timestamps (one second apart) -> 3 capped pages of 1000.
 TOTAL = 2500
 ALL_EVENTS = [
-    {"id": f"e{i:05d}", "event": "$pageview", "timestamp": f"2026-05-20T12:{(TOTAL - i) // 60 % 60:02d}:{(TOTAL - i) % 60:02d}.000000+00:00"}
+    {
+        "id": f"e{i:05d}",
+        "event": "$pageview",
+        "timestamp": f"2026-05-20T12:{(TOTAL - i) // 60 % 60:02d}:{(TOTAL - i) % 60:02d}.000000+00:00",
+    }
     for i in range(TOTAL)
 ]
 # guarantee strict ordering regardless of the formula above
