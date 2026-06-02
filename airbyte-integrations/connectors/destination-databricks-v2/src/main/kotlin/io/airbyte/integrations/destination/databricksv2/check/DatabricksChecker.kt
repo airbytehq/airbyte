@@ -76,7 +76,12 @@ class DatabricksChecker(
     }
 
     override fun cleanup() {
-        checkTableName?.let { runBlocking { databricksClient.dropTable(it) } }
+        checkTableName?.let {
+            runBlocking {
+                databricksClient.dropTable(it)
+                databricksClient.dropStagingVolume(it)
+            }
+        }
     }
 
     companion object {

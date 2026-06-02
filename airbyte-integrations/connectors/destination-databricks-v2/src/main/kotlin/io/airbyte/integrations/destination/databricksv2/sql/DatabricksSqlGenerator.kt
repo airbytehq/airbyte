@@ -43,10 +43,10 @@ class DatabricksSqlGenerator(
         |AND table_name = ${tableName.name.toSqlLiteral()}
         """.trimMargin()
 
-    // TODO: use "isStaging/isTemp" instead of "replace"
     fun createTable(
         tableName: TableName,
         tableSchema: StreamTableSchema,
+        replace: Boolean = false,
     ): String {
         val userColumns = tableSchema.columnSchema.finalSchema
 
@@ -63,7 +63,8 @@ class DatabricksSqlGenerator(
                 }
                 .joinToString(",\n    ")
 
-        return "CREATE TABLE IF NOT EXISTS ${fullyQualifiedName(tableName)} ( $columnDeclarations)"
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
+        return "$createPrefix ${fullyQualifiedName(tableName)} ( $columnDeclarations)"
     }
 
     fun dropTable(tableName: TableName): String =
@@ -220,6 +221,10 @@ class DatabricksSqlGenerator(
         |    'nullValue' = ''
         |)
         """.trimMargin()
+
+    /** Drops the Unity Catalog Volume used for staging CSV files. */
+    fun dropStagingVolume(tableName: TableName): String =
+        "DROP VOLUME IF EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
 
     /** Returns a [TableName] for the staging volume associated with the given table. */
     internal fun stagingVolumeName(tableName: TableName): TableName =

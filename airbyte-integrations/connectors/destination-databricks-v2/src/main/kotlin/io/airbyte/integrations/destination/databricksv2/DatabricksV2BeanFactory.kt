@@ -40,7 +40,7 @@ class DatabricksV2BeanFactory {
      *
      * - maxRecordsPerAgg: Effectively unlimited since we rely on byte limits, not record counts.
      * - maxEstBytesPerAgg: 250 MB per aggregate, per Databricks recommendations.
-     * - maxEstBytesAllAggregates: 2 GB total across all in-flight aggregates. Max pod memory.
+     * - maxEstBytesAllAggregates: 1 GB total across all in-flight aggregates. Max pod memory.
      * - maxBufferedAggregates: matching supported concurrency of 10x the number of clusters.
      */
     @Singleton

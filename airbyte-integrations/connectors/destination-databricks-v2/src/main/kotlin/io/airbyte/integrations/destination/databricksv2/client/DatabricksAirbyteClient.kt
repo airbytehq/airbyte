@@ -49,7 +49,7 @@ class DatabricksAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     ) {
-        execute(sqlGenerator.createTable(tableName, stream.tableSchema))
+        execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
     }
 
     override suspend fun tableExists(table: TableName): Boolean =
@@ -200,6 +200,11 @@ class DatabricksAirbyteClient(
     /** Executes a COPY INTO statement to load a staged CSV file into the target table. */
     fun copyFromVolume(tableName: TableName, stagedFilePath: String) {
         execute(sqlGenerator.copyIntoFromVolume(tableName, stagedFilePath))
+    }
+
+    /** Drops the Unity Catalog Volume used for staging CSV files. */
+    fun dropStagingVolume(tableName: TableName) {
+        execute(sqlGenerator.dropStagingVolume(tableName))
     }
 
     /** Deletes a staged file from a Unity Catalog Volume. */

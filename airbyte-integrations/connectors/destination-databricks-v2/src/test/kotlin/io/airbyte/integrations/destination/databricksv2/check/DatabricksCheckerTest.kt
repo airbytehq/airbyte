@@ -110,7 +110,7 @@ class DatabricksCheckerTest {
     }
 
     @Test
-    fun `cleanup drops the check table`() {
+    fun `cleanup drops the check table and staging volume`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
         every { databricksClient.describeTable(any()) } returns
@@ -126,6 +126,7 @@ class DatabricksCheckerTest {
         checker.cleanup()
 
         coVerify(exactly = 1) { databricksClient.dropTable(any<TableName>()) }
+        coVerify(exactly = 1) { databricksClient.dropStagingVolume(any<TableName>()) }
     }
 
     @Test
