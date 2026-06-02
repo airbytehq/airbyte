@@ -37,6 +37,10 @@ The Copper source connector supports the following [sync modes](https://docs.air
 - [Projects](https://developer.copper.com/projects/list-projects-search.html)
 - [Oppurtunities](https://developer.copper.com/opportunities/list-opportunities-search.html)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
