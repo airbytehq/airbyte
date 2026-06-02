@@ -67,7 +67,8 @@ available version that **Lookup** may return.
 - If you need accurate per-update document states.
 - If your MongoDB version is `6.0` or later
 
-#### Requirements for Post Image mode:
+#### Requirements for Post Image mode
+
 - MongoDB 6.0+
 - Collections must be configured to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). If this configuration is not enabled, Airbyte may not be able to retrieve the expected document state for update events. 
 
