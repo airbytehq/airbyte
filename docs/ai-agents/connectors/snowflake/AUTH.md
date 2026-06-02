@@ -50,8 +50,8 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-:::note Network policy required for PAT authentication
-When using programmatic access tokens, the Snowflake user's network policy must allow connections from Airbyte's IP addresses. Add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to the network policy attached to the PAT user, or to the account-level network policy.
+:::note Network policy required for Programmatic Access Token authentication
+When using Programmatic Access Token authentication, the Snowflake user's network policy must allow connections from Airbyte's IP addresses. Add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to the network policy attached to the PAT user, or to the account-level network policy.
 :::
 
 ### Execution
