@@ -47,8 +47,8 @@ document content for update events. The default mode is **Lookup**, but Lookup a
 ### **Lookup** (default): 
 Lookup fetches the document’s latest available state when the update event is processed.
 
-If a document is updated multiple times in rapid succession, or if multiple updates happen between syncs, Airbyte may 
-capture the newest available version instead of each intermediate state. When this happens, multiple update events can 
+If a document is updated multiple times in rapid succession, or if multiple updates happen between syncs, Airbyte may
+capture the newest available version instead of each intermediate state. When this happens, multiple update events can
 show the same final version of the document, and **the intermediate full-document states are not captured.**
 
 #### Use Lookup when:
