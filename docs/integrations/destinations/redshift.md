@@ -95,33 +95,12 @@ configure an S3 bucket and IAM credentials for this purpose.
 4. [Generate an access key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
    for the IAM user.
 
-**Required credentials:**
-
-- **Access Key Id** —
-  See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
-  on how to generate an access key. We recommend creating an Airbyte-specific user. This user will
-  require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
-  to objects in the staging bucket.
-- **Secret Access Key** — Corresponding key to the above Access Key Id.
-
-**Optional parameters:**
-
-- **Bucket Path** — The directory within the S3 bucket to place the staging data. For example, if you set this to
-  `yourFavoriteSubdirectory`, the staging data will be placed inside `s3://yourBucket/yourFavoriteSubdirectory`. If not
-  provided, defaults to the root directory.
-- **S3 Filename pattern** — The pattern allows you to set the file-name format for the S3 staging file(s). The following
-  placeholder combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`,
-  `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. The pattern you supply will apply to
-  anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Do not use empty
-  spaces or unsupported placeholders, as they won't be recognized.
-- **Purge Staging Data** — Whether to delete the staging files from S3 after completing the sync. Specifically, the
-  connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing
-  three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if
-  you want to keep them for other purposes, set `purge_staging_data` to `false`.
+See the [S3 Staging fields](#s3-staging-fields) table for the full list of required and optional
+S3 configuration parameters.
 
 NOTE: S3 staging does not use the SSH Tunnel option for copying data. SSH Tunnel supports the SQL connection only. S3 is
-secured through public HTTPS access only. Subsequent typing and deduping queries on final table are executed over using
-provided SSH Tunnel configuration.
+secured through public HTTPS access only. Subsequent queries on the destination tables are executed using the provided
+SSH Tunnel configuration.
 
 #### Optional: SSH Bastion Host
 
@@ -144,7 +123,7 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 
 | Field                                                                                                           | Description                                                                                                                                                                          |
 |:----------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Host](https://docs.aws.amazon.com/redshift/latest/mgmt/managing-clusters-console.html#obtain-cluster-endpoint) | The endpoint of your Redshift cluster (must include the cluster-id, region and end with `.redshift.amazonaws.com`). Example: `my-cluster.abc123xyz.us-east-1.redshift.amazonaws.com` |
+| [Host](https://docs.aws.amazon.com/redshift/latest/mgmt/managing-clusters-console.html#obtain-cluster-endpoint) | The endpoint of your Redshift cluster or serverless workgroup. Provisioned clusters end with `.redshift.amazonaws.com`; serverless workgroups end with `.redshift-serverless.amazonaws.com`. Example: `my-cluster.abc123xyz.us-east-1.redshift.amazonaws.com` |
 | Port                                                                                                            | Port of the database. Default: `5439`                                                                                                                                                |
 | Username                                                                                                        | The username you created in Step 1 to allow Airbyte to access the database. Example: `airbyte_user`                                                                                  |
 | Password                                                                                                        | The password associated with the username.                                                                                                                                           |
@@ -169,6 +148,7 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 |:----------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [JDBC URL Params](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html) (Optional)                              | Additional properties to pass to the JDBC URL string when connecting to the database, formatted as `key=value` pairs separated by `&`. Example: `key1=value1&key2=value2` |
 | [SSH Tunnel Method](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
+| Drop CASCADE (Optional)                                                                                                                       | Whether to use `CASCADE` when dropping tables and columns. **Warning:** This deletes data in all dependent objects (views, etc.), including during schema evolution. Default: `false`. |
 
 ## Output schema
 
@@ -178,7 +158,7 @@ Airbyte writes each stream directly into a final table in Redshift with typed co
 
 The final table contains these fields, in addition to the columns declared in your stream schema:
 
-- `_airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. Column type: `VARCHAR`.
+- `_airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. Column type: `VARCHAR(36)`.
 - `_airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source. Column type:
   `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_meta`: A JSON object containing metadata about the record, such as changes applied during syncing. Column
@@ -204,23 +184,23 @@ the [migration guide](redshift-migrations.md) for details.
 
 ## Data type map
 
-| Airbyte type                        | Redshift type                          |
-|:------------------------------------|:---------------------------------------|
-| STRING                              | VARCHAR                                |
-| STRING (BASE64)                     | VARCHAR                                |
-| STRING (BIG_NUMBER)                 | VARCHAR                                |
-| STRING (BIG_INTEGER)                | VARCHAR                                |
-| NUMBER                              | DECIMAL / NUMERIC                      |
-| INTEGER                             | BIGINT / INT8                          |
-| BOOLEAN                             | BOOLEAN / BOOL                         |
-| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ / TIMESTAMP WITH TIME ZONE |
-| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP                              |
-| STRING (TIME_WITH_TIMEZONE)         | TIMETZ / TIME WITH TIME ZONE           |
-| STRING (TIME_WITHOUT_TIMEZONE)      | TIME                                   |
-| DATE                                | DATE                                   |
-| OBJECT                              | SUPER                                  |
-| ARRAY                               | SUPER                                  |
-| UNKNOWN                             | VARCHAR                                |
+| Airbyte type                        | Redshift type      |
+|:------------------------------------|:-------------------|
+| STRING                              | VARCHAR(65535)     |
+| STRING (BASE64)                     | VARCHAR(65535)     |
+| STRING (BIG_NUMBER)                 | VARCHAR(65535)     |
+| STRING (BIG_INTEGER)                | VARCHAR(65535)     |
+| NUMBER                              | DECIMAL(38,9)      |
+| INTEGER                             | BIGINT             |
+| BOOLEAN                             | BOOLEAN            |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ        |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP          |
+| STRING (TIME_WITH_TIMEZONE)         | TIMETZ             |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME               |
+| DATE                                | DATE               |
+| OBJECT                              | SUPER              |
+| ARRAY                               | SUPER              |
+| UNKNOWN                             | VARCHAR(65535)     |
 
 ### Precision and size limits
 
@@ -231,6 +211,8 @@ the change in the `_airbyte_meta` column.
 - **SUPER**: Maximum 16 MB per record. See the AWS documentation
   on [SUPER type](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html)
   and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
+- **BIGINT**: Stores values in the range -2^63 to 2^63-1. If an integer value falls outside this range, Airbyte nulls
+  the value and records the change in `_airbyte_meta`.
 - **NUMERIC(38, 9)**: Redshift supports a maximum precision of 38 and scale of 9. If the source value has a scale
   greater than 9, Redshift silently rounds it — this is not recorded in `_airbyte_meta`. If the precision exceeds 38,
   Airbyte nulls the value and records the change in `_airbyte_meta`.
@@ -293,7 +275,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.0   | 2026-04-08 | [76168](https://github.com/airbytehq/airbyte/pull/76168)   | direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.1.0.30, AWS SDK v2                                                       |
+| 4.0.0   | 2026-06-02 | [79095](https://github.com/airbytehq/airbyte/pull/79095)   | Full rewrite using direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.2.7, AWS SDK v2 2.31.1 |
 | 3.5.4   | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286)   | Fix misleading SSH error when SQLException has null sqlState during connection check                                                                                                                             |
 | 3.5.3   | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                                                |
 | 3.5.2   | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500)   | Use a non root base image                                                                                                                                                                                        |
