@@ -168,6 +168,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 8.0.4 | 2026-06-02 | [78596](https://github.com/airbytehq/airbyte/pull/78596) | Update dependencies |
 | 8.0.3 | 2026-05-18 | [78162](https://github.com/airbytehq/airbyte/pull/78162) | Promoted release candidate to GA |
 | 8.0.3-rc.2 | 2026-05-12 | [78055](https://github.com/airbytehq/airbyte/pull/78055) | Concurrency tuning iteration 2: bump default `num_workers` from 12 to 14 for progressive rollout |
 | 8.0.3-rc.1 | 2026-05-11 | [78010](https://github.com/airbytehq/airbyte/pull/78010) | Concurrency tuning iteration 1: bump default `num_workers` from 10 to 12 for progressive rollout |
