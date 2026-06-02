@@ -205,8 +205,8 @@ The token secret is only shown when the token is created. Store it securely befo
 
 For service users, Snowflake requires `ROLE_RESTRICTION` by default. Snowflake also requires a network policy for service users to generate or use programmatic access tokens unless your authentication policy changes this behavior. If an authentication policy restricts allowed methods, include `PROGRAMMATIC_ACCESS_TOKEN` in `AUTHENTICATION_METHODS`.
 
-:::note Network policy required for PAT authentication
-When using programmatic access tokens, the Snowflake user's network policy must allow connections from Airbyte's IP addresses. Add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to the network policy attached to the PAT user, or to the account-level network policy.
+:::note Network policy required for Programmatic Access Token authentication
+When using Programmatic Access Token authentication, the Snowflake user's network policy must allow connections from Airbyte's IP addresses. Add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to the network policy attached to the PAT user, or to the account-level network policy.
 :::
 
 ### Network policies
