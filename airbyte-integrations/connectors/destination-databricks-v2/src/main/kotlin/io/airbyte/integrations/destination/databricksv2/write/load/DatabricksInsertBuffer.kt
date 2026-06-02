@@ -16,7 +16,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
-import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.*
 import java.util.zip.GZIPOutputStream
@@ -151,16 +151,15 @@ class DatabricksInsertBuffer(
     }
 
     companion object {
-        private val executionInstant = Instant.now()
+        private val executionDate = LocalDate.now(ZoneOffset.UTC)
 
         /**
          * Constructs the staging directory path within a Unity Catalog Volume. Format:
-         * `/Volumes/<database>/<namespace>/<table>_staging/<year>_<month>_<day>`
+         * `/Volumes/<database>/<namespace>/<table>_staging/<date>`
          */
         fun stagingDirectory(tableName: TableName, database: String): String {
-            val d = executionInstant.atZone(ZoneOffset.UTC).toLocalDate()
             return "$VOLUMES_BASE_PATH/$database/${tableName.namespace}/" +
-                "${tableName.name}_staging/${d.year}_${d.monthValue}_${d.dayOfMonth}"
+                "${tableName.name}_staging/$executionDate"
         }
     }
 }
