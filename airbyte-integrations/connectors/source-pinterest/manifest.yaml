@@ -4965,17 +4965,17 @@ spec:
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
         maxLength: 18 # Pinterest account IDs are at most 18 characters
         examples: ["1234567890"]
-      num_threads:
+      num_workers:
         type: integer
-        title: Number of concurrent threads
+        title: Number of concurrent workers
         minimum: 1
         maximum: 40
-        default: 2
+        default: 4
         examples:
           - 1
-          - 2
-          - 3
-        description: The number of parallel threads to use for the sync.
+          - 4
+          - 5
+        description: The number of worker threads to use for the sync. Higher values can speed up syncs but may increase rate-limit pressure against Pinterest.
         order: 10
   advanced_auth:
     auth_flow_type: "oauth2.0"
@@ -5090,31 +5090,5 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_threads'] or 4 }}"
+  default_concurrency: "{{ config.get('num_workers') or config.get('num_threads') or 4 }}"
   max_concurrency: 50
-
-api_budget:
-  type: HTTPAPIBudget
-  status_codes_for_ratelimit_hit: [429]
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - interval: "PT60S"
-          limit: 300
-      matchers:
-        # ad account analytics (NOT user_account/analytics)
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/analytics"
-        # campaign analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/campaigns/analytics"
-        # ad group analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ad_groups/analytics"
-        # ad analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ads/analytics"

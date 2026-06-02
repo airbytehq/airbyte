@@ -10,7 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
 MANIFEST_PATH = Path(__file__).parent.parent.parent / "source_google_ads" / "manifest.yaml"
-API_BASE = "https://googleads.googleapis.com/v20"
+API_BASE = "https://googleads.googleapis.com/v23"
 OAUTH_URL = "https://www.googleapis.com/oauth2/v3/token"
 
 REPORT_MAPPING = {
@@ -94,6 +94,26 @@ def build_error_response(status_code: int, error_message: str = "error") -> Http
         body=json.dumps([{"error": {"code": status_code, "message": error_message, "status": "ERROR"}}]),
         status_code=status_code,
     )
+
+
+def build_google_ads_query_error_response(query_error: str, message: str) -> HttpResponse:
+    body = [
+        {
+            "error": {
+                "code": 400,
+                "message": "Request contains an invalid argument.",
+                "status": "INVALID_ARGUMENT",
+                "details": [
+                    {
+                        "@type": "type.googleapis.com/google.ads.googleads.v23.errors.GoogleAdsFailure",
+                        "errors": [{"errorCode": {"queryError": query_error}, "message": message}],
+                        "requestId": "test-request-id",
+                    }
+                ],
+            }
+        }
+    ]
+    return HttpResponse(body=json.dumps(body), status_code=400)
 
 
 def build_accessible_accounts_response(customer_ids: List[str]) -> HttpResponse:
