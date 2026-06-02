@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d1fcdf3a-dcfd-4b2e-a32c-d8a7a2e9790c
-  dockerImageTag: 0.0.48
+  dockerImageTag: 0.0.49
   dockerRepository: airbyte/source-gitbook
   githubIssueLabel: source-gitbook
   icon: icon.svg
