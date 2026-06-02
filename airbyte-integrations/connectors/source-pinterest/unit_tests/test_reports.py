@@ -98,6 +98,7 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
 
     assert records[0] == expected_record
 
+
 def test_streams(test_config):
     source = get_source(test_config)
     streams = source.streams(test_config)
