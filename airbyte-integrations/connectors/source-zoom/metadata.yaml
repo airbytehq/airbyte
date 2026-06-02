@@ -38,7 +38,7 @@ data:
   supportLevel: community
   tags:
     - cdk:low-code
-    - language:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

@@ -7,7 +7,7 @@ import json
 import logging
 import re
 import time
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
