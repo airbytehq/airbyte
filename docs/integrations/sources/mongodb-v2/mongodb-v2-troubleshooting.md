@@ -52,25 +52,27 @@ If a document is updated multiple times in rapid succession, or if multiple upda
 capture the newest available version instead of each intermediate state. When this happens, multiple update events can
 show the same final version of the document, and **the intermediate full-document states are not captured.**
 
-#### Use Lookup when:
+#### Use Lookup when
 
 - Your MongoDB version is earlier than 6.0.
 - You only need the latest version of each document and do not need to capture every intermediate change.
-- Your documents are very large and you want to reduce the size of change stream events. 
+- Your documents are very large and you want to reduce the size of change stream events.
 
-### Post Image (requires MongoDB 6.0+): 
-Uses MongoDB's built-in [change stream post-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images), which capture the document state immediately after each 
-individual change. This is useful when you need the exact document state after every update, rather than the latest 
+### Post Image (requires MongoDB 6.0+)
+
+Uses MongoDB's built-in [change stream post-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images), which capture the document state immediately after each
+individual change. This is useful when you need the exact document state after every update, rather than the latest
 available version that **Lookup** may return.
 
-#### When to use Post Image:
+#### When to use Post Image
+
 - If you need accurate per-update document states.
 - If your MongoDB version is `6.0` or later
 
 #### Requirements for Post Image mode
 
 - MongoDB 6.0+
-- Collections must be configured to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). If this configuration is not enabled, Airbyte may not be able to retrieve the expected document state for update events. 
+- Collections must be configured to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). If this configuration is not enabled, Airbyte may not be able to retrieve the expected document state for update events.
 
 :::warning
 
