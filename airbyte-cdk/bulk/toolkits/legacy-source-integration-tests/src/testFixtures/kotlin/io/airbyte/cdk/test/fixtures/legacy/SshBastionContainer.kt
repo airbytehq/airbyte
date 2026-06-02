@@ -4,7 +4,6 @@
 package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.ImmutableMap
 import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
@@ -50,61 +49,55 @@ class SshBastionContainer : AutoCloseable {
             if (innerAddress) getInnerContainerAddress(container!!)
             else getOuterContainerAddress(container!!)
         return Jsons.jsonNode(
-            ImmutableMap.builder<Any?, Any?>()
-                .put("tunnel_host", Objects.requireNonNull(containerAddress!!.left))
-                .put("tunnel_method", tunnelMethod)
-                .put("tunnel_port", containerAddress.right)
-                .put("tunnel_user", SSH_USER)
-                .put(
-                    "tunnel_user_password",
+            mapOf(
+                "tunnel_host" to Objects.requireNonNull(containerAddress.left),
+                "tunnel_method" to tunnelMethod,
+                "tunnel_port" to containerAddress.right,
+                "tunnel_user" to SSH_USER,
+                "tunnel_user_password" to
                     if (tunnelMethod == SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH) SSH_PASSWORD
-                    else ""
-                )
-                .put(
-                    "ssh_key",
+                    else "",
+                "ssh_key" to
                     if (tunnelMethod == SshTunnel.TunnelMethod.SSH_KEY_AUTH)
                         container!!.execInContainer("cat", "var/bastion/id_rsa").stdout
-                    else ""
-                )
-                .build()
+                    else "",
+            )
         )
     }
 
     @Throws(IOException::class, InterruptedException::class)
     fun getTunnelConfig(
         tunnelMethod: SshTunnel.TunnelMethod,
-        builderWithSchema: ImmutableMap.Builder<Any, Any>,
+        builderWithSchema: MutableMap<String, Any?>,
         innerAddress: Boolean
     ): JsonNode? {
-        return Jsons.jsonNode(
-            builderWithSchema
-                .put("tunnel_method", getTunnelMethod(tunnelMethod, innerAddress))
-                .build()
-        )
+        builderWithSchema["tunnel_method"] = getTunnelMethod(tunnelMethod, innerAddress)
+        return Jsons.jsonNode(builderWithSchema)
     }
 
-    fun getBasicDbConfigBuider(db: JdbcDatabaseContainer<*>): ImmutableMap.Builder<Any, Any> {
+    fun getBasicDbConfigBuider(db: JdbcDatabaseContainer<*>): MutableMap<String, Any?> {
         return getBasicDbConfigBuider(db, db.databaseName)
     }
 
     fun getBasicDbConfigBuider(
         db: JdbcDatabaseContainer<*>,
         schemas: MutableList<String>
-    ): ImmutableMap.Builder<Any, Any> {
-        return getBasicDbConfigBuider(db, db.databaseName).put("schemas", schemas)
+    ): MutableMap<String, Any?> {
+        return getBasicDbConfigBuider(db, db.databaseName).also { it["schemas"] = schemas }
     }
 
     fun getBasicDbConfigBuider(
         db: JdbcDatabaseContainer<*>,
         schemaName: String
-    ): ImmutableMap.Builder<Any, Any> {
-        return ImmutableMap.builder<Any, Any>()
-            .put("host", Objects.requireNonNull(HostPortResolver.resolveHost(db)))
-            .put("username", db.username)
-            .put("password", db.password)
-            .put("port", HostPortResolver.resolvePort(db))
-            .put("database", schemaName)
-            .put("ssl", false)
+    ): MutableMap<String, Any?> {
+        return mutableMapOf(
+            "host" to Objects.requireNonNull(HostPortResolver.resolveHost(db)),
+            "username" to db.username,
+            "password" to db.password,
+            "port" to HostPortResolver.resolvePort(db),
+            "database" to schemaName,
+            "ssl" to false,
+        )
     }
 
     fun stopAndCloseContainers(db: JdbcDatabaseContainer<*>) {

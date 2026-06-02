@@ -30,6 +30,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
 from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
+from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
 from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
@@ -213,9 +214,12 @@ class SourceS3(FileBasedSource):
             # the Airbyte logs, which is not ideal. So we'll just exit with an error code instead.
             sys.exit(1)
 
+        stream_reader = SourceS3StreamReader()
+
         return cls(
             # These are the defaults for the source. No need for a caller to change them:
-            stream_reader=SourceS3StreamReader(),
+            stream_reader=stream_reader,
+            availability_strategy=SourceS3AvailabilityStrategy(stream_reader),
             spec_class=Config,
             cursor_cls=Cursor,
             # This is needed early. (We also will provide it again later.)

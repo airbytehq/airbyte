@@ -96,6 +96,10 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 | `object`         | `object`     |       |
 | `boolean`        | `boolean`    |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -103,6 +107,11 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.16 | 2026-06-02 | [78955](https://github.com/airbytehq/airbyte/pull/78955) | Update dependencies |
+| 1.7.15 | 2026-04-28 | [77463](https://github.com/airbytehq/airbyte/pull/77463) | Update dependencies |
+| 1.7.14 | 2026-04-21 | [75866](https://github.com/airbytehq/airbyte/pull/75866) | Update dependencies |
+| 1.7.13 | 2026-03-17 | [75101](https://github.com/airbytehq/airbyte/pull/75101) | Update dependencies |
+| 1.7.12 | 2026-03-10 | [74570](https://github.com/airbytehq/airbyte/pull/74570) | Update dependencies |
 | 1.7.11 | 2026-02-17 | [72374](https://github.com/airbytehq/airbyte/pull/72374) | Update dependencies |
 | 1.7.10 | 2025-11-25 | [70017](https://github.com/airbytehq/airbyte/pull/70017) | Update dependencies |
 | 1.7.9 | 2025-11-18 | [69524](https://github.com/airbytehq/airbyte/pull/69524) | Update dependencies |

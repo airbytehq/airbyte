@@ -14,6 +14,10 @@ Mobile device management
 |-------------|-------------|------------|---------------------|----------------------|
 | computers | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -21,6 +25,13 @@ Mobile device management
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2026-06-02 | [78756](https://github.com/airbytehq/airbyte/pull/78756) | Update dependencies |
+| 0.0.34 | 2026-04-28 | [77316](https://github.com/airbytehq/airbyte/pull/77316) | Update dependencies |
+| 0.0.33 | 2026-04-21 | [76636](https://github.com/airbytehq/airbyte/pull/76636) | Update dependencies |
+| 0.0.32 | 2026-03-31 | [75682](https://github.com/airbytehq/airbyte/pull/75682) | Update dependencies |
+| 0.0.31 | 2026-03-17 | [75078](https://github.com/airbytehq/airbyte/pull/75078) | Update dependencies |
+| 0.0.30 | 2026-03-10 | [74506](https://github.com/airbytehq/airbyte/pull/74506) | Update dependencies |
+| 0.0.29 | 2026-03-03 | [74175](https://github.com/airbytehq/airbyte/pull/74175) | Update dependencies |
 | 0.0.28 | 2026-02-10 | [73053](https://github.com/airbytehq/airbyte/pull/73053) | Update dependencies |
 | 0.0.27 | 2026-01-20 | [71980](https://github.com/airbytehq/airbyte/pull/71980) | Update dependencies |
 | 0.0.26 | 2026-01-14 | [71425](https://github.com/airbytehq/airbyte/pull/71425) | Update dependencies |

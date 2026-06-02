@@ -13,6 +13,10 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 | sets | id | No pagination | ✅ |  ❌  |
 | symbols | symbol | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -20,6 +24,11 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.51 | 2026-06-02 | [78953](https://github.com/airbytehq/airbyte/pull/78953) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77403](https://github.com/airbytehq/airbyte/pull/77403) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76766](https://github.com/airbytehq/airbyte/pull/76766) | Update dependencies |
+| 0.0.48 | 2026-03-31 | [75857](https://github.com/airbytehq/airbyte/pull/75857) | Update dependencies |
+| 0.0.47 | 2026-03-17 | [74963](https://github.com/airbytehq/airbyte/pull/74963) | Update dependencies |
 | 0.0.46 | 2026-02-24 | [73747](https://github.com/airbytehq/airbyte/pull/73747) | Update dependencies |
 | 0.0.45 | 2026-02-03 | [72553](https://github.com/airbytehq/airbyte/pull/72553) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [72094](https://github.com/airbytehq/airbyte/pull/72094) | Update dependencies |

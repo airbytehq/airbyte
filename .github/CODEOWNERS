@@ -38,9 +38,24 @@
 /airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
 
 # -----------------------------------------------------------------------------
-# DESTINATION CONNECTORS
+# DESTINATION CONNECTORS (certified + JDK-based only)
 # -----------------------------------------------------------------------------
-/airbyte-integrations/connectors/destination-*/ @airbytehq/move-destinations
+# Only destination connectors that are both certified AND JDK-based are owned
+# by @airbytehq/move-destinations. This avoids unnecessary review requests on
+# community or non-JDK connectors (e.g. dependabot bumps).
+/airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-customer-io/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-databricks/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-gcs-data-lake/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-hubspot/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-mssql/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-postgres/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-redshift/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-s3/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-s3-data-lake/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/move-destinations
 
 # Destination documentation
 /docs/integrations/destinations/ @airbytehq/move-destinations

@@ -49,6 +49,10 @@ List of available streams:
 - Templates
 - Snippets
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -56,6 +60,12 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.31 | 2026-06-02 | [78890](https://github.com/airbytehq/airbyte/pull/78890) | Update dependencies |
+| 1.1.30 | 2026-04-28 | [77375](https://github.com/airbytehq/airbyte/pull/77375) | Update dependencies |
+| 1.1.29 | 2026-04-21 | [75661](https://github.com/airbytehq/airbyte/pull/75661) | Update dependencies |
+| 1.1.28 | 2026-03-24 | [74990](https://github.com/airbytehq/airbyte/pull/74990) | Update dependencies |
+| 1.1.27 | 2026-03-10 | [74654](https://github.com/airbytehq/airbyte/pull/74654) | Update dependencies |
+| 1.1.26 | 2026-03-03 | [74222](https://github.com/airbytehq/airbyte/pull/74222) | Update dependencies |
 | 1.1.25 | 2026-02-17 | [73573](https://github.com/airbytehq/airbyte/pull/73573) | Update dependencies |
 | 1.1.24 | 2026-02-10 | [73077](https://github.com/airbytehq/airbyte/pull/73077) | Update dependencies |
 | 1.1.23 | 2026-01-20 | [72184](https://github.com/airbytehq/airbyte/pull/72184) | Update dependencies |

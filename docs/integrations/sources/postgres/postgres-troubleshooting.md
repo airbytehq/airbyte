@@ -132,7 +132,7 @@ To customize the JDBC connection beyond common options, specify additional suppo
 
 Example: key1=value1&key2=value2&key3=value3
 
-These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Postgres database.
+These parameters will be added at the end of the JDBC URL that Airbyte will use to connect to your Postgres database.
 
 The connector now supports `connectTimeout` and defaults to 60 seconds. Setting connectTimeout to 0 seconds will set the timeout to the longest time available.
 
@@ -146,7 +146,7 @@ The Postgres connector may need some time to start processing the data in the CD
 - When the connection is set up for the first time and a snapshot is needed
 - When the connector has a lot of change logs to process
 
-The connector waits for the default initial wait time of 5 minutes (300 seconds). Setting the parameter to a longer duration will result in slower syncs, while setting it to a shorter duration may cause the connector to not have enough time to create the initial snapshot or read through the change logs. The valid range is 120 seconds to 1200 seconds.
+The connector waits for the default initial wait time of 20 minutes (1200 seconds). Setting the parameter to a longer duration will result in slower syncs, while setting it to a shorter duration may cause the connector to not have enough time to create the initial snapshot or read through the change logs. The valid range is 120 seconds to 2400 seconds.
 
 If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
 

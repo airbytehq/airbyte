@@ -288,8 +288,8 @@ class JiraRequestBuilder:
 
     @classmethod
     def workflows_endpoint(cls, domain: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /workflow/search endpoint."""
-        return cls(domain, "workflow/search", api_version="v3")
+        """Create a request builder for the /workflows/search endpoint."""
+        return cls(domain, "workflows/search", api_version="v3")
 
     @classmethod
     def workflow_schemes_endpoint(cls, domain: str) -> "JiraRequestBuilder":

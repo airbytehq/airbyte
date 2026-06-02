@@ -38,6 +38,10 @@ Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments`
 | case_fields | id | DefaultPaginator | ✅ |  ❌  |
 | cases | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -45,6 +49,12 @@ Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments`
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.52 | 2026-06-02 | [79006](https://github.com/airbytehq/airbyte/pull/79006) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77468](https://github.com/airbytehq/airbyte/pull/77468) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76769](https://github.com/airbytehq/airbyte/pull/76769) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75743](https://github.com/airbytehq/airbyte/pull/75743) | Update dependencies |
+| 0.0.48 | 2026-03-17 | [75064](https://github.com/airbytehq/airbyte/pull/75064) | Update dependencies |
+| 0.0.47 | 2026-03-10 | [74585](https://github.com/airbytehq/airbyte/pull/74585) | Update dependencies |
 | 0.0.46 | 2026-02-24 | [73880](https://github.com/airbytehq/airbyte/pull/73880) | Update dependencies |
 | 0.0.45 | 2026-02-17 | [73513](https://github.com/airbytehq/airbyte/pull/73513) | Update dependencies |
 | 0.0.44 | 2026-02-03 | [72734](https://github.com/airbytehq/airbyte/pull/72734) | Update dependencies |

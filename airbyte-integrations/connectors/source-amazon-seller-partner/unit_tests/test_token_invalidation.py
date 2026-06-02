@@ -17,10 +17,10 @@ from components import (
 
 @pytest.fixture(autouse=True)
 def reset_authenticator_instance():
-    """Reset the module-level authenticator instance before and after each test."""
-    components._authenticator_instance = None
+    """Reset the module-level authenticator instances before and after each test."""
+    components._authenticator_instances.clear()
     yield
-    components._authenticator_instance = None
+    components._authenticator_instances.clear()
 
 
 def _create_response(status_code: int, json_body: dict) -> requests.Response:
@@ -105,7 +105,7 @@ def test_check_and_invalidate_expired_token(
     mock_authenticator = MagicMock(spec=AmazonSPOauthAuthenticator)
 
     if authenticator_present:
-        components._authenticator_instance = mock_authenticator
+        components._authenticator_instances.append(mock_authenticator)
 
     response = _create_response(status_code, response_body)
 
@@ -130,7 +130,7 @@ def test_check_and_invalidate_expired_token_with_non_response(response_or_except
     Test that _check_and_invalidate_expired_token handles non-Response inputs gracefully.
     """
     mock_authenticator = MagicMock(spec=AmazonSPOauthAuthenticator)
-    components._authenticator_instance = mock_authenticator
+    components._authenticator_instances.append(mock_authenticator)
 
     AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy._check_and_invalidate_expired_token(response_or_exception)
 
@@ -142,7 +142,7 @@ def test_check_and_invalidate_expired_token_with_invalid_json():
     Test that _check_and_invalidate_expired_token handles responses with invalid JSON gracefully.
     """
     mock_authenticator = MagicMock(spec=AmazonSPOauthAuthenticator)
-    components._authenticator_instance = mock_authenticator
+    components._authenticator_instances.append(mock_authenticator)
 
     response = requests.Response()
     response.status_code = 403

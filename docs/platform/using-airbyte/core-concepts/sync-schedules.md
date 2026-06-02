@@ -61,6 +61,8 @@ It can be triggered by clicking the "Sync Now" button at any time through the UI
 - Only one sync per connection can run at a time.
 - If a sync is scheduled to run before the previous sync finishes, the scheduled sync will start after the completion of the previous sync.
 - Syncs can run at most every 60 minutes in Airbyte Cloud. Reach out to [Sales](https://airbyte.com/company/talk-to-sales) if you require replication more frequently than once per hour.
+- On capacity-based Cloud plans, if all committed data workers are in use, newly triggered syncs are queued until capacity is available. You can enable [on-demand capacity](/platform/cloud/managing-airbyte-cloud/manage-data-workers#on-demand-capacity) for critical connections so they always run on time.
+- If a connection has a queued sync and its next scheduled run arrives, the newer scheduled run replaces the queued one. This ensures that when capacity frees up, the most recent data is synced rather than stale data from the original trigger.
 
 :::note
 For Scheduled or cron scheduled syncs, Airbyte guarantees syncs will initiate with a schedule accuracy of +/- 30 minutes.
