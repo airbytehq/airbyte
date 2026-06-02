@@ -14737,6 +14737,17 @@ streams:
             http_codes: [403]
             error_message: "Zoom Phone is not enabled for this account. This stream requires a Zoom Phone license. Remove this stream from your connection to sync other Zoom data without a Phone license."
       type: HttpRequester
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+          - http_codes:
+            - 403
+            predicate: "{{ response.get('code') == 2031 }}"
+            action: IGNORE
+            error_message: "Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing."
+        - type: DefaultErrorHandler
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -14933,6 +14944,17 @@ streams:
             http_codes: [403]
             error_message: "Zoom Phone is not enabled for this account. This stream requires a Zoom Phone license. Remove this stream from your connection to sync other Zoom data without a Phone license."
       type: HttpRequester
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+          - http_codes:
+            - 403
+            predicate: "{{ response.get('code') == 2031 }}"
+            action: IGNORE
+            error_message: "Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing."
+        - type: DefaultErrorHandler
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -15126,6 +15148,17 @@ streams:
             http_codes: [403]
             error_message: "Zoom Phone is not enabled for this account. This stream requires a Zoom Phone license. Remove this stream from your connection to sync other Zoom data without a Phone license."
       type: HttpRequester
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+          - http_codes:
+            - 403
+            predicate: "{{ response.get('code') == 2031 }}"
+            action: IGNORE
+            error_message: "Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing."
+        - type: DefaultErrorHandler
     paginator:
       type: DefaultPaginator
       pagination_strategy:
