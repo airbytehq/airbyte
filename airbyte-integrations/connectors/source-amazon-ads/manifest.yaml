@@ -3213,6 +3213,8 @@ definitions:
               groupBy: ["searchTerm"]
               columns:
                 - "date"
+                - "startDate"
+                - "endDate"
                 - "campaignId"
                 - "campaignName"
                 - "campaignStatus"
@@ -3222,22 +3224,54 @@ definitions:
                 - "portfolioId"
                 - "adGroupId"
                 - "adGroupName"
-                - "keyword"
                 - "keywordId"
+                - "keyword"
+                - "keywordBid"
+                - "keywordType"
                 - "matchType"
                 - "targeting"
+                - "adKeywordStatus"
                 - "searchTerm"
                 - "impressions"
                 - "clicks"
                 - "clickThroughRate"
                 - "costPerClick"
                 - "cost"
+                - "purchases1d"
                 - "purchases7d"
-                - "sales7d"
-                - "unitsSoldClicks7d"
-                - "acosClicks7d"
-                - "roasClicks7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
                 - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "salesOtherSku7d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldOtherSku7d"
+                - "acosClicks7d"
+                - "acosClicks14d"
+                - "roasClicks7d"
+                - "roasClicks14d"
+                - "addToList"
+                - "qualifiedBorrows"
+                - "royaltyQualifiedBorrows"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
               reportTypeId: spSearchTerm
               filters: []
               timeUnit: DAILY
@@ -3251,7 +3285,7 @@ definitions:
       type: DeclarativeStream
       name: sponsored_brands_search_term_report_stream
       primary_key:
-        ["profileId", "date", "campaignId", "adGroupId", "searchTerm"]
+        ["profileId", "date", "campaignId", "adGroupId", "keywordId", "searchTerm"]
       incremental_sync:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
@@ -3269,6 +3303,8 @@ definitions:
               groupBy: ["searchTerm"]
               columns:
                 - "date"
+                - "startDate"
+                - "endDate"
                 - "campaignId"
                 - "campaignName"
                 - "campaignStatus"
@@ -3277,11 +3313,15 @@ definitions:
                 - "campaignBudgetType"
                 - "adGroupId"
                 - "adGroupName"
+                - "keywordId"
                 - "keywordText"
+                - "keywordBid"
                 - "matchType"
+                - "costType"
                 - "searchTerm"
                 - "impressions"
                 - "viewableImpressions"
+                - "viewabilityRate"
                 - "clicks"
                 - "viewClickThroughRate"
                 - "cost"
@@ -3290,6 +3330,21 @@ definitions:
                 - "sales"
                 - "salesClicks"
                 - "unitsSold"
+                - "addToList"
+                - "addToListFromClicks"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
               reportTypeId: sbSearchTerm
               filters: []
               timeUnit: DAILY
@@ -9723,6 +9778,14 @@ schemas:
         type:
           - "null"
           - string
+      startDate:
+        type:
+          - "null"
+          - string
+      endDate:
+        type:
+          - "null"
+          - string
       profileId:
         type:
           - "null"
@@ -9767,19 +9830,31 @@ schemas:
         type:
           - "null"
           - string
-      keyword:
-        type:
-          - "null"
-          - string
       keywordId:
         type:
           - "null"
           - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      keywordBid:
+        type:
+          - "null"
+          - number
+      keywordType:
+        type:
+          - "null"
+          - string
       matchType:
         type:
           - "null"
           - string
       targeting:
+        type:
+          - "null"
+          - string
+      adKeywordStatus:
         type:
           - "null"
           - string
@@ -9807,15 +9882,107 @@ schemas:
         type:
           - "null"
           - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
       purchases7d:
         type:
           - "null"
           - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
       sales7d:
         type:
           - "null"
           - number
-      unitsSoldClicks7d:
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      salesOtherSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldOtherSku7d:
         type:
           - "null"
           - integer
@@ -9823,14 +9990,38 @@ schemas:
         type:
           - "null"
           - number
+      acosClicks14d:
+        type:
+          - "null"
+          - number
       roasClicks7d:
         type:
           - "null"
           - number
-      purchasesSameSku7d:
+      roasClicks14d:
+        type:
+          - "null"
+          - number
+      addToList:
         type:
           - "null"
           - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - number
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
     title: sponsored_products_search_term_report_stream
     type:
       - "null"
@@ -9840,6 +10031,14 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     properties:
       date:
+        type:
+          - "null"
+          - string
+      startDate:
+        type:
+          - "null"
+          - string
+      endDate:
         type:
           - "null"
           - string
@@ -9883,11 +10082,23 @@ schemas:
         type:
           - "null"
           - string
+      keywordId:
+        type:
+          - "null"
+          - integer
       keywordText:
         type:
           - "null"
           - string
+      keywordBid:
+        type:
+          - "null"
+          - number
       matchType:
+        type:
+          - "null"
+          - string
+      costType:
         type:
           - "null"
           - string
@@ -9903,6 +10114,10 @@ schemas:
         type:
           - "null"
           - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
       clicks:
         type:
           - "null"
@@ -9932,6 +10147,66 @@ schemas:
           - "null"
           - number
       unitsSold:
+        type:
+          - "null"
+          - integer
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - number
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+      video5SecondViewRate:
+        type:
+          - "null"
+          - number
+      video5SecondViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
         type:
           - "null"
           - integer
