@@ -43,6 +43,11 @@ data:
           secretStore:
             alias: airbyte-connector-testing-secret-store
             type: GSM
+        - fileName: test_cluster.json
+          name: SECRET_DESTINATION-REDSHIFT_V4_TEST
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
         - fileName: config.json
           name: SECRET_DESTINATION-REDSHIFT__CREDS
           secretStore:

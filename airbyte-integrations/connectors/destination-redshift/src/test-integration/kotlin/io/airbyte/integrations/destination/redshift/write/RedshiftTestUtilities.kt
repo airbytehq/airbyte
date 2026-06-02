@@ -26,8 +26,8 @@ import java.time.ZoneOffset
 
 private val logger = KotlinLogging.logger {}
 
-/** Path to the S3 staging config secrets file used by acceptance tests. */
-const val CONFIG_PATH = "secrets/config_staging.json"
+/** Path to the Redshift config secrets file used by integration tests. */
+const val CONFIG_PATH = "secrets/test_cluster.json"
 
 /**
  * Maps expected records to match Redshift's actual storage behavior:
