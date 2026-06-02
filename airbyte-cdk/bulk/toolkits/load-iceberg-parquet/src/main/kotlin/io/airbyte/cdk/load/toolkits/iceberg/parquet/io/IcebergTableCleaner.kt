@@ -38,8 +38,7 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
     ) {
         catalog.dropTable(identifier, true)
         if (io is SupportsPrefixOperations) {
-            val prefix =
-                if (tableLocation.endsWith("/")) tableLocation else "$tableLocation/"
+            val prefix = if (tableLocation.endsWith("/")) tableLocation else "$tableLocation/"
             io.deletePrefix(prefix)
         }
     }
