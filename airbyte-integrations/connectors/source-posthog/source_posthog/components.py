@@ -2,19 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
+from dataclasses import dataclass
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Set
 
 import requests
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
