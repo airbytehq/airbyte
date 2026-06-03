@@ -13,6 +13,7 @@ from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
+
 try:
     from google.resumable_media.requests.download import _GzipDecoder
 except ImportError:
