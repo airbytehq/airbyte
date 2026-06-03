@@ -6,10 +6,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from source_s3.v4 import Config, SourceS3, SourceS3StreamReader
 from source_s3.v4.throttled_stream import ThrottledFileBasedStream
+
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 
 
 _V3_FIELDS = ["dataset", "format", "path_pattern", "provider", "schema"]

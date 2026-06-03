@@ -8,6 +8,7 @@ from typing import Iterable, List, Mapping, Optional
 from unittest.mock import Mock, patch
 
 import pytest
+from source_s3.v4.throttled_stream import ThrottledFileBasedStream
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -18,8 +19,8 @@ from airbyte_cdk.models import (
     AirbyteStreamState,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    SyncMode,
     StreamDescriptor,
+    SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
@@ -28,7 +29,6 @@ from airbyte_cdk.sources.file_based.exceptions import FileBasedErrorsCollector
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
-from source_s3.v4.throttled_stream import ThrottledFileBasedStream
 
 
 def _state(value: int) -> AirbyteMessage:
@@ -67,10 +67,7 @@ def _record_value(message: AirbyteMessage) -> int:
 
 
 def _summary(messages: List[AirbyteMessage]) -> List[tuple[MessageType, int]]:
-    return [
-        (message.type, _cursor_value(message) if message.type == MessageType.STATE else _record_value(message))
-        for message in messages
-    ]
+    return [(message.type, _cursor_value(message) if message.type == MessageType.STATE else _record_value(message)) for message in messages]
 
 
 class _TestStream(ThrottledFileBasedStream):
