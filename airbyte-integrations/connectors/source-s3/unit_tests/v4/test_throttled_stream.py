@@ -247,9 +247,7 @@ class _StateManager:
     def __init__(self) -> None:
         self._state: Mapping[str, object] = {}
 
-    def update_state_for_stream(
-        self, stream_name: str, namespace: Optional[str], stream_state: Mapping[str, object]
-    ) -> None:
+    def update_state_for_stream(self, stream_name: str, namespace: Optional[str], stream_state: Mapping[str, object]) -> None:
         self._state = stream_state
 
     def create_state_message(self, stream_name: str, namespace: Optional[str]) -> AirbyteMessage:
