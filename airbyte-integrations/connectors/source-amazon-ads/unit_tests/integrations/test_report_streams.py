@@ -7,8 +7,8 @@ from typing import Any, Mapping
 import pytest
 import requests_mock
 
-from airbyte_cdk.models import FailureType, Level as LogLevel
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -517,10 +517,7 @@ class TestDisplayReportStreams:
 
         self._read(config_with_old_start, "sponsored_brands_v3_report_stream_daily", SyncMode.incremental)
 
-        report_creation_requests = [
-            r for r in requests_mock.request_history
-            if r.method == "POST" and r.url.endswith("/reporting/reports")
-        ]
+        report_creation_requests = [r for r in requests_mock.request_history if r.method == "POST" and r.url.endswith("/reporting/reports")]
         assert len(report_creation_requests) > 0
         first_request_body = report_creation_requests[0].json()
         requested_start_date = first_request_body["startDate"].strip()
@@ -539,10 +536,7 @@ class TestDisplayReportStreams:
         report type data retention start date' error, the connector treats it as a config_error
         (fails gracefully) and does not retry endlessly through the async job system.
         """
-        error_details = (
-            "startDate (2024-03-01) must be equal to or after "
-            "report type data retention start date (2024-03-02)"
-        )
+        error_details = "startDate (2024-03-01) must be equal to or after report type data retention start date (2024-03-02)"
         requests_mock.post(
             "https://advertising-api.amazon.com/reporting/reports",
             json={"code": "400", "details": error_details, "requestId": "test-req-id"},
@@ -552,9 +546,6 @@ class TestDisplayReportStreams:
         output = self._read(config, "sponsored_brands_v3_report_stream_daily", SyncMode.incremental)
         assert len(output.records) == 0
         # The error handler should classify this as a config_error (not transient/system)
-        error_traces = [
-            msg for msg in output.errors
-            if msg.trace.error.failure_type == FailureType.config_error
-        ]
+        error_traces = [msg for msg in output.errors if msg.trace.error.failure_type == FailureType.config_error]
         assert len(error_traces) > 0, "Expected retention date error to be classified as config_error"
         assert "must be equal to or after report type data retention start date" in error_traces[0].trace.error.message
