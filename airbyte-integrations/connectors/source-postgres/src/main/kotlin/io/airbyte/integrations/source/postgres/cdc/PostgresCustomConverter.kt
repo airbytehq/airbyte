@@ -35,7 +35,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     private val BIT_TYPES = setOf("BIT", "VARBIT")
     private val MONEY_ITEM_TYPE = "MONEY"
     private val GEOMETRICS_TYPES =
-        setOf("BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH")
+        setOf("BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH", "GEOMETRY", "GEOGRAPHY")
     private val TEXT_TYPES =
         setOf(
             "VARCHAR",
