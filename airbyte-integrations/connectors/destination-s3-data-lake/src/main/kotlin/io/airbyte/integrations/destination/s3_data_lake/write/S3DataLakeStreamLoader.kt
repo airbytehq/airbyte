@@ -82,6 +82,7 @@ class S3DataLakeStreamLoader(
             S3DataLakeStreamState(
                 table = table,
                 schema = targetSchema,
+                stagingBranchName = stagingBranchName,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }
@@ -114,7 +115,10 @@ class S3DataLakeStreamLoader(
                         "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                             "Pushing these updates to the '$mainBranchName' branch."
                     }
-                    table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+                    table
+                        .manageSnapshots()
+                        .replaceBranch(mainBranchName, stagingBranchName)
+                        .commit()
                 }
             }
         } finally {
