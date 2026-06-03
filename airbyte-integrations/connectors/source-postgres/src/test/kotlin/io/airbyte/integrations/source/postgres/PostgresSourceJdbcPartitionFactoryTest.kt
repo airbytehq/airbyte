@@ -5,17 +5,29 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.JdbcStreamState
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
 import io.mockk.mockk
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.postgresql.util.PSQLException
+import org.postgresql.util.PSQLState
 
 class PostgresSourceJdbcPartitionFactoryTest {
 
@@ -320,5 +332,120 @@ class PostgresSourceJdbcPartitionFactoryTest {
         // Last partition gets the remainder
         assertEquals(Ctid(18, 1), bounds[3].first)
         assertNull(bounds[3].second)
+    }
+
+    @Test
+    fun `getStreamFilenode returns null when database throws PSQLException for unsupported regclass`() {
+        // Simulates a non-standard PostgreSQL-compatible database (e.g. Cube Cloud)
+        // that does not support the REGCLASS type used in pg_relation_filenode query.
+        val desc = StreamDescriptor().withName("test_table").withNamespace("public")
+        val streamId = StreamIdentifier.from(desc)
+        val mockStream = Stream(
+            id = streamId,
+            schema = emptySet(),
+            configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+            configuredPrimaryKey = null,
+            configuredCursor = null,
+        )
+        val mockStreamState = mockk<JdbcStreamState<*>> {
+            every { stream } returns mockStream
+        }
+
+        val mockConnection = mockk<Connection> {
+            every { prepareStatement(any<String>()) } throws
+                PSQLException(
+                    "ERROR: Unsupported SQL type Regclass",
+                    PSQLState.NOT_IMPLEMENTED
+                )
+            every { close() } returns Unit
+        }
+        val mockConnectionFactory = mockk<JdbcConnectionFactory> {
+            every { get() } returns mockConnection
+        }
+
+        // When: getStreamFilenode is called on a database that doesn't support regclass
+        val result = PostgresSourceJdbcPartitionFactory.getStreamFilenode(
+            mockStreamState,
+            mockConnectionFactory
+        )
+
+        // Then: should return null instead of throwing, allowing graceful fallback
+        assertNull(result)
+    }
+
+    @Test
+    fun `getStreamFilenode returns null when database throws any RuntimeException`() {
+        // Verifies that any exception from the database query is caught gracefully
+        val desc = StreamDescriptor().withName("test_table").withNamespace("public")
+        val streamId = StreamIdentifier.from(desc)
+        val mockStream = Stream(
+            id = streamId,
+            schema = emptySet(),
+            configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+            configuredPrimaryKey = null,
+            configuredCursor = null,
+        )
+        val mockStreamState = mockk<JdbcStreamState<*>> {
+            every { stream } returns mockStream
+        }
+
+        val mockConnectionFactory = mockk<JdbcConnectionFactory> {
+            every { get() } throws RuntimeException("Connection failed")
+        }
+
+        // When: getStreamFilenode encounters any exception
+        val result = PostgresSourceJdbcPartitionFactory.getStreamFilenode(
+            mockStreamState,
+            mockConnectionFactory
+        )
+
+        // Then: should return null gracefully
+        assertNull(result)
+    }
+
+    @Test
+    fun `getStreamFilenode returns filenode value on successful query`() {
+        // Verifies that getStreamFilenode works correctly when the query succeeds
+        val desc = StreamDescriptor().withName("test_table").withNamespace("public")
+        val streamId = StreamIdentifier.from(desc)
+        val mockStream = Stream(
+            id = streamId,
+            schema = emptySet(),
+            configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+            configuredPrimaryKey = null,
+            configuredCursor = null,
+        )
+        val mockStreamState = mockk<JdbcStreamState<*>> {
+            every { stream } returns mockStream
+        }
+
+        val expectedFilenode = 12345L
+        val mockResultSet = mockk<ResultSet> {
+            every { next() } returnsMany listOf(true, false)
+            every { getLong(1) } returns expectedFilenode
+            every { wasNull() } returns false
+            every { close() } returns Unit
+        }
+        val mockStatement = mockk<PreparedStatement> {
+            every { setString(any(), any()) } returns Unit
+            every { executeQuery() } returns mockResultSet
+            every { close() } returns Unit
+        }
+        val mockConnection = mockk<Connection> {
+            every { prepareStatement(any<String>()) } returns mockStatement
+            every { close() } returns Unit
+        }
+        val mockConnectionFactory = mockk<JdbcConnectionFactory> {
+            every { get() } returns mockConnection
+        }
+
+        // When: getStreamFilenode is called and the query succeeds
+        val result = PostgresSourceJdbcPartitionFactory.getStreamFilenode(
+            mockStreamState,
+            mockConnectionFactory
+        )
+
+        // Then: should return the filenode value
+        assertEquals(expectedFilenode, result)
     }
 }
