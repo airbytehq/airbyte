@@ -353,10 +353,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val mockConnection =
             mockk<Connection> {
                 every { prepareStatement(any<String>()) } throws
-                    PSQLException(
-                        "ERROR: Unsupported SQL type Regclass",
-                        PSQLState.NOT_IMPLEMENTED
-                    )
+                    PSQLException("ERROR: Unsupported SQL type Regclass", PSQLState.NOT_IMPLEMENTED)
                 every { close() } returns Unit
             }
         val mockConnectionFactory =
