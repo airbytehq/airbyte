@@ -348,7 +348,7 @@ class PhoneTranscriptContentExtractor(RecordExtractor):
                         f"Transcript not available for recording {recording_id}: {json_response.get('message', 'Unknown error')}"
                     )
                     return None
-            except (ValueError, Exception):
+            except (ValueError, json.JSONDecodeError):
                 pass  # Not JSON, which is expected for transcript content
 
             return response.text
