@@ -37,8 +37,10 @@ from airbyte_cdk.sources.streams.core import StreamData
 
 class ThrottledFileBasedStream(DefaultFileBasedStream):
     """File-based stream that throttles STATE-message emissions to at most one
-    per ``state_emission_throttle_seconds`` seconds. The first emission and a
-    forced final emission are always sent.
+    per `state_emission_throttle_seconds` seconds.
+
+    The latest suppressed STATE is kept so the stream can emit a final
+    checkpoint when the parent iterator finishes inside the throttle window.
     """
 
     # Subclasses can override. Default = 600 s (10 min) — same cadence as the
@@ -58,16 +60,16 @@ class ThrottledFileBasedStream(DefaultFileBasedStream):
             if isinstance(message, AirbyteMessage) and message.type == MessageType.STATE:
                 now = time.time()
                 if now - last_emit_at < throttle:
-                    # Within throttle window — hold this one back. The most
-                    # recent suppressed STATE wins; older suppressed STATEs are
-                    # discarded since each is a complete snapshot.
+                    # Keep only the latest suppressed checkpoint. If the stream
+                    # finishes before another STATE crosses the throttle window,
+                    # this becomes the final checkpoint emitted below.
                     pending_state = message
                     continue
                 last_emit_at = now
                 pending_state = None
             yield message
 
-        # Force-emit the most recent suppressed STATE so the destination sees
-        # the final cursor.
+        # Emit the latest suppressed checkpoint when the sync ends inside the
+        # throttle window, so completed syncs do not finish with stale state.
         if pending_state is not None:
             yield pending_state
