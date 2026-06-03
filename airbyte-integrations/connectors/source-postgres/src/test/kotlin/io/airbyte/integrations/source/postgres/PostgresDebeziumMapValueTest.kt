@@ -16,11 +16,11 @@ import org.junit.jupiter.api.Test
  * Before the fix, ObjectNode.asText() returned "" which caused silent data loss for PostGIS
  * geometry Structs serialized as JSON objects (e.g., {"wkb":"...","srid":4326}).
  *
- * The fix uses Jsons.writeValueAsString() for container nodes (ObjectNode/ArrayNode) to
- * preserve their content as a JSON string.
+ * The fix uses Jsons.writeValueAsString() for container nodes (ObjectNode/ArrayNode) to preserve
+ * their content as a JSON string.
  *
- * Since mapValue() is a private method with a Kotlin-mangled name, we verify the behavior
- * through the JSON operations it relies on to confirm the fix approach is correct.
+ * Since mapValue() is a private method with a Kotlin-mangled name, we verify the behavior through
+ * the JSON operations it relies on to confirm the fix approach is correct.
  */
 class PostgresDebeziumMapValueTest {
 

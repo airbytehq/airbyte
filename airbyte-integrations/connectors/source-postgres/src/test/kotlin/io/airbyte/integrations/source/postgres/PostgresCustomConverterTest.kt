@@ -34,10 +34,9 @@ class PostgresCustomConverterTest {
     }
 
     /**
-     * Verify that PostGIS geometry/geography types are handled by the converter
-     * (i.e., a converter function IS registered). Before the fix, these types
-     * fell through converterFor() without registering, causing Debezium to emit
-     * null values on the CDC path.
+     * Verify that PostGIS geometry/geography types are handled by the converter (i.e., a converter
+     * function IS registered). Before the fix, these types fell through converterFor() without
+     * registering, causing Debezium to emit null values on the CDC path.
      */
     @ParameterizedTest
     @ValueSource(strings = ["GEOMETRY", "GEOGRAPHY", "geometry", "geography"])
@@ -47,9 +46,7 @@ class PostgresCustomConverterTest {
 
         val schemaSlot = slot<SchemaBuilder>()
         val converterSlot = slot<CustomConverter.Converter>()
-        every {
-            registration.register(capture(schemaSlot), capture(converterSlot))
-        } returns Unit
+        every { registration.register(capture(schemaSlot), capture(converterSlot)) } returns Unit
 
         converter.converterFor(field, registration)
 
@@ -60,8 +57,8 @@ class PostgresCustomConverterTest {
     }
 
     /**
-     * Verify that the registered converter for PostGIS types correctly converts
-     * non-null values to their string representation via toString().
+     * Verify that the registered converter for PostGIS types correctly converts non-null values to
+     * their string representation via toString().
      */
     @ParameterizedTest
     @ValueSource(strings = ["GEOMETRY", "GEOGRAPHY"])
@@ -70,19 +67,18 @@ class PostgresCustomConverterTest {
         val registration = mockk<CustomConverter.ConverterRegistration<SchemaBuilder?>>()
 
         val converterSlot = slot<CustomConverter.Converter>()
-        every {
-            registration.register(any(), capture(converterSlot))
-        } returns Unit
+        every { registration.register(any(), capture(converterSlot)) } returns Unit
 
         converter.converterFor(field, registration)
 
         val capturedConverter = converterSlot.captured
 
         // Simulate a PostGIS value object whose toString() returns a WKB hex string
-        val mockGeomValue = object {
-            override fun toString(): String =
-                "0101000020E6100000000000000000F03F0000000000000040"
-        }
+        val mockGeomValue =
+            object {
+                override fun toString(): String =
+                    "0101000020E6100000000000000000F03F0000000000000040"
+            }
         val result = capturedConverter.convert(mockGeomValue)
         assertEquals("0101000020E6100000000000000000F03F0000000000000040", result)
     }
@@ -95,9 +91,7 @@ class PostgresCustomConverterTest {
         val registration = mockk<CustomConverter.ConverterRegistration<SchemaBuilder?>>()
 
         val converterSlot = slot<CustomConverter.Converter>()
-        every {
-            registration.register(any(), capture(converterSlot))
-        } returns Unit
+        every { registration.register(any(), capture(converterSlot)) } returns Unit
 
         converter.converterFor(field, registration)
         val result = converterSlot.captured.convert(null)
@@ -130,9 +124,7 @@ class PostgresCustomConverterTest {
         val registration = mockk<CustomConverter.ConverterRegistration<SchemaBuilder?>>()
 
         val converterSlot = slot<CustomConverter.Converter>()
-        every {
-            registration.register(any(), capture(converterSlot))
-        } returns Unit
+        every { registration.register(any(), capture(converterSlot)) } returns Unit
 
         converter.converterFor(field, registration)
 
