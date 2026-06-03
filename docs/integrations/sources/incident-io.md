@@ -64,6 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.27 | 2026-06-02 | [78426](https://github.com/airbytehq/airbyte/pull/78426) | feat: source-incident-io: add `external_issue_reference` to `follow-ups` stream schema |
 | 0.1.26 | 2026-06-02 | [78742](https://github.com/airbytehq/airbyte/pull/78742) | Update dependencies |
 | 0.1.25 | 2026-04-28 | [77315](https://github.com/airbytehq/airbyte/pull/77315) | Update dependencies |
 | 0.1.24 | 2026-04-21 | [76661](https://github.com/airbytehq/airbyte/pull/76661) | Update dependencies |
