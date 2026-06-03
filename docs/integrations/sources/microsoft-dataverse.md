@@ -57,6 +57,10 @@ https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticat
 The procedure to generate the credentials and setup the necessary permissions is well described in this post from Magnetism blog:
 https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-application-user-in-dynamics-365
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -64,6 +68,7 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 1.0.1 | 2026-06-02 | [78805](https://github.com/airbytehq/airbyte/pull/78805) | Update dependencies |
 | 1.0.0 | 2026-05-06 | [77565](https://github.com/airbytehq/airbyte/pull/77565) | Map DateOnly fields to `date` format instead of `date-time`. Add `$select` projection to discovery to reduce metadata payload size. Streams with DateOnly fields require a schema refresh and data reset. |
 | 0.1.32 | 2025-05-10 | [60052](https://github.com/airbytehq/airbyte/pull/60052) | Update dependencies |
 | 0.1.31 | 2025-05-03 | [59292](https://github.com/airbytehq/airbyte/pull/59292) | Update dependencies |

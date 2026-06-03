@@ -17,7 +17,7 @@ This tutorial is for AI engineers and other technical users who work with data a
 The tutorial assumes you have basic knowledge of the following tools, but most software engineers shouldn't struggle with anything that follows.
 
 - Python and package management with uv
-- LangChain and LangGraph
+- LangChain
 - GitHub, or a different third-party service you want to connect to
 
 ## Before you start
@@ -57,18 +57,17 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
 ## Part 2: Install dependencies and create your agent file
 
-1. Install the Agent SDK, LangChain with OpenAI support, and LangGraph for the agent runtime:
+1. Install the Agent SDK, LangChain with OpenAI support, and `python-dotenv`:
 
    ```bash
-   uv add airbyte-agent-sdk langchain langchain-openai langgraph python-dotenv
+   uv add airbyte-agent-sdk langchain langchain-openai python-dotenv
    ```
 
    This command installs:
 
    - `airbyte-agent-sdk`: The Agent SDK, which ships every connector as a typed submodule.
-   - `langchain`: The LangChain framework core.
+   - `langchain`: The LangChain framework core, including the `create_agent` function for building tool-calling agents.
    - `langchain-openai`: LangChain's OpenAI integration for chat models.
-   - `langgraph`: The LangGraph agent runtime, which provides a `create_react_agent` function for building tool-calling agents.
    - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
 2. Create an `agent.py` file with the following imports:
@@ -77,9 +76,9 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
    import json
 
    from dotenv import load_dotenv
-   from langchain_core.tools import tool
+   from langchain.agents import create_agent
+   from langchain.tools import tool
    from langchain_openai import ChatOpenAI
-   from langgraph.prebuilt import create_react_agent
    from airbyte_agent_sdk import connect
    from airbyte_agent_sdk.connectors.github import GithubConnector
    ```
@@ -88,9 +87,9 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
    - `json`: Serialize connector results for the LangChain tool return value.
    - `load_dotenv`: Load environment variables from your `.env` file.
+   - `create_agent`: LangChain's function for creating an agent that can call tools.
    - `tool`: LangChain's decorator for converting a function into a tool.
    - `ChatOpenAI`: LangChain's OpenAI chat model integration.
-   - `create_react_agent`: LangGraph's function for creating a ReAct agent that can call tools.
    - `connect`: The Agent SDK entry point. One call returns a typed connector bound to your workspace.
    - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
 
@@ -170,15 +169,15 @@ Each `execute` call returns a structured result with `data` (the records) and `m
 
 ### Define the agent
 
-Create a LangChain chat model and a LangGraph ReAct agent with a system prompt that describes its purpose:
+Create a LangChain chat model and an agent with a system prompt that describes its purpose:
 
 ```python title="agent.py"
 llm = ChatOpenAI(model="gpt-4o")
 
-agent = create_react_agent(
-    llm,
-    [github_execute],
-    prompt=(
+agent = create_agent(
+    model=llm,
+    tools=[github_execute],
+    system_prompt=(
         "You are a helpful assistant that can access GitHub data through the "
         "github_execute tool. Be concise and accurate."
     ),
@@ -186,8 +185,8 @@ agent = create_react_agent(
 ```
 
 - `ChatOpenAI(model="gpt-4o")` creates an OpenAI chat model. You can use a different model by changing the model string. For example, use `"gpt-4o-mini"` to lower costs. LangChain also supports [other providers](https://python.langchain.com/docs/integrations/chat/) like Anthropic and Google.
-- `create_react_agent` creates a ReAct agent that reasons about which tools to call based on the user's input.
-- The `prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Agent SDK already exposes entity names, actions, and enum values through the tool description, so the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
+- `create_agent` creates an agent that reasons about which tools to call based on your input. LangChain's agent runtime is built on LangGraph, but you don't need to import LangGraph directly for this quickstart.
+- The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Agent SDK already exposes entity names, actions, and enum values through the tool description, so the system prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
 
 ## Part 6: Run your project
 
@@ -256,15 +255,15 @@ See the [Github agent connector page](https://docs.airbyte.com/ai-agents/connect
 In this tutorial, you learned how to:
 
 - Set up a new Python project with uv
-- Add LangChain, LangGraph, and Airbyte's GitHub agent connector to your project
+- Add LangChain and Airbyte's GitHub agent connector to your project
 - Configure environment variables for your Airbyte Agents credentials
 - Wire up a single tool that covers the entire GitHub API
-- Build a ReAct agent with LangGraph and use natural language to interact with GitHub data through Airbyte
+- Build a LangChain agent and use natural language to interact with GitHub data through Airbyte
 
 ## Next steps
 
 - **Learn more about the SDK**: See the [full SDK interface tutorial](../../interfaces/sdk) and [reference documentation](../../reference/sdk).
 
-- **Let your AI assistant scaffold the next agent.** The Agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new agent quickly. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
+- **Let your AI assistant scaffold the next agent.** The Agent SDK ships skills for Claude Code and Codex that carry the patterns in this guide, so you can ask your assistant to build a new agent quickly. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
 
 - **Reach the same connectors from any other interface.** Airbyte Agents exposes the same connectors through all of its [interfaces](../../interfaces). Since you already added a connector, you can use that connector anywhere you use Airbyte Agents.

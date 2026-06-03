@@ -12,7 +12,7 @@ To use the Asana source connector, you need:
 
 - An Asana account with access to the workspaces, projects, tasks, portfolios, and other resources you want to sync.
 - One of the following authentication methods:
-  - **OAuth**. Recommended for Airbyte Cloud. Airbyte Cloud manages the Asana OAuth app and token exchange for you. If you configure OAuth yourself, register an Asana OAuth app and make sure it can request these read scopes: `attachments:read`, `custom_fields:read`, `portfolios:read`, `projects:read`, `stories:read`, `tags:read`, `tasks:read`, `team_memberships:read`, `teams:read`, `users:read`, and `workspaces:read`.
+  - **OAuth**. Recommended for Airbyte Cloud. Airbyte Cloud manages the Asana OAuth app and token exchange for you. If you configure OAuth yourself, register an Asana OAuth app, make the app available in the workspace that will authorize it, and enable **Full permissions** so the app accepts Asana's `default` OAuth scope.
   - **Personal Access Token**. To create a token, follow Asana's [personal access token instructions](https://developers.asana.com/docs/personal-access-token). Use an Asana service account token if you need to sync organization exports.
 
 The connector can only sync data the authenticated Asana user can access. If the authenticated user has a view-only license or limited project access in Asana, the connector has the same limitations.
@@ -126,16 +126,21 @@ Asana's organization export endpoints are only available to Enterprise organizat
 
 ### Troubleshooting
 
-- If you encounter access errors while using OAuth, make sure your Asana OAuth app is configured correctly. For more information, see Asana's [OAuth documentation](https://developers.asana.com/docs/oauth).
-- If Asana returns a `forbidden_scopes` error during OAuth authorization, update the app's approved scopes in Asana and then authorize the source again.
+- If you encounter access errors while using OAuth, make sure your Asana OAuth app is available in the authorizing workspace and is configured with **Full permissions**. The connector requests Asana's `default` OAuth scope during authorization. For more information, see Asana's [OAuth documentation](https://developers.asana.com/docs/oauth).
 - If the connector returns permissions errors for some streams, confirm that the authenticated Asana user can view those resources in Asana.
 - For other troubleshooting topics, see the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Asana REST API](https://developers.asana.com/reference/rest-api-reference). All API requests use the `https://app.asana.com/api/1.0` endpoint.
+
+For OAuth, the connector sends Asana's `default` OAuth scope in the authorization request. If you use a custom Asana OAuth app, configure the app with **Full permissions** so it accepts the `default` scope.
 
 For programmatic configuration, use these parameter names:
 
@@ -156,16 +161,18 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.7.2 | 2026-05-22 | [78331](https://github.com/airbytehq/airbyte/pull/78331) | Add default OAuth scope to consent URL |
+| 1.7.1 | 2026-05-18 | [78159](https://github.com/airbytehq/airbyte/pull/78159) | Remove explicit OAuth scopes from connector input specification |
 | 1.7.0 | 2026-05-15 | [77577](https://github.com/airbytehq/airbyte/pull/77577) | Add OAuth 2.0 support |
 | 1.6.0 | 2026-05-14 | [78096](https://github.com/airbytehq/airbyte/pull/78096) | Promoted release candidate to GA |
-| 1.6.0-rc.2 | 2026-05-14 | [78082](https://github.com/airbytehq/airbyte/pull/78082) | Fix projects stream HTTP 400 after CDK v7 upgrade |
-| 1.6.0-rc.1 | 2026-04-27 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | chore(source-asana): bump airbyte-cdk from ^6 to ^7.13.0 |
+| 1.6.0-rc.2 | 2026-05-13 | [78082](https://github.com/airbytehq/airbyte/pull/78082) | Fix projects stream HTTP 400 after CDK v7 upgrade |
+| 1.6.0-rc.1 | 2026-04-23 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | Bump Airbyte CDK from ^6 to ^7.13.0 |
 | 1.5.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.5.2 | 2026-04-07 | [76100](https://github.com/airbytehq/airbyte/pull/76100) | Improve error messages for HTTP 400, 401, and 429 responses with granular failure type classification |
-| 1.5.1 | 2025-12-08 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to properly define array items type |
+| 1.5.1 | 2025-12-09 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to define array item types |
 | 1.5.0 | 2025-05-05 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
 | 1.4.0 | 2025-04-24 | [58594](https://github.com/airbytehq/airbyte/pull/58594) | Adds `actual_time_minute` field to the `task` stream |
-| 1.3.10 | 2025-02-15 | [53891](https://github.com/airbytehq/airbyte/pull/53891) | Update dependencies |
+| 1.3.10 | 2025-02-18 | [53891](https://github.com/airbytehq/airbyte/pull/53891) | Update dependencies |
 | 1.3.9 | 2025-02-08 | [53394](https://github.com/airbytehq/airbyte/pull/53394) | Update dependencies |
 | 1.3.8 | 2025-02-01 | [52882](https://github.com/airbytehq/airbyte/pull/52882) | Update dependencies |
 | 1.3.7 | 2025-01-25 | [52216](https://github.com/airbytehq/airbyte/pull/52216) | Update dependencies |

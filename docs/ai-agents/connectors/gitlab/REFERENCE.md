@@ -29,6 +29,17 @@ The Gitlab connector supports the following entities and actions.
 
 Get a list of all visible projects across GitLab for the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "projects",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -203,6 +214,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a specific project by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -370,6 +395,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Context Store Search
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -587,6 +632,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of a project's issues.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "issues",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -693,6 +752,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single project issue.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "issue_iid": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -785,6 +859,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Context Store Search
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -918,6 +1012,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get all merge requests for a project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "merge_requests",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1042,6 +1150,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a single merge request.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "merge_requests",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "merge_request_iid": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1152,6 +1275,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Merge Requests Context Store Search
 
 Search and filter merge requests records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "merge_requests",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1311,6 +1454,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of users.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1369,6 +1523,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1422,6 +1590,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1494,6 +1682,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Commits List
 
 Get a list of repository commits in a project.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "commits",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1569,6 +1771,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a specific commit identified by the commit hash or name of a branch or tag.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "commits",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "sha": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1634,6 +1851,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Commits Context Store Search
 
 Search and filter commits records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "commits",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "project_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1724,6 +1961,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Groups List
 
 Get a list of visible groups for the authenticated user.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "groups",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1827,6 +2075,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get all details of a group.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "groups",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1922,6 +2184,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Groups Context Store Search
 
 Search and filter groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2031,6 +2313,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of repository branches from a project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "branches",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2095,6 +2391,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single project repository branch.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "branches",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "branch": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2152,6 +2463,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Branches Context Store Search
 
 Search and filter branches records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "branches",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "project_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2233,6 +2564,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List pipelines in a project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "pipelines",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2302,6 +2647,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get one pipeline of a project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "pipelines",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "pipeline_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2361,6 +2721,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pipelines Context Store Search
 
 Search and filter pipelines records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "pipelines",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2442,6 +2822,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a list of group members viewable by the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "group_members",
+  "action": "list",
+  "params": {
+    "group_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2510,6 +2904,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a member of a group.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "group_members",
+  "action": "get",
+  "params": {
+    "group_id": "<str>",
+    "user_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2571,6 +2980,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Group Members Context Store Search
 
 Search and filter group members records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "group_members",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "group_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2656,6 +3085,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a list of project members viewable by the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "project_members",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2724,6 +3167,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a member of a project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "project_members",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "user_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2785,6 +3243,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Project Members Context Store Search
 
 Search and filter project members records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "project_members",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "project_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2870,6 +3348,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Paginated list of releases for a given project, sorted by released_at.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "releases",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2940,6 +3432,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a release for the given tag.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "releases",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "tag_name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3002,6 +3509,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Releases Context Store Search
 
 Search and filter releases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "releases",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "name": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3095,6 +3622,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of repository tags from a project, sorted by update date and time in descending order.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "tags",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3159,6 +3700,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a specific repository tag determined by its name.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "tags",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "tag_name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3214,6 +3770,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Context Store Search
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "name": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3289,6 +3865,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of group milestones.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "group_milestones",
+  "action": "list",
+  "params": {
+    "group_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3358,6 +3948,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single group milestone.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "group_milestones",
+  "action": "get",
+  "params": {
+    "group_id": "<str>",
+    "milestone_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3419,6 +4024,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Group Milestones Context Store Search
 
 Search and filter group milestones records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "group_milestones",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3502,6 +4127,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of project milestones.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "project_milestones",
+  "action": "list",
+  "params": {
+    "project_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3571,6 +4210,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single project milestone.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "project_milestones",
+  "action": "get",
+  "params": {
+    "project_id": "<str>",
+    "milestone_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3632,6 +4286,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Project Milestones Context Store Search
 
 Search and filter project milestones records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gitlab",
+  "entity": "project_milestones",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
