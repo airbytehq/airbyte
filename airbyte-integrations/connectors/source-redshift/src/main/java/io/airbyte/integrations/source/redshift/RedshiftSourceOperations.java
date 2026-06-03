@@ -14,10 +14,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,12 +69,16 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
   @Override
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
-    try {
-      super.putTimestampWithTimezone(node, columnName, resultSet, index);
-    } catch (final Exception e) {
-      final Instant instant = resultSet.getTimestamp(index).toInstant();
-      node.put(columnName, instant.toString());
+    // The base implementation reads timestamptz values via getObject(OffsetDateTime), which the
+    // Amazon Redshift JDBC driver can return shifted by a daylight-saving-time offset (off by one
+    // hour). Derive the value from the absolute instant via getTimestamp instead, which the driver
+    // reports reliably, and normalize to UTC for a stable, timezone-correct serialization.
+    final Timestamp timestamp = resultSet.getTimestamp(index);
+    if (timestamp == null) {
+      return;
     }
+    final OffsetDateTime timestamptz = timestamp.toInstant().atOffset(ZoneOffset.UTC);
+    node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamptz));
   }
 
   @Override
