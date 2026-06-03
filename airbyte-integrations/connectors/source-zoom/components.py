@@ -26,19 +26,10 @@ from airbyte_cdk.sources.types import StreamSlice
 BEARER_TOKEN_EXPIRES_IN = 3590
 ZOOM_API_BASE = "https://api.zoom.us/v2"
 
-
-class SingletonMeta(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        """
-        Possible changes to the value of the `__init__` argument do not affect
-        the returned instance.
-        """
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
+# Shared access-token cache so the manifest authenticator and the custom
+# extractors do not each mint a separate token. Keyed by (client_id, account_id).
+# value = {"access_token": str, "generated_at": float}
+_TOKEN_CACHE: MutableMapping[tuple, MutableMapping[str, Any]] = {}
 
 
 @dataclass
@@ -49,9 +40,6 @@ class ServerToServerOauthAuthenticator(NoAuth):
     client_secret: Union[InterpolatedString, str]
     authorization_endpoint: Union[InterpolatedString, str]
 
-    _instance = None
-    _generate_token_time = 0
-    _access_token = None
     _grant_type = "account_credentials"
 
     def __post_init__(self, parameters: Mapping[str, Any]):
@@ -61,13 +49,13 @@ class ServerToServerOauthAuthenticator(NoAuth):
         self._authorization_endpoint = InterpolatedString.create(self.authorization_endpoint, parameters=parameters).eval(self.config)
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
-        """Attach the page access token to params to authenticate on the HTTP request"""
-        if self._access_token is None or ((time.time() - self._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
-            self._generate_token_time = time.time()
-            self._access_token = self.generate_access_token()
-        headers = {"Authorization": f"Bearer {self._access_token}", "Content-type": "application/json"}
-        request.headers.update(headers)
-
+        """Attach a (cached, auto-refreshing) bearer token to the request."""
+        request.headers.update(
+            {
+                "Authorization": f"Bearer {self._get_valid_token()}",
+                "Content-type": "application/json",
+            }
+        )
         return request
 
     @property
@@ -76,10 +64,21 @@ class ServerToServerOauthAuthenticator(NoAuth):
 
     @property
     def token(self) -> Optional[str]:
-        return self._access_token if self._access_token else None
+        entry = _TOKEN_CACHE.get(self._cache_key())
+        return entry["access_token"] if entry else None
+
+    def _cache_key(self) -> tuple:
+        return (self._client_id, self._account_id)
+
+    def _get_valid_token(self) -> str:
+        key = self._cache_key()
+        entry = _TOKEN_CACHE.get(key)
+        if entry is None or (time.time() - entry["generated_at"]) > BEARER_TOKEN_EXPIRES_IN:
+            entry = {"access_token": self.generate_access_token(), "generated_at": time.time()}
+            _TOKEN_CACHE[key] = entry
+        return entry["access_token"]
 
     def generate_access_token(self) -> str:
-        self._generate_token_time = time.time()
         try:
             token = base64.b64encode(f"{self._client_id}:{self._client_secret}".encode("ascii")).decode("utf-8")
             headers = {"Authorization": f"Basic {token}", "Content-type": "application/json"}
@@ -221,14 +220,7 @@ class TranscriptContentExtractor(RecordExtractor):
     def _fetch_transcript_content(self, download_url: str) -> Optional[str]:
         """Fetch VTT content from the download URL with authentication."""
         try:
-            auth = self._get_authenticator()
-            # Ensure we have a valid token
-            if auth.token is None or ((time.time() - auth._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
-                auth._access_token = auth.generate_access_token()
-                auth._generate_token_time = time.time()
-
-            headers = {"Authorization": f"Bearer {auth.token}"}
-            response = requests.get(download_url, headers=headers, timeout=60)
+            response = requests.get(download_url, auth=self._get_authenticator(), timeout=60)
             response.raise_for_status()
             return response.text
         except Exception as e:
@@ -340,14 +332,8 @@ class PhoneTranscriptContentExtractor(RecordExtractor):
     def _fetch_transcript(self, recording_id: str) -> Optional[str]:
         """Fetch transcript content from the phone recording transcript download endpoint."""
         try:
-            auth = self._get_authenticator()
-            if auth.token is None or ((time.time() - auth._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
-                auth._access_token = auth.generate_access_token()
-                auth._generate_token_time = time.time()
-
-            headers = {"Authorization": f"Bearer {auth.token}"}
             url = f"{ZOOM_API_BASE}/phone/recording_transcript/download/{recording_id}"
-            response = requests.get(url, headers=headers, timeout=60)
+            response = requests.get(url, auth=self._get_authenticator(), timeout=60)
 
             if response.status_code == 404:
                 return None
