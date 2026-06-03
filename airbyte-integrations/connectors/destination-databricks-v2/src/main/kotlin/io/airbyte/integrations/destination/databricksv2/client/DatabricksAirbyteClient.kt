@@ -84,7 +84,7 @@ class DatabricksAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName,
     ) {
-        execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
+        executeAll(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
     }
 
     override suspend fun copyTable(
@@ -171,7 +171,7 @@ class DatabricksAirbyteClient(
             log.info { "  Added: ${columnChangeset.columnsToAdd.keys}" }
             log.info { "  Dropped: ${columnChangeset.columnsToDrop.keys}" }
             log.info { "  Modified: ${columnChangeset.columnsToChange.keys}" }
-            execute(sqlGenerator.alterTable(tableName, columnChangeset))
+            executeAll(sqlGenerator.alterTable(tableName, columnChangeset))
         }
     }
 
@@ -214,6 +214,16 @@ class DatabricksAirbyteClient(
 
     private fun execute(sql: String) {
         dataSource.connection.use { conn -> conn.createStatement().use { it.execute(sql) } }
+    }
+
+    /**
+     * Executes a list of SQL statements individually. Databricks does not support multi-statement
+     * execution.
+     */
+    private fun executeAll(statements: List<String>) {
+        for (sql in statements) {
+            execute(sql)
+        }
     }
 
     private fun <T> executeQuery(sql: String, handler: (ResultSet) -> T): T =

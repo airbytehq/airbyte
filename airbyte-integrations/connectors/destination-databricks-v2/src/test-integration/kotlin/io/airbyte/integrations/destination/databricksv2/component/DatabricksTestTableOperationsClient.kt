@@ -24,7 +24,6 @@ import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configu
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.math.BigDecimal
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
@@ -134,7 +133,7 @@ class DatabricksTestTableOperationsClient(
         columnType: String?,
     ) {
         if (value == null || value is NullValue) {
-            ps.setNull(index, java.sql.Types.NULL)
+            ps.setNull(index, java.sql.Types.VARCHAR)
             return
         }
 
@@ -150,11 +149,12 @@ class DatabricksTestTableOperationsClient(
             is NumberValue -> ps.setBigDecimal(index, value.value)
             is BooleanValue -> ps.setBoolean(index, value.value)
             is TimestampWithTimezoneValue ->
-                ps.setObject(index, value.value.toInstant().atOffset(ZoneOffset.UTC))
-            is TimestampWithoutTimezoneValue -> ps.setObject(index, value.value)
-            is DateValue -> ps.setObject(index, value.value)
+                ps.setTimestamp(index, java.sql.Timestamp.from(value.value.toInstant()))
+            is TimestampWithoutTimezoneValue ->
+                ps.setTimestamp(index, java.sql.Timestamp.valueOf(value.value))
+            is DateValue -> ps.setDate(index, java.sql.Date.valueOf(value.value))
             is TimeWithTimezoneValue -> ps.setString(index, value.value.toString())
-            is TimeWithoutTimezoneValue -> ps.setObject(index, value.value)
+            is TimeWithoutTimezoneValue -> ps.setString(index, value.value.toString())
             is ObjectValue -> ps.setString(index, Jsons.writeValueAsString(value.values))
             is ArrayValue -> ps.setString(index, Jsons.writeValueAsString(value.values))
             is NullValue -> {} // handled above
@@ -184,7 +184,12 @@ class DatabricksTestTableOperationsClient(
         rs.getObject(index) ?: return null
         return when (typeName) {
             "TIMESTAMP",
-            "TIMESTAMP_NTZ" -> rs.getTimestamp(index)?.toLocalDateTime()?.toString()
+            "TIMESTAMP_NTZ" -> {
+                val ts = rs.getTimestamp(index) ?: return null
+                ts.toInstant()
+                    .atOffset(java.time.ZoneOffset.UTC)
+                    .format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            }
             "DATE" -> rs.getDate(index)?.toString()
             "LONG",
             "BIGINT",

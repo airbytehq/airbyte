@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.OutputRecord
 
-const val CONFIG_PATH = "secrets/config.json"
+const val CONFIG_PATH = "secrets/oauth_config.json"
 
 /**
  * Identity mapper -- Databricks stores temporal types natively and preserves values as-is, so no

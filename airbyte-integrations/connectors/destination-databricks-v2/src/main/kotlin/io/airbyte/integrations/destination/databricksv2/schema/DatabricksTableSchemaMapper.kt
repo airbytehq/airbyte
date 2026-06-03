@@ -92,6 +92,7 @@ class DatabricksTableSchemaMapper(
 
     companion object {
         const val BOOLEAN = "BOOLEAN"
+        const val INTEGER = "INTEGER"
         const val LONG = "LONG"
         const val DECIMAL = "DECIMAL(38, 10)"
         const val STRING = "STRING"

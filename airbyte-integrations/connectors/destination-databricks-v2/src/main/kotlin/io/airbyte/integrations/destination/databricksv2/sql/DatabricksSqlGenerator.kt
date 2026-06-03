@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
-import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.LONG
+import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.INTEGER
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.STRING
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.TIMESTAMP
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
@@ -70,14 +70,15 @@ class DatabricksSqlGenerator(
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)}"
 
-    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String =
-        """
-        |BEGIN TRANSACTION
-        |CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)}
-        |AS SELECT * FROM ${fullyQualifiedName(sourceTableName)};
-        |${dropTable(sourceTableName)};
-        |COMMIT
-        """.trimMargin()
+    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): List<String> =
+        listOf(
+            "CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} AS SELECT * FROM ${
+                fullyQualifiedName(
+                    sourceTableName,
+                )
+            }",
+            dropTable(sourceTableName),
+        )
 
     fun copyTable(
         columnNames: Set<String>,
@@ -174,7 +175,7 @@ class DatabricksSqlGenerator(
     fun alterTable(
         tableName: TableName,
         changeset: ColumnChangeset,
-    ): String {
+    ): List<String> {
         val fqn = fullyQualifiedName(tableName)
         val statements = mutableListOf<String>()
 
@@ -194,7 +195,7 @@ class DatabricksSqlGenerator(
             }
         }
 
-        return "BEGIN TRANSACTION\n${statements.joinToString(";\n")};\nCOMMIT;"
+        return statements
     }
 
     // -- Staging Operations --
@@ -205,9 +206,12 @@ class DatabricksSqlGenerator(
 
     /**
      * Generates a COPY INTO statement to load a staged CSV file from a Unity Catalog Volume into
-     * the target table. Uses `inferSchema=false` so all CSV fields are read as STRING and
-     * Databricks implicitly casts them to the target column types. Empty fields are treated as NULL
-     * via the `nullValue` option.
+     * the target table.
+     *
+     * - `inferSchema=true`: Databricks infers column types from CSV content. Without this, all
+     * columns default to STRING, causing schema merge failures against typed target columns.
+     * - `mergeSchema=true`: Allows Databricks to reconcile type differences between the inferred
+     * source schema and the target table schema (e.g., inferred INT merging into LONG).
      */
     fun copyIntoFromVolume(tableName: TableName, stagedFilePath: String): String =
         """
@@ -216,10 +220,10 @@ class DatabricksSqlGenerator(
         |FILEFORMAT = CSV
         |FORMAT_OPTIONS (
         |    'header' = 'true',
-        |    'inferSchema' = 'false',
+        |    'inferSchema' = 'true',
         |    'escape' = '"',
         |    'nullValue' = ''
-        |)
+        |)COPY_OPTIONS ( 'mergeSchema' = 'true' )
         """.trimMargin()
 
     /** Drops the Unity Catalog Volume used for staging CSV files. */
@@ -303,7 +307,7 @@ class DatabricksSqlGenerator(
             Meta.COLUMN_NAME_AB_RAW_ID to ColumnType(STRING, false),
             Meta.COLUMN_NAME_AB_EXTRACTED_AT to ColumnType(TIMESTAMP, false),
             Meta.COLUMN_NAME_AB_META to ColumnType(STRING, false),
-            Meta.COLUMN_NAME_AB_GENERATION_ID to ColumnType(LONG, true),
+            Meta.COLUMN_NAME_AB_GENERATION_ID to ColumnType(INTEGER, true),
         )
 
     fun getMetaColumnNames(): Set<String> = metaColumns.keys

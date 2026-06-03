@@ -27,7 +27,7 @@ class DatabricksTestConfigFactory {
         return loadTestConfig(
             DatabricksV2Specification::class.java,
             DatabricksV2ConfigurationFactory::class.java,
-            "config.json",
+            "oauth_config.json",
         )
     }
 
