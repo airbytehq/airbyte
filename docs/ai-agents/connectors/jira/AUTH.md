@@ -7,7 +7,48 @@ This page documents the authentication and configuration options for the Jira ag
 In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
 ### OAuth
-This authentication method isn't available for this connector.
+Use the CLI for hosted OAuth connector creation when possible. It opens the hosted setup flow and avoids passing connector secrets through the command line:
+
+```bash
+airbyte-agent login
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira"
+}'
+```
+
+For API-first use cases, create a connector with OAuth credentials directly.
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `access_token` | `str` | No | Your Jira Cloud OAuth 2.0 access token |
+| `refresh_token` | `str` | Yes | Your Jira Cloud OAuth 2.0 refresh token (requires offline_access scope) |
+| `client_id` | `str` | No | Your Jira OAuth App Client ID from the Atlassian Developer Console |
+| `client_secret` | `str` | No | Your Jira OAuth App Client Secret from the Atlassian Developer Console |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_name": "<WORKSPACE_NAME>",
+    "connector_type": "Jira",
+    "name": "My Jira Connector",
+    "credentials": {
+      "access_token": "<Your Jira Cloud OAuth 2.0 access token>",
+      "refresh_token": "<Your Jira Cloud OAuth 2.0 refresh token (requires offline_access scope)>",
+      "client_id": "<Your Jira OAuth App Client ID from the Atlassian Developer Console>",
+      "client_secret": "<Your Jira OAuth App Client Secret from the Atlassian Developer Console>"
+    }
+  }'
+```
+
+
 
 
 ### Token
@@ -282,7 +323,32 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 In open source mode, provide API credentials directly to the connector.
 
 ### OAuth
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `access_token` | `str` | No | Your Jira Cloud OAuth 2.0 access token |
+| `refresh_token` | `str` | Yes | Your Jira Cloud OAuth 2.0 refresh token (requires offline_access scope) |
+| `client_id` | `str` | No | Your Jira OAuth App Client ID from the Atlassian Developer Console |
+| `client_secret` | `str` | No | Your Jira OAuth App Client Secret from the Atlassian Developer Console |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraOauth20AuthenticationAuthConfig
+
+connector = JiraConnector(
+    auth_config=JiraOauth20AuthenticationAuthConfig(
+        access_token="<Your Jira Cloud OAuth 2.0 access token>",
+        refresh_token="<Your Jira Cloud OAuth 2.0 refresh token (requires offline_access scope)>",
+        client_id="<Your Jira OAuth App Client ID from the Atlassian Developer Console>",
+        client_secret="<Your Jira OAuth App Client Secret from the Atlassian Developer Console>"
+    )
+)
+```
 
 ### Token
 
@@ -297,10 +363,10 @@ Example request:
 
 ```python
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
     )
