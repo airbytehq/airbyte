@@ -6,13 +6,17 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 import pytz
-from google.resumable_media.requests.download import _GzipDecoder
 from source_gcs import Config, SourceGCSStreamReader
 from source_gcs.config import ServiceAccountCredentials
 
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+
+try:
+    from google.resumable_media.requests.download import _GzipDecoder
+except ImportError:
+    _GzipDecoder = None
 
 
 def test_get_matching_files_with_no_prefix(logger, mocked_reader):
@@ -137,6 +141,7 @@ def test_get_matching_files_sanitize_signed_urls(logger, sanitize_value, expecte
         assert "X-Goog-Signature" not in (files[0].displayed_uri or "")
 
 
+@pytest.mark.skipif(_GzipDecoder is None, reason="google-resumable-media _GzipDecoder not available")
 def test_gzip_decoder_accepts_max_length_kwarg():
     """Regression test for urllib3 2.6.x / google-resumable-media compatibility.
 
