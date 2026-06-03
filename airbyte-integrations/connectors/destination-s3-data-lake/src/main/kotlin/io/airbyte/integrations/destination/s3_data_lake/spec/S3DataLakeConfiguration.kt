@@ -12,10 +12,14 @@ import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfigurationProvider
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
+import java.util.UUID
 
 const val DEFAULT_CATALOG_NAME = "airbyte"
 const val DEFAULT_STAGING_BRANCH = "airbyte_staging"
 const val TEST_TABLE = "airbyte_test_table"
+
+fun generateStagingBranchName(): String =
+    "${DEFAULT_STAGING_BRANCH}_${UUID.randomUUID().toString().replace("-", "_")}"
 
 data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
