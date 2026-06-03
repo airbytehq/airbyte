@@ -23,6 +23,7 @@ import io.airbyte.integrations.source.postgres.operations.types.PostgresByteaFie
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDateFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDoubleFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresFloatFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresGeometryFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyArrayElementFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFieldType
@@ -118,6 +119,10 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                     "lseg",
                     "path",
                     "polygon" -> AnyFieldType
+                    // PostGIS extension types: normalize to canonical EWKT so the snapshot path
+                    // matches the CDC custom converter (DATA-442 / airbytehq/airbyte#79109).
+                    "geometry",
+                    "geography" -> PostgresGeometryFieldType
                     else -> StringFieldType
                 }
             else -> StringFieldType

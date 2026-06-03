@@ -19,6 +19,12 @@ dependencies {
     implementation 'io.debezium:debezium-connector-postgres'
     // Use Postgres JDBC driver version specified by Debezium
     implementation 'org.postgresql:postgresql'
+    // PostGIS JDBC parser: turns the hex-EWKB / WKB the driver and Debezium emit for
+    // geometry/geography columns into canonical EWKT (e.g. "SRID=4326;POINT(11.5 48.1)").
+    // Debezium declares postgis-jdbc as optional, so it is NOT on the runtime classpath
+    // unless we add it explicitly; without it Debezium treats PostGIS columns as unknown
+    // UDTs and emits NULL on the CDC path (DATA-442 / airbytehq/airbyte#79109).
+    implementation 'net.postgis:postgis-jdbc:2.5.1'
 
     testImplementation("io.mockk:mockk:1.14.7")
 

@@ -4,6 +4,7 @@
 package io.airbyte.integrations.source.postgres.cdc
 
 import io.airbyte.integrations.source.postgres.operations.types.DateTimeConverter
+import io.airbyte.integrations.source.postgres.operations.types.PostgisGeometry
 import io.debezium.connector.postgresql.PostgresValueConverter
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
@@ -36,6 +37,11 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     private val MONEY_ITEM_TYPE = "MONEY"
     private val GEOMETRICS_TYPES =
         setOf("BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH")
+    // PostGIS extension types. Unlike the Postgres-builtin geometric types above (which serialize
+    // fine via registerText), these need a dedicated handler: Debezium hands us the raw WKB/EWKB,
+    // which we normalize to canonical EWKT. Without this branch they get no converter and the CDC
+    // path emits NULL (DATA-442 / airbytehq/airbyte#79109).
+    private val POSTGIS_TYPES = setOf("GEOMETRY", "GEOGRAPHY")
     private val TEXT_TYPES =
         setOf(
             "VARCHAR",
@@ -87,6 +93,8 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 BIT_TYPES.contains(upperType)
         ) {
             registerText(field, registration)
+        } else if (POSTGIS_TYPES.contains(upperType)) {
+            registerGeometry(field, registration)
         } else if (MONEY_ITEM_TYPE == upperType) {
             registerMoney(field, registration)
         } else if (BYTEA_TYPE == upperType) {
@@ -229,6 +237,27 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
         } else {
             return x.toString()
         }
+    }
+
+    // PostGIS geometry/geography. Debezium hands us the column value as raw WKB bytes / hex-EWKB
+    // (the exact form depends on the driver + Debezium version); PostgisGeometry normalizes any of
+    // them to canonical EWKT (e.g. "SRID=4326;POINT(11.5 48.1)"), matching the snapshot path
+    // (PostgresGeometryFieldType).
+    private fun registerGeometry(
+        field: RelationalColumn,
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+    ) {
+        registration.register(
+            SchemaBuilder.string().optional(),
+            CustomConverter.Converter { x: Any? ->
+                if (x == null) {
+                    val defaultValue: Any? = convertDefaultValue(field)
+                    return@Converter if (defaultValue == null) null
+                    else PostgisGeometry.toEwkt(defaultValue)
+                }
+                PostgisGeometry.toEwkt(x)
+            },
+        )
     }
 
     private fun convertArray(x: Any?, field: RelationalColumn): Any? {
