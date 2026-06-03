@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for [PostgisGeometry.toEwkt]. Unlike a converter test that feeds fabricated text, these
- * use a real EWKB payload so we assert the actual canonical EWKT produced by postgis-jdbc — the
- * value that lands in the destination on both the snapshot and CDC paths.
+ * Unit tests for [PostgisGeometry.toEwkt]. Unlike a converter test that feeds fabricated text,
+ * these use a real EWKB payload so we assert the actual canonical EWKT produced by postgis-jdbc —
+ * the value that lands in the destination on both the snapshot and CDC paths.
  */
 class PostgisGeometryTest {
 
