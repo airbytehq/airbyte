@@ -1,19 +1,21 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
+from pathlib import Path
 from typing import Any, Dict, List
 
 import pytest
 import requests
+import yaml
 from airbyte_protocol_dataclasses.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_protocol_dataclasses.models import Status as ConnectionStatus
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.types import Record, StreamSlice
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.utils import run_read
 
 from .conftest import find_stream, get_source, load_json_file
@@ -104,8 +106,37 @@ class TestAllStreams:
             "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
         )
         stream._stream_partition_generator._partition_factory._retriever.requester.exit_on_rate_limit = True
-        with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+        with pytest.raises(AirbyteTracedException):
             list(run_read(stream))
+
+    def test_manifest_maps_429_to_rate_limited(self):
+        """
+        Verify the manifest configures HTTP 429 responses with RATE_LIMITED action
+        (not RETRY), so that rate-limited requests retry indefinitely with backoff
+        instead of failing after a limited number of retries.
+
+        HTTP 500/503 should remain mapped to RETRY.
+        """
+        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+        manifest = yaml.safe_load(manifest_path.read_text())
+
+        # The CompositeErrorHandler with the 429 filter is on the creatives stream
+        creatives = manifest["definitions"]["streams"]["creatives"]
+        error_handlers = creatives["retriever"]["requester"]["error_handlers"]
+
+        assert error_handlers["type"] == "CompositeErrorHandler"
+
+        inner_handlers = error_handlers["error_handlers"]
+        default_handler = next(h for h in inner_handlers if h.get("type") == "DefaultErrorHandler")
+        response_filters = default_handler["response_filters"]
+
+        filter_429 = next(f for f in response_filters if 429 in f.get("http_codes", []))
+        filter_5xx = next(f for f in response_filters if 500 in f.get("http_codes", []))
+
+        assert (
+            filter_429["action"] == "RATE_LIMITED"
+        ), f"HTTP 429 must use RATE_LIMITED action for indefinite retry, got {filter_429['action']}"
+        assert filter_5xx["action"] == "RETRY", f"HTTP 500/503 should use RETRY action, got {filter_5xx['action']}"
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}

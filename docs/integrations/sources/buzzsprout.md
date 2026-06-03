@@ -23,6 +23,10 @@ Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-fi
 | episodes | id | No pagination | ✅ |  ✅  |
 | podcasts | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,11 @@ Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-fi
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.48 | 2026-06-02 | [78562](https://github.com/airbytehq/airbyte/pull/78562) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77193](https://github.com/airbytehq/airbyte/pull/77193) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76535](https://github.com/airbytehq/airbyte/pull/76535) | Update dependencies |
+| 0.0.45 | 2026-03-31 | [75686](https://github.com/airbytehq/airbyte/pull/75686) | Update dependencies |
+| 0.0.44 | 2026-03-24 | [75320](https://github.com/airbytehq/airbyte/pull/75320) | Update dependencies |
 | 0.0.43 | 2026-03-10 | [74633](https://github.com/airbytehq/airbyte/pull/74633) | Update dependencies |
 | 0.0.42 | 2026-03-03 | [74216](https://github.com/airbytehq/airbyte/pull/74216) | Update dependencies |
 | 0.0.41 | 2026-02-03 | [72079](https://github.com/airbytehq/airbyte/pull/72079) | Update dependencies |

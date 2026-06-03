@@ -5,7 +5,8 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
-import io.airbyte.cdk.output.DataChannelMedium.*
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -14,7 +15,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Clock
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.withLock
@@ -104,8 +105,17 @@ class FeedReader(
     private suspend fun createPartitions(partitionsCreatorID: Long): List<PartitionReader> {
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
+                val acquired: AutoCloseable =
+                    withContext(
+                        ctx(
+                            "round-$partitionsCreatorID-partition-creator-factory-acquire-resources-$factory"
+                        )
+                    ) { acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory) }
                 log.info { "Attempting bootstrap using ${factory::class}." }
-                return@run factory.make(feedBootstrap) ?: continue
+                return@run withContext(ctx("round-$partitionsCreatorID-make-partitions-creator")) {
+                    makePartitionsCreatorWithResources(factory, acquired)
+                }
+                    ?: continue
             }
             throw SystemErrorException(
                 "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
@@ -119,6 +129,26 @@ class FeedReader(
         }
         return withContext(ctx("round-$partitionsCreatorID-create-partitions")) {
             createPartitionsWithResources(partitionsCreatorID, partitionsCreator)
+        }
+    }
+
+    private suspend fun acquirePartitionsCreatorFactoryResources(
+        partitionsCreatorID: Long,
+        partitionsCreatorFactory: PartitionsCreatorFactory,
+    ): AutoCloseable {
+        while (true) {
+            val result: PartitionsCreatorFactory.TryAcquireResourcesResult =
+                root.resourceAcquisitionMutex.withLock {
+                    partitionsCreatorFactory.tryAcquireResources()
+                }
+            if (result is PartitionsCreatorFactory.TryAcquireResourcesResult.ReadyToRun) {
+                log.info {
+                    "acquired resources to make partitions creator factory '${partitionsCreatorFactory::class.simpleName}' " +
+                        "for '${feed.label}' in round $partitionsCreatorID"
+                }
+                return result.acquired
+            }
+            root.waitForResourceAvailability()
         }
     }
 
@@ -136,6 +166,22 @@ class FeedReader(
         log.info {
             "acquired resources to create partitions " +
                 "for '${feed.label}' in round $partitionsCreatorID"
+        }
+    }
+
+    private fun makePartitionsCreatorWithResources(
+        factory: PartitionsCreatorFactory,
+        acquired: AutoCloseable,
+    ): PartitionsCreator? {
+        return try {
+            factory.make(feedBootstrap)
+        } finally {
+            log.info {
+                "releasing resources acquired to make partitions creator factory " +
+                    "for '${feed.label}'"
+            }
+            acquired.close()
+            root.notifyResourceAvailability()
         }
     }
 
@@ -347,7 +393,9 @@ class FeedReader(
     }
 
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
-        coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
+        currentCoroutineContext() +
+            ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") +
+            Dispatchers.IO
 
     // Acquires resources for the OutputMessageRouter and executes the provided action with it
     private fun attemptWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {

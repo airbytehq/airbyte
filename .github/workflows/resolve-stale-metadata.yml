@@ -26,12 +26,16 @@ jobs:
 
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Ops CLI
+        continue-on-error: true
+        run: uv tool install airbyte-internal-ops
 
       - name: Check for unpublished connector versions
         continue-on-error: true
@@ -39,7 +43,6 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
         run: >
-          uvx --from airbyte-internal-ops
           airbyte-ops local connector list
           --repo-path "${{ github.workspace }}"
           --unpublished

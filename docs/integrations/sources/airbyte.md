@@ -16,6 +16,10 @@ This source allows you to sync up data about your Airbyte Cloud workspaces. [Tak
 | Connections | connectionId | DefaultPaginator | ✅ |  ❌  |
 | Workspaces | workspaceId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,10 @@ This source allows you to sync up data about your Airbyte Cloud workspaces. [Tak
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.21 | 2026-06-02 | [78606](https://github.com/airbytehq/airbyte/pull/78606) | Update dependencies |
+| 0.1.20 | 2026-04-28 | [77153](https://github.com/airbytehq/airbyte/pull/77153) | Update dependencies |
+| 0.1.19 | 2026-04-21 | [76495](https://github.com/airbytehq/airbyte/pull/76495) | Update dependencies |
+| 0.1.18 | 2026-03-17 | [74969](https://github.com/airbytehq/airbyte/pull/74969) | Update dependencies |
 | 0.1.17 | 2026-03-10 | [74556](https://github.com/airbytehq/airbyte/pull/74556) | Update dependencies |
 | 0.1.16 | 2026-02-03 | [72371](https://github.com/airbytehq/airbyte/pull/72371) | Update dependencies |
 | 0.1.15 | 2026-01-14 | [71507](https://github.com/airbytehq/airbyte/pull/71507) | Update dependencies |

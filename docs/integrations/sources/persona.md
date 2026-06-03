@@ -21,6 +21,10 @@ Airbyte connector for [Persona](https://withpersona.com) that makes it easy to m
 | webhooks | id | DefaultPaginator | ✅ |  ❌  |
 | workflow-runs | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,11 @@ Airbyte connector for [Persona](https://withpersona.com) that makes it easy to m
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-06-02 | [78862](https://github.com/airbytehq/airbyte/pull/78862) | Update dependencies |
+| 0.0.53 | 2026-04-28 | [77392](https://github.com/airbytehq/airbyte/pull/77392) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76690](https://github.com/airbytehq/airbyte/pull/76690) | Update dependencies |
+| 0.0.51 | 2026-03-31 | [75822](https://github.com/airbytehq/airbyte/pull/75822) | Update dependencies |
+| 0.0.50 | 2026-03-24 | [75402](https://github.com/airbytehq/airbyte/pull/75402) | Update dependencies |
 | 0.0.49 | 2026-03-10 | [74481](https://github.com/airbytehq/airbyte/pull/74481) | Update dependencies |
 | 0.0.48 | 2026-03-03 | [74157](https://github.com/airbytehq/airbyte/pull/74157) | Update dependencies |
 | 0.0.47 | 2026-02-17 | [73197](https://github.com/airbytehq/airbyte/pull/73197) | Update dependencies |

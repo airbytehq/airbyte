@@ -22,6 +22,10 @@ Documentation: https://api-docs.partnerize.com/partner/#section/Introduction
 | conversion_metrics | ref_conversion_metric_id | DefaultPaginator | ✅ |  ❌  |
 | partnership_model | ref_partnership_model_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -29,6 +33,10 @@ Documentation: https://api-docs.partnerize.com/partner/#section/Introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2026-06-02 | [78891](https://github.com/airbytehq/airbyte/pull/78891) | Update dependencies |
+| 0.0.35 | 2026-04-28 | [77380](https://github.com/airbytehq/airbyte/pull/77380) | Update dependencies |
+| 0.0.34 | 2026-04-21 | [76715](https://github.com/airbytehq/airbyte/pull/76715) | Update dependencies |
+| 0.0.33 | 2026-03-31 | [75818](https://github.com/airbytehq/airbyte/pull/75818) | Update dependencies |
 | 0.0.32 | 2026-03-10 | [74479](https://github.com/airbytehq/airbyte/pull/74479) | Update dependencies |
 | 0.0.31 | 2026-02-24 | [73835](https://github.com/airbytehq/airbyte/pull/73835) | Update dependencies |
 | 0.0.30 | 2026-02-03 | [72581](https://github.com/airbytehq/airbyte/pull/72581) | Update dependencies |

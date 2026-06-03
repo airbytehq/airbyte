@@ -2,6 +2,7 @@
 package io.airbyte.cdk.data
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
 import java.net.URI
@@ -187,7 +188,9 @@ data object FloatCodec : JsonCodec<Float> {
         }
         val decoded: Float = encoded.floatValue()
         if (encode(decoded).doubleValue().compareTo(encoded.doubleValue()) != 0) {
-            throw IllegalArgumentException("invalid IEEE-754 32-bit floating point value $encoded")
+            throw IllegalArgumentException(
+                "invalid IEEE-754 32-bit floating point value $encoded (type ${encoded.javaClass.canonicalName})"
+            )
         }
         return decoded
     }
@@ -367,18 +370,23 @@ data class ArrayEncoder<T>(
     override fun encode(decoded: List<T>): JsonNode =
         Jsons.arrayNode().apply {
             for (e in decoded) {
-                add(elementEncoder.encode(e))
+                // Note: in generics, T can be nullable!
+                if (e == null) add(NullCodec.encode(e)) else add(elementEncoder.encode(e))
             }
         }
 }
 
 data class ArrayDecoder<T>(
     val elementDecoder: JsonDecoder<T>,
-) : JsonDecoder<List<T>> {
-    override fun decode(encoded: JsonNode): List<T> {
+) : JsonDecoder<List<T?>> {
+    override fun decode(encoded: JsonNode): List<T?> {
         if (!encoded.isArray) {
             throw IllegalArgumentException("invalid array value $encoded")
         }
-        return encoded.elements().asSequence().map { elementDecoder.decode(it) }.toList()
+        return encoded
+            .elements()
+            .asSequence()
+            .map { if (it == null || it is NullNode) null else elementDecoder.decode(it) }
+            .toList()
     }
 }

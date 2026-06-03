@@ -28,6 +28,10 @@ Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API doc
 | organizations | id | DefaultPaginator | ✅ |  ❌  |
 | conversations | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,11 @@ Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API doc
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.52 | 2026-06-02 | [78857](https://github.com/airbytehq/airbyte/pull/78857) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77338](https://github.com/airbytehq/airbyte/pull/77338) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76714](https://github.com/airbytehq/airbyte/pull/76714) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75790](https://github.com/airbytehq/airbyte/pull/75790) | Update dependencies |
+| 0.0.48 | 2026-03-24 | [75365](https://github.com/airbytehq/airbyte/pull/75365) | Update dependencies |
 | 0.0.47 | 2026-03-10 | [74590](https://github.com/airbytehq/airbyte/pull/74590) | Update dependencies |
 | 0.0.46 | 2026-02-24 | [73865](https://github.com/airbytehq/airbyte/pull/73865) | Update dependencies |
 | 0.0.45 | 2026-02-17 | [73389](https://github.com/airbytehq/airbyte/pull/73389) | Update dependencies |

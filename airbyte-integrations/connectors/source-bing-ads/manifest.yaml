@@ -2531,17 +2531,18 @@ definitions:
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
-      type: ZipfileDecoder
-      decoder:
-        type: CsvDecoder
-        encoding: "utf-8-sig"
-        set_values_to_none:
-          - ""
-          - "--"
+      type: CustomDecoder
+      class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
+      encoding: "utf-8-sig"
+      set_values_to_none:
+        - ""
+        - "--"
     creation_requester:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
@@ -17473,8 +17474,8 @@ schemas:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 40
-  max_concurrency: 40
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 20
 
 spec:
   type: Spec
@@ -17574,10 +17575,21 @@ spec:
         minimum: 0
         maximum: 90
         order: 7
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: >-
+          The number of worker threads to use for the sync.
+          Increase this to speed up syncs for accounts with many reports.
+          The default should work for most use cases.
+        order: 8
+        default: 10
+        minimum: 1
+        maximum: 20
       custom_reports:
         title: Custom Reports
         description: You can add your Custom Bing Ads report by creating one.
-        order: 8
+        order: 9
         type: array
         items:
           title: Custom Report Config

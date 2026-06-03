@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -15,6 +14,7 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -29,6 +29,7 @@ class DestinationMessageFactory(
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {
+    private val log = KotlinLogging.logger {}
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
@@ -130,10 +131,16 @@ class DestinationMessageFactory(
                                     message.trace.emittedAt?.toLong() ?: 0L,
                                 )
                             }
-                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            throw ConfigErrorException(
-                                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message: $message"
-                            )
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
+                            // Drop INCOMPLETE — same as the orchestrator does in STDIO
+                            // mode. The source will exit non-zero and the orchestrator
+                            // will shut down the destination.
+                            log.warn {
+                                "Received INCOMPLETE stream status for " +
+                                    "${descriptor.namespace}:${descriptor.name}. Ignoring."
+                            }
+                            Ignored
+                        }
                         else -> Undefined
                     }
                 } else {
