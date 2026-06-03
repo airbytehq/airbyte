@@ -5135,26 +5135,6 @@ spec:
                   {%- endfor -%}
                   {{- migrated_reports -}}
             condition: "{{ config.get('custom_reports', False) }}"
-    validations:
-      - type: DpathValidator
-        field_path: ["custom_reports", "*", "campaign_statuses"]
-        validation_strategy:
-          type: CustomValidationStrategy
-          class_name: source_declarative_manifest.components.ValidateStatusFilterMaxItems
-          field_name: campaign_statuses
-      - type: DpathValidator
-        field_path: ["custom_reports", "*", "ad_group_statuses"]
-        validation_strategy:
-          type: CustomValidationStrategy
-          class_name: source_declarative_manifest.components.ValidateStatusFilterMaxItems
-          field_name: ad_group_statuses
-      - type: DpathValidator
-        field_path: ["custom_reports", "*", "ad_statuses"]
-        validation_strategy:
-          type: CustomValidationStrategy
-          class_name: source_declarative_manifest.components.ValidateStatusFilterMaxItems
-          field_name: ad_statuses
-
 streams:
   # Full refresh streams
   - "#/definitions/boards_stream"

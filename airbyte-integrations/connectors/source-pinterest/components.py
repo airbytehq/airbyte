@@ -3,14 +3,12 @@
 #
 
 import re
-from dataclasses import dataclass
 from typing import List
 
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 
@@ -53,13 +51,3 @@ class PinterestAnalyticsBackoffStrategy(BackoffStrategy):
         except Exception:
             pass
         return min(2**attempt_count, 120.0)
-
-
-@dataclass
-class ValidateStatusFilterMaxItems(ValidationStrategy):
-    field_name: str
-    max_items: int = 6
-
-    def validate(self, value: object) -> None:
-        if isinstance(value, list) and len(value) > self.max_items:
-            raise ValueError(f"{self.field_name} allows at most {self.max_items} values.")
