@@ -69,7 +69,7 @@ class S3DataLakeWriter(
             icebergTableSynchronizer,
             s3DataLakeUtil,
             icebergUtil,
-            stagingBranchName = generateStagingBranchName(),
+            stagingBranchName = generateStagingBranchName(stream),
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
             streamStateStore = streamStateStore,
         )

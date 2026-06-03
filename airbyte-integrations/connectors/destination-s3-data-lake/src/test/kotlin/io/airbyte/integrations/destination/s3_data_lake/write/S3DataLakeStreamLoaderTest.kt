@@ -96,16 +96,18 @@ internal class S3DataLakeStreamLoaderTest {
 
     @Test
     fun testGeneratedStagingBranchNamesUseUuidSuffix() {
-        val firstBranchName = generateStagingBranchName()
-        val secondBranchName = generateStagingBranchName()
+        val firstBranchName = generateStagingBranchName(makeAppendStream(syncId = 42))
+        val retryBranchName = generateStagingBranchName(makeAppendStream(syncId = 42))
+        val nextSyncBranchName = generateStagingBranchName(makeAppendStream(syncId = 43))
 
-        assertNotEquals(firstBranchName, secondBranchName)
+        assertEquals(firstBranchName, retryBranchName)
+        assertNotEquals(firstBranchName, nextSyncBranchName)
         assertTrue(firstBranchName.matches(Regex("""airbyte_staging_[0-9a-f_]{36}""")))
-        assertTrue(secondBranchName.matches(Regex("""airbyte_staging_[0-9a-f_]{36}""")))
+        assertTrue(nextSyncBranchName.matches(Regex("""airbyte_staging_[0-9a-f_]{36}""")))
     }
 
     @Test
-    fun testFailedTeardownRemovesUniqueStagingBranch() {
+    fun testFailedTeardownPreservesUniqueStagingBranchForRecovery() {
         val objectSchema =
             ObjectType(
                 linkedMapOf(
@@ -164,7 +166,7 @@ internal class S3DataLakeStreamLoaderTest {
             streamLoader.teardown(false)
         }
 
-        verify { manageSnapshots.removeBranch("airbyte_staging_test") }
+        verify(exactly = 0) { manageSnapshots.removeBranch("airbyte_staging_test") }
         verify(exactly = 0) { manageSnapshots.replaceBranch("main", "airbyte_staging_test") }
     }
 
@@ -233,6 +235,71 @@ internal class S3DataLakeStreamLoaderTest {
 
         verify { manageSnapshots.replaceBranch("main", "airbyte_staging_test") }
         verify { manageSnapshots.removeBranch("airbyte_staging_test") }
+    }
+
+    @Test
+    fun testStartReusesExistingStagingBranchForRecovery() {
+        val stream = makeAppendStream(syncId = 42)
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "name" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+        val icebergConfiguration = makeIcebergConfiguration()
+        val catalog: Catalog = mockk()
+        val manageSnapshots: ManageSnapshots = mockk()
+        every { manageSnapshots.createBranch("airbyte_staging_test") } throws
+            IllegalArgumentException("already exists")
+        every { manageSnapshots.replaceBranch("main", "airbyte_staging_test") } returns
+            manageSnapshots
+        every { manageSnapshots.removeBranch("airbyte_staging_test") } returns manageSnapshots
+        every { manageSnapshots.commit() } just runs
+        val table: Table = mockk {
+            every { schema() } returns icebergSchema
+            every { refresh() } just runs
+            every { manageSnapshots() } returns manageSnapshots
+        }
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
+            every { toCatalogProperties(any()) } returns mapOf()
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns catalog
+            every { createTable(any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns icebergSchema
+        }
+        val streamLoader =
+            S3DataLakeStreamLoader(
+                icebergConfiguration,
+                stream,
+                IcebergTableSynchronizer(
+                    IcebergTypesComparator(),
+                    IcebergSuperTypeFinder(IcebergTypesComparator()),
+                ),
+                s3DataLakeUtil,
+                icebergUtil,
+                stagingBranchName = "airbyte_staging_test",
+                mainBranchName = "main",
+                streamStateStore = streamStateStore,
+            )
+
+        runBlocking {
+            streamLoader.start()
+            streamLoader.teardown(true)
+        }
+
+        verify { manageSnapshots.createBranch("airbyte_staging_test") }
+        verify { manageSnapshots.replaceBranch("main", "airbyte_staging_test") }
+        verify { manageSnapshots.removeBranch("airbyte_staging_test") }
+        verify {
+            streamStateStore.put(
+                stream.mappedDescriptor,
+                match { it.stagingBranchName == "airbyte_staging_test" },
+            )
+        }
     }
 
     @Test
@@ -725,5 +792,29 @@ internal class S3DataLakeStreamLoaderTest {
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
         }
+    }
+
+    private fun makeAppendStream(
+        syncId: Long = 1,
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0,
+    ): DestinationStream {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "name" to FieldType(StringType, nullable = true),
+                ),
+            )
+        return DestinationStream(
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
+            syncId = syncId,
+            unmappedNamespace = "namespace",
+            unmappedName = "name",
+            namespaceMapper =
+                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+            tableSchema = makeTableSchema(objectSchema, Append),
+        )
     }
 }
