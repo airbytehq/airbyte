@@ -422,6 +422,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
                 every { next() } returnsMany listOf(true, false)
                 every { getLong(1) } returns expectedFilenode
                 every { wasNull() } returns false
+                every { isLast() } returns true
                 every { close() } returns Unit
             }
         val mockStatement =
