@@ -1,12 +1,14 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import gzip
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
 import requests_mock
 import yaml
+from freezegun import freeze_time
 
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
@@ -520,3 +522,77 @@ def test_daily_stream_schema_has_date_in_properties(stream_name: str) -> None:
         f"{stream_name}: 'date' field is missing from the schema's 'properties' block. "
         "It may be misplaced at the schema root level due to a YAML indentation error."
     )
+
+
+class TestReportStartDateCapping:
+    @staticmethod
+    def _read(config: Mapping[str, Any], stream_name: str, sync_mode: SyncMode = SyncMode.full_refresh) -> EntrypointOutput:
+        catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
+        state = StateBuilder().build()
+        source = get_source(config, state)
+        return read(source, config, catalog, state)
+
+    @freeze_time("2025-06-03")
+    def test_start_date_capped_at_60_days_from_today_not_61(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """Verify start_date is capped at 60 days before today (not 61 due to off-by-one)."""
+        config_with_old_start = {**config, "start_date": "2020-01-01"}
+        report_id = "report-id-date-cap-test"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+        )
+        report_data = gzip.compress(b'[{"record": "data"}]')
+        requests_mock.get(download_url, content=report_data, status_code=200)
+
+        self._read(config_with_old_start, "sponsored_brands_v3_report_stream", SyncMode.incremental)
+
+        report_creation_requests = [r for r in requests_mock.request_history if r.method == "POST" and "/reporting/reports" in r.url]
+        assert len(report_creation_requests) > 0
+
+        first_request_body = report_creation_requests[0].json()
+        # 60 days before 2025-06-03 = 2025-04-04 (correct)
+        # 61 days before 2025-06-03 = 2025-04-03 (wrong, the old off-by-one)
+        expected_start_date = (datetime(2025, 6, 3) - timedelta(days=60)).strftime("%Y-%m-%d")
+        wrong_start_date = (datetime(2025, 6, 3) - timedelta(days=61)).strftime("%Y-%m-%d")
+        assert first_request_body["startDate"] == expected_start_date
+        assert first_request_body["startDate"] != wrong_start_date
+
+    @freeze_time("2025-06-03")
+    def test_start_date_uses_user_config_when_within_60_days(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """Verify user start_date is used when it falls within the 60-day window."""
+        recent_start = (datetime(2025, 6, 3) - timedelta(days=30)).strftime("%Y-%m-%d")
+        config_with_recent_start = {**config, "start_date": recent_start}
+        report_id = "report-id-recent-start-test"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+        )
+        report_data = gzip.compress(b'[{"record": "data"}]')
+        requests_mock.get(download_url, content=report_data, status_code=200)
+
+        self._read(config_with_recent_start, "sponsored_brands_v3_report_stream", SyncMode.incremental)
+
+        report_creation_requests = [r for r in requests_mock.request_history if r.method == "POST" and "/reporting/reports" in r.url]
+        assert len(report_creation_requests) > 0
+
+        first_request_body = report_creation_requests[0].json()
+        # When user start_date is within 60 days, it should be used as-is
+        assert first_request_body["startDate"] == recent_start
