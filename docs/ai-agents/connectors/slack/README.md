@@ -6,8 +6,9 @@ Slack is a business communication platform that offers messaging, file sharing, 
 with other tools. This connector provides read access to users, channels, channel members, channel
 messages, and threads for workspace analytics. It also supports write operations including sending,
 updating, deleting, and scheduling messages, sending ephemeral messages, creating and renaming
-channels, archiving channels, removing users from channels, setting channel topics and purposes,
-adding and removing reactions, pinning messages, adding bookmarks, and inviting users to channels.
+channels, archiving channels, joining channels, removing users from channels, setting channel topics
+and purposes, adding and removing reactions, pinning messages, adding bookmarks, and inviting users
+to channels.
 
 
 ## Example prompts
@@ -45,6 +46,8 @@ The Slack connector is optimized to handle prompts like these.
 - Remove a user from the #team channel
 - Pin the latest important message in a channel
 - Add a bookmark link to a channel
+- Join the #announcements channel
+- Have the bot join a public channel
 - What messages were posted in channel \{channel_id\} last week?
 - Show me the conversation history for channel \{channel_id\}
 - Search for messages mentioning \{keyword\} in channel \{channel_id\}
@@ -77,6 +80,7 @@ This connector supports the following entities and actions. For more details, se
 | Scheduled Messages | [Create](./REFERENCE.md#scheduled-messages-create) |
 | Channel Archives | [Create](./REFERENCE.md#channel-archives-create) |
 | Channel Kicks | [Create](./REFERENCE.md#channel-kicks-create) |
+| Channel Joins | [Create](./REFERENCE.md#channel-joins-create) |
 | Pins | [Create](./REFERENCE.md#pins-create) |
 | Bookmarks | [Create](./REFERENCE.md#bookmarks-create) |
 
