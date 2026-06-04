@@ -5107,6 +5107,7 @@ definitions:
           response_filters:
           - http_codes: [404]
             action: IGNORE
+            error_message: "The field_schemes stream is unavailable on this Jira instance. This endpoint is experimental (RFC-103) and requires opt-in. The stream is skipped and no data is synced for it."
     $parameters:
       path: "config/fieldschemes"
       extract_field: "values"
