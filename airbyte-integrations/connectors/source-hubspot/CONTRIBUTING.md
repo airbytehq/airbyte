@@ -39,12 +39,12 @@ declarative connector patterns. Read this before making changes to the connector
 
 The CRM search streams (contacts, companies, deals, tickets, leads, engagements_*, deal_splits) use
 `HubspotAssociationsExtractor` as their record extractor. This extractor does **not** simply parse the
-HTTP response -- it makes **additional batch POST requests** to the HubSpot Associations v4 API
-(`/crm/v4/associations/{entity}/{association}/batch/read`) for every page of results.
+HTTP response -- it makes **additional batch POST requests** to HubSpot's date-based Associations API
+(`/crm/associations/2026-03/{entity}/{association}/batch/read`) for every page of results.
 
 HubSpot's CRM v3 Search API does not return association data inline with object records. To get
 associations (e.g., which contacts are linked to a deal), you must make separate calls to the
-Associations v4 batch read endpoint, passing in the record IDs from the primary response. This is a
+Associations batch read endpoint, passing in the record IDs from the primary response. This is a
 fundamental limitation of HubSpot's API design -- there is no way to include association data in a
 single search request.
 

@@ -383,12 +383,12 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     )
     requests_mock.register_uri(
         "POST",
-        "/crm/v4/associations/company/contacts/batch/read",
+        "/crm/associations/2026-03/company/contacts/batch/read",
         [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
     )
     requests_mock.register_uri(
         "POST",
-        "/crm/v4/associations/company/contacts/batch/read",
+        "/crm/associations/2026-03/company/contacts/batch/read",
         [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
     )
 

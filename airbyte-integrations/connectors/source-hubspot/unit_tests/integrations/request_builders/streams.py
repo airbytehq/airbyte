@@ -109,11 +109,11 @@ class CRMSearchRequestBuilder(AbstractRequestBuilder):
 
 class AssociationsBatchReadRequestBuilder(AbstractRequestBuilder):
     """
-    Builds: POST https://api.hubapi.com/crm/v4/associations/{parent}/{association}/batch/read
+    Builds: POST https://api.hubapi.com/crm/associations/2026-03/{parent}/{association}/batch/read
     Body:   {"inputs":[{"id":"<record-id>"}, ...]}
     """
 
-    URL = "https://api.hubapi.com/crm/v4/associations/{parent}/{association}/batch/read"
+    URL = "https://api.hubapi.com/crm/associations/2026-03/{parent}/{association}/batch/read"
 
     def __init__(self):
         self._parent: Optional[str] = None

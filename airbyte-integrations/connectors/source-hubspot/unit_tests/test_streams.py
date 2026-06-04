@@ -162,7 +162,7 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
         for association in stream_retriever.requester._parameters.get("associations", []):
             requests_mock.register_uri(
                 "POST",
-                f"https://api.hubapi.com/crm/v4/associations/{endpoint}/{association}/batch/read",
+                f"https://api.hubapi.com/crm/associations/2026-03/{endpoint}/{association}/batch/read",
                 [{"json": {"results": []}, "status_code": 200}],
             )
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
@@ -257,7 +257,7 @@ def test_stream_read_with_legacy_field_transformation(
         for association in stream_retriever.requester._parameters.get("associations", []):
             requests_mock.register_uri(
                 "POST",
-                f"https://api.hubapi.com/crm/v4/associations/{endpoint}/{association}/batch/read",
+                f"https://api.hubapi.com/crm/associations/2026-03/{endpoint}/{association}/batch/read",
                 [{"json": {"results": []}, "status_code": 200}],
             )
 
@@ -473,7 +473,9 @@ def test_common_error_retry(error_response, requests_mock, config, fake_properti
     requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/objects/company/search", [{"json": response}])
     associations_responses = [{"json": {"results": []}, "status_code": 200}]
 
-    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v4/associations/company/contacts/batch/read", associations_responses)
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/associations/2026-03/company/contacts/batch/read", associations_responses
+    )
     records = run_read(stream)
 
     expected_record = response[data_field][0]
@@ -650,9 +652,9 @@ def test_cast_record_fields_if_needed(
 
     associations_responses = [{"json": {"results": []}, "status_code": 200}]
 
-    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v4/associations/deal/companies/batch/read", associations_responses)
-    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v4/associations/deal/contacts/batch/read", associations_responses)
-    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v4/associations/deal/line_items/batch/read", associations_responses)
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/associations/2026-03/deal/companies/batch/read", associations_responses)
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/associations/2026-03/deal/contacts/batch/read", associations_responses)
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/associations/2026-03/deal/line_items/batch/read", associations_responses)
     records = read_from_stream(config, "deals", SyncMode.full_refresh).records
     assert records
     record = records[0]

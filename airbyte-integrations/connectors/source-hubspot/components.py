@@ -48,6 +48,7 @@ from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_form
 logger = logging.getLogger("airbyte")
 
 _PRIVATE_APP_CREDENTIALS = "Private App Credentials"
+_ASSOCIATIONS_API_VERSION = "2026-03"
 
 
 class HubspotErrorHandler(DefaultErrorHandler):
@@ -644,7 +645,7 @@ def build_associations_retriever(
 ) -> SimpleRetriever:
     """
     Instantiates a SimpleRetriever that makes requests against:
-    POST /crm/v4/associations/{self.parent_entity}/{stream_slice.association}/batch/read
+    POST /crm/associations/2026-03/{self.parent_entity}/{stream_slice.association}/batch/read
 
     The current architecture of the low-code framework makes it difficult to instantiate components
     in arbitrary locations within the manifest.yaml. For example, the only place where a SimpleRetriever
@@ -694,7 +695,7 @@ def build_associations_retriever(
     requester = HttpRequester(
         name="associations",
         url_base="https://api.hubapi.com",
-        path=f"/crm/v4/associations/{evaluated_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
+        path=f"/crm/associations/{_ASSOCIATIONS_API_VERSION}/{evaluated_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
