@@ -1,5 +1,32 @@
 # Jira Migration Guide
 
+## Upgrading to 6.0.0
+
+Atlassian is removing the `GET /rest/api/3/fieldconfiguration` endpoint in July 2026 (see [RFC-103: Jira Field Configuration Overhaul](https://community.developer.atlassian.com/t/rfc-103-jira-field-configuration-overhaul-admin-experience-and-api-changes/)). This version removes the `issue_field_configurations` stream and adds a replacement `field_schemes` stream using the new `GET /rest/api/3/config/fieldschemes` endpoint.
+
+### What changed
+
+- The `issue_field_configurations` stream has been removed.
+- A new `field_schemes` stream has been added. The new stream returns field association schemes instead of field configurations — the response shape is not a drop-in replacement.
+- New fields in `field_schemes`: `fieldsCount`, `links` (with `associations` and `projects` sub-fields).
+
+### Who is affected
+
+Users syncing the `issue_field_configurations` stream. Users who do not sync this stream can upgrade without action.
+
+### Steps to migrate
+
+1. Select **Connections** in the main navbar, then select the affected connection(s).
+2. Select the **Schema** tab and click **Refresh source schema**, then **OK**.
+3. Disable the `issue_field_configurations` stream if it is still shown.
+4. Enable the new `field_schemes` stream.
+5. Select **Save changes** at the bottom of the page.
+6. Select **Sync now** to sync your data.
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+If you have downstream models that depend on the previous shape of `issue_field_configurations` records, update them to use the `field_schemes` stream. Note that the `field_schemes` endpoint is currently in beta and only available for tenants that have opted in via Atlassian's field configuration overhaul program.
+
 ## Upgrading to 5.0.0
 
 Atlassian is removing the `GET /rest/api/3/workflow/search` endpoint on June 1, 2026 (see Atlassian's [CHANGE-2569](https://developer.atlassian.com/cloud/jira/platform/changelog/#CHANGE-2569)). This version of the source-jira connector migrates the `workflows` stream to the replacement endpoint `GET /rest/api/3/workflows/search`, which returns a different response shape.

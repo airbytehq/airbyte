@@ -5092,13 +5092,13 @@ definitions:
         additionalProperties: true
         description: Details about a field.
 
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
-  issue_field_configurations_stream:
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-field-schemes/#api-rest-api-3-config-fieldschemes-get
+  field_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
-    name: issue_field_configurations
+    name: field_schemes
     primary_key: "id"
     $parameters:
-      path: "fieldconfiguration"
+      path: "config/fieldschemes"
       extract_field: "values"
     schema_loader:
       type: InlineSchemaLoader
@@ -5107,19 +5107,43 @@ definitions:
         type: object
         properties:
           id:
-            description: The ID of the field configuration.
+            description: The ID of the field association scheme.
             type: integer
           name:
-            description: The name of the field configuration.
+            description: The name of the field association scheme.
             type: string
           description:
-            description: The description of the field configuration.
-            type: string
+            description: The description of the field association scheme.
+            type:
+            - "null"
+            - string
           isDefault:
-            description: Whether the field configuration is the default.
+            description: Whether the field association scheme is the default.
             type: boolean
+          fieldsCount:
+            description: The number of fields associated with this scheme.
+            type:
+            - "null"
+            - integer
+          links:
+            description: Navigation links for the field association scheme.
+            type:
+            - "null"
+            - object
+            properties:
+              associations:
+                description: Link to the field associations for this scheme.
+                type:
+                - "null"
+                - string
+              projects:
+                description: Link to the projects using this scheme.
+                type:
+                - "null"
+                - string
+            additionalProperties: true
         additionalProperties: true
-        description: Details of a field configuration.
+        description: Details of a field association scheme.
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
   issue_link_types_stream:
@@ -14632,7 +14656,7 @@ streams:
 - "#/definitions/filters_stream"
 - "#/definitions/groups_stream"
 - "#/definitions/issue_fields_stream"
-- "#/definitions/issue_field_configurations_stream"
+- "#/definitions/field_schemes_stream"
 - "#/definitions/issue_link_types_stream"
 - "#/definitions/issue_navigator_settings_stream"
 - "#/definitions/issue_notification_schemes_stream"
