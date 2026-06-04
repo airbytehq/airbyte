@@ -55,7 +55,7 @@ class RedshiftConnect(
                 schema = configuration.schema
 
                 addDataSourceProperty("ssl", "true")
-                addDataSourceProperty("sslfactory", SSL_FACTORY)
+                addDataSourceProperty("SSL_Insecure", "true")
             }
 
         return HikariDataSource(hikariConfig)
@@ -64,8 +64,4 @@ class RedshiftConnect(
     private fun buildJdbcUrl(endpoint: String): String =
         "jdbc:redshift://$endpoint/${configuration.database}" +
             (configuration.jdbcUrlParams?.takeIf { it.isNotBlank() }?.let { "?$it" } ?: "")
-
-    companion object {
-        const val SSL_FACTORY = "com.amazon.redshift.ssl.NonValidatingFactory"
-    }
 }
