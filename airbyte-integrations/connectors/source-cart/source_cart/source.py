@@ -95,7 +95,7 @@ class SourceCart(AbstractSource):
                     try:
                         # parse date strings by the pendulum library. It will raise the exception ParserError if it is some format mistakes.
                         pendulum.parse(arg["start_date"])
-                        # try to check an end_date value. It can be ussed for different CI tests
+                        # try to check an end_date value. It can be used for different CI tests
                         end_date = arg.get("end_date")
                         if end_date:
                             pendulum.parse(end_date)

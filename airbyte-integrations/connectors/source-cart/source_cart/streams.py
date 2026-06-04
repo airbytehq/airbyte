@@ -51,7 +51,7 @@ class CartStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         We dont need to check the response.status_code == 429 since this header exists only in this case.
-        Some endpoints or sometimes Cart.com API returns a datetie instead of the float value to wait to next request.
+        Some endpoints or sometimes Cart.com API returns a datetime instead of the float value to wait to next request.
         Also after calculating the float when Cart.com return a datetime using the value directly
         causes Server Error after a few attempts. Because of this was created the `server_backoff` variable to give time
         to server recover from too many requests.
