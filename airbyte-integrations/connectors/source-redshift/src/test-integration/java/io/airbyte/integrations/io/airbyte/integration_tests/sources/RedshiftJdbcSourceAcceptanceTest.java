@@ -52,9 +52,10 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Redshift
     return Jsons.clone(config);
   }
 
-    @Test
-    @Override
-    protected void testCheckFailure() throws Exception {
-        // no-op
-    }
+  @Test
+  @Override
+  protected void testCheckFailure() throws Exception {
+    // no-op
+  }
+
 }
