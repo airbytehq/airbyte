@@ -69,6 +69,10 @@ The Amazon Ads source connector uses Sponsored Products, Sponsored Brands, and S
 If you have only agency profile, please use accounts associated with the profile of seller/vendor type.
 :::
 
+:::important
+Amazon Ads refresh tokens expire **365 days** after the advertiser grants consent. When a refresh token expires, the connector surfaces a configuration error indicating the token is invalid. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+:::
+
 ## Supported sync modes
 
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
