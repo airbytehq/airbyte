@@ -4,9 +4,11 @@
 
 
 import logging
+import re
 import sys
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import pendulum as pdm
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
@@ -14,7 +16,6 @@ from source_shopify.shopify_graphql.bulk.query import (
     CustomerAddresses,
     CustomerJourney,
     DeliveryProfile,
-    DiscountCode,
     FulfillmentOrder,
     InventoryItem,
     InventoryLevel,
@@ -34,7 +35,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
-from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter
 
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -422,8 +423,275 @@ class PriceRules(IncrementalShopifyStreamWithDeletedEvents):
     deleted_events_api_name = "PriceRule"
 
 
-class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
-    bulk_query: DiscountCode = DiscountCode
+class DiscountCodes(IncrementalShopifyStream):
+    """Fetches discount codes via regular GraphQL with explicit nested cursor pagination.
+
+    Shopify's Bulk Operations API does not fully expand nested connections beyond
+    ~100 records per parent. For stores with large `codeDiscount.codes` sets this
+    caused silent data truncation. This stream queries parent `codeDiscountNodes`
+    with cursor pagination, then explicitly pages each parent's child `codes`
+    connection (up to 250 per page), merging parent metadata onto every child
+    record to match the existing `discount_codes` schema.
+
+    Precedent: `FulfillmentOrder` was similarly moved away from nested bulk
+    expansion because Shopify Bulk nested connections could miss records.
+    """
+
+    data_field = "graphql"
+    cursor_field = "updated_at"
+    filter_field = None
+
+    PARENT_PAGE_SIZE = 50
+    CHILD_PAGE_SIZE = 250
+
+    PARENT_QUERY = """
+    query DiscountCodeNodes($first: Int!, $after: String, $query: String) {
+      codeDiscountNodes(first: $first, after: $after, query: $query, sortKey: UPDATED_AT) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          id
+          codeDiscount {
+            __typename
+            ... on DiscountCodeApp {
+              updatedAt
+              createdAt
+              discountClass
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+            ... on DiscountCodeBasic {
+              updatedAt
+              createdAt
+              discountClass
+              summary
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+            ... on DiscountCodeBxgy {
+              updatedAt
+              createdAt
+              discountClass
+              summary
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+            ... on DiscountCodeFreeShipping {
+              updatedAt
+              createdAt
+              discountClass
+              summary
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    CHILD_CODES_QUERY = """
+    query DiscountCodesForNode($id: ID!, $first: Int!, $after: String) {
+      codeDiscountNode(id: $id) {
+        codeDiscount {
+          ... on DiscountCodeApp {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+          ... on DiscountCodeBasic {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+          ... on DiscountCodeBxgy {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+          ... on DiscountCodeFreeShipping {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    @property
+    def _graphql_url(self) -> str:
+        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/graphql.json"
+
+    def _graphql_request(self, query: str, variables: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Execute a GraphQL request using the stream's authenticated session."""
+        response = self._http_client._session.post(
+            self._graphql_url,
+            json={"query": query, "variables": variables},
+        )
+        response.raise_for_status()
+        result = response.json()
+        # respect Shopify GraphQL rate limits
+        self._apply_graphql_rate_limit(result)
+        return result
+
+    @staticmethod
+    def _apply_graphql_rate_limit(response_json: Mapping[str, Any]) -> None:
+        """Sleep based on Shopify GraphQL throttle status from response extensions."""
+        try:
+            throttle = response_json["extensions"]["cost"]["throttleStatus"]
+            max_available = float(throttle["maximumAvailable"])
+            currently_available = float(throttle["currentlyAvailable"])
+            if max_available > 0:
+                load = (max_available - currently_available) / max_available
+                wait = ShopifyRateLimiter._convert_load_to_time(load, threshold=0.9)
+                if wait > 0:
+                    ShopifyRateLimiter.wait_time(wait)
+        except (KeyError, TypeError, ValueError):
+            ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
+
+    @staticmethod
+    def _resolve_str_id(gid: Optional[str]) -> Optional[int]:
+        """Convert a Shopify GID like `gid://shopify/X/12345` to numeric `12345`."""
+        if gid:
+            match = re.search(r"\d+", gid)
+            return int(match.group()) if match else None
+        return None
+
+    @staticmethod
+    def _to_rfc3339(value: Optional[str]) -> Optional[str]:
+        if value:
+            return pdm.parse(value).to_rfc3339_string()
+        return value
+
+    @staticmethod
+    def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Extract the `codes` connection from whichever union member is present."""
+        for key, val in code_discount.items():
+            if isinstance(val, dict) and "codes" in val:
+                return val["codes"]
+        # top-level inline fragments resolve to flat dict with `codes` key
+        if "codes" in code_discount:
+            return code_discount["codes"]
+        return {"nodes": [], "pageInfo": {"hasNextPage": False}}
+
+    def _build_parent_metadata(self, code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Build the parent-level fields merged onto each child record."""
+        total_sales = code_discount.get("totalSales") or {}
+        return {
+            "typename": code_discount.get("__typename"),
+            "updated_at": self._to_rfc3339(code_discount.get("updatedAt")),
+            "created_at": self._to_rfc3339(code_discount.get("createdAt")),
+            "discount_type": code_discount.get("discountClass"),
+            "summary": code_discount.get("summary"),
+            "starts_at": self._to_rfc3339(code_discount.get("startsAt")),
+            "ends_at": self._to_rfc3339(code_discount.get("endsAt")),
+            "status": code_discount.get("status"),
+            "title": code_discount.get("title"),
+            "usage_limit": code_discount.get("usageLimit"),
+            "applies_once_per_customer": code_discount.get("appliesOncePerCustomer"),
+            "async_usage_count": code_discount.get("asyncUsageCount"),
+            "codes_count": code_discount.get("codesCount"),
+            "total_sales": {"amount": total_sales.get("amount"), "currency_code": total_sales.get("currencyCode")} if total_sales else None,
+        }
+
+    def _build_child_record(self, code_node: Mapping[str, Any], parent_gid: str, parent_meta: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Assemble a single output record from a child code node and parent metadata."""
+        return {
+            "id": self._resolve_str_id(code_node.get("id")),
+            "admin_graphql_api_id": code_node.get("id"),
+            "price_rule_id": self._resolve_str_id(parent_gid),
+            "code": code_node.get("code"),
+            "usage_count": code_node.get("asyncUsageCount"),
+            "createdBy": code_node.get("createdBy"),
+            "shop_url": self.config["shop"],
+            **parent_meta,
+        }
+
+    def _fetch_child_codes(self, parent_gid: str, parent_meta: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """Page through all child codes for a single parent discount node."""
+        child_cursor: Optional[str] = None
+        has_more = True
+        while has_more:
+            variables: dict = {"id": parent_gid, "first": self.CHILD_PAGE_SIZE}
+            if child_cursor:
+                variables["after"] = child_cursor
+            result = self._graphql_request(self.CHILD_CODES_QUERY, variables)
+            code_discount = result.get("data", {}).get("codeDiscountNode", {}).get("codeDiscount") or {}
+            codes_conn = self._extract_codes_connection(code_discount)
+            for code_node in codes_conn.get("nodes", []):
+                yield self._build_child_record(code_node, parent_gid, parent_meta)
+            page_info = codes_conn.get("pageInfo", {})
+            has_more = page_info.get("hasNextPage", False)
+            child_cursor = page_info.get("endCursor")
+
+    def read_records(
+        self,
+        sync_mode: Optional[Any] = None,
+        cursor_field: Optional[Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        state_value = (stream_state or {}).get(self.cursor_field, self.config.get("start_date", ""))
+
+        parent_cursor: Optional[str] = None
+        has_more_parents = True
+
+        while has_more_parents:
+            variables: dict = {"first": self.PARENT_PAGE_SIZE}
+            if state_value:
+                variables["query"] = f"updated_at:>='{state_value}'"
+            if parent_cursor:
+                variables["after"] = parent_cursor
+
+            result = self._graphql_request(self.PARENT_QUERY, variables)
+            data = result.get("data", {}).get("codeDiscountNodes", {})
+            page_info = data.get("pageInfo", {})
+
+            for node in data.get("nodes", []):
+                parent_gid = node.get("id")
+                code_discount = node.get("codeDiscount")
+                if not code_discount:
+                    continue
+                parent_meta = self._build_parent_metadata(code_discount)
+                yield from self._fetch_child_codes(parent_gid, parent_meta)
+
+            has_more_parents = page_info.get("hasNextPage", False)
+            parent_cursor = page_info.get("endCursor")
 
 
 class Locations(ShopifyStream):
