@@ -107,4 +107,18 @@ class RedshiftConnectTest {
             assertEquals(-1L, ds.initializationFailTimeout)
         }
     }
+
+    @Test
+    fun `createDataSource sets SSL_Insecure instead of sslfactory for driver 2_2_x compatibility`() {
+        val connect = RedshiftConnect(config())
+
+        connect.createDataSource().use { ds ->
+            val props = ds.dataSourceProperties
+            assertEquals("true", props["ssl"])
+            assertEquals("true", props["SSL_Insecure"])
+            assert(props["sslfactory"] == null) {
+                "sslfactory must not be set — it conflicts with sslmode inferred by ssl=true in the 2.2.x Redshift JDBC driver"
+            }
+        }
+    }
 }
