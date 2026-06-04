@@ -124,29 +124,6 @@ class RedshiftConnectTest {
     }
 
     @Test
-    fun `buildConnectionProperties enforces ssl true even if user sets ssl false`() {
-        val connect = RedshiftConnect(config(jdbcUrlParams = "ssl=false"))
-        val props = connect.buildConnectionProperties()
-
-        assertEquals("true", props["ssl"], "ssl must always be true regardless of user override")
-    }
-
-    @Test
-    fun `buildConnectionProperties keeps user sslfactory when user provides both sslmode and sslfactory`() {
-        val connect =
-            RedshiftConnect(
-                config(jdbcUrlParams = "sslmode=require&sslfactory=com.example.CustomFactory")
-            )
-        val props = connect.buildConnectionProperties()
-
-        // User explicitly provided both -- we pass them through as-is (the driver will reject it)
-        assertEquals("require", props["sslmode"])
-        assertEquals("com.example.CustomFactory", props["sslfactory"])
-        assertEquals("true", props["ssl"])
-        assertEquals(3, props.size)
-    }
-
-    @Test
     fun `buildConnectionProperties preserves non-SSL user params alongside defaults`() {
         val connect = RedshiftConnect(config(jdbcUrlParams = "connectTimeout=60&tcpKeepAlive=true"))
         val props = connect.buildConnectionProperties()

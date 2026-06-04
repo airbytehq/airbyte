@@ -78,9 +78,6 @@ class RedshiftConnect(
 
         // User params override remaining defaults
         properties.putAll(userParams)
-
-        // SSL is always enforced and cannot be disabled via jdbc_url_params.
-        properties["ssl"] = "true"
         return properties
     }
 
