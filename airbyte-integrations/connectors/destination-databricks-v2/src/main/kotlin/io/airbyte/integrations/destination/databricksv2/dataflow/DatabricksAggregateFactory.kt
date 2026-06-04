@@ -23,11 +23,12 @@ class DatabricksAggregateFactory(
 
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
-        val columns = databricksClient.describeTable(tableName)
+        val columnSchema = databricksClient.describeTableWithTypes(tableName)
         val buffer =
             DatabricksInsertBuffer(
                 tableName = tableName,
-                columns = columns,
+                columns = columnSchema.keys.toList(),
+                columnSchema = columnSchema,
                 databricksClient = databricksClient,
                 config = config,
             )

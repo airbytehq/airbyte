@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
-import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.INTEGER
+import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.LONG
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.STRING
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.TIMESTAMP
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
@@ -200,33 +200,29 @@ class DatabricksSqlGenerator(
 
     // -- Staging Operations --
 
-    /** Creates a Unity Catalog Volume for staging CSV files */
+    /** Creates a Unity Catalog Volume for staging Avro files. */
     fun createStagingVolume(tableName: TableName): String =
         "CREATE VOLUME IF NOT EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
 
     /**
-     * Generates a COPY INTO statement to load a staged CSV file from a Unity Catalog Volume into
+     * Generates a COPY INTO statement to load a staged Avro file from a Unity Catalog Volume into
      * the target table.
      *
-     * - `inferSchema=true`: Databricks infers column types from CSV content. Without this, all
-     * columns default to STRING, causing schema merge failures against typed target columns.
-     * - `mergeSchema=true`: Allows Databricks to reconcile type differences between the inferred
-     * source schema and the target table schema (e.g., inferred INT merging into LONG).
+     * Avro files embed their schema in the file header, so Databricks reads exact types without
+     * relying on `inferSchema` or explicit type casts. `mergeSchema=true` is kept as a safety net
+     * for type widening (e.g., Avro string → Databricks TIMESTAMP).
      */
-    fun copyIntoFromVolume(tableName: TableName, stagedFilePath: String): String =
+    fun copyIntoFromVolume(
+        tableName: TableName,
+        stagedFilePath: String,
+    ): String =
         """
         |COPY INTO ${fullyQualifiedName(tableName)}
         |FROM '$stagedFilePath'
-        |FILEFORMAT = CSV
-        |FORMAT_OPTIONS (
-        |    'header' = 'true',
-        |    'inferSchema' = 'true',
-        |    'escape' = '"',
-        |    'nullValue' = ''
-        |)COPY_OPTIONS ( 'mergeSchema' = 'true' )
+        |FILEFORMAT = AVRO
         """.trimMargin()
 
-    /** Drops the Unity Catalog Volume used for staging CSV files. */
+    /** Drops the Unity Catalog Volume used for staging Avro files. */
     fun dropStagingVolume(tableName: TableName): String =
         "DROP VOLUME IF EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
 
@@ -307,7 +303,7 @@ class DatabricksSqlGenerator(
             Meta.COLUMN_NAME_AB_RAW_ID to ColumnType(STRING, false),
             Meta.COLUMN_NAME_AB_EXTRACTED_AT to ColumnType(TIMESTAMP, false),
             Meta.COLUMN_NAME_AB_META to ColumnType(STRING, false),
-            Meta.COLUMN_NAME_AB_GENERATION_ID to ColumnType(INTEGER, true),
+            Meta.COLUMN_NAME_AB_GENERATION_ID to ColumnType(LONG, true),
         )
 
     fun getMetaColumnNames(): Set<String> = metaColumns.keys

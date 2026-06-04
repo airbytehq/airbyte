@@ -56,11 +56,12 @@ class DatabricksChecker(
                 replace = true,
             )
 
-            val columns = databricksClient.describeTable(qualifiedTableName)
+            val columnSchema = databricksClient.describeTableWithTypes(qualifiedTableName)
             val buffer =
                 DatabricksInsertBuffer(
                     tableName = qualifiedTableName,
-                    columns = columns,
+                    columns = columnSchema.keys.toList(),
+                    columnSchema = columnSchema,
                     databricksClient = databricksClient,
                     config = config,
                 )

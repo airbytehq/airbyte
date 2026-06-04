@@ -121,6 +121,22 @@ class DatabricksAirbyteClient(
             }
         }
 
+    /**
+     * Returns all columns with their types for the given table in ordinal order, including Airbyte
+     * meta columns. Used to provide an explicit schema to COPY INTO statements.
+     */
+    fun describeTableWithTypes(tableName: TableName): LinkedHashMap<String, ColumnType> =
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+            val result = LinkedHashMap<String, ColumnType>()
+            while (rs.next()) {
+                val name = rs.getString("column_name")
+                val type = rs.getString("data_type")
+                val nullable = rs.getString("is_nullable") == "YES"
+                result[name] = ColumnType(type, nullable)
+            }
+            result
+        }
+
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columns =
             executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
@@ -197,7 +213,7 @@ class DatabricksAirbyteClient(
             )
     }
 
-    /** Executes a COPY INTO statement to load a staged CSV file into the target table. */
+    /** Executes a COPY INTO statement to load a staged Avro file into the target table. */
     fun copyFromVolume(tableName: TableName, stagedFilePath: String) {
         execute(sqlGenerator.copyIntoFromVolume(tableName, stagedFilePath))
     }
@@ -226,8 +242,10 @@ class DatabricksAirbyteClient(
         }
     }
 
-    private fun <T> executeQuery(sql: String, handler: (ResultSet) -> T): T =
-        dataSource.connection.use { conn ->
+    private fun <T> executeQuery(sql: String, handler: (ResultSet) -> T): T {
+        log.info { "Executing query: $sql" }
+        return dataSource.connection.use { conn ->
             conn.createStatement().use { stmt -> stmt.executeQuery(sql).use { rs -> handler(rs) } }
         }
+    }
 }

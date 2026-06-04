@@ -4,76 +4,75 @@
 
 package io.airbyte.integrations.destination.databricksv2.write.load
 
-import de.siegmar.fastcsv.writer.CsvWriter
-import de.siegmar.fastcsv.writer.LineDelimiter
-import de.siegmar.fastcsv.writer.QuoteStrategies
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.databricksv2.client.DatabricksAirbyteClient
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.OutputStream
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.*
-import java.util.zip.GZIPOutputStream
+import org.apache.avro.Schema
+import org.apache.avro.file.CodecFactory
+import org.apache.avro.file.DataFileWriter
+import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericDatumWriter
+import org.apache.avro.generic.GenericRecord
 
 private val logger = KotlinLogging.logger {}
 
-private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
-private const val STAGING_FILE_EXTENSION = ".csv.gz"
+private const val STAGING_FILE_EXTENSION = ".avro"
 private const val VOLUMES_BASE_PATH = "/Volumes"
 
 /**
- * Buffers records into an in-memory gzip-compressed CSV and flushes them to Databricks via Unity
- * Catalog Volume staging.
+ * Buffers records into an in-memory Avro file and flushes them to Databricks via Unity Catalog
+ * Volume staging.
  *
  * The loading pipeline works as follows:
- * 1. Records are accumulated into an in-memory gzip-compressed CSV buffer
- * 2. On [flush], the buffer is uploaded to a Unity Catalog Volume as a `.csv.gz` file
+ * 1. Records are accumulated into an in-memory Avro buffer with Snappy compression
+ * 2. On [flush], the buffer is uploaded to a Unity Catalog Volume as an `.avro` file
  * 3. A Databricks `COPY INTO` command loads the data from the Volume into the target table
  * 4. The staging file is optionally deleted (based on [DatabricksV2Configuration.purgeStagingData])
  */
 class DatabricksInsertBuffer(
     private val tableName: TableName,
     val columns: List<String>,
+    private val columnSchema: Map<String, ColumnType>,
     private val databricksClient: DatabricksAirbyteClient,
     private val config: DatabricksV2Configuration,
 ) {
 
-    /** In-memory byte buffer backing the gzip CSV output. */
+    /** Avro schema derived from the Databricks column types. */
+    private val avroSchema: Schema = DatabricksAvroSchemaBuilder.buildAvroSchema(columnSchema)
+
+    /** In-memory byte buffer backing the Avro output. */
     private var byteBuffer: ByteArrayOutputStream? = null
-    private var gzipOutputStream: GZIPOutputStream? = null
-    private var csvWriter: CsvWriter? = null
+    private var avroWriter: DataFileWriter<GenericRecord>? = null
     internal var recordCount = 0
 
-    private val csvWriterBuilder =
-        CsvWriter.builder()
-            .bufferSize(CSV_WRITER_BUFFER_SIZE)
-            .fieldSeparator(',')
-            .quoteCharacter('"')
-            .lineDelimiter(LineDelimiter.LF)
-            .quoteStrategy(QuoteStrategies.REQUIRED)
-
     /**
-     * Adds a record to the current CSV batch.
+     * Adds a record to the current Avro batch.
      *
-     * On the first call, initializes the gzip CSV buffer and writes a header row containing column
-     * names. Subsequent calls format the record and append it as a CSV row.
+     * On the first call, initializes the Avro writer with Snappy compression. Subsequent calls
+     * convert the record fields to Avro values and append a [GenericRecord].
      */
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (byteBuffer == null) {
             initializeBuffer()
         }
 
-        csvWriter!!.writeRecord(columns.map { col -> recordFields[col].toCsvValue().toString() })
+        val record = GenericData.Record(avroSchema)
+        for (col in columns) {
+            record.put(col, DatabricksAvroValueConverter.convert(recordFields[col]))
+        }
+        avroWriter!!.append(record)
         recordCount++
     }
 
-    /** Flushes the buffered CSV data to Databricks via Unity Catalog Volume staging */
+    /** Flushes the buffered Avro data to Databricks via Unity Catalog Volume staging. */
     suspend fun flush() {
         val buffer = byteBuffer
         if (buffer == null) {
@@ -82,19 +81,16 @@ class DatabricksInsertBuffer(
         }
 
         try {
-            // Finalize the gzip CSV
-            csvWriter?.flush()
-            csvWriter?.close()
-            gzipOutputStream?.finish()
-            gzipOutputStream?.close()
+            // Finalize the Avro file
+            avroWriter?.close()
 
-            val csvBytes = buffer.toByteArray()
+            val avroBytes = buffer.toByteArray()
             val stagingDir = stagingDirectory(tableName, config.database)
             val fileName = "${UUID.randomUUID()}$STAGING_FILE_EXTENSION"
             val stagedFilePath = "$stagingDir/$fileName"
 
             logger.info {
-                "Uploading $recordCount record(s) (${csvBytes.size} bytes compressed) " +
+                "Uploading $recordCount record(s) (${avroBytes.size} bytes) " +
                     "for ${tableName.namespace}.${tableName.name} to $stagedFilePath"
             }
 
@@ -104,7 +100,7 @@ class DatabricksInsertBuffer(
             // Upload to Unity Catalog Volume
             databricksClient.uploadToVolume(
                 stagedFilePath,
-                ByteArrayInputStream(csvBytes),
+                ByteArrayInputStream(avroBytes),
             )
 
             // Execute COPY INTO
@@ -130,22 +126,20 @@ class DatabricksInsertBuffer(
         }
     }
 
-    /**
-     * Initializes the in-memory gzip CSV buffer and writes the header row.
-     *
-     * Uses [CompressionOutputStream] (64 KB buffer, compression level 5) to reduce CPU spent in
-     * native zlib deflate.
-     */
+    /** Initializes the in-memory Avro writer with Snappy compression. */
     private fun initializeBuffer() {
         byteBuffer = ByteArrayOutputStream()
-        gzipOutputStream = CompressionOutputStream(byteBuffer!!)
-        csvWriter = csvWriterBuilder.build(gzipOutputStream!!).also { it.writeRecord(columns) }
+        val datumWriter = GenericDatumWriter<GenericRecord>(avroSchema)
+        avroWriter =
+            DataFileWriter(datumWriter).apply {
+                setCodec(CodecFactory.snappyCodec())
+                create(avroSchema, byteBuffer!!)
+            }
     }
 
     /** Resets all internal state for the next batch. */
     private fun resetState() {
-        csvWriter = null
-        gzipOutputStream = null
+        avroWriter = null
         byteBuffer = null
         recordCount = 0
     }
@@ -161,14 +155,5 @@ class DatabricksInsertBuffer(
             return "$VOLUMES_BASE_PATH/$database/${tableName.namespace}/" +
                 "${tableName.name}_staging/$executionDate"
         }
-    }
-}
-
-/** [GZIPOutputStream] with a 64 KB buffer and compression level 5. */
-private class CompressionOutputStream(
-    out: OutputStream,
-) : GZIPOutputStream(out, 65_536) {
-    init {
-        def.setLevel(5)
     }
 }

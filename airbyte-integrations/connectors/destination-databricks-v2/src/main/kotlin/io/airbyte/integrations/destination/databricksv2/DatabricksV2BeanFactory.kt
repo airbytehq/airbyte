@@ -10,12 +10,14 @@ import com.databricks.sdk.core.DatabricksConfig
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2ConfigurationFactory
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Specification
 import io.airbyte.integrations.destination.databricksv2.spec.OAuthConfiguration
 import io.airbyte.integrations.destination.databricksv2.spec.PersonalAccessTokenConfiguration
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Replaces
 import jakarta.inject.Singleton
 import java.util.*
 import javax.sql.DataSource
@@ -53,7 +55,9 @@ class DatabricksV2BeanFactory {
         )
     }
 
-    @Singleton fun tempTableNameGenerator() = DefaultTempTableNameGenerator()
+    @Singleton
+    @Replaces(DefaultTempTableNameGenerator::class)
+    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
 
     @Singleton
     fun databricksDataSource(config: DatabricksV2Configuration): DataSource {

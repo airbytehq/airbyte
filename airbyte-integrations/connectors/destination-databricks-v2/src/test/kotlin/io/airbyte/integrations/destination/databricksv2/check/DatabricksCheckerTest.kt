@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.databricksv2.check
 
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.databricksv2.client.DatabricksAirbyteClient
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
@@ -24,6 +25,14 @@ class DatabricksCheckerTest {
     private lateinit var databricksClient: DatabricksAirbyteClient
     private lateinit var config: DatabricksV2Configuration
     private lateinit var checker: DatabricksChecker
+
+    private val metaColumnSchema =
+        linkedMapOf(
+            "_airbyte_raw_id" to ColumnType("STRING", false),
+            "_airbyte_extracted_at" to ColumnType("TIMESTAMP", false),
+            "_airbyte_meta" to ColumnType("STRING", false),
+            "_airbyte_generation_id" to ColumnType("LONG", true),
+        )
 
     @BeforeEach
     fun setup() {
@@ -46,13 +55,8 @@ class DatabricksCheckerTest {
     fun `check succeeds when row count is 1`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTable(any()) } returns
-            listOf(
-                "_airbyte_raw_id",
-                "_airbyte_extracted_at",
-                "_airbyte_meta",
-                "_airbyte_generation_id",
-            )
+        every { databricksClient.describeTableWithTypes(any()) } returns
+            LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 1L
 
         assertDoesNotThrow { checker.check() }
@@ -66,13 +70,8 @@ class DatabricksCheckerTest {
     fun `check fails when row count is 0`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTable(any()) } returns
-            listOf(
-                "_airbyte_raw_id",
-                "_airbyte_extracted_at",
-                "_airbyte_meta",
-                "_airbyte_generation_id",
-            )
+        every { databricksClient.describeTableWithTypes(any()) } returns
+            LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 0L
 
         val exception = assertThrows<IllegalArgumentException> { checker.check() }
@@ -85,13 +84,8 @@ class DatabricksCheckerTest {
     fun `check fails when row count is null`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTable(any()) } returns
-            listOf(
-                "_airbyte_raw_id",
-                "_airbyte_extracted_at",
-                "_airbyte_meta",
-                "_airbyte_generation_id",
-            )
+        every { databricksClient.describeTableWithTypes(any()) } returns
+            LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns null
 
         val exception = assertThrows<IllegalArgumentException> { checker.check() }
@@ -113,13 +107,8 @@ class DatabricksCheckerTest {
     fun `cleanup drops the check table and staging volume`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTable(any()) } returns
-            listOf(
-                "_airbyte_raw_id",
-                "_airbyte_extracted_at",
-                "_airbyte_meta",
-                "_airbyte_generation_id",
-            )
+        every { databricksClient.describeTableWithTypes(any()) } returns
+            LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 1L
 
         checker.check()
@@ -154,13 +143,8 @@ class DatabricksCheckerTest {
 
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTable(any()) } returns
-            listOf(
-                "_airbyte_raw_id",
-                "_airbyte_extracted_at",
-                "_airbyte_meta",
-                "_airbyte_generation_id",
-            )
+        every { databricksClient.describeTableWithTypes(any()) } returns
+            LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 1L
 
         upperChecker.check()

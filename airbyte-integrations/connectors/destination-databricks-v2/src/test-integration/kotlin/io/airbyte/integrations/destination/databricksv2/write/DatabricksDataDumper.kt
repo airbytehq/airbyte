@@ -33,13 +33,14 @@ class DatabricksDataDumper(
     ): List<OutputRecord> {
         val config = configProvider(spec)
         val dataSource = DatabricksTestDataSourceProvider.get(config)
-        val tableName = stream.tableSchema.tableNames.finalTableName!!
+        val descriptor = stream.mappedDescriptor
 
         // Build reverse column name mapping (final -> input)
         val columnMapping = stream.tableSchema.columnSchema.inputToFinalColumnNames
         val reverseMapping = columnMapping.entries.associate { (k, v) -> v to k }
 
-        val sql = "SELECT * FROM `${config.database}`.`${tableName.namespace}`.`${tableName.name}`"
+        val sql =
+            "SELECT * FROM `${config.database}`.`${descriptor.namespace}`.`${descriptor.name}`"
 
         return dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
@@ -50,7 +51,8 @@ class DatabricksDataDumper(
                         val rawId =
                             rs.getString(Meta.COLUMN_NAME_AB_RAW_ID)?.let { UUID.fromString(it) }
                         val extractedAt =
-                            rs.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT)?.toInstant()
+                            rs.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT, UTC_CALENDAR)
+                                ?.toInstant()
                                 ?: Instant.EPOCH
                         val generationId =
                             rs.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID).let {
@@ -93,11 +95,14 @@ class DatabricksDataDumper(
     }
 
     companion object {
+        private val UTC_CALENDAR = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+
         private fun readColumnValue(rs: ResultSet, index: Int, typeName: String): Any? {
             val value = rs.getObject(index) ?: return null
             return when (typeName.uppercase()) {
                 "TIMESTAMP",
-                "TIMESTAMP_NTZ" -> rs.getTimestamp(index)?.toLocalDateTime()?.toString()
+                "TIMESTAMP_NTZ" ->
+                    rs.getTimestamp(index, UTC_CALENDAR)?.toLocalDateTime()?.toString()
                 "DATE" -> rs.getDate(index)?.toString()
                 "LONG",
                 "BIGINT",
