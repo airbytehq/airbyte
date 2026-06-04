@@ -3,8 +3,8 @@ type: DeclarativeSource
 
 description: >-
   Discord source connector for extracting data from the Discord REST API (v10).
-  Supports syncing guilds, channels, messages, members, roles, threads,
-  pinned messages, scheduled events, audit logs, and current user.
+  Supports syncing guilds, channels, messages, members, roles, threads, and
+  scheduled events.
 
 check:
   type: CheckStream
@@ -163,20 +163,28 @@ definitions:
             cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ last_page_size < 100 }}"
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: channel_id
-                stream:
-                  $ref: "#/definitions/streams/channels"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: channel_id
-                stream:
-                  $ref: "#/definitions/streams/threads"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/channels"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/threads"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/archived_public_threads"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/archived_private_threads"
       transformations:
         - type: AddFields
           fields:
@@ -304,20 +312,37 @@ definitions:
         schema:
           $ref: "#/schemas/threads"
 
-    pinned_messages:
+    archived_public_threads:
       type: DeclarativeStream
-      name: pinned_messages
+      name: archived_public_threads
       primary_key:
         - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/permissive_requester"
-          path: "/channels/{{ stream_partition['channel_id'] }}/pins"
+          path: "/channels/{{ stream_partition['channel_id'] }}/threads/archived/public"
         record_selector:
-          $ref: "#/definitions/base_record_selector"
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - threads
         paginator:
-          type: NoPagination
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: before
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['thread_metadata']['archive_timestamp'] }}"
+            stop_condition: "{{ last_page_size < 100 }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -326,15 +351,54 @@ definitions:
               partition_field: channel_id
               stream:
                 $ref: "#/definitions/streams/channels"
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["channel_id"]
-              value: "{{ stream_partition['channel_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/messages"
+          $ref: "#/schemas/threads"
+
+    archived_private_threads:
+      type: DeclarativeStream
+      name: archived_private_threads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/permissive_requester"
+          path: "/channels/{{ stream_partition['channel_id'] }}/threads/archived/private"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - threads
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: before
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['thread_metadata']['archive_timestamp'] }}"
+            stop_condition: "{{ last_page_size < 100 }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/channels"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/threads"
 
     scheduled_events:
       type: DeclarativeStream
@@ -368,55 +432,6 @@ definitions:
         schema:
           $ref: "#/schemas/scheduled_events"
 
-    audit_log:
-      type: DeclarativeStream
-      name: audit_log
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: "/guilds/{{ stream_partition['guild_id'] }}/audit-logs"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - audit_log_entries
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: limit
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: before
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ last_record['id'] }}"
-            stop_condition: "{{ last_page_size < 100 }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: guild_id
-              stream:
-                $ref: "#/definitions/streams/guilds"
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["guild_id"]
-              value: "{{ stream_partition['guild_id'] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/audit_log"
-
     current_user:
       type: DeclarativeStream
       name: current_user
@@ -446,10 +461,7 @@ streams:
   - $ref: "#/definitions/streams/members"
   - $ref: "#/definitions/streams/roles"
   - $ref: "#/definitions/streams/threads"
-  - $ref: "#/definitions/streams/pinned_messages"
   - $ref: "#/definitions/streams/scheduled_events"
-  - $ref: "#/definitions/streams/audit_log"
-  - $ref: "#/definitions/streams/current_user"
 
 spec:
   type: Spec
@@ -962,50 +974,6 @@ schemas:
           - integer
           - "null"
         description: Number of users subscribed to the event.
-
-  audit_log:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type: string
-        description: Audit log entry ID (snowflake).
-      target_id:
-        type:
-          - string
-          - "null"
-        description: ID of the affected entity.
-      user_id:
-        type:
-          - string
-          - "null"
-        description: ID of the user who made the changes.
-      action_type:
-        type: integer
-        description: Type of action that occurred.
-      changes:
-        type:
-          - array
-          - "null"
-        description: Changes made to the target.
-        items:
-          type: object
-          additionalProperties: true
-      options:
-        type:
-          - object
-          - "null"
-        description: Additional info for certain action types.
-        additionalProperties: true
-      reason:
-        type:
-          - string
-          - "null"
-        description: Reason for the change (1-512 characters).
-      guild_id:
-        type: string
-        description: ID of the guild this audit log entry belongs to.
 
   current_user:
     type: object

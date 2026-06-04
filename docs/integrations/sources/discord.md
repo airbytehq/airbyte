@@ -38,7 +38,6 @@ Some streams require privileged intents to be enabled in the Developer Portal:
 3. Under **Bot Permissions**, select:
    - **View Channels** --- required for reading channels and messages
    - **Read Message History** --- required for accessing historical messages
-   - **View Audit Log** --- required for the `audit_log` stream
 4. Copy the generated URL and open it in your browser.
 5. Select the guild you want to add the bot to and click **Authorize**.
 
@@ -88,14 +87,11 @@ The connector syncs data from the following Discord API endpoints:
 | :----------------- | :-------------------------------------------------------------------------------------------- |
 | `guilds`           | All guilds (servers) the bot has joined. Entry point for all other streams.                    |
 | `channels`         | All channels in each guild, including text, voice, category, forum, and announcement channels. |
-| `messages`         | Messages from all text-capable channels and active threads. Paginated newest-to-oldest.        |
+| `messages`         | Messages from all text-capable channels, active threads, and archived threads. Paginated newest-to-oldest. |
 | `members`          | Guild member list with roles, join dates, and nicknames. Requires Server Members Intent.       |
 | `roles`            | All roles in each guild with permissions and metadata.                                         |
 | `threads`          | Active threads across all channels in each guild.                                              |
-| `pinned_messages`  | Pinned messages for each channel (max 50 per channel).                                         |
 | `scheduled_events` | Scheduled events in each guild.                                                                |
-| `audit_log`        | Audit log entries for each guild. Requires View Audit Log permission.                          |
-| `current_user`     | The bot user's own profile (`/users/@me`). Single record per sync.                             |
 
 ## Rate limiting
 
@@ -111,10 +107,8 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 - **Message Content Intent**: Without the `MESSAGE_CONTENT` privileged intent enabled in the Developer Portal, the `messages` stream will return empty `content` fields for most messages. Only messages that mention the bot or are DMs will have content populated.
 - **Server Members Intent**: The `members` stream requires the `GUILD_MEMBERS` privileged intent. Without it, requests to list guild members will return a 403 error. The connector surfaces this error clearly so users know to enable the intent.
 - **Messages pagination**: The `messages` stream performs a full refresh walking newest-to-oldest using the `before` cursor parameter. For channels with very large message histories, the initial sync may take a long time. Incremental sync is not yet supported.
-- **Active threads only**: The `threads` stream currently syncs only active threads. Archived threads from individual channels are not included in this version.
-- **Channel permissions**: The connector gracefully handles channels where the bot lacks access by skipping those channels (403 errors are ignored for `messages`, `pinned_messages`, and `threads`). Streams that require guild-level permissions (`members`, `audit_log`) will fail with an actionable error if permissions are missing.
-- **Pinned messages cap**: The `/channels/{id}/pins` endpoint returns a maximum of 50 pinned messages per channel.
-- **Thread messages**: Messages from active threads are automatically included in the `messages` stream alongside regular channel messages.
+- **Thread messages**: Messages from active threads and archived threads (both public and private) are automatically included in the `messages` stream alongside regular channel messages.
+- **Channel permissions**: The connector gracefully handles channels where the bot lacks access by skipping those channels (403 errors are ignored for per-channel streams). Streams that require guild-level permissions (`members`) will fail with an actionable error if permissions are missing.
 
 ## Changelog
 
@@ -123,6 +117,6 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 
 | Version | Date       | Pull Request | Subject                         |
 | :------ | :--------- | :----------- | :------------------------------ |
-| 0.1.0   | 2026-04-16 | [76376](https://github.com/airbytehq/airbyte/pull/76376) | Initial release of source-discord connector with 10 streams: guilds, channels, messages, members, roles, threads, pinned_messages, scheduled_events, audit_log, and current_user. |
+| 0.1.0   | 2026-04-16 | [76376](https://github.com/airbytehq/airbyte/pull/76376) | Initial release of source-discord connector with 7 streams: guilds, channels, messages, members, roles, threads, and scheduled_events. |
 
 </details>
