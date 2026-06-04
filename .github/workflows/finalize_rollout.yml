@@ -55,6 +55,30 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
+      - name: Mark progressive rollout promoted
+        if: env.ACTION == 'promote'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: >
+          airbyte-ops registry progressive-rollout finalize-marker
+          --name "${CONNECTOR_NAME}"
+          --store "${REGISTRY_STORE}"
+          --outcome promoted
+
+      - name: Mark progressive rollout aborted
+        if: env.ACTION == 'rollback'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: >
+          airbyte-ops registry progressive-rollout finalize-marker
+          --name "${CONNECTOR_NAME}"
+          --store "${REGISTRY_STORE}"
+          --outcome aborted
+
       - name: "Recompile registry for connector"
         shell: bash
         env:
