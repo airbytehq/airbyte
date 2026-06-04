@@ -17,11 +17,14 @@ airbyte-agent <resource> <operation> [flags]
 
 Most resource operations accept JSON input with `--json` and print JSON output. The CLI also exposes `airbyte-agent schema <resource> <operation>` so scripts and agents can discover operation parameters without making an API call.
 
-Use the CLI when you want:
+## When to use the CLI
 
-- A shell-first interface to Airbyte Agents.
-- A portable binary for AI agents that can run shell commands.
-- A non-Python alternative to the [SDK](../sdk) and a higher-level wrapper around the [Agent API](../api).
+- You want a shell-first interface to Airbyte Agents.
+- You're building an AI agent harness that invokes command-line tools and parses JSON output.
+- You need a portable binary that works in CI pipelines, shell scripts, or headless environments.
+- You prefer local execution and a non-Python alternative to the [SDK](../sdk).
+
+If your agent already speaks the Model Context Protocol, the [MCP server](../mcp) offers the same connectors with zero install. If you're writing Python, the [SDK](../sdk) gives you typed, in-process access. For raw HTTP control or non-Python backends, see the [API](../api).
 
 Source code and releases live in the [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli) repository.
 
