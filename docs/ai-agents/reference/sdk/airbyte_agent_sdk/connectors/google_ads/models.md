@@ -2856,9 +2856,6 @@ Classes
     `campaign_campaign_budget: str | None`
     :   Campaign budget resource name
 
-    `campaign_end_date: str | None`
-    :   Campaign end date
-
     `campaign_id: int | None`
     :   Campaign ID
 
@@ -2885,9 +2882,6 @@ Classes
 
     `campaign_serving_status: str | None`
     :   Campaign serving status
-
-    `campaign_start_date: str | None`
-    :   Campaign start date
 
     `campaign_status: str | None`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
