@@ -335,7 +335,7 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - In each sync, each microbatch creates a new snapshot.
 
-- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch and replaces the `main` branch with that staging branch at the end of the sync. Since most query engines target the `main` branch, people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version. The connector removes the staging branch at the end of the sync.
+- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch and replaces the `main` branch with that staging branch at the end of a successful sync. Since most query engines target the `main` branch, people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version. The connector removes the staging branch after a successful promotion, and preserves it after failed syncs so retries can recover staged data.
 
 ### Branch replacement
 

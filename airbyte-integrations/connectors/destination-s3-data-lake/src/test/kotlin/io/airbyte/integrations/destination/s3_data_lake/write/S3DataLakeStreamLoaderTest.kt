@@ -43,6 +43,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
@@ -235,6 +236,84 @@ internal class S3DataLakeStreamLoaderTest {
 
         verify { manageSnapshots.replaceBranch("main", "airbyte_staging_test") }
         verify { manageSnapshots.removeBranch("airbyte_staging_test") }
+    }
+
+    @Test
+    fun testCompletedTeardownPreservesUniqueStagingBranchWhenPromotionFails() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "name" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val stream =
+            DestinationStream(
+                generationId = 1,
+                minimumGenerationId = 0,
+                syncId = 1,
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = makeTableSchema(objectSchema, Append),
+            )
+        val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+        val icebergConfiguration = makeIcebergConfiguration()
+        val catalog: Catalog = mockk()
+        val manageSnapshots: ManageSnapshots = mockk()
+        var commitCount = 0
+        every { manageSnapshots.createBranch("airbyte_staging_test") } returns manageSnapshots
+        every { manageSnapshots.replaceBranch("main", "airbyte_staging_test") } returns
+            manageSnapshots
+        every { manageSnapshots.removeBranch("airbyte_staging_test") } returns manageSnapshots
+        every { manageSnapshots.commit() } answers
+            {
+                commitCount += 1
+                if (commitCount == 2) {
+                    throw RuntimeException("promotion failed")
+                }
+            }
+        val table: Table = mockk {
+            every { schema() } returns icebergSchema
+            every { refresh() } just runs
+            every { manageSnapshots() } returns manageSnapshots
+        }
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
+            every { toCatalogProperties(any()) } returns mapOf()
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns catalog
+            every { createTable(any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns icebergSchema
+        }
+        val streamLoader =
+            S3DataLakeStreamLoader(
+                icebergConfiguration,
+                stream,
+                IcebergTableSynchronizer(
+                    IcebergTypesComparator(),
+                    IcebergSuperTypeFinder(IcebergTypesComparator()),
+                ),
+                s3DataLakeUtil,
+                icebergUtil,
+                stagingBranchName = "airbyte_staging_test",
+                mainBranchName = "main",
+                streamStateStore = streamStateStore,
+            )
+
+        val failure =
+            assertFailsWith<RuntimeException> {
+                runBlocking {
+                    streamLoader.start()
+                    streamLoader.teardown(true)
+                }
+            }
+
+        assertEquals("promotion failed", failure.message)
+        verify { manageSnapshots.replaceBranch("main", "airbyte_staging_test") }
+        verify(exactly = 0) { manageSnapshots.removeBranch("airbyte_staging_test") }
     }
 
     @Test
