@@ -167,7 +167,11 @@ def test_replace_fields_in_query(query, expected_query, expected_changed):
             id="no_deprecated_fields",
         ),
         pytest.param(
-            {"custom_queries_array": [{"query": "SELECT campaign.start_date_time, campaign.end_date_time FROM campaign", "table_name": "t"}]},
+            {
+                "custom_queries_array": [
+                    {"query": "SELECT campaign.start_date_time, campaign.end_date_time FROM campaign", "table_name": "t"}
+                ]
+            },
             False,
             id="already_uses_new_date_time_fields",
         ),
