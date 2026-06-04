@@ -133,7 +133,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.18.0 | 2026-06-04 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add new `segments` stream |
+| 2.18.0 | 2026-06-04 | [XXXXX](https://github.com/airbytehq/airbyte/pull/76941) | Add new `segments` stream |
 | 2.17.9 | 2026-06-02 | [78784](https://github.com/airbytehq/airbyte/pull/78784) | Update dependencies |
 | 2.17.8 | 2026-04-28 | [77313](https://github.com/airbytehq/airbyte/pull/77313) | Update dependencies |
 | 2.17.7 | 2026-04-25 | [77008](https://github.com/airbytehq/airbyte/pull/77008) | Fix sync failure when conversion metrics do not support values data queries in flow_series_reports and campaign_values_reports streams |
