@@ -357,17 +357,26 @@ open class PostgresSourceJdbcPartitionFactory(
             val sql = "SELECT pg_relation_filenode(?::regclass)"
             val jdbcFieldType: JdbcFieldType<*> = LongFieldType
             val filenode: Any? =
-                querySingleValue(
-                    jdbcConnectionFactory,
-                    sql,
-                    { stmt ->
-                        stmt.setString(
-                            1,
-                            with(streamState.stream) { toQualifiedTableName(namespace, name) }
-                        )
-                    },
-                    { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) }
-                )
+                try {
+                    querySingleValue(
+                        jdbcConnectionFactory,
+                        sql,
+                        { stmt ->
+                            stmt.setString(
+                                1,
+                                with(streamState.stream) { toQualifiedTableName(namespace, name) }
+                            )
+                        },
+                        { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) }
+                    )
+                } catch (e: Exception) {
+                    log.warn(e) {
+                        "Failed to query filenode for stream ${streamState.stream.id}; " +
+                            "falling back to unsplittable partition. " +
+                            "This may occur on non-standard PostgreSQL-compatible databases."
+                    }
+                    return null
+                }
             log.info { "Filenode for stream ${streamState.stream.id}: ${filenode ?: "not found"}" }
             return filenode as? Filenode
         }
