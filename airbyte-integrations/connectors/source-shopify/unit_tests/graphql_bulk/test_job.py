@@ -5,7 +5,6 @@
 
 from os import remove
 
-import orjson
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
