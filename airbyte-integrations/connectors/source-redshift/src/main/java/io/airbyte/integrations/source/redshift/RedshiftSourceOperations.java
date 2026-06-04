@@ -17,7 +17,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,18 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSourceOperations extends JdbcSourceOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSourceOperations.class);
+
+  // Redshift's default timestamp rendering is e.g. "2026-06-04 05:50:52.815018"
+  // (or with an offset like "+00", "+0530", "+05:30" for timestamptz).
+  private static final DateTimeFormatter REDSHIFT_LOCAL_DATETIME = new DateTimeFormatterBuilder()
+      .append(DateTimeFormatter.ISO_LOCAL_DATE)
+      .appendLiteral(' ')
+      .append(DateTimeFormatter.ISO_LOCAL_TIME)
+      .toFormatter();
+  private static final DateTimeFormatter REDSHIFT_OFFSET_DATETIME = new DateTimeFormatterBuilder()
+      .append(REDSHIFT_LOCAL_DATETIME)
+      .appendPattern("[XXX][XX][X]")
+      .toFormatter();
 
   @Override
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
@@ -50,7 +63,14 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final Timestamp timestamp = resultSet.getTimestamp(index);
+    // The Redshift JDBC driver applies a DST-sensitive offset when materializing timestamp values
+    // via getTimestamp(), so values can come back shifted by an hour. Read the raw server-rendered
+    // string instead (e.g. "2026-06-04 05:50:52.815018") and parse it ourselves.
+    final String raw = resultSet.getString(index);
+    if (raw == null) {
+      return;
+    }
+    final LocalDateTime timestamp = REDSHIFT_LOCAL_DATETIME.parse(raw, LocalDateTime::from);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
 
@@ -69,15 +89,15 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
   @Override
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
-    // The base implementation reads timestamptz values via getObject(OffsetDateTime), which the
-    // Amazon Redshift JDBC driver can return shifted by a daylight-saving-time offset (off by one
-    // hour). Derive the value from the absolute instant via getTimestamp instead, which the driver
-    // reports reliably, and normalize to UTC for a stable, timezone-correct serialization.
-    final Timestamp timestamp = resultSet.getTimestamp(index);
-    if (timestamp == null) {
+    // The Redshift JDBC driver applies a DST-sensitive offset when materializing timestamptz values
+    // via both getObject(OffsetDateTime) and getTimestamp(), so values can come back shifted by an
+    // hour. Read the raw server-rendered string instead (e.g. "2026-06-04 05:50:52.815018+00") and
+    // parse it ourselves to recover the true instant.
+    final String raw = resultSet.getString(index);
+    if (raw == null) {
       return;
     }
-    final OffsetDateTime timestamptz = timestamp.toInstant().atOffset(ZoneOffset.UTC);
+    final OffsetDateTime timestamptz = REDSHIFT_OFFSET_DATETIME.parse(raw, OffsetDateTime::from);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamptz));
   }
 
