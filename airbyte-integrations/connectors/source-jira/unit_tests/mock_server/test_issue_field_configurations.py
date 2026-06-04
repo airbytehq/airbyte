@@ -38,8 +38,28 @@ class TestFieldSchemesStream(TestCase):
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         field_schemes = [
-            {"id": 10000, "name": "Default Field Scheme", "description": "Default", "isDefault": True, "fieldsCount": 5, "links": {"associations": "rest/api/3/config/fieldschemes/10000/fields", "projects": "rest/api/3/config/fieldschemes/10000/projects"}},
-            {"id": 10001, "name": "Custom Field Scheme", "description": "Custom", "isDefault": False, "fieldsCount": 3, "links": {"associations": "rest/api/3/config/fieldschemes/10001/fields", "projects": "rest/api/3/config/fieldschemes/10001/projects"}},
+            {
+                "id": 10000,
+                "name": "Default Field Scheme",
+                "description": "Default",
+                "isDefault": True,
+                "fieldsCount": 5,
+                "links": {
+                    "associations": "rest/api/3/config/fieldschemes/10000/fields",
+                    "projects": "rest/api/3/config/fieldschemes/10000/projects",
+                },
+            },
+            {
+                "id": 10001,
+                "name": "Custom Field Scheme",
+                "description": "Custom",
+                "isDefault": False,
+                "fieldsCount": 3,
+                "links": {
+                    "associations": "rest/api/3/config/fieldschemes/10001/fields",
+                    "projects": "rest/api/3/config/fieldschemes/10001/projects",
+                },
+            },
         ]
 
         http_mocker.get(
