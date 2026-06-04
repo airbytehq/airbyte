@@ -26,7 +26,6 @@ import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
-import io.airbyte.cdk.read.DefaultJdbcSplittableSnapshotWithCursorPartition
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.StateManager
@@ -511,16 +510,17 @@ class MsSqlServerJdbcPartitionFactoryTest {
     }
 
     /**
-     * Incremental sync, v2 -> v3 state migration:
-     * Version 3 does not persist state for an empty tables (upperBound is NULL).
+     * Incremental sync, v2 -> v3 state migration: Version 3 does not persist state for an empty
+     * tables (upperBound is NULL).
      *
-     * Incremental empty table goes through [MsSqlServerJdbcSnapshotWithCursorPartition] that returns the [cursorIncrementalCheckpoint]
-     * as Json.nullNode(). This value is skipped by the guards in create().
-     * No state is saved for the empty table because [StateManager.checkpoint] drops states whose value isNull.
+     * Incremental empty table goes through [MsSqlServerJdbcSnapshotWithCursorPartition] that
+     * returns the [cursorIncrementalCheckpoint] as Json.nullNode(). This value is skipped by the
+     * guards in create(). No state is saved for the empty table because [StateManager.checkpoint]
+     * drops states whose value isNull.
      *
-     * A cursor_based state carrying a NULL cursor can therefore only come from a v2 migration, where
-     * cursor_based entry (with a null cursor) did exist for empty tables. In this case, we are calling coldStart()
-     * to uddate the cursor value and state.
+     * A cursor_based state carrying a NULL cursor can therefore only come from a v2 migration,
+     * where cursor_based entry (with a null cursor) did exist for empty tables. In this case, we
+     * are calling coldStart() to uddate the cursor value and state.
      */
     @Test
     fun testResumeFromCompletedCursorBasedReadWithoutCursorValueVersion2To3() {
@@ -543,12 +543,12 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
-
     }
 
     @Test
     fun testResumableFromV2CursorBasedReadWithCursorValueVersion2To3() {
-        // v2 state with a cursor (not empty table on v2) - migration keeps the cursor and resume the
+        // v2 state with a cursor (not empty table on v2) - migration keeps the cursor and resume
+        // the
         // incremental sync without any coldStart.
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
@@ -566,7 +566,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
               }
         """.trimIndent()
             )
-        val jdbcPartition = msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
     }
 

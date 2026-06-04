@@ -390,7 +390,6 @@ open class MsSqlServerJdbcPartitionFactory(
                     }
                     streamState.reset()
                     return coldStart(streamState)
-
                 } else {
                     // Convert the stored cursor to its typed JsonNode
                     stateValueToJsonNode(cursor, sv.cursor.asText())
