@@ -7,10 +7,18 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from source_s3.v4 import Config, SourceS3, SourceS3StreamReader
+from source_s3.v4.throttled_stream import ThrottledFileBasedStream
+
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 
 
 _V3_FIELDS = ["dataset", "format", "path_pattern", "provider", "schema"]
 TEST_FILES_FOLDER = Path(__file__).resolve().parent.parent.joinpath("sample_files")
+
+
+class _ParsedConfig:
+    delivery_method = object()
 
 
 class SourceTest(unittest.TestCase):
@@ -52,3 +60,13 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_v3_nested_fields_are_not_required(self) -> None:
         spec = self._source.spec()
         assert not spec.connectionSpecification["properties"]["provider"]["required"]
+
+    def test_make_default_stream_returns_throttled_stream(self) -> None:
+        stream_config = FileBasedStreamConfig(name="s", validation_policy="Emit Record", format=CsvFormat())
+        cursor = Mock()
+
+        stream = self._source._make_default_stream(stream_config, cursor, _ParsedConfig())
+
+        assert isinstance(stream, ThrottledFileBasedStream)
+        assert stream.config is stream_config
+        assert stream.cursor is cursor
