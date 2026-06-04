@@ -161,7 +161,7 @@ class RedshiftCheckerTest {
                 username = config.username
                 password = config.password
                 addDataSourceProperty("ssl", "true")
-                addDataSourceProperty("sslfactory", RedshiftConnect.SSL_FACTORY)
+                addDataSourceProperty("SSL_Insecure", "true")
                 addDataSourceProperty("connectTimeout", "10")
             },
         )
