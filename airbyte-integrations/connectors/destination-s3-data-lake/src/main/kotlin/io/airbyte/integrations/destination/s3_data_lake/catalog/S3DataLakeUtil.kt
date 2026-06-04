@@ -244,18 +244,16 @@ class S3DataLakeUtil(
         config: S3DataLakeConfiguration
     ): Map<String, String> {
         val region = config.s3BucketConfiguration.s3BucketRegion
-        val (accessKeyId, secretAccessKey, externalId) =
-            if (assumeRoleCredentials != null) {
-                Triple(
-                    assumeRoleCredentials.accessKey,
-                    assumeRoleCredentials.secretKey,
-                    assumeRoleCredentials.externalId,
-                )
-            } else {
-                throw IllegalStateException(
-                    "Cannot assume role without system-provided credentials"
-                )
-            }
+        // System-provided assume-role credentials are optional. When they are not
+        // injected (e.g. OSS / privatelink deployments that authenticate the pod
+        // via IRSA or an instance profile instead of static Airbyte-system keys),
+        // we leave the access-key / secret-key entries off the property map and
+        // let GlueCredentialsProvider fall back to the default credentials chain
+        // for the STS client that performs AssumeRole. The external id is only
+        // surfaced when we actually have a system-provided one to use.
+        val accessKeyId = assumeRoleCredentials?.accessKey
+        val secretAccessKey = assumeRoleCredentials?.secretKey
+        val externalId = assumeRoleCredentials?.externalId
 
         return mapOfNotNull(
             // Note: no explicit credentials, whether on AwsProperties.REST_ACCESS_KEY_ID, or on

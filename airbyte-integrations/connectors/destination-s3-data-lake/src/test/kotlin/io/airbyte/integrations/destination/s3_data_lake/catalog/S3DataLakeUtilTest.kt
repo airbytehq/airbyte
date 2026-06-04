@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
+import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
@@ -406,6 +407,81 @@ internal class S3DataLakeUtilTest {
         Assertions.assertEquals(
             "aws-creds-static-creds",
             catalogProperties["client.credentials-provider.aws-creds-mode"]
+        )
+    }
+
+    @Test
+    fun `testGlueCatalogPropertiesWithRoleArnAndSystemCredentials`() {
+        // When a role ARN is configured and the deployment injects system-provided
+        // assume-role credentials, the resulting Iceberg property map carries the
+        // static keys + external id that GlueCredentialsProvider needs to bootstrap
+        // the STS client.
+        val s3DataLakeUtilWithCreds =
+            S3DataLakeUtil(
+                icebergUtil,
+                assumeRoleCredentials =
+                    AwsAssumeRoleCredentials(
+                        accessKey = "system-access-key",
+                        secretKey = "system-secret-key",
+                        externalId = "system-external-id",
+                    ),
+            )
+        val config = createGlueTestConfiguration(roleArn = "arn:aws:iam::123456789012:role/test")
+        val catalogProperties = s3DataLakeUtilWithCreds.toCatalogProperties(config)
+
+        Assertions.assertEquals(
+            "aws-creds-assume-role",
+            catalogProperties["client.credentials-provider.aws-creds-mode"]
+        )
+        Assertions.assertEquals(
+            "system-access-key",
+            catalogProperties["client.credentials-provider.access-key-id"]
+        )
+        Assertions.assertEquals(
+            "system-secret-key",
+            catalogProperties["client.credentials-provider.secret-access-key"]
+        )
+        Assertions.assertEquals(
+            "system-external-id",
+            catalogProperties["client.credentials-provider.external-id"]
+        )
+        Assertions.assertEquals(
+            "arn:aws:iam::123456789012:role/test",
+            catalogProperties["client.credentials-provider.role-arn"]
+        )
+    }
+
+    @Test
+    fun `testGlueCatalogPropertiesWithRoleArnAndNoSystemCredentials`() {
+        // When a role ARN is configured but the deployment does NOT inject
+        // assume-role credentials (e.g. OSS / privatelink running with IRSA),
+        // the role-arn / region entries must still be emitted so we land in the
+        // ASSUME_ROLE branch of GlueCredentialsProvider, but the static-key and
+        // external-id entries must be absent so the provider falls through to
+        // the default credentials chain instead of NPEing on null keys.
+        val config = createGlueTestConfiguration(roleArn = "arn:aws:iam::123456789012:role/test")
+        val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
+
+        Assertions.assertEquals(
+            "aws-creds-assume-role",
+            catalogProperties["client.credentials-provider.aws-creds-mode"]
+        )
+        Assertions.assertEquals(
+            "arn:aws:iam::123456789012:role/test",
+            catalogProperties["client.credentials-provider.role-arn"]
+        )
+        Assertions.assertEquals(
+            S3BucketRegion.`us-east-1`.region,
+            catalogProperties["client.credentials-provider.region"]
+        )
+        Assertions.assertFalse(
+            catalogProperties.containsKey("client.credentials-provider.access-key-id")
+        )
+        Assertions.assertFalse(
+            catalogProperties.containsKey("client.credentials-provider.secret-access-key")
+        )
+        Assertions.assertFalse(
+            catalogProperties.containsKey("client.credentials-provider.external-id")
         )
     }
 

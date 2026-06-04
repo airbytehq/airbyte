@@ -50,14 +50,23 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                         }
                     }
                     AWS_CREDENTIALS_MODE_ASSUME_ROLE -> {
+                        // When the deployment doesn't provide system-level static
+                        // credentials, fall back to the default credentials chain so the
+                        // STS client can use the pod's IAM identity (IRSA, instance
+                        // profile, env vars, etc.) to perform AssumeRole. This mirrors
+                        // the behavior of the AWS_CREDENTIALS_MODE_STATIC_CREDS branch.
+                        val stsCredentialsProvider =
+                            if (accessKey != null && secretKey != null) {
+                                StaticCredentialsProvider.create(
+                                    AwsBasicCredentials.create(accessKey, secretKey)
+                                )
+                            } else {
+                                DefaultCredentialsProvider.create()
+                            }
                         StsAssumeRoleCredentialsProvider.builder()
                             .stsClient(
                                 StsClient.builder()
-                                    .credentialsProvider(
-                                        StaticCredentialsProvider.create(
-                                            AwsBasicCredentials.create(accessKey, secretKey)
-                                        )
-                                    )
+                                    .credentialsProvider(stsCredentialsProvider)
                                     .region(Region.of(properties[ASSUME_ROLE_REGION]))
                                     .build()
                             )
