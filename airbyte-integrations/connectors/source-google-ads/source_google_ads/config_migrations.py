@@ -127,16 +127,24 @@ class MigrateCustomQuery:
 DEPRECATED_FIELDS: Dict[str, str] = {
     "metrics.video_views": "metrics.video_trueview_views",
     "metrics.video_view_rate": "metrics.video_trueview_view_rate",
+    "metrics.average_cpv": "metrics.trueview_average_cpv",
+    "campaign.start_date": "campaign.start_date_time",
+    "campaign.end_date": "campaign.end_date_time",
 }
 
 
 class MigrateDeprecatedFields:
     """Replaces deprecated Google Ads API v23 field names in custom GAQL queries.
 
-    In API v23 `metrics.video_views` was renamed to
-    `metrics.video_trueview_views` and `metrics.video_view_rate` to
-    `metrics.video_trueview_view_rate`.  This migration transparently
-    rewrites user-defined custom queries so they continue to work.
+    In API v23 several fields were renamed:
+    - `metrics.video_views` → `metrics.video_trueview_views`
+    - `metrics.video_view_rate` → `metrics.video_trueview_view_rate`
+    - `metrics.average_cpv` → `metrics.trueview_average_cpv`
+    - `campaign.start_date` → `campaign.start_date_time`
+    - `campaign.end_date` → `campaign.end_date_time`
+
+    This migration transparently rewrites user-defined custom queries
+    so they continue to work.
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()
@@ -157,11 +165,12 @@ class MigrateDeprecatedFields:
         new_order_by = query_object.order_by
         clauses_changed = False
         for old_name, new_name in DEPRECATED_FIELDS.items():
-            if old_name in new_where:
-                new_where = re.sub(re.escape(old_name), new_name, new_where)
+            pattern = re.escape(old_name) + r"(?![a-zA-Z0-9_.])"
+            if re.search(pattern, new_where):
+                new_where = re.sub(pattern, new_name, new_where)
                 clauses_changed = True
-            if old_name in new_order_by:
-                new_order_by = re.sub(re.escape(old_name), new_name, new_order_by)
+            if re.search(pattern, new_order_by):
+                new_order_by = re.sub(pattern, new_name, new_order_by)
                 clauses_changed = True
 
         changed = fields_changed or clauses_changed
@@ -177,7 +186,7 @@ class MigrateDeprecatedFields:
         for query_entry in config.get("custom_queries_array", []):
             query_str = query_entry.get("query", "")
             for deprecated_field in DEPRECATED_FIELDS:
-                if deprecated_field in query_str:
+                if re.search(re.escape(deprecated_field) + r"(?![a-zA-Z0-9_.])", query_str):
                     return True
         return False
 

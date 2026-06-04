@@ -60,10 +60,34 @@ def revert_deprecated_migration(config_path: str) -> None:
             id="select_video_view_rate",
         ),
         pytest.param(
+            "SELECT campaign.name, metrics.average_cpv FROM campaign",
+            "SELECT campaign.name, metrics.trueview_average_cpv FROM campaign",
+            True,
+            id="select_average_cpv",
+        ),
+        pytest.param(
+            "SELECT campaign.name, campaign.start_date FROM campaign",
+            "SELECT campaign.name, campaign.start_date_time FROM campaign",
+            True,
+            id="select_campaign_start_date",
+        ),
+        pytest.param(
+            "SELECT campaign.name, campaign.end_date FROM campaign",
+            "SELECT campaign.name, campaign.end_date_time FROM campaign",
+            True,
+            id="select_campaign_end_date",
+        ),
+        pytest.param(
             "SELECT campaign.name, metrics.video_views, metrics.video_view_rate FROM campaign",
             "SELECT campaign.name, metrics.video_trueview_views, metrics.video_trueview_view_rate FROM campaign",
             True,
             id="select_both_deprecated",
+        ),
+        pytest.param(
+            "SELECT campaign.name, campaign.start_date, campaign.end_date, metrics.average_cpv FROM campaign",
+            "SELECT campaign.name, campaign.start_date_time, campaign.end_date_time, metrics.trueview_average_cpv FROM campaign",
+            True,
+            id="select_all_three_new_deprecated",
         ),
         pytest.param(
             "SELECT campaign.name, metrics.clicks FROM campaign",
@@ -78,10 +102,22 @@ def revert_deprecated_migration(config_path: str) -> None:
             id="deprecated_in_select_and_where",
         ),
         pytest.param(
+            "SELECT campaign.name, campaign.start_date FROM campaign WHERE campaign.start_date > '2024-01-01'",
+            "SELECT campaign.name, campaign.start_date_time FROM campaign WHERE campaign.start_date_time > '2024-01-01'",
+            True,
+            id="campaign_start_date_in_select_and_where",
+        ),
+        pytest.param(
             "SELECT campaign.name, metrics.video_views FROM campaign ORDER BY metrics.video_views",
             "SELECT campaign.name, metrics.video_trueview_views FROM campaign ORDER BY metrics.video_trueview_views",
             True,
             id="deprecated_in_select_and_order_by",
+        ),
+        pytest.param(
+            "SELECT campaign.name, campaign.end_date FROM campaign ORDER BY campaign.end_date",
+            "SELECT campaign.name, campaign.end_date_time FROM campaign ORDER BY campaign.end_date_time",
+            True,
+            id="campaign_end_date_in_select_and_order_by",
         ),
         pytest.param(
             "SELECT campaign.name, metrics.video_trueview_views FROM campaign",
@@ -111,9 +147,29 @@ def test_replace_fields_in_query(query, expected_query, expected_changed):
             id="has_deprecated_video_view_rate",
         ),
         pytest.param(
+            {"custom_queries_array": [{"query": "SELECT metrics.average_cpv FROM campaign", "table_name": "t"}]},
+            True,
+            id="has_deprecated_average_cpv",
+        ),
+        pytest.param(
+            {"custom_queries_array": [{"query": "SELECT campaign.start_date FROM campaign", "table_name": "t"}]},
+            True,
+            id="has_deprecated_campaign_start_date",
+        ),
+        pytest.param(
+            {"custom_queries_array": [{"query": "SELECT campaign.end_date FROM campaign", "table_name": "t"}]},
+            True,
+            id="has_deprecated_campaign_end_date",
+        ),
+        pytest.param(
             {"custom_queries_array": [{"query": "SELECT metrics.clicks FROM campaign", "table_name": "t"}]},
             False,
             id="no_deprecated_fields",
+        ),
+        pytest.param(
+            {"custom_queries_array": [{"query": "SELECT campaign.start_date_time, campaign.end_date_time FROM campaign", "table_name": "t"}]},
+            False,
+            id="already_uses_new_date_time_fields",
         ),
         pytest.param(
             {"custom_queries_array": []},
@@ -135,7 +191,7 @@ def test_update_custom_queries():
     config = {
         "custom_queries_array": [
             {
-                "query": "SELECT campaign.name, metrics.video_views, metrics.video_view_rate FROM campaign",
+                "query": "SELECT campaign.name, metrics.video_views, metrics.video_view_rate, metrics.average_cpv FROM campaign",
                 "table_name": "ad_stats",
                 "primary_key": None,
             },
@@ -144,15 +200,28 @@ def test_update_custom_queries():
                 "table_name": "clean_query",
                 "primary_key": None,
             },
+            {
+                "query": "SELECT campaign.name, campaign.start_date, campaign.end_date FROM campaign",
+                "table_name": "campaign_dates",
+                "primary_key": None,
+            },
         ]
     }
     result = MigrateDeprecatedFields.update_custom_queries(config)
+    # First query: all three metric fields migrated
     assert "metrics.video_trueview_views" in result["custom_queries_array"][0]["query"]
     assert "metrics.video_trueview_view_rate" in result["custom_queries_array"][0]["query"]
+    assert "metrics.trueview_average_cpv" in result["custom_queries_array"][0]["query"]
     assert "metrics.video_views" not in result["custom_queries_array"][0]["query"]
     assert "metrics.video_view_rate" not in result["custom_queries_array"][0]["query"]
+    assert "metrics.average_cpv" not in result["custom_queries_array"][0]["query"]
     # Second query should be unchanged
     assert result["custom_queries_array"][1]["query"] == "SELECT ad_group.name, metrics.impressions FROM ad_group"
+    # Third query: campaign date fields migrated
+    assert "campaign.start_date_time" in result["custom_queries_array"][2]["query"]
+    assert "campaign.end_date_time" in result["custom_queries_array"][2]["query"]
+    assert "campaign.start_date," not in result["custom_queries_array"][2]["query"]
+    assert "campaign.end_date " not in result["custom_queries_array"][2]["query"]
 
 
 def test_migrate_config_end_to_end(capsys):
@@ -164,14 +233,21 @@ def test_migrate_config_end_to_end(capsys):
 
     migrated_config = load_config(CONFIG_WITH_DEPRECATED)
 
-    # Deprecated fields should be replaced
+    # Deprecated metric fields should be replaced
     ad_stats_query = migrated_config["custom_queries_array"][0]["query"]
     assert "metrics.video_trueview_views" in ad_stats_query
     assert "metrics.video_trueview_view_rate" in ad_stats_query
+    assert "metrics.trueview_average_cpv" in ad_stats_query
     assert "metrics.video_views" not in ad_stats_query
+    assert "metrics.average_cpv" not in ad_stats_query
 
     # Clean query should be unchanged
     assert migrated_config["custom_queries_array"][1]["query"] == "SELECT ad_group.name, metrics.impressions FROM ad_group"
+
+    # Campaign date fields should be replaced
+    campaign_dates_query = migrated_config["custom_queries_array"][2]["query"]
+    assert "campaign.start_date_time" in campaign_dates_query
+    assert "campaign.end_date_time" in campaign_dates_query
 
     # Migration should now be a no-op
     assert not MigrateDeprecatedFields.should_migrate(migrated_config)
@@ -206,6 +282,9 @@ def test_config_reverted_after_migration():
     config = load_config(CONFIG_WITH_DEPRECATED)
     assert "metrics.video_views" in config["custom_queries_array"][0]["query"]
     assert "metrics.video_view_rate" in config["custom_queries_array"][0]["query"]
+    assert "metrics.average_cpv" in config["custom_queries_array"][0]["query"]
+    assert "campaign.start_date" in config["custom_queries_array"][2]["query"]
+    assert "campaign.end_date" in config["custom_queries_array"][2]["query"]
 
 
 def test_unparseable_query_is_skipped():
