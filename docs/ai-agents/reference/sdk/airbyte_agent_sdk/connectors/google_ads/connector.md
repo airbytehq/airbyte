@@ -423,8 +423,6 @@ Classes
         - campaign_bidding_strategy_type: Bidding strategy type
         - campaign_campaign_budget: Campaign budget resource name
         - campaign_budget_amount_micros: Campaign budget amount in micros
-        - campaign_start_date: Campaign start date
-        - campaign_end_date: Campaign end date
         - campaign_serving_status: Campaign serving status
         - campaign_resource_name: Resource name of the campaign
         - campaign_labels: Labels applied to the campaign
