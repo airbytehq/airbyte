@@ -15,6 +15,7 @@ instantly.ai Campaigns Data API
 | campaign(s) analytics | campaign_id | No pagination | ✅ |  ❌  |
 | Campaigns Analytics Daily |  | No pagination | ✅ |  ❌  |
 | Campaigns |  | DefaultPaginator | ✅ |  ❌  |
+| Accounts |  | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 

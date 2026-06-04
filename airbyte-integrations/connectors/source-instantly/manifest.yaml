@@ -88,6 +88,41 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Campaigns"
+    Accounts:
+      type: DeclarativeStream
+      name: Accounts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_starting_after\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_starting_after\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Accounts"
   base_requester:
     type: HttpRequester
     url_base: https://api.instantly.ai/api/v2
@@ -99,6 +134,7 @@ streams:
   - $ref: "#/definitions/streams/campaign(s) analytics"
   - $ref: "#/definitions/streams/Campaigns Analytics Daily"
   - $ref: "#/definitions/streams/Campaigns"
+  - $ref: "#/definitions/streams/Accounts"
 
 spec:
   type: Spec
@@ -130,6 +166,7 @@ metadata:
     campaign(s) analytics: true
     Campaigns Analytics Daily: true
     Campaigns: true
+    Accounts: true
   testedStreams:
     campaign(s) analytics:
       streamHash: 105a10ebe9f500f8755c9ea5e6ae15f2173235d3
@@ -147,6 +184,13 @@ metadata:
       primaryKeysAreUnique: true
     Campaigns:
       streamHash: c9c27f65d801de086ac3f4d0430657d27643c2dd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Accounts:
+      streamHash: a8c86b085c27bfc5a77e5f34a8e33a1167b0f513
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -648,6 +692,117 @@ schemas:
             timestamp_updated:
               type:
                 - string
+                - "null"
+      next_starting_after:
+        type:
+          - string
+          - "null"
+  Accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            added_by:
+              type:
+                - string
+                - "null"
+            daily_limit:
+              type:
+                - number
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            first_name:
+              type:
+                - string
+                - "null"
+            inbox_placement_test_limit:
+              type:
+                - number
+                - "null"
+            is_managed_account:
+              type:
+                - boolean
+                - "null"
+            last_name:
+              type:
+                - string
+                - "null"
+            modified_by:
+              type:
+                - string
+                - "null"
+            organization:
+              type:
+                - string
+                - "null"
+            provider_code:
+              type:
+                - number
+                - "null"
+            sending_gap:
+              type:
+                - number
+                - "null"
+            setup_pending:
+              type:
+                - boolean
+                - "null"
+            stat_warmup_score:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - number
+                - "null"
+            timestamp_created:
+              type:
+                - string
+                - "null"
+            timestamp_updated:
+              type:
+                - string
+                - "null"
+            timestamp_warmup_start:
+              type:
+                - string
+                - "null"
+            warmup:
+              type:
+                - object
+                - "null"
+              properties:
+                increment:
+                  type:
+                    - string
+                    - "null"
+                limit:
+                  type:
+                    - number
+                    - "null"
+                reply_rate:
+                  type:
+                    - number
+                    - "null"
+            warmup_pool_id:
+              type:
+                - string
+                - "null"
+            warmup_status:
+              type:
+                - number
                 - "null"
       next_starting_after:
         type:
