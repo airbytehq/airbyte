@@ -107,14 +107,18 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
 
                 var extractedValue: Field<*> = extractColumnAsJson(column.key)
                 if (!(isStruct || isArray || (type === AirbyteProtocolType.UNKNOWN))) {
-                    // Primitive types need to use JSON_VALUE to (a) strip quotes from strings, and
-                    // (b) cast json null to sql null.
+                    // Primitive types need to use JSON_VALUE to (a) strip quotes from strings
+                    // and (b) cast json null to sql null.
+                    // We use field(sql(...)) because jOOQ's DSL.function() cannot emit MySQL's
+                    // RETURNING clause. Without it, JSON_VALUE defaults to VARCHAR(512) and
+                    // silently returns NULL for longer strings (NULL ON ERROR is the default).
+                    // See: https://github.com/airbytehq/airbyte/issues/73303
                     extractedValue =
-                        DSL.function(
-                            "JSON_VALUE",
-                            String::class.java,
-                            extractedValue,
-                            DSL.`val`("$"),
+                        field(
+                            sql(
+                                "JSON_VALUE({0}, '$' RETURNING CHAR(65535))",
+                                extractedValue,
+                            )
                         )
                 }
                 if (isStruct) {
