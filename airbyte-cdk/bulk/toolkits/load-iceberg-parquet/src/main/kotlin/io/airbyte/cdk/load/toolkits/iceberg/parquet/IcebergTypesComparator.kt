@@ -232,6 +232,7 @@ class IcebergTypesComparator {
                     "Unsupported or unmapped Iceberg type: $typeId. Implement handling if needed."
                 )
             }
+            else -> throw IllegalArgumentException("new types") // TEMP
         }
     }
 }

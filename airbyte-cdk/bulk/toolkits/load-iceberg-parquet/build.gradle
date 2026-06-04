@@ -1,5 +1,5 @@
 ext {
-    apacheIcebergVersion = '1.7.0'
+    apacheIcebergVersion = '1.11.0'
 }
 
 dependencies {
