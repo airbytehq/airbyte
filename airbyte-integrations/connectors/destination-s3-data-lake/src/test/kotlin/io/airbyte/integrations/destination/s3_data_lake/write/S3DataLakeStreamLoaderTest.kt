@@ -96,15 +96,16 @@ internal class S3DataLakeStreamLoaderTest {
     }
 
     @Test
-    fun testGeneratedStagingBranchNamesUseUuidSuffix() {
+    fun testGeneratedStagingBranchNamesUseUuidSuffixWithoutSyncId() {
         val firstBranchName = generateStagingBranchName(makeAppendStream(syncId = 42))
-        val retryBranchName = generateStagingBranchName(makeAppendStream(syncId = 42))
-        val nextSyncBranchName = generateStagingBranchName(makeAppendStream(syncId = 43))
+        val retryBranchName = generateStagingBranchName(makeAppendStream(syncId = 43))
+        val nextGenerationBranchName =
+            generateStagingBranchName(makeAppendStream(syncId = 43, generationId = 2))
 
         assertEquals(firstBranchName, retryBranchName)
-        assertNotEquals(firstBranchName, nextSyncBranchName)
+        assertNotEquals(firstBranchName, nextGenerationBranchName)
         assertTrue(firstBranchName.matches(Regex("""airbyte_staging_[0-9a-f_]{36}""")))
-        assertTrue(nextSyncBranchName.matches(Regex("""airbyte_staging_[0-9a-f_]{36}""")))
+        assertTrue(nextGenerationBranchName.matches(Regex("""airbyte_staging_[0-9a-f_]{36}""")))
     }
 
     @Test

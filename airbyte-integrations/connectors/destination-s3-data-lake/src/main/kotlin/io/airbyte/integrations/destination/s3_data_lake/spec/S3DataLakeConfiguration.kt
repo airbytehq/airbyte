@@ -27,7 +27,6 @@ fun generateStagingBranchName(stream: DestinationStream): String {
                 stream.mappedDescriptor.name,
                 stream.generationId.toString(),
                 stream.minimumGenerationId.toString(),
-                stream.syncId.toString(),
             )
             .joinToString(":")
     val suffix =
