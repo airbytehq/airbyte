@@ -2,67 +2,22 @@
 
 This page documents the authentication and configuration options for the Hubspot agent connector.
 
-## Authentication
+## Hosted mode (most cases)
 
-### Open source execution
+In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
-In open source mode, you provide API credentials directly to the connector.
+### OAuth
+Use the CLI for hosted OAuth connector creation when possible. It opens the hosted setup flow and avoids passing connector secrets through the command line:
 
-#### OAuth
-
-`credentials` fields you need:
-
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `client_id` | `str` | No | Your HubSpot OAuth2 Client ID |
-| `client_secret` | `str` | No | Your HubSpot OAuth2 Client Secret |
-| `refresh_token` | `str` | Yes | Your HubSpot OAuth2 Refresh Token |
-| `access_token` | `str` | No | Your HubSpot OAuth2 Access Token (optional if refresh_token is provided) |
-
-Example request:
-
-```python
-from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
-from airbyte_agent_sdk.connectors.hubspot.models import HubspotOauth2AuthConfig
-
-connector = HubspotConnector(
-    auth_config=HubspotOauth2AuthConfig(
-        client_id="<Your HubSpot OAuth2 Client ID>",
-        client_secret="<Your HubSpot OAuth2 Client Secret>",
-        refresh_token="<Your HubSpot OAuth2 Refresh Token>",
-        access_token="<Your HubSpot OAuth2 Access Token (optional if refresh_token is provided)>"
-    )
-)
+```bash
+airbyte-agent login
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot"
+}'
 ```
 
-#### Token
-
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `private_app_token` | `str` | Yes | Access token from a HubSpot Private App |
-
-Example request:
-
-```python
-from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
-from airbyte_agent_sdk.connectors.hubspot.models import HubspotPrivateAppAuthConfig
-
-connector = HubspotConnector(
-    auth_config=HubspotPrivateAppAuthConfig(
-        private_app_token="<Access token from a HubSpot Private App>"
-    )
-)
-```
-
-### Hosted execution
-
-In hosted mode, you first create a connector via the Airbyte Agent API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
-
-#### OAuth
-Create a connector with OAuth credentials.
+For API-first use cases, create a connector with OAuth credentials directly.
 
 `credentials` fields you need:
 
@@ -95,69 +50,8 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 
 
-#### Bring your own OAuth flow
-To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own).
 
-##### Configure your own OAuth app credentials (optional)
-
-By default, Airbyte uses its own OAuth app credentials. You can override these with your own so that OAuth consent screens show your company's branding. If you skip this step, the consent screen shows "Airbyte" as the requesting application.
-
-```bash
-curl -X PUT "https://api.airbyte.ai/api/v1/oauth/credentials" \
-  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "connector_type": "hubspot",
-    "configuration": {
-      "client_id": "<Your HubSpot OAuth app's client ID>",
-      "client_secret": "<Your HubSpot OAuth app's client secret>"
-    }
-  }'
-```
-
-**To revert to Airbyte-managed defaults**:
-
-```bash
-curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/hubspot" \
-  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>"
-```
-
-##### Step 1: Initiate the OAuth flow
-
-Request a consent URL for your user.
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
-| `connector_type` | `string` | Yes | The connector type (e.g., "Hubspot") |
-| `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
-
-Example request:
-
-```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate" \
-  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workspace_name": "<WORKSPACE_NAME>",
-    "connector_type": "Hubspot",
-    "redirect_url": "https://yourapp.com/oauth/callback"
-  }'
-```
-
-Redirect your user to the `consent_url` from the response.
-
-##### Step 2: Handle the callback
-
-After the user authorizes access, Airbyte automatically creates the connector and redirects them to your `redirect_url` with a `connector_id` query parameter. You don't need to make a separate API call to create the connector.
-
-```text
-https://yourapp.com/oauth/callback?connector_id=<connector_id>
-```
-
-Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
-
-#### Token
+### Token
 Create a connector with Token credentials.
 
 
@@ -184,11 +78,48 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-#### Execution
+### Execution
 
-After creating the connector, execute operations using either the Python SDK or API.
-If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
+After creating the connector, execute operations using the CLI, Python SDK, or API.
+If your Airbyte client can access multiple organizations, set the default organization with `airbyte-agent organizations use`, include `organization_id` in `AirbyteAuthConfig`, or include `X-Organization-Id` in raw API calls.
 
+**CLI**
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "<entity>",
+  "action": "<action>",
+  "params": {}
+}'
+```
 
 **Python SDK**
 
@@ -384,4 +315,57 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
   -d '{"entity": "<entity>", "action": "<action>", "params": {}}'
 ```
 
+
+## Open source mode
+
+In open source mode, provide API credentials directly to the connector.
+
+### OAuth
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `client_id` | `str` | No | Your HubSpot OAuth2 Client ID |
+| `client_secret` | `str` | No | Your HubSpot OAuth2 Client Secret |
+| `refresh_token` | `str` | Yes | Your HubSpot OAuth2 Refresh Token |
+| `access_token` | `str` | No | Your HubSpot OAuth2 Access Token (optional if refresh_token is provided) |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotOauth2AuthConfig
+
+connector = HubspotConnector(
+    auth_config=HubspotOauth2AuthConfig(
+        client_id="<Your HubSpot OAuth2 Client ID>",
+        client_secret="<Your HubSpot OAuth2 Client Secret>",
+        refresh_token="<Your HubSpot OAuth2 Refresh Token>",
+        access_token="<Your HubSpot OAuth2 Access Token (optional if refresh_token is provided)>"
+    )
+)
+```
+
+### Token
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `private_app_token` | `str` | Yes | Access token from a HubSpot Private App |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotPrivateAppAuthConfig
+
+connector = HubspotConnector(
+    auth_config=HubspotPrivateAppAuthConfig(
+        private_app_token="<Access token from a HubSpot Private App>"
+    )
+)
+```
 

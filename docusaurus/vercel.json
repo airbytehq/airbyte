@@ -228,7 +228,12 @@
     },
     {
       "source": "/developers/mcp-servers/pyairbyte-mcp",
-      "destination": "/community/mcp-servers/pyairbyte-mcp",
+      "destination": "/community/mcp-servers/replication-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/mcp-servers/pyairbyte-mcp",
+      "destination": "/community/mcp-servers/replication-mcp",
       "statusCode": 301
     },
     {

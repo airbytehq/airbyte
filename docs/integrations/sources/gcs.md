@@ -235,6 +235,10 @@ Google Cloud Storage (GCS) supports following file formats:
  - unstructured document format
  - excel
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -242,6 +246,7 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.15 | 2026-06-02 | [78684](https://github.com/airbytehq/airbyte/pull/78684) | Update dependencies |
 | 0.10.14 | 2026-04-27 | [77033](https://github.com/airbytehq/airbyte/pull/77033) | Add `sanitize_signed_urls` option to strip Service Account credentials from `_ab_source_file_url` signed URL query parameters |
 | 0.10.13 | 2026-04-28 | [77257](https://github.com/airbytehq/airbyte/pull/77257) | Update dependencies |
 | 0.10.12 | 2026-04-21 | [76591](https://github.com/airbytehq/airbyte/pull/76591) | Update dependencies |

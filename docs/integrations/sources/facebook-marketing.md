@@ -381,6 +381,14 @@ If you sync multiple ad accounts in different timezones within a single connecti
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
+</HideInUI>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+<HideInUI>
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -476,6 +484,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.13 | 2026-05-31 | [78060](https://github.com/airbytehq/airbyte/pull/78060) | Fixed sync failures on Ads Insights breakdown streams caused by invalid field requests; cap async-job status-poll batches at Meta's 50-per-batch limit when a parent job has many children; tolerate malformed responses on the throttle-refresh ping instead of failing the whole sync. |
+| 5.2.12 | 2026-05-27 | [78451](https://github.com/airbytehq/airbyte/pull/78451) | Promoted release candidate to GA |
 | 5.2.12-rc.1 | 2026-05-20 | [75457](https://github.com/airbytehq/airbyte/pull/75457) | Bump facebook-business SDK from v23 to v25 to support Marketing API v25.0 before v23.0 sunset on June 9, 2026 |
 | 5.2.11 | 2026-04-28 | [76977](https://github.com/airbytehq/airbyte/pull/76977) | Bump airbyte-cdk to ^7.17.4; facebook-business updated to 23.0.3 via lockfile refresh |
 | 5.2.10 | 2026-04-27 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
