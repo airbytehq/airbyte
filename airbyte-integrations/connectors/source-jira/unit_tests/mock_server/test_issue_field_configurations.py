@@ -16,16 +16,16 @@ from mock_server.response_builder import JiraPaginatedResponseBuilder
 
 
 _NOW = datetime.now(timezone.utc)
-_STREAM_NAME = "issue_field_configurations"
+_STREAM_NAME = "field_schemes"
 _DOMAIN = "airbyteio.atlassian.net"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
-class TestIssueFieldConfigurationsStream(TestCase):
+class TestFieldSchemesStream(TestCase):
     """
-    Tests for the Jira 'issue_field_configurations' stream.
+    Tests for the Jira 'field_schemes' stream.
 
-    Endpoint: /rest/api/3/fieldconfiguration
+    Endpoint: /rest/api/3/config/fieldschemes
     Extract field: values
     Primary key: id
     """
@@ -33,19 +33,19 @@ class TestIssueFieldConfigurationsStream(TestCase):
     @HttpMocker()
     def test_full_refresh(self, http_mocker: HttpMocker):
         """
-        Test full refresh sync returns all field configurations.
+        Test full refresh sync returns all field schemes.
         """
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
-        field_configs = [
-            {"id": 10000, "name": "Default Field Configuration", "description": "Default", "isDefault": True},
-            {"id": 10001, "name": "Custom Field Configuration", "description": "Custom", "isDefault": False},
+        field_schemes = [
+            {"id": 10000, "name": "Default Field Scheme", "description": "Default", "isDefault": True, "fieldsCount": 5, "links": {"associations": "rest/api/3/config/fieldschemes/10000/fields", "projects": "rest/api/3/config/fieldschemes/10000/projects"}},
+            {"id": 10001, "name": "Custom Field Scheme", "description": "Custom", "isDefault": False, "fieldsCount": 3, "links": {"associations": "rest/api/3/config/fieldschemes/10001/fields", "projects": "rest/api/3/config/fieldschemes/10001/projects"}},
         ]
 
         http_mocker.get(
-            JiraRequestBuilder.issue_field_configurations_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraRequestBuilder.field_schemes_endpoint(_DOMAIN).with_any_query_params().build(),
             JiraPaginatedResponseBuilder("values")
-            .with_records(field_configs)
+            .with_records(field_schemes)
             .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
             .build(),
         )
@@ -56,41 +56,41 @@ class TestIssueFieldConfigurationsStream(TestCase):
 
         assert len(output.records) == 2
 
-        config_ids = [r.record.data["id"] for r in output.records]
-        assert 10000 in config_ids
-        assert 10001 in config_ids
+        scheme_ids = [r.record.data["id"] for r in output.records]
+        assert 10000 in scheme_ids
+        assert 10001 in scheme_ids
 
     @HttpMocker()
     def test_pagination(self, http_mocker: HttpMocker):
         """
-        Test pagination with 2 pages of field configurations.
+        Test pagination with 2 pages of field schemes.
         """
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
-        page1_configs = [
-            {"id": 10000, "name": "Config 1", "isDefault": True},
-            {"id": 10001, "name": "Config 2", "isDefault": False},
+        page1_schemes = [
+            {"id": 10000, "name": "Scheme 1", "isDefault": True, "fieldsCount": 5},
+            {"id": 10001, "name": "Scheme 2", "isDefault": False, "fieldsCount": 3},
         ]
 
-        page2_configs = [
-            {"id": 10002, "name": "Config 3", "isDefault": False},
+        page2_schemes = [
+            {"id": 10002, "name": "Scheme 3", "isDefault": False, "fieldsCount": 2},
         ]
 
         http_mocker.get(
-            JiraRequestBuilder.issue_field_configurations_endpoint(_DOMAIN).with_query_param("maxResults", "50").build(),
+            JiraRequestBuilder.field_schemes_endpoint(_DOMAIN).with_query_param("maxResults", "50").build(),
             JiraPaginatedResponseBuilder("values")
-            .with_records(page1_configs)
+            .with_records(page1_schemes)
             .with_pagination(start_at=0, max_results=2, total=3, is_last=False)
             .build(),
         )
 
         http_mocker.get(
-            JiraRequestBuilder.issue_field_configurations_endpoint(_DOMAIN)
+            JiraRequestBuilder.field_schemes_endpoint(_DOMAIN)
             .with_query_param("maxResults", "50")
             .with_query_param("startAt", "2")
             .build(),
             JiraPaginatedResponseBuilder("values")
-            .with_records(page2_configs)
+            .with_records(page2_schemes)
             .with_pagination(start_at=2, max_results=2, total=3, is_last=True)
             .build(),
         )
@@ -101,10 +101,10 @@ class TestIssueFieldConfigurationsStream(TestCase):
 
         assert len(output.records) == 3
 
-        config_ids = [r.record.data["id"] for r in output.records]
-        assert 10000 in config_ids
-        assert 10001 in config_ids
-        assert 10002 in config_ids
+        scheme_ids = [r.record.data["id"] for r in output.records]
+        assert 10000 in scheme_ids
+        assert 10001 in scheme_ids
+        assert 10002 in scheme_ids
 
     @HttpMocker()
     def test_empty_response(self, http_mocker: HttpMocker):
@@ -114,7 +114,7 @@ class TestIssueFieldConfigurationsStream(TestCase):
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         http_mocker.get(
-            JiraRequestBuilder.issue_field_configurations_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraRequestBuilder.field_schemes_endpoint(_DOMAIN).with_any_query_params().build(),
             JiraPaginatedResponseBuilder("values")
             .with_records([])
             .with_pagination(start_at=0, max_results=50, total=0, is_last=True)

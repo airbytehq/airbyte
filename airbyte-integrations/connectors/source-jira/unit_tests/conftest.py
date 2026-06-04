@@ -112,8 +112,8 @@ def issue_fields_response():
 
 
 @fixture
-def issues_field_configurations_response():
-    return json.loads(load_file("issues_field_configurations.json"))
+def field_schemes_response():
+    return json.loads(load_file("field_schemes.json"))
 
 
 @fixture

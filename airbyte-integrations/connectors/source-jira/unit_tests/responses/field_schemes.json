@@ -1,0 +1,15 @@
+{
+  "values": [
+    {
+      "id": 10000,
+      "name": "Default Field Scheme",
+      "description": "The default field association scheme",
+      "isDefault": true,
+      "fieldsCount": 5,
+      "links": {
+        "associations": "rest/api/3/config/fieldschemes/10000/fields",
+        "projects": "rest/api/3/config/fieldschemes/10000/projects"
+      }
+    }
+  ]
+}
