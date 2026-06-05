@@ -90,15 +90,20 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
     // Do NOT call resultSet.getString(index) for timestamptz columns: the Redshift
     // JDBC driver (1.2.43.1067) internally invokes PGTimestamp.toString() which
     // triggers infinite mutual recursion, causing StackOverflowError.
-    // Use getTimestamp() with a UTC calendar to also sidestep the DST-sensitive
-    // offset that the no-arg getTimestamp() can apply.
-    final Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-    final Timestamp ts = resultSet.getTimestamp(index, utcCal);
-    if (ts == null) {
-      return;
+    // Use the CDK base implementation (getObject → OffsetDateTime) as primary path;
+    // fall back to getTimestamp() with a UTC calendar for driver versions where
+    // getObject(OffsetDateTime) is unsupported.
+    try {
+      super.putTimestampWithTimezone(node, columnName, resultSet, index);
+    } catch (final Exception e) {
+      final Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+      final Timestamp ts = resultSet.getTimestamp(index, utcCal);
+      if (ts == null) {
+        return;
+      }
+      final OffsetDateTime timestamptz = ts.toInstant().atOffset(ZoneOffset.UTC);
+      node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamptz));
     }
-    final OffsetDateTime timestamptz = ts.toInstant().atOffset(ZoneOffset.UTC);
-    node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamptz));
   }
 
   @Override

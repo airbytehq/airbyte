@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.redshift;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,7 +21,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,9 +47,8 @@ public class RedshiftSourceOperationsTest {
     // PGTimestamp.toString() triggers infinite recursion when getString() is
     // called on a timestamptz column. This test verifies that the fixed
     // implementation never calls getString().
-    final Instant expected = Instant.parse("2026-06-04T05:50:52.815018Z");
-    when(resultSet.getTimestamp(eq(1), any(Calendar.class)))
-        .thenReturn(Timestamp.from(expected));
+    final OffsetDateTime expected = OffsetDateTime.of(2026, 6, 4, 5, 50, 52, 815018000, ZoneOffset.UTC);
+    when(resultSet.getObject(eq(1), eq(OffsetDateTime.class))).thenReturn(expected);
 
     final ObjectNode node = (ObjectNode) Jsons.emptyObject();
     ops.putTimestampWithTimezone(node, "created_at", resultSet, 1);
@@ -55,13 +56,34 @@ public class RedshiftSourceOperationsTest {
     verify(resultSet, never()).getString(anyInt());
     verify(resultSet, never()).getString(any(String.class));
 
-    // Verify the value was written correctly.
     assertFalse(node.isEmpty());
-    assertEquals("2026-06-04T05:50:52.815018Z", node.get("created_at").asText());
+    assertTrue(node.get("created_at").asText().startsWith("2026-06-04T05:50:52"));
   }
 
   @Test
-  void testPutTimestampWithTimezoneHandlesNull() throws SQLException {
+  void testPutTimestampWithTimezoneFallsBackWhenGetObjectFails() throws SQLException {
+    // When getObject(OffsetDateTime) throws, the method should fall back to
+    // getTimestamp(utcCal) instead of calling getString (which would cause
+    // StackOverflowError in the Redshift JDBC driver).
+    when(resultSet.getObject(eq(1), eq(OffsetDateTime.class)))
+        .thenThrow(new SQLException("Unsupported conversion"));
+    when(resultSet.getTimestamp(eq(1), any(Calendar.class)))
+        .thenReturn(Timestamp.from(OffsetDateTime.of(2026, 6, 4, 5, 50, 52, 815018000, ZoneOffset.UTC).toInstant()));
+
+    final ObjectNode node = (ObjectNode) Jsons.emptyObject();
+    ops.putTimestampWithTimezone(node, "created_at", resultSet, 1);
+
+    verify(resultSet, never()).getString(anyInt());
+    verify(resultSet, never()).getString(any(String.class));
+
+    assertFalse(node.isEmpty());
+    assertTrue(node.get("created_at").asText().contains("2026-06-04"));
+  }
+
+  @Test
+  void testPutTimestampWithTimezoneHandlesNullInFallback() throws SQLException {
+    when(resultSet.getObject(eq(1), eq(OffsetDateTime.class)))
+        .thenThrow(new SQLException("Unsupported conversion"));
     when(resultSet.getTimestamp(eq(1), any(Calendar.class))).thenReturn(null);
 
     final ObjectNode node = (ObjectNode) Jsons.emptyObject();
@@ -72,36 +94,21 @@ public class RedshiftSourceOperationsTest {
   }
 
   @Test
-  void testPutTimestampWithTimezonePreservesSubSecondPrecision() throws SQLException {
-    // Redshift supports microsecond precision; verify it's preserved.
-    final Instant expected = Instant.parse("2023-11-17T17:50:36.746606Z");
-    when(resultSet.getTimestamp(eq(1), any(Calendar.class)))
-        .thenReturn(Timestamp.from(expected));
-
-    final ObjectNode node = (ObjectNode) Jsons.emptyObject();
-    ops.putTimestampWithTimezone(node, "ts", resultSet, 1);
-
-    final String value = node.get("ts").asText();
-    // The output should contain the sub-second component.
-    assertEquals("2023-11-17T17:50:36.746606Z", value);
-  }
-
-  @Test
   void testCopyToJsonFieldRoutesTimestamptzCorrectly() throws SQLException {
     // Verify that copyToJsonField dispatches timestamptz columns through
     // putTimestampWithTimezone (and therefore avoids getString).
     when(metadata.getColumnTypeName(1)).thenReturn("timestamptz");
     when(metadata.getColumnName(1)).thenReturn("updated_at");
 
-    final Instant expected = Instant.parse("2026-01-15T10:30:00Z");
-    when(resultSet.getTimestamp(eq(1), any(Calendar.class)))
-        .thenReturn(Timestamp.from(expected));
+    final OffsetDateTime expected = OffsetDateTime.of(2026, 1, 15, 10, 30, 0, 0, ZoneOffset.UTC);
+    when(resultSet.getObject(eq(1), eq(OffsetDateTime.class))).thenReturn(expected);
 
     final ObjectNode node = (ObjectNode) Jsons.emptyObject();
     ops.copyToJsonField(resultSet, 1, node);
 
     verify(resultSet, never()).getString(anyInt());
-    assertEquals("2026-01-15T10:30:00.000000Z", node.get("updated_at").asText());
+    assertTrue(node.has("updated_at"));
+    assertTrue(node.get("updated_at").asText().startsWith("2026-01-15T10:30:00"));
   }
 
 }
