@@ -91,15 +91,12 @@ Web app
 - Updated Granola connector setup instructions with corrected API key guidance.
 - The members list in Settings now shows a loading indicator while data is being fetched.
 - Improved error messages when connector setup encounters issues detecting available data.
+- The agent now retries automatically when the AI provider is temporarily overloaded.
 
 Connectors
 
 - Linear, Asana, and Google Drive connectors now support OAuth sign-in.
 - Fixed Shopify OAuth callback handling to complete authentication reliably.
-
-Other
-
-- The agent now retries automatically when the AI provider is temporarily overloaded.
 
 ## May 15, 2026
 
