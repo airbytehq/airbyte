@@ -11,6 +11,13 @@ Connectors
 
 - The Slack connector now supports joining public channels, allowing your agent to add itself to channels before sending messages or performing other actions.
 
+## June 4, 2026
+
+Web app
+
+- The organization switcher dropdown now sorts organizations alphabetically, making it easier to find the one you need.
+- Experimental connectors now display their name and icon during setup, matching the experience for generally available connectors.
+
 ## June 3, 2026
 
 Web app
