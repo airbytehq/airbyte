@@ -101,6 +101,6 @@ public class RedshiftSourceOperationsTest {
     ops.copyToJsonField(resultSet, 1, node);
 
     verify(resultSet, never()).getString(anyInt());
-    assertEquals("2026-01-15T10:30:00Z", node.get("updated_at").asText());
+    assertEquals("2026-01-15T10:30:00.000000Z", node.get("updated_at").asText());
   }
 }
