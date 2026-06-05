@@ -226,11 +226,15 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
                 )
             # Subsequent requests succeed
             context.status_code = 200
-            return json.dumps(_build_search_analytics_response([
-                _build_search_analytics_row(
-                    "2024-01-01", "usa", "DESKTOP", "https://example.com/page1", "query", clicks=10, impressions=100
-                ),
-            ]))
+            return json.dumps(
+                _build_search_analytics_response(
+                    [
+                        _build_search_analytics_row(
+                            "2024-01-01", "usa", "DESKTOP", "https://example.com/page1", "query", clicks=10, impressions=100
+                        ),
+                    ]
+                )
+            )
 
         http_mocker._mocker.post(
             re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
@@ -275,11 +279,15 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
                     }
                 )
             context.status_code = 200
-            return json.dumps(_build_search_analytics_response([
-                _build_search_analytics_row(
-                    "2024-01-01", "usa", "DESKTOP", "https://example.com/page1", "query", clicks=10, impressions=100
-                ),
-            ]))
+            return json.dumps(
+                _build_search_analytics_response(
+                    [
+                        _build_search_analytics_row(
+                            "2024-01-01", "usa", "DESKTOP", "https://example.com/page1", "query", clicks=10, impressions=100
+                        ),
+                    ]
+                )
+            )
 
         http_mocker._mocker.post(
             re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
