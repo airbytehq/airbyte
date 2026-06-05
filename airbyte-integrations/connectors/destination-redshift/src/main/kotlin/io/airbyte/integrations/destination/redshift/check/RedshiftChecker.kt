@@ -160,6 +160,7 @@ class RedshiftChecker(
             accessKeyId = s3Config.accessKeyId,
             secretAccessKey = s3Config.secretAccessKey,
             region = s3Config.s3BucketRegion,
+            iamRoleArn = s3Config.iamRoleArn,
         )
 
         val count = client.countTable(tableName)

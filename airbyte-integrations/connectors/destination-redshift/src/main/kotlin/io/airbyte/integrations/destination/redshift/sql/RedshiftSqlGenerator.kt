@@ -539,18 +539,35 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |ORDER BY ordinal_position;
         """.trimMargin()
 
-    /** Generates a Redshift COPY command to load gzip CSV data from S3 */
+    /**
+     * Generates a Redshift COPY command to load gzip CSV data from S3.
+     *
+     * The credential clause depends on the configured authentication method:
+     * - When static keys are supplied, an inline `CREDENTIALS` clause is used.
+     * - Otherwise the COPY relies on the IAM role attached to the Redshift cluster/workgroup,
+     *   either an explicit `IAM_ROLE '<arn>'` when [iamRoleArn] is set, or `IAM_ROLE default`.
+     */
     fun copyFromS3(
         tableName: TableName,
         s3Path: String,
-        accessKeyId: String,
-        secretAccessKey: String,
+        accessKeyId: String?,
+        secretAccessKey: String?,
         region: String,
-    ): String =
-        """
+        iamRoleArn: String? = null,
+    ): String {
+        val credentialClause =
+            if (!accessKeyId.isNullOrBlank() && !secretAccessKey.isNullOrBlank()) {
+                "CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'"
+            } else if (!iamRoleArn.isNullOrBlank()) {
+                "IAM_ROLE '${RedshiftSqlEscapeUtils.escapeSqlString(iamRoleArn)}'"
+            } else {
+                "IAM_ROLE default"
+            }
+
+        return """
             |COPY ${getFullyQualifiedName(tableName)}
             |FROM '$s3Path'
-            |CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'
+            |$credentialClause
             |CSV GZIP
             |REGION '$region'
             |TIMEFORMAT 'auto'
@@ -559,6 +576,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |IGNOREHEADER 1
             |EMPTYASNULL;
         """.trimMargin()
+    }
 
     // ================================================================
     // Internal helpers

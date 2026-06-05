@@ -123,6 +123,7 @@ class RedshiftInsertBuffer(
                 accessKeyId = s3Config.accessKeyId,
                 secretAccessKey = s3Config.secretAccessKey,
                 region = s3Config.s3BucketRegion,
+                iamRoleArn = s3Config.iamRoleArn,
             )
 
             logger.info { "Loaded data into ${tableName.namespace}.${tableName.name}" }
