@@ -28,11 +28,16 @@ Connectors
 - Improved data synchronization for WooCommerce, LinkedIn Ads, Snapchat Marketing, Google Analytics Data API, and Slack connectors.
 - Fixed an issue where non-OAuth authentication fields were not displayed during connector setup.
 
+## June 1, 2026
+
+CLI
+
+- The Airbyte Agent CLI is now available with a one-line installer and browser-based sign-in.
+
 ## May 29, 2026
 
 Web app
 
-- Added a link to CLI documentation in the sidebar.
 - Fixed permission errors that could prevent some users from viewing and creating connectors.
 
 ## May 28, 2026
@@ -66,11 +71,6 @@ Web app
 
 - New organizations are now directed to the Get Started page on first visit.
 
-CLI
-
-- When you update a connector, the CLI now opens the web app where the full configuration UI is available.
-- The `connectors list` command now shows context store sync status and entity counts.
-
 ## May 20, 2026
 
 Connectors
@@ -91,12 +91,6 @@ Connectors
 - Improved Salesforce agent guidance with better account ranking for financial data.
 - Fixed Shopify OAuth integration for the embedded connector widget.
 
-CLI
-
-- The `connectors execute` command now supports a flag to return full untruncated response data.
-- Fixed the `--output` flag to work consistently across all commands.
-- Fixed the `limit` parameter for workspace listing.
-
 ## May 18, 2026
 
 Web app
@@ -110,11 +104,6 @@ Connectors
 
 - Linear, Asana, and Google Drive connectors now support OAuth sign-in.
 - Fixed Shopify OAuth callback handling to complete authentication reliably.
-
-CLI
-
-- You can now set a default organization with `organizations use` to avoid specifying it on every command.
-- The CLI now warns you when a newer version of the agent skill is available.
 
 Other
 
@@ -132,17 +121,12 @@ MCP
 
 - New diagnostic tool for verifying context store configuration and troubleshooting connectivity issues.
 
-CLI
-
-- The Airbyte Agent CLI is now available with a one-line installer and browser-based sign-in.
-- The CLI warns you when a newer version is available.
-
 ## May 14, 2026
 
 Web app
 
 - A success dialog now appears after you connect your first connector.
-- The Connectors page now features a Popular section and a Get Started banner to help new users find connectors.
+- The Connectors page now features a Popular section and a Get Started banner to help you find connectors quickly.
 
 Connectors
 
@@ -165,7 +149,7 @@ Web app
 Connectors
 
 - Added the Customer.io connector with support for customer profiles, segments, campaigns, and transactional messages.
-- Fixed authentication mappings for Jira and Linear connectors.
+- Jira and Linear connectors now sign in correctly.
 - The Slack connector now supports advanced formatting options when sending messages.
 
 SDK
