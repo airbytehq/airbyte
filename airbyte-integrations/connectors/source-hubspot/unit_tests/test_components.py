@@ -372,6 +372,67 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate(components_module
     assert actual_records == expected_records
 
 
+@pytest.mark.parametrize(
+    "properties,expected_names",
+    [
+        pytest.param(
+            [
+                {"name": "dealname", "fieldType": "text", "calculated": False},
+                {"name": "amount", "fieldType": "number", "calculated": False},
+                {"name": "hs_analytics_source", "fieldType": "calculation_equation", "calculated": True},
+                {"name": "closedate", "fieldType": "date", "calculated": False},
+            ],
+            ["dealname", "amount", "closedate"],
+            id="filters_out_calculated_and_calculation_equation_properties",
+        ),
+        pytest.param(
+            [
+                {"name": "hs_deal_stage_probability_shadow", "fieldType": "calculation_equation", "calculated": False},
+                {"name": "hs_time_in_prospect", "fieldType": "calculation_equation", "calculated": True},
+                {"name": "custom_field", "fieldType": "text", "calculated": False},
+            ],
+            ["custom_field"],
+            id="filters_by_fieldType_calculation_equation_even_when_calculated_is_false",
+        ),
+        pytest.param(
+            [
+                {"name": "hs_predictive_scoring", "fieldType": "number", "calculated": True},
+                {"name": "user_property", "fieldType": "text", "calculated": False},
+            ],
+            ["user_property"],
+            id="filters_by_calculated_true_even_when_fieldType_is_not_calculation_equation",
+        ),
+        pytest.param(
+            [
+                {"name": "dealname", "fieldType": "text"},
+                {"name": "amount", "fieldType": "number"},
+            ],
+            ["dealname", "amount"],
+            id="keeps_properties_without_calculated_field",
+        ),
+        pytest.param(
+            [],
+            [],
+            id="handles_empty_property_list",
+        ),
+        pytest.param(
+            [
+                {"name": "hs_analytics_first_url", "fieldType": "calculation_equation", "calculated": True},
+                {"name": "hs_analytics_last_url", "fieldType": "calculation_equation", "calculated": True},
+                {"name": "hs_analytics_num_visits", "fieldType": "calculation_equation", "calculated": True},
+            ],
+            [],
+            id="filters_all_when_all_are_calculated",
+        ),
+    ],
+)
+def test_calculated_property_filter(components_module, properties, expected_names):
+    property_filter = components_module.CalculatedPropertyFilter(config={}, parameters={})
+    filtered = list(property_filter.filter_records(records=properties, stream_state={}))
+    actual_names = [p["name"] for p in filtered]
+    assert actual_names == expected_names
+
+
 def test_flatten_associations_transformation(components_module):
     expected_record = {"id": "a2b", "Contacts": [101, 102], "Companies": [202, 209]}
 

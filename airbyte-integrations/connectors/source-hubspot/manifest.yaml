@@ -408,6 +408,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: CustomRecordFilter
+                    class_name: source_declarative_manifest.components.CalculatedPropertyFilter
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -498,6 +501,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: CustomRecordFilter
+                    class_name: source_declarative_manifest.components.CalculatedPropertyFilter
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -620,6 +626,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: CustomRecordFilter
+                    class_name: source_declarative_manifest.components.CalculatedPropertyFilter
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters

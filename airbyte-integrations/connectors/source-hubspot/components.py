@@ -24,6 +24,7 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
@@ -138,6 +139,34 @@ class MigrateEmptyStringState(StateMigration):
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state.get(self.cursor_field) == ""
+
+
+@dataclass
+class CalculatedPropertyFilter(RecordFilter):
+    """Filters out HubSpot calculated/system properties from property list responses.
+
+    HubSpot calculated properties (formula fields, rollup summaries, system-computed
+    values like `hs_analytics_*`) update their timestamps even when their computed
+    value hasn't changed. When these properties are included in `propertiesWithHistory`
+    requests, their history entries advance the incremental cursor past user-initiated
+    changes, causing silent data loss on subsequent syncs.
+
+    This filter is applied to the property definition retriever so that calculated
+    properties are never requested in `propertiesWithHistory`, preventing their
+    timestamps from advancing the stream cursor.
+    """
+
+    def filter_records(
+        self,
+        records: Iterable[Mapping[str, Any]],
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in records:
+            if record.get("calculated", False) or record.get("fieldType") == "calculation_equation":
+                continue
+            yield record
 
 
 @dataclass
