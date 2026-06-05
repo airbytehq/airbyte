@@ -23,12 +23,14 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -41,6 +43,8 @@ logger = logging.getLogger("airbyte")
 # This is an idle timeout per recv() call, not a total request timeout,
 # so streaming responses that keep sending data are unaffected.
 DEFAULT_HTTP_TIMEOUT = 300  # 5 minutes
+GOOGLE_ADS_INVALID_ARGUMENT_STATUS = "INVALID_ARGUMENT"
+INVALID_CUSTOM_QUERY_ERROR_MESSAGE = "Google Ads custom query is invalid."
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
@@ -56,6 +60,38 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
         kwargs.setdefault("timeout", self.timeout)
         return super().send(request, **kwargs)
+
+
+@dataclass
+class GoogleAdsCustomQueryErrorHandler(DefaultErrorHandler):
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and self._is_invalid_custom_query_response(response_or_exception):
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message=INVALID_CUSTOM_QUERY_ERROR_MESSAGE,
+            )
+
+        return super().interpret_response(response_or_exception)
+
+    @staticmethod
+    def _is_invalid_custom_query_response(response: requests.Response) -> bool:
+        if response.status_code != 400:
+            return False
+
+        try:
+            response_body = response.json()
+        except requests.exceptions.JSONDecodeError:
+            return False
+
+        if not isinstance(response_body, dict):
+            return False
+
+        error = response_body.get("error")
+        if not isinstance(error, dict):
+            return False
+
+        return error.get("status") == GOOGLE_ADS_INVALID_ARGUMENT_STATUS
 
 
 def _mount_timeout_adapter(requester: Any) -> None:

@@ -8,26 +8,81 @@ from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
     ClickViewHttpRequester,
     CustomGAQueryHttpRequester,
     CustomGAQuerySchemaLoader,
     FlattenNestedDictsTransformation,
+    GoogleAdsCustomQueryErrorHandler,
     GoogleAdsRetriever,
     GoogleAdsStreamingDecoder,
     SerializeMessageFieldsTransformation,
     TimeoutHTTPAdapter,
 )
 
-from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
 
 from .conftest import Obj, get_source
+
+
+def _google_ads_response(status_code: int, body: object) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status_code
+    response._content = json.dumps(body).encode()
+    return response
+
+
+@pytest.mark.parametrize(
+    "response, expected_action, expected_failure_type",
+    [
+        pytest.param(
+            _google_ads_response(
+                400,
+                {
+                    "error": {
+                        "code": 400,
+                        "message": "Request contains an invalid argument.",
+                        "status": "INVALID_ARGUMENT",
+                        "details": [
+                            {
+                                "errors": [
+                                    {
+                                        "errorCode": {"queryError": "UNRECOGNIZED_FIELD"},
+                                        "message": "Unrecognized fields in the query.",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                },
+            ),
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            id="invalid_custom_query",
+        ),
+        pytest.param(
+            _google_ads_response(400, {"error": {"code": 400, "status": "FAILED_PRECONDITION"}}),
+            ResponseAction.FAIL,
+            FailureType.system_error,
+            id="other_bad_request",
+        ),
+    ],
+)
+def test_google_ads_custom_query_error_handler_interprets_non_retryable_errors(response, expected_action, expected_failure_type):
+    error_handler = GoogleAdsCustomQueryErrorHandler(parameters={}, config={})
+
+    resolution = error_handler.interpret_response(response)
+
+    assert resolution.response_action == expected_action
+    assert resolution.failure_type == expected_failure_type
 
 
 class TestCustomGAQuerySchemaLoader:
@@ -834,9 +889,9 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
 def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(
-        extractor.decoder, GoogleAdsStreamingDecoder
-    ), f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -850,9 +905,9 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
 def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(
-        extractor.decoder, GoogleAdsStreamingDecoder
-    ), f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    )
 
 
 class TestSerializeMessageFieldsTransformation:
@@ -1112,9 +1167,9 @@ def test_every_stream_has_timeout_adapter_mounted(stream_name, retriever):
     requester = retriever.requester
     session = requester._http_client._session
     adapter = session.adapters.get("https://")
-    assert isinstance(
-        adapter, TimeoutHTTPAdapter
-    ), f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    assert isinstance(adapter, TimeoutHTTPAdapter), (
+        f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -1126,6 +1181,21 @@ def test_dynamic_streams_have_timeout_adapter_mounted(stream_name, retriever):
     requester = retriever.requester
     session = requester._http_client._session
     adapter = session.adapters.get("https://")
-    assert isinstance(
-        adapter, TimeoutHTTPAdapter
-    ), f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    assert isinstance(adapter, TimeoutHTTPAdapter), (
+        f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+    )
+
+
+@pytest.mark.parametrize(
+    "stream_name,retriever",
+    [pytest.param(name, ret, id=name) for name, ret in _collect_retrievers(_DYNAMIC_STREAM_CONFIG) if name == "test_custom_query"],
+)
+def test_dynamic_streams_use_custom_query_error_handler(stream_name, retriever):
+    requester = retriever.requester
+
+    assert isinstance(requester.error_handler, GoogleAdsCustomQueryErrorHandler), (
+        f"Dynamic stream {stream_name}: expected GoogleAdsCustomQueryErrorHandler"
+    )
+    assert isinstance(requester._http_client._error_handler, GoogleAdsCustomQueryErrorHandler), (
+        f"Dynamic stream {stream_name}: expected HttpClient to use GoogleAdsCustomQueryErrorHandler"
+    )

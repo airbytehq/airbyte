@@ -61,6 +61,21 @@ definitions:
           - 403
   #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
 
+  custom_query_error_handler:
+    type: CustomErrorHandler
+    class_name: "source_google_ads.components.GoogleAdsCustomQueryErrorHandler"
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 500
+        error_message: >-
+          Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+
   base_selector:
     type: RecordSelector
     extractor:
@@ -407,7 +422,7 @@ definitions:
         url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
-          $ref: "#/definitions/base_error_handler"
+          $ref: "#/definitions/custom_query_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
