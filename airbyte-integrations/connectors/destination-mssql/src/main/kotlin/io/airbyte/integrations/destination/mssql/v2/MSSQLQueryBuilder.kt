@@ -36,7 +36,6 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -402,10 +401,9 @@ class MSSQLQueryBuilder(
                         (value.abValue as TimestampWithTimezoneValue).value
                     )
                 TimestampTypeWithoutTimezone ->
-                    statement.setObject(
-                        statementIndex,
-                        (value.abValue as TimestampWithoutTimezoneValue).value
-                    )
+                    LIMITS.validateTimestamp(value)?.let {
+                        statement.setObject(statementIndex, it.toString())
+                    }
 
                 // Serialize complex types to string
                 is ArrayType,
