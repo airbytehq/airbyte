@@ -73,8 +73,7 @@ data class S3StagingConfiguration(
         "Optional. The ARN of the IAM role attached to your Redshift cluster or serverless workgroup that has read access to the S3 staging bucket. Used in the COPY command when static AWS credentials are not provided. If omitted, 'IAM_ROLE default' is used. See <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/authorizing-redshift-service.html\">AWS docs</a> on associating IAM roles with Redshift."
     )
     @get:JsonSchemaInject(
-        json =
-            """{"order": 5, "examples":["arn:aws:iam::123456789012:role/redshift-s3-read"]}"""
+        json = """{"order": 5, "examples":["arn:aws:iam::123456789012:role/redshift-s3-read"]}"""
     )
     val iamRoleArn: String? = null,
     @JsonProperty("file_name_pattern")
@@ -103,12 +102,14 @@ data class S3StagingConfiguration(
                 "credential authentication. Leave both blank to use IAM role-based authentication " +
                 "(IRSA / instance profile)."
         }
-        iamRoleArn?.takeIf { it.isNotBlank() }?.let {
-            require(it.matches(IAM_ROLE_ARN_PATTERN)) {
-                "Invalid IAM role ARN format: '$it'. Expected something like " +
-                    "'arn:aws:iam::123456789012:role/my-role'."
+        iamRoleArn
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                require(it.matches(IAM_ROLE_ARN_PATTERN)) {
+                    "Invalid IAM role ARN format: '$it'. Expected something like " +
+                        "'arn:aws:iam::123456789012:role/my-role'."
+                }
             }
-        }
     }
 
     companion object {

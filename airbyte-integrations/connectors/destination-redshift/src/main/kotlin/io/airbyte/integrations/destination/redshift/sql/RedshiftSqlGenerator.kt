@@ -545,7 +545,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * The credential clause depends on the configured authentication method:
      * - When static keys are supplied, an inline `CREDENTIALS` clause is used.
      * - Otherwise the COPY relies on the IAM role attached to the Redshift cluster/workgroup,
-     *   either an explicit `IAM_ROLE '<arn>'` when [iamRoleArn] is set, or `IAM_ROLE default`.
+     * either an explicit `IAM_ROLE '<arn>'` when [iamRoleArn] is set, or `IAM_ROLE default`.
      */
     fun copyFromS3(
         tableName: TableName,

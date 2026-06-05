@@ -14,24 +14,22 @@ class S3StagingConfigurationTest {
 
     @Test
     fun `accepts static credentials when both keys are present`() {
-        val config =
-            assertDoesNotThrow {
-                S3StagingConfiguration(
-                    s3BucketName = "bucket",
-                    s3BucketRegion = "us-east-1",
-                    accessKeyId = "AKIATEST",
-                    secretAccessKey = "secret123",
-                )
-            }
+        val config = assertDoesNotThrow {
+            S3StagingConfiguration(
+                s3BucketName = "bucket",
+                s3BucketRegion = "us-east-1",
+                accessKeyId = "AKIATEST",
+                secretAccessKey = "secret123",
+            )
+        }
         assertEquals("AKIATEST", config.accessKeyId)
     }
 
     @Test
     fun `accepts IRSA configuration when both keys are absent`() {
-        val config =
-            assertDoesNotThrow {
-                S3StagingConfiguration(s3BucketName = "bucket", s3BucketRegion = "us-east-1")
-            }
+        val config = assertDoesNotThrow {
+            S3StagingConfiguration(s3BucketName = "bucket", s3BucketRegion = "us-east-1")
+        }
         assertNull(config.accessKeyId)
         assertNull(config.secretAccessKey)
     }

@@ -43,9 +43,7 @@ class S3ConnectTest {
     @Test
     fun `uses default credentials provider when keys are blank strings`() {
         val provider =
-            S3Connect.resolveCredentialsProvider(
-                s3Config(accessKeyId = "", secretAccessKey = "")
-            )
+            S3Connect.resolveCredentialsProvider(s3Config(accessKeyId = "", secretAccessKey = ""))
 
         assertInstanceOf(DefaultCredentialsProvider::class.java, provider)
     }
