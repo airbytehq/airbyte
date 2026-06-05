@@ -345,11 +345,15 @@ jobs:
       - name: Check for structured output
         if: steps.devin.outputs.session-id
         id: check-output
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+          SESSION_STATUS: ${{ steps.devin.outputs.status }}
         run: |
-          if [[ -n '${{ steps.devin.outputs.structured-output }}' ]]; then
+          echo "Session terminal status: ${SESSION_STATUS:-unknown}"
+          if [[ -n "$STRUCTURED_OUTPUT" ]]; then
             echo "success=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::error::Devin session completed but did not produce structured output."
+            echo "::error::Devin session completed (status=${SESSION_STATUS:-unknown}) but did not produce structured output."
             echo "success=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -563,3 +567,33 @@ jobs:
       - name: Dry-run notice (flag)
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run == 'true'
         run: echo "::notice::DRY RUN (dry-run flag) -- would merge PR #${PR_NUMBER}"
+
+      # ── Failure fallback ────────────────────────────────────────────
+      # If an earlier step crashes (e.g. bash syntax error), the normal
+      # result-reporting steps are skipped because they gate on
+      # check-output.outputs.success. These fallback steps ensure error
+      # feedback is always posted to the PR.
+      - name: Post failure fallback to command comment
+        if: failure() && inputs.comment-id && steps.get-hoard-token.outputs.token
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > **Auto-merge evaluation: ERROR**
+            >
+            > The workflow encountered an unexpected failure. Check the
+            > [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+            >
+            > [Devin session](${{ steps.devin.outputs.session-url }})
+
+      - name: Post failure fallback as new PR comment
+        if: failure() && !inputs.comment-id && steps.get-hoard-token.outputs.token
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "## Auto-merge evaluation: **ERROR**
+
+          The workflow encountered an unexpected failure. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+
+          > [Devin session](${{ steps.devin.outputs.session-url }})"
