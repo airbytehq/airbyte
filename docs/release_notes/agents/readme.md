@@ -4,10 +4,9 @@
 
 Web app
 
-- Fixed missing connector icons in the New Chat view for experimental connectors.
 - The Shopify shop name you enter during OAuth setup is now preserved correctly.
 - The context store status indicator now waits for data to load before displaying, preventing a brief flash of incorrect state.
-- Removed the standalone Getting Started page; onboarding is now handled through the main app flow.
+- The standalone Getting Started page has been removed. You're now guided through setup as you use the app.
 
 Connectors
 
@@ -62,14 +61,7 @@ Web app
 Connectors
 
 - The Salesforce connector now supports write operations with the necessary OAuth scopes.
-- Improved connector search result descriptions by preserving query metadata.
 - GitHub and Slack connectors now synchronize data to the context store faster.
-
-## May 21, 2026
-
-Web app
-
-- New organizations are now directed to the Get Started page on first visit.
 
 ## May 20, 2026
 
@@ -113,13 +105,9 @@ Other
 
 Web app
 
-- Organizations now support multiple users. Invite team members from the Settings page.
+- Organizations on the Team plan now support multiple users. Invite team members from the Settings page.
 - Redesigned the sign-in page with updated typography and branding.
 - The mobile-only blocking view has been replaced with a non-intrusive banner.
-
-MCP
-
-- New diagnostic tool for verifying context store configuration and troubleshooting connectivity issues.
 
 ## May 14, 2026
 
