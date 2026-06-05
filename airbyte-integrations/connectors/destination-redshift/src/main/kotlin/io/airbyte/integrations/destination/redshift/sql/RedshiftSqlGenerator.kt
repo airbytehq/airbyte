@@ -468,9 +468,11 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
 
         val castExpression =
             when {
-                // SUPER -> VARCHAR: serialize JSON to string
+                // SUPER -> VARCHAR: serialize JSON to string if it fits, NULL otherwise.
+                // JSON_SIZE checks the serialized byte length without materializing, avoiding
+                // "SUPER value exceeds export size" (error 8001) on oversized values.
                 oldType == RedshiftDataType.SUPER.typeName && newType.startsWith("varchar") ->
-                    "JSON_SERIALIZE($quotedName)"
+                    "CASE WHEN JSON_SIZE($quotedName) <= 65535 THEN JSON_SERIALIZE($quotedName) END"
                 // VARCHAR -> SUPER: parse if valid JSON, otherwise NULL
                 oldType.startsWith("varchar") && newType == RedshiftDataType.SUPER.typeName ->
                     "CASE WHEN IS_VALID_JSON($quotedName) OR IS_VALID_JSON_ARRAY($quotedName) THEN JSON_PARSE($quotedName) END"
