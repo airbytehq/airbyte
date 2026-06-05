@@ -15,7 +15,7 @@ This section walks through the four operations most apps need: authenticate, add
 
 - Your backend isn't Python, so the SDK isn't an option.
 - You need direct HTTP control over authentication, connector management, or execution.
-- You're building custom admin flows or embedding the [authentication module](./authentication-module) in your application.
+- You're building custom admin flows or embedding the authentication module in your application.
 - You want to call Airbyte Agents from any language or framework that can make HTTP requests.
 
 If you're writing Python, the [SDK](../sdk) wraps the same endpoints with a typed interface. If your agent speaks the Model Context Protocol, the [MCP server](../mcp) gives you zero-install access. For shell scripts and CI, see the [CLI](../cli).
