@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.spec
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
@@ -22,6 +26,8 @@ data class S3DataLakeConfiguration(
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     val flushBatchSizeMb: Long?,
+    val primaryKeyBloomFilter: PrimaryKeyBloomFilterConfiguration =
+        PrimaryKeyBloomFilterConfiguration(),
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -47,6 +53,65 @@ data class S3DataLakeConfiguration(
         }
 }
 
+data class PrimaryKeyBloomFilterConfiguration(
+    @get:JsonSchemaTitle("Enabled")
+    @get:JsonPropertyDescription(
+        "Whether to enable the experimental primary-key Bloom filter optimization."
+    )
+    @get:JsonSchemaInject(json = """{"default": false, "order": 0}""")
+    val enabled: Boolean = false,
+
+    @get:JsonSchemaTitle("Expected Items")
+    @get:JsonPropertyDescription(
+        "Expected number of unique primary keys to add to the Bloom filter during one sync."
+    )
+    @param:JsonProperty("expected_items")
+    @get:JsonProperty("expected_items")
+    @get:JsonSchemaInject(json = """{"default": 10000000, "order": 1}""")
+    val expectedItems: Int = Defaults.EXPECTED_ITEMS,
+
+    @get:JsonSchemaTitle("Number of Bits")
+    @get:JsonPropertyDescription("Number of bits in the Bloom filter.")
+    @param:JsonProperty("num_bits")
+    @get:JsonProperty("num_bits")
+    @get:JsonSchemaInject(json = """{"default": 100000000, "order": 2}""")
+    val numberOfBits: Int = Defaults.NUMBER_OF_BITS,
+
+    @get:JsonSchemaTitle("Number of Hash Functions")
+    @get:JsonPropertyDescription("Number of hash functions to use for each primary key.")
+    @param:JsonProperty("num_hash_functions")
+    @get:JsonProperty("num_hash_functions")
+    @get:JsonSchemaInject(json = """{"default": 7, "order": 3}""")
+    val numberOfHashFunctions: Int = Defaults.NUMBER_OF_HASH_FUNCTIONS,
+
+    @get:JsonSchemaTitle("Log Interval Records")
+    @get:JsonPropertyDescription(
+        "How often to log Bloom filter counters by number of checked keys. Set to 0 to disable periodic logging."
+    )
+    @param:JsonProperty("log_interval_records")
+    @get:JsonProperty("log_interval_records")
+    @get:JsonSchemaInject(json = """{"default": 1000000, "order": 4}""")
+    val logIntervalRecords: Long = Defaults.LOG_INTERVAL_RECORDS,
+) {
+    object Defaults {
+        const val EXPECTED_ITEMS = 10_000_000
+        const val NUMBER_OF_BITS = 100_000_000
+        const val NUMBER_OF_HASH_FUNCTIONS = 7
+        const val LOG_INTERVAL_RECORDS = 1_000_000L
+    }
+
+    init {
+        require(expectedItems > 0) { "primary_key_bloom_filter.expected_items must be positive" }
+        require(numberOfBits > 0) { "primary_key_bloom_filter.num_bits must be positive" }
+        require(numberOfHashFunctions > 0) {
+            "primary_key_bloom_filter.num_hash_functions must be positive"
+        }
+        require(logIntervalRecords >= 0) {
+            "primary_key_bloom_filter.log_interval_records must be non-negative"
+        }
+    }
+}
+
 @Singleton
 class S3DataLakeConfigurationFactory :
     DestinationConfigurationFactory<S3DataLakeSpecification, S3DataLakeConfiguration> {
@@ -59,6 +124,8 @@ class S3DataLakeConfigurationFactory :
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
             flushBatchSizeMb = pojo.flushBatchSizeMb,
+            primaryKeyBloomFilter =
+                pojo.primaryKeyBloomFilter ?: PrimaryKeyBloomFilterConfiguration(),
         )
     }
 }

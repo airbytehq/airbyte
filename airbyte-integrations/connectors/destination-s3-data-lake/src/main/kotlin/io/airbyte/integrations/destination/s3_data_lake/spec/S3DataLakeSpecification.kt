@@ -83,6 +83,14 @@ class S3DataLakeSpecification :
         json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
     )
     val flushBatchSizeMb: Long? = null
+
+    @get:JsonSchemaTitle("Primary Key Bloom Filter")
+    @get:JsonPropertyDescription(
+        "Experimental Bloom filter used to skip first-seen primary-key equality deletes in dedupe mode."
+    )
+    @get:JsonProperty("primary_key_bloom_filter", required = false)
+    @get:JsonSchemaInject(json = """{"order": 9, "airbyte_hidden": true}""")
+    val primaryKeyBloomFilter: PrimaryKeyBloomFilterConfiguration? = null
 }
 
 @Singleton

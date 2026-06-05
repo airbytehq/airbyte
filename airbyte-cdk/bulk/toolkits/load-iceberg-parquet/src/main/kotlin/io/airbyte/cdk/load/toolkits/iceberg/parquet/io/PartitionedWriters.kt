@@ -33,6 +33,7 @@ class PartitionedDeltaWriter(
     targetFileSize: Long,
     schema: Schema,
     identifierFieldIds: Set<Int>,
+    equalityDeleteKeyTracker: EqualityDeleteKeyTracker? = null,
 ) :
     BaseDeltaTaskWriter(
         table,
@@ -43,7 +44,8 @@ class PartitionedDeltaWriter(
         io,
         targetFileSize,
         schema,
-        identifierFieldIds
+        identifierFieldIds,
+        equalityDeleteKeyTracker
     ) {
 
     private val partitionKey = PartitionKey(spec, schema)

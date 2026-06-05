@@ -43,6 +43,7 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
   private final Schema deleteSchema;
   private final InternalRecordWrapper wrapper;
   private final InternalRecordWrapper keyWrapper;
+  private final EqualityDeleteKeyTracker equalityDeleteKeyTracker;
 
   public BaseDeltaTaskWriter(final Table table,
                              final PartitionSpec spec,
@@ -53,12 +54,27 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
                              final long targetFileSize,
                              final Schema schema,
                              final Set<Integer> identifierFieldIds) {
+    this(table, spec, format, appenderFactory, fileFactory, io, targetFileSize, schema,
+        identifierFieldIds, null);
+  }
+
+  public BaseDeltaTaskWriter(final Table table,
+                             final PartitionSpec spec,
+                             final FileFormat format,
+                             final FileAppenderFactory<Record> appenderFactory,
+                             final OutputFileFactory fileFactory,
+                             final FileIO io,
+                             final long targetFileSize,
+                             final Schema schema,
+                             final Set<Integer> identifierFieldIds,
+                             final EqualityDeleteKeyTracker equalityDeleteKeyTracker) {
     super(spec, format, appenderFactory, fileFactory, io, targetFileSize);
     this.table = table;
     this.schema = schema;
     this.deleteSchema = TypeUtil.select(schema, identifierFieldIds);
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     this.keyWrapper = new InternalRecordWrapper(deleteSchema.asStruct());
+    this.equalityDeleteKeyTracker = equalityDeleteKeyTracker;
   }
 
   public abstract RowDataDeltaWriter route(final Record row);
@@ -90,11 +106,21 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
     if (rowOperation == Operation.INSERT) {
       writer.write(row);
     } else if (rowOperation == Operation.DELETE) {
-      writer.deleteKey(constructIdentifierRecord(row));
+      final Record identifierRecord = constructIdentifierRecord(row);
+      if (shouldDeleteKey(identifierRecord)) {
+        writer.deleteKey(identifierRecord);
+      }
     } else {
-      writer.deleteKey(constructIdentifierRecord(row));
+      final Record identifierRecord = constructIdentifierRecord(row);
+      if (shouldDeleteKey(identifierRecord)) {
+        writer.deleteKey(identifierRecord);
+      }
       writer.write(row);
     }
+  }
+
+  private boolean shouldDeleteKey(final Record identifierRecord) {
+    return equalityDeleteKeyTracker == null || equalityDeleteKeyTracker.shouldDelete(identifierRecord);
   }
 
   private Operation getOperation(final Record row) {

@@ -28,6 +28,7 @@ class UnpartitionedDeltaWriter(
     targetFileSize: Long,
     schema: Schema,
     identifierFieldIds: Set<Int>,
+    equalityDeleteKeyTracker: EqualityDeleteKeyTracker? = null,
 ) :
     BaseDeltaTaskWriter(
         table,
@@ -38,7 +39,8 @@ class UnpartitionedDeltaWriter(
         io,
         targetFileSize,
         schema,
-        identifierFieldIds
+        identifierFieldIds,
+        equalityDeleteKeyTracker
     ) {
 
     private val writer = RowDataDeltaWriter(null)

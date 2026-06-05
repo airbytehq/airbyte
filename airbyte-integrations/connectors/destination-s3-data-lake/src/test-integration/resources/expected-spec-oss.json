@@ -223,6 +223,52 @@
         "default" : 200,
         "order" : 8,
         "airbyte_hidden" : true
+      },
+      "primary_key_bloom_filter" : {
+        "description" : "Experimental Bloom filter used to skip first-seen primary-key equality deletes in dedupe mode.",
+        "title" : "Primary Key Bloom Filter",
+        "order" : 9,
+        "airbyte_hidden" : true,
+        "type" : "object",
+        "additionalProperties" : true,
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean",
+            "description" : "Whether to enable the experimental primary-key Bloom filter optimization.",
+            "title" : "Enabled",
+            "default" : false,
+            "order" : 0
+          },
+          "expected_items" : {
+            "type" : "integer",
+            "description" : "Expected number of unique primary keys to add to the Bloom filter during one sync.",
+            "title" : "Expected Items",
+            "default" : 10000000,
+            "order" : 1
+          },
+          "num_bits" : {
+            "type" : "integer",
+            "description" : "Number of bits in the Bloom filter.",
+            "title" : "Number of Bits",
+            "default" : 100000000,
+            "order" : 2
+          },
+          "num_hash_functions" : {
+            "type" : "integer",
+            "description" : "Number of hash functions to use for each primary key.",
+            "title" : "Number of Hash Functions",
+            "default" : 7,
+            "order" : 3
+          },
+          "log_interval_records" : {
+            "type" : "integer",
+            "description" : "How often to log Bloom filter counters by number of checked keys. Set to 0 to disable periodic logging.",
+            "title" : "Log Interval Records",
+            "default" : 1000000,
+            "order" : 4
+          }
+        },
+        "required" : [ "enabled", "expected_items", "num_bits", "num_hash_functions", "log_interval_records" ]
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]
