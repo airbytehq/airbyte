@@ -18,7 +18,6 @@ Connectors
 
 Web app
 
-- The workspace dropdown on the setup page is now sorted alphabetically.
 - Sessions and Tool Calls have moved to the bottom of the sidebar for a cleaner layout.
 
 Connectors
