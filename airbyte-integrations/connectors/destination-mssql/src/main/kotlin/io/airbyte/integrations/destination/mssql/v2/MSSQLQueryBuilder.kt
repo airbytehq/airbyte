@@ -379,10 +379,12 @@ class MSSQLQueryBuilder(
                     LIMITS.validateInteger(value)?.let {
                         statement.setLong(statementIndex, it.longValueExact())
                     }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 NumberType ->
                     LIMITS.validateNumber(value)?.let {
                         statement.setBigDecimal(statementIndex, it)
                     }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 StringType ->
                     statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->
@@ -404,6 +406,7 @@ class MSSQLQueryBuilder(
                     LIMITS.validateTimestamp(value)?.let {
                         statement.setObject(statementIndex, it.toString())
                     }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
 
                 // Serialize complex types to string
                 is ArrayType,
