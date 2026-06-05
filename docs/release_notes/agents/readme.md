@@ -4,7 +4,6 @@
 
 Web app
 
-- The Shopify shop name you enter during OAuth setup is now preserved correctly.
 - The context store status indicator now waits for data to load before displaying, preventing a brief flash of incorrect state.
 - The standalone Getting Started page has been removed. You're now guided through setup as you use the app.
 
@@ -12,7 +11,6 @@ Connectors
 
 - The Jira connector now supports OAuth 2.0 sign-in.
 - Re-enabled the Ashby connector.
-- Fixed the Shopify OAuth callback listener to stay active until authentication completes.
 
 ## June 2, 2026
 
@@ -22,7 +20,6 @@ Web app
 
 Connectors
 
-- Added the Snowflake connector with read support for databases, schemas, tables, views, warehouses, and columns.
 - Improved data synchronization for WooCommerce, LinkedIn Ads, Snapchat Marketing, Google Analytics Data API, and Slack connectors.
 - Fixed an issue where non-OAuth authentication fields were not displayed during connector setup.
 
@@ -80,7 +77,6 @@ Connectors
 
 - Fixed Asana connector to use the correct default OAuth scopes.
 - Improved Salesforce agent guidance with better account ranking for financial data.
-- Fixed Shopify OAuth integration for the embedded connector widget.
 
 ## May 18, 2026
 
@@ -95,7 +91,6 @@ Web app
 Connectors
 
 - Linear, Asana, and Google Drive connectors now support OAuth sign-in.
-- Fixed Shopify OAuth callback handling to complete authentication reliably.
 
 ## May 15, 2026
 
@@ -116,7 +111,6 @@ Connectors
 
 - Added transactional message operations to the Customer.io connector.
 - Fixed the default start date for the Google Search Console connector.
-- The Gmail connector now uses a single, more appropriate permission scope instead of multiple broad ones.
 
 Other
 
