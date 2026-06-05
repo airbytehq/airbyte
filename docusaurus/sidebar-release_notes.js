@@ -70,6 +70,15 @@ export default {
         },
         {
           type: "category",
+          label: "Cloud",
+          link: {
+            type: "doc",
+            id: "cloud/readme",
+          },
+          items: [],
+        },
+        {
+          type: "category",
           label: "Agents",
           link: {
             type: "doc",
