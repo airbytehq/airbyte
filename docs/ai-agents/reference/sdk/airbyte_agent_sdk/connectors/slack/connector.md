@@ -73,6 +73,25 @@ Classes
         Returns:
             Channel
 
+<a id="ChannelJoinsQuery"></a>
+
+`ChannelJoinsQuery(connector: SlackConnector)`
+:   Query class for ChannelJoins entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.Channel`
+    :   Joins an existing public channel. The calling bot or user token will be added as a member of the channel.
+        
+        Args:
+            channel: ID of the channel to join
+            **kwargs: Additional parameters
+        
+        Returns:
+            Channel
+
 <a id="ChannelKicksQuery"></a>
 
 `ChannelKicksQuery(connector: SlackConnector)`
