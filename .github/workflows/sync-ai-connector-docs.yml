@@ -70,4 +70,5 @@ jobs:
             This PR was automatically created by the sync-agent-connector-docs workflow.
           labels: |
             documentation
+            auto-generated
             auto-merge
