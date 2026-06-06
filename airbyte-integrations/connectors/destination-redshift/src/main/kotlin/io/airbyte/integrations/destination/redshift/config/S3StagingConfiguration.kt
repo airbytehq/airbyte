@@ -56,17 +56,26 @@ data class S3StagingConfiguration(
     @JsonProperty("access_key_id")
     @get:JsonSchemaTitle("S3 Access Key Id")
     @get:JsonPropertyDescription(
-        "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key."
+        "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. Leave blank to use IAM role-based authentication (IRSA / instance profile). See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key."
     )
     @get:JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true}""")
-    val accessKeyId: String = "",
+    val accessKeyId: String? = null,
     @JsonProperty("secret_access_key")
     @get:JsonSchemaTitle("S3 Secret Access Key")
     @get:JsonPropertyDescription(
-        "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key."
+        "The corresponding secret to the above access key id. Leave blank to use IAM role-based authentication (IRSA / instance profile). See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key."
     )
     @get:JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
-    val secretAccessKey: String = "",
+    val secretAccessKey: String? = null,
+    @JsonProperty("iam_role_arn")
+    @get:JsonSchemaTitle("Redshift IAM Role ARN")
+    @get:JsonPropertyDescription(
+        "Optional. The ARN of the IAM role attached to your Redshift cluster or serverless workgroup that has read access to the S3 staging bucket. Used in the COPY command when static AWS credentials are not provided. If omitted, 'IAM_ROLE default' is used. See <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/authorizing-redshift-service.html\">AWS docs</a> on associating IAM roles with Redshift."
+    )
+    @get:JsonSchemaInject(
+        json = """{"order": 5, "examples":["arn:aws:iam::123456789012:role/redshift-s3-read"]}"""
+    )
+    val iamRoleArn: String? = null,
     @JsonProperty("file_name_pattern")
     @get:JsonSchemaTitle("S3 Filename pattern")
     @get:JsonPropertyDescription(
@@ -74,7 +83,7 @@ data class S3StagingConfiguration(
     )
     @get:JsonSchemaInject(
         json =
-            """{"order": 5, "examples":["{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"]}"""
+            """{"order": 6, "examples":["{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"]}"""
     )
     val fileNamePattern: String? = null,
     @JsonProperty("purge_staging_data")
@@ -82,6 +91,28 @@ data class S3StagingConfiguration(
     @get:JsonPropertyDescription(
         "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details."
     )
-    @get:JsonSchemaInject(json = """{"order": 6, "default": true}""")
+    @get:JsonSchemaInject(json = """{"order": 7, "default": true}""")
     val purgeStagingData: Boolean? = true,
-) : UploadingMethod
+) : UploadingMethod {
+    init {
+        val hasAccessKey = !accessKeyId.isNullOrBlank()
+        val hasSecretKey = !secretAccessKey.isNullOrBlank()
+        require(hasAccessKey == hasSecretKey) {
+            "Both 'access_key_id' and 'secret_access_key' must be provided together for static " +
+                "credential authentication. Leave both blank to use IAM role-based authentication " +
+                "(IRSA / instance profile)."
+        }
+        iamRoleArn
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                require(it.matches(IAM_ROLE_ARN_PATTERN)) {
+                    "Invalid IAM role ARN format: '$it'. Expected something like " +
+                        "'arn:aws:iam::123456789012:role/my-role'."
+                }
+            }
+    }
+
+    companion object {
+        private val IAM_ROLE_ARN_PATTERN = Regex("""^arn:aws[a-zA-Z-]*:iam::\d{12}:role/.+$""")
+    }
+}

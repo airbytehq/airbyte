@@ -98,6 +98,25 @@ configure an S3 bucket and IAM credentials for this purpose.
 See the [S3 Staging fields](#s3-staging-fields) table for the full list of required and optional
 S3 configuration parameters.
 
+#### Optional: IAM role-based authentication (IRSA / instance profile)
+
+If you deploy Airbyte on AWS (for example on EKS using
+[IRSA — IAM Roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html),
+or on EC2 using an instance profile), you can authenticate to S3 without static access keys.
+
+1. Leave **S3 Access Key ID** and **S3 Secret Access Key** blank. The connector then resolves
+   credentials at runtime via the default AWS credential provider chain (IRSA web-identity token,
+   instance profile, or environment), which is used to upload the staging files to S3.
+2. Attach an IAM role with S3 read access to your Redshift cluster or serverless workgroup so the
+   `COPY` command can read the staging files. See
+   [Authorizing Amazon Redshift to access other AWS services](https://docs.aws.amazon.com/redshift/latest/mgmt/authorizing-redshift-service.html).
+3. Set **Redshift IAM Role ARN** to that role's ARN. If left blank, the connector issues
+   `COPY ... IAM_ROLE default`, which relies on a default role being associated with the
+   cluster/workgroup.
+
+Note that the access key and secret must be provided together; setting only one is rejected during
+the connection check.
+
 NOTE: S3 staging does not use the SSH Tunnel option for copying data. SSH Tunnel supports the SQL connection only. S3 is
 secured through public HTTPS access only. Subsequent queries on the destination tables are executed using the provided
 SSH Tunnel configuration.
@@ -136,8 +155,9 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 |:-----------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [S3 Bucket Name](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)                          | The name of the staging S3 bucket you created in Step 2. Example: `airbyte-staging-bucket`                                                                                                                                                                     |
 | S3 Bucket Region                                                                                                             | The region of the S3 staging bucket. Place in the same region as your Redshift cluster to reduce costs. Example: `us-east-1`                                                                                                                                   |
-| [S3 Access Key ID](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) | The AWS Access Key ID for an IAM user with read and write permissions to the staging bucket.                                                                                                                                                                   |
-| S3 Secret Access Key                                                                                                         | The corresponding AWS Secret Access Key for the Access Key ID.                                                                                                                                                                                                 |
+| [S3 Access Key ID](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) (Optional) | The AWS Access Key ID for an IAM user with read and write permissions to the staging bucket. Leave blank to use IAM role-based authentication (IRSA / instance profile). Must be set together with the Secret Access Key.                                       |
+| S3 Secret Access Key (Optional)                                                                                             | The corresponding AWS Secret Access Key for the Access Key ID. Leave blank to use IAM role-based authentication (IRSA / instance profile). Must be set together with the Access Key ID.                                                                         |
+| [Redshift IAM Role ARN](https://docs.aws.amazon.com/redshift/latest/mgmt/authorizing-redshift-service.html) (Optional)       | The ARN of the IAM role attached to your Redshift cluster or serverless workgroup that has read access to the S3 staging bucket. Used in the COPY command when static credentials are not provided. If omitted, `IAM_ROLE default` is used. Example: `arn:aws:iam::123456789012:role/redshift-s3-read` |
 | S3 Bucket Path (Optional)                                                                                                    | The directory under the S3 bucket where staging data will be written. If not provided, defaults to the root directory. Example: `data_sync/redshift`                                                                                                           |
 | S3 Filename Pattern (Optional)                                                                                               | The pattern for S3 staging file names. Supported placeholders: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Do not use empty spaces or unsupported placeholders. |
 | Purge Staging Data (Optional)                                                                                                | Whether to delete the staging files from S3 after completing the sync. Default: `true`. Set to `false` to retain files for debugging or auditing.                                                                                                              |
@@ -275,6 +295,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.0 | 2026-06-05 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | feat(destination-redshift): add IAM role-based authentication (IRSA / instance profile) for S3 staging |
 | 4.0.1 | 2026-06-04 | [79135](https://github.com/airbytehq/airbyte/pull/79135) | fix(destination-redshift): resolve sslmode/sslfactory conflict in jdbc_url_params |
 | 4.0.0 | 2026-06-02 | [79095](https://github.com/airbytehq/airbyte/pull/79095) | Full rewrite using direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.2.7, AWS SDK v2 2.31.1 |
 | 3.5.4 | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |

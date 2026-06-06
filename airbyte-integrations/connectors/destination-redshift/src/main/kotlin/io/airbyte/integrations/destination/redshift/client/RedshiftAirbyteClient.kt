@@ -236,18 +236,28 @@ class RedshiftAirbyteClient(
     }
 
     /**
-     * Executes a Redshift COPY command to load data from S3. Logging is suppressed because the
-     * generated SQL contains plaintext AWS credentials in the CREDENTIALS clause.
+     * Executes a Redshift COPY command to load data from S3. Statement logging is suppressed
+     * unconditionally: the static-credential path embeds plaintext AWS keys in the CREDENTIALS
+     * clause, so logging must stay off for every credential branch to avoid leaking secrets if the
+     * auth mode changes.
      */
     suspend fun copyFromS3(
         tableName: TableName,
         s3Path: String,
-        accessKeyId: String,
-        secretAccessKey: String,
+        accessKeyId: String?,
+        secretAccessKey: String?,
         region: String,
+        iamRoleArn: String? = null,
     ) {
         execute(
-            sqlGenerator.copyFromS3(tableName, s3Path, accessKeyId, secretAccessKey, region),
+            sqlGenerator.copyFromS3(
+                tableName,
+                s3Path,
+                accessKeyId,
+                secretAccessKey,
+                region,
+                iamRoleArn,
+            ),
             logStatement = false,
         )
     }

@@ -732,6 +732,61 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
+    fun `copyFromS3 uses IAM_ROLE with explicit ARN when keys are blank`() {
+        val sql =
+            sqlGenerator.copyFromS3(
+                tableName = TableName(namespace = "ns", name = "tbl"),
+                s3Path = "s3://bucket/path/file.csv.gz",
+                accessKeyId = "",
+                secretAccessKey = "",
+                region = "us-east-1",
+                iamRoleArn = "arn:aws:iam::123456789012:role/redshift-s3-read",
+            )
+
+        assertTrue(
+            sql.contains("IAM_ROLE 'arn:aws:iam::123456789012:role/redshift-s3-read'"),
+            "expected explicit IAM_ROLE clause, got: $sql",
+        )
+        assertFalse(sql.contains("CREDENTIALS"))
+        assertFalse(sql.contains("aws_secret_access_key"))
+    }
+
+    @Test
+    fun `copyFromS3 uses IAM_ROLE default when keys and ARN are blank`() {
+        val sql =
+            sqlGenerator.copyFromS3(
+                tableName = TableName(namespace = "ns", name = "tbl"),
+                s3Path = "s3://bucket/path/file.csv.gz",
+                accessKeyId = "",
+                secretAccessKey = "",
+                region = "us-east-1",
+                iamRoleArn = null,
+            )
+
+        assertTrue(sql.contains("IAM_ROLE default"), "expected IAM_ROLE default, got: $sql")
+        assertFalse(sql.contains("CREDENTIALS"))
+        assertFalse(sql.contains("aws_secret_access_key"))
+    }
+
+    @Test
+    fun `copyFromS3 prefers static CREDENTIALS even when an ARN is also supplied`() {
+        val sql =
+            sqlGenerator.copyFromS3(
+                tableName = TableName(namespace = "ns", name = "tbl"),
+                s3Path = "s3://bucket/path/file.csv.gz",
+                accessKeyId = "AKIATEST",
+                secretAccessKey = "secret123",
+                region = "us-east-1",
+                iamRoleArn = "arn:aws:iam::123456789012:role/redshift-s3-read",
+            )
+
+        assertTrue(
+            sql.contains("CREDENTIALS 'aws_access_key_id=AKIATEST;aws_secret_access_key=secret123'")
+        )
+        assertFalse(sql.contains("IAM_ROLE"))
+    }
+
+    @Test
     fun `getTableSchema queries information_schema`() {
         val sql = sqlGenerator.getTableSchema(TableName(namespace = "my_schema", name = "my_table"))
 
