@@ -345,8 +345,10 @@ jobs:
       - name: Check for structured output
         if: steps.devin.outputs.session-id
         id: check-output
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
         run: |
-          if [[ -n '${{ steps.devin.outputs.structured-output }}' ]]; then
+          if [[ -n "$STRUCTURED_OUTPUT" ]]; then
             echo "success=true" >> "$GITHUB_OUTPUT"
           else
             echo "::error::Devin session completed but did not produce structured output."
