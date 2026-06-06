@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## June 5, 2026
+
+MCP
+
+- New workspace management tools let you switch the active workspace for your session and check which workspace is currently selected. Workspace-scoped tools now operate on the selected workspace automatically without needing to pass the workspace name each time.
+- Read-only operations through the execute endpoint (such as searching connected data) no longer require human approval, reducing friction for read queries.
+
+Connectors
+
+- The Slack connector now supports joining public channels, allowing your agent to add itself to channels before sending messages or performing other actions.
+
 ## June 3, 2026
 
 Web app
