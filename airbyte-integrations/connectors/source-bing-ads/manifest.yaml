@@ -17566,10 +17566,21 @@ spec:
         order: 6
       lookback_window:
         title: Lookback window
-        description: Also known as attribution or conversion window. How far into the
-          past to look for records (in days). If your conversion window has an hours/minutes
-          granularity, round it up to the number of days exceeding. Used only for performance
-          report streams in incremental mode without specified Reports Start Date.
+        description: >-
+          Also known as attribution or conversion window. How far into the past
+          (in days) to re-fetch records on each incremental sync of a
+          performance report stream. Bing Ads flags data for recent days as
+          potentially incomplete and continues to update it as late-arriving
+          clicks, impressions, and conversions are processed; the connector
+          accepts that potentially-incomplete data and advances its cursor past
+          those days. With the default of 0, late-arriving rows for
+          already-synced days are not re-fetched and will be missing from the
+          destination. If you sync any performance report stream incrementally,
+          set this to cover your conversion attribution window — a value of 7
+          to 14 days is a reasonable starting point (max 90). If your
+          attribution window has hours/minutes granularity, round it up to
+          whole days. See the connector docs section "Performance report data
+          finalization" for details.
         type: integer
         default: 0
         minimum: 0
