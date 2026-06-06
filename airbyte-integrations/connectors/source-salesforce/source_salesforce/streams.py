@@ -895,11 +895,7 @@ class BulkSalesforceStream(SalesforceStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor), has_bulk_parent=False)
         try:
-            yield from self._bulk_job_stream.stream_slices(
-                sync_mode=sync_mode,
-                cursor_field=cursor_field,
-                stream_state=stream_state,
-            )
+            yield from self._bulk_job_stream.retriever.stream_slicer.stream_slices()
         except BulkNotSupportedException:
             self.logger.warning(
                 "attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status"
@@ -960,7 +956,7 @@ class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
             ),
             has_bulk_parent=True,
         )
-        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        yield from self._bulk_job_stream.retriever.stream_slicer.stream_slices()
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform

@@ -22,6 +22,14 @@
         "order": 1,
         "format": "date-time"
       },
+      "region": {
+        "type": "string",
+        "title": "Region",
+        "description": "The region where your Iterable account is hosted. Select 'EU' if your account is on the European data center.",
+        "enum": ["US", "EU"],
+        "default": "US",
+        "order": 2
+      },
       "lookback_window": {
         "type": "integer",
         "title": "Lookback Window (Minutes)",
@@ -29,7 +37,7 @@
         "default": 5,
         "minimum": 0,
         "examples": [5, 10, 15],
-        "order": 2
+        "order": 3
       }
     }
   }

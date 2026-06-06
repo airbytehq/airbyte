@@ -1,52 +1,60 @@
----
-products: all
----
-
 # Get support
 
-If you can't find an answer to your question in the docs, Airbyte has different support options.
+Airbyte offers support for both Data Replication and Airbyte Agents. If you can't find an answer to your question in the docs, use one of the following options:
 
-## For Airbyte Enterprise and Cloud
+## Data Replication
 
-### In-app support agent
+### In-app support agent bot
 
-**The in-app support agent is available 24/7 for Airbyte Enterprise and Cloud customers, and can help with basic troubleshooting anytime.**
+**The in-app support agent bot is available 24/7 for Airbyte Cloud and Enterprise customers.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The bot can also create support tickets for the Airbyte support team if further help is needed.
 
-Airbyte Cloud includes an AI-powered support agent accessible directly within the app. Look for the chat button in the bottom-right corner of the screen. The support agent can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The agent can also create Zendesk tickets with additional connection information for the Airbyte support team if further help is needed.
+### Support Center
 
-### Support center
+**For additional help, create a ticket in Airbyte's [Support Center](https://support.airbyte.com/hc/en-us/requests/new).** Support agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
 
-- **For support with any part of Airbyte, create an issue in Airbyte's [support center](https://support.airbyte.com/hc/en-us/requests/new)**. Agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
-- For account or credit-related inquiries, [contact sales](https://airbyte.com/talk-to-sales).
-- If you don't see a connector you need, submit a [connector request](https://airbyte.com/connector-requests).
+- For account or billing inquiries, [contact sales](https://airbyte.com/talk-to-sales).
+- We suggest signing up for Airbyte with your company email address, and not a personal one.
 
-Please sign up for Airbyte with your company email address. We don't support personal accounts.
+### Core (open source)
 
-## For Airbyte Core
+Core users don't have access to paid support but can use the [Community Slack](#community-slack). If you need personalized help, consider upgrading to one of Airbyte's [paid plans](https://www.airbyte.com/pricing).
 
-Airbyte Core users don't have access to paid support, but you still have community support options. If you need personalized help, consider upgrading to one of Airbyte's [paid plans](https://www.airbyte.com/pricing).
+### Connector support levels
 
-### Community Slack
+Connector support depends on the connector's support level. See [Connector Support Levels](/integrations/connector-support-levels) for details.
 
-[Join the Slack community](https://slack.airbyte.com/?_gl=1*1h8mjfe*_gcl_au*MTc4MjAxMDQzOS4xNjgyOTczMDYy*_ga*MTc1OTkyOTYzNi4xNjQxMjQyMjA0*_ga_HDBMVFQGBH*MTY4Nzg4OTQ4MC4zMjUuMS4xNjg3ODkwMjE1LjAuMC4w&_ga=2.58571491.813788522.1687789276-1759929636.1641242204) for help from other open sources users and Airbyte team members. Popular channels are `#ask-ai` and `#ask-community-for-troubleshooting`.
+If you don't see a connector you need, submit a [connector request](https://airbyte.com/connector-requests).
 
 ### GitHub discussions
 
-[GitHub discussions](https://github.com/airbytehq/airbyte/discussions) are a great way to propose, vote on, and discuss Airbyte improvements.
+[GitHub discussions](https://github.com/airbytehq/airbyte/discussions) are a great way to propose, vote on, and discuss data replication improvements.
 
 ### Report an issue
 
-If you've found a bug or issue with Airbyte or its documentation, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose). If you're willing to work on this issue yourself, please indicate this.
+If you've found a bug or issue with Airbyte or its documentation, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) on GitHub.
 
-Please check the [issue list](https://github.com/airbytehq/airbyte/issues) first in case the issue has already been reported. If it has, feel free to comment on that issue to provide more details about your experience.
+Check the [issue list](https://github.com/airbytehq/airbyte/issues) first in case the issue has already been reported.
 
-### Public roadmap
+## Airbyte Agents
 
-To stay updated on Airbyte's future plans, take a look at [our roadmap](https://github.com/orgs/airbytehq/projects/37/views/1). Airbyte updates this every few weeks with initiatives that are of interest to the community.
+### In-app support agent bot
 
-## Connector support depends on support level
+**The in-app support agent bot is available 24/7 for all Airbyte Agents users.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your organization, troubleshoot common scenarios, and create support tickets if further help is needed.
 
-Connector support depends on the certification status of the connector. See [Connector Support Levels](/integrations/connector-support-levels) if you have any questions on support provided for one of your connectors.
+### Support by plan
+
+- **Free**: AI and [community](#community-slack) support.
+- **Individual / Team**: Standard human support, in addition to AI and community support. The in-app support agent bot can create a ticket for you, or you can create your own in the [Support Center](https://support.airbyte.com/hc/en-us/requests/new).
+- **Custom**: Dedicated human support.
+
+For full details on Airbyte Agents plans, see [Billing and pricing](/ai-agents/admin/billing).
+
+## Community Slack
+
+[Join the Slack community](https://slack.airbyte.com) for help from other users and Airbyte team members. Popular channels include:
+
+- Data Replication: `#ask-ai`, `#ask-community-for-troubleshooting`
+- Airbyte Agents: `#airbyte-agents`, `#airbyte-agents-ask-ai`
 
 ## Questions about contributions
 
@@ -62,7 +70,7 @@ Submitting a pull request for review?
 
 The team tries its best to assist, and always tries to do the right thing for Airbyte users. That said, there are some things the team doesn't support:
 
-- Questions/troubleshooting with forked versions of Airbyte
+- Questions or troubleshooting with forked versions of Airbyte
 - Configuring using Octavia CLI
 - Creating and configuring custom transformation using dbt
 - Curating unique documentation and training materials

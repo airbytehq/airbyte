@@ -20,6 +20,9 @@
 | `category_groups` | `id` | DefaultPaginator | ✅ |  ✅  |
 | `categories` | `source_id` | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -28,6 +31,9 @@
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.33 | 2026-06-02 | [78873](https://github.com/airbytehq/airbyte/pull/78873) | Update dependencies |
+| 0.3.32 | 2026-04-28 | [77368](https://github.com/airbytehq/airbyte/pull/77368) | Update dependencies |
+| 0.3.31 | 2026-04-21 | [76695](https://github.com/airbytehq/airbyte/pull/76695) | Update dependencies |
 | 0.3.30 | 2026-03-31 | [75817](https://github.com/airbytehq/airbyte/pull/75817) | Update dependencies |
 | 0.3.29 | 2026-03-17 | [75030](https://github.com/airbytehq/airbyte/pull/75030) | Update dependencies |
 | 0.3.28 | 2026-03-10 | [74480](https://github.com/airbytehq/airbyte/pull/74480) | Update dependencies |

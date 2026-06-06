@@ -10,6 +10,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+      - config_path: "secrets/service_account_config.json"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
       - config_path: "integration_tests/invalid_config_domain.json"
@@ -17,11 +19,18 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/service_account_config.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: "project_permission_schemes"
+            bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
+        timeout_seconds: 2400
+        fail_on_extra_columns: false
+      - config_path: "secrets/service_account_config.json"
         empty_streams:
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."

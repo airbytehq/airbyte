@@ -22,6 +22,10 @@ Tremendous connector  enables seamless integration with Tremendous API. This con
 | rewards | id | DefaultPaginator | ✅ |  ❌  |
 | invoices | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -29,6 +33,9 @@ Tremendous connector  enables seamless integration with Tremendous API. This con
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-02 | [79012](https://github.com/airbytehq/airbyte/pull/79012) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77436](https://github.com/airbytehq/airbyte/pull/77436) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76800](https://github.com/airbytehq/airbyte/pull/76800) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75741](https://github.com/airbytehq/airbyte/pull/75741) | Update dependencies |
 | 0.0.49 | 2026-03-17 | [74547](https://github.com/airbytehq/airbyte/pull/74547) | Update dependencies |
 | 0.0.48 | 2026-03-03 | [73879](https://github.com/airbytehq/airbyte/pull/73879) | Update dependencies |

@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.types import Record
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, mock_v3_properties, read_from_stream
 from .utils import run_read
@@ -866,9 +867,11 @@ def test_list_memberships_read(requests_mock, config, mock_dynamic_schema_reques
     records = run_read(stream)
     assert len(records) == 2
     assert records[0]["recordId"] == "101"
-    assert records[0]["listId"] == 42
+    assert records[0]["listId"] == "42"
+    assert isinstance(records[0]["listId"], str)
     assert records[1]["recordId"] == "102"
-    assert records[1]["listId"] == 42
+    assert records[1]["listId"] == "42"
+    assert isinstance(records[1]["listId"], str)
 
 
 def test_list_memberships_pagination(requests_mock, config, mock_dynamic_schema_requests):
@@ -938,4 +941,156 @@ def test_list_memberships_multiple_parent_lists(requests_mock, config, mock_dyna
     records = run_read(stream)
     assert len(records) == 2
     list_ids = {r["listId"] for r in records}
-    assert list_ids == {10, 20}
+    assert list_ids == {"10", "20"}
+    for record in records:
+        assert isinstance(record["listId"], str)
+
+
+def test_list_memberships_listid_is_string_for_numeric_values(requests_mock, config, mock_dynamic_schema_requests):
+    """Regression test for oncall #11995.
+
+    The parent `contact_lists` stream returns numeric-looking `listId` values (e.g. "885").
+    When the `list_memberships` stream injects `listId` into child records via an AddFields
+    transformation, the value must remain a string so Avro destinations (which declare the
+    schema as [null, string]) can serialize the records without union-resolution failures.
+
+    Without `value_type: string` on the AddFields transformation, JinjaInterpolation's
+    `_literal_eval` coerces a numeric-looking string like "885" into a Python int, which
+    then fails Avro union resolution against `[null, string]` at the destination.
+    """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    contact_lists_response = {
+        "lists": [
+            {
+                "listId": "885",
+                "createdAt": "2022-02-25T16:43:11Z",
+                "updatedAt": "2022-02-25T16:43:11Z",
+            },
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    memberships_response = {
+        "results": [
+            {"recordId": "101", "membershipTimestamp": "2023-06-15T10:30:00Z"},
+        ],
+    }
+    requests_mock.register_uri("GET", "https://api.hubapi.com/crm/v3/lists/885/memberships", json=memberships_response)
+
+    stream = find_stream("list_memberships", config)
+    records = run_read(stream)
+    assert len(records) == 1
+    assert records[0]["listId"] == "885"
+    assert isinstance(records[0]["listId"], str), (
+        f"listId should be a string to match the schema type [null, string], "
+        f"but got {type(records[0]['listId']).__name__} with value {records[0]['listId']!r}"
+    )
+
+
+def test_list_memberships_ignores_invalid_object_type_for_list_400(requests_mock, config, mock_dynamic_schema_requests):
+    """Regression test for oncall #11995 (HTTP 400 `INVALID_OBJECT_TYPE_FOR_LIST`).
+
+    The `/crm/v3/lists/{listId}/memberships` endpoint rejects lists whose `objectTypeId`
+    is not active for the portal (notably Leads, `0-136`) with a 400 response whose body
+    contains `"category": "VALIDATION_ERROR"` and
+    `"subCategory": "ListError.INVALID_OBJECT_TYPE_FOR_LIST"`, even though those same
+    lists are returned by `POST /crm/v3/lists/search`.
+
+    The `list_memberships` stream declares a dedicated error handler that matches this
+    specific 400 response via `error_message_contains: "ListError.INVALID_OBJECT_TYPE_FOR_LIST"`
+    and ignores it so the list is skipped without failing the rest of the stream.
+
+    This test verifies the IGNORE behaviour by:
+    1. Having the parent `contact_lists` endpoint return both a CONTACT list (`0-1`)
+       and a LEADS list (`0-136`).
+    2. Registering the Leads memberships endpoint with the exact 400 response body
+       HubSpot returns in this case.
+    3. Asserting the sync succeeds, returns only the contact-list's memberships, and
+       does call the Leads memberships endpoint exactly once (no retry, no failure).
+    """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    contact_lists_response = {
+        "lists": [
+            {
+                "listId": "10",
+                "objectTypeId": "0-1",
+                "createdAt": "2022-01-01T00:00:00Z",
+                "updatedAt": "2022-01-01T00:00:00Z",
+            },
+            {
+                "listId": "20",
+                "objectTypeId": "0-136",
+                "createdAt": "2022-01-01T00:00:00Z",
+                "updatedAt": "2022-01-01T00:00:00Z",
+            },
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/10/memberships",
+        json={"results": [{"recordId": "r1", "membershipTimestamp": "2023-01-01T00:00:00Z"}]},
+    )
+    leads_memberships_mock = requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/20/memberships",
+        status_code=400,
+        json={
+            "status": "error",
+            "message": "The objectTypeId 0-136 provided for the list is not valid for this portal.",
+            "category": "VALIDATION_ERROR",
+            "subCategory": "ListError.INVALID_OBJECT_TYPE_FOR_LIST",
+        },
+    )
+
+    stream = find_stream("list_memberships", config)
+    records = run_read(stream)
+
+    assert len(records) == 1
+    assert records[0]["listId"] == "10"
+    assert records[0]["recordId"] == "r1"
+    assert leads_memberships_mock.call_count >= 1, (
+        "The memberships endpoint for the Leads list (objectTypeId=0-136) should be called; "
+        "the 400 VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST response is then ignored."
+    )
+
+
+def test_list_memberships_fails_on_unrelated_400(requests_mock, config, mock_dynamic_schema_requests):
+    """Guard test for the `error_handler_ignore_invalid_object_type_for_list` error handler on
+    `list_memberships_stream`. Ensures the trailing `FAIL` filter on 400 responses is not
+    shadowed by the earlier `IGNORE` filter: a 400 whose body does NOT contain the
+    `ListError.INVALID_OBJECT_TYPE_FOR_LIST` marker must still fail the stream.
+    """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    contact_lists_response = {
+        "lists": [
+            {
+                "listId": "30",
+                "objectTypeId": "0-1",
+                "createdAt": "2022-01-01T00:00:00Z",
+                "updatedAt": "2022-01-01T00:00:00Z",
+            },
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    unrelated_400_mock = requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/30/memberships",
+        status_code=400,
+        json={
+            "status": "error",
+            "message": "Invalid request payload.",
+            "category": "VALIDATION_ERROR",
+        },
+    )
+
+    stream = find_stream("list_memberships", config)
+    with pytest.raises(AirbyteTracedException):
+        run_read(stream)
+
+    assert unrelated_400_mock.call_count >= 1

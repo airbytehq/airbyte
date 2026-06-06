@@ -20,7 +20,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsRegion,
 )
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
-from source_facebook_marketing.streams.streams import AdCreativesFromAds, fetch_thumbnail_data_url
+from source_facebook_marketing.streams.streams import AdAccount, AdCreativesFromAds, fetch_thumbnail_data_url
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
@@ -298,3 +298,131 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
 
         result = stream._fetch_creative_details("12345")
         assert result == expected_data
+
+
+@pytest.mark.parametrize(
+    "exception,expected_behavior,expected_raise_type",
+    [
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "(#200) Requires business_management permission to manage the object", "code": 200}}',
+            ),
+            "remove_owner",
+            None,
+            id="fb_error_owner_permission_removes_owner",
+        ),
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "Unsupported request - method type: get", "code": 100}}',
+            ),
+            "remove_funding_source_details",
+            None,
+            id="fb_error_funding_source_removes_field",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Credentials don't have enough permissions.",
+                failure_type=FailureType.config_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=400,
+                    http_headers={},
+                    body='{"error": {"message": "(#200) Requires business_management permission to manage the object", "code": 200}}',
+                ),
+            ),
+            "remove_owner",
+            None,
+            id="airbyte_traced_wrapping_owner_permission_error_removes_owner",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Error code 100: Unsupported request - method type: get.",
+                failure_type=FailureType.system_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=400,
+                    http_headers={},
+                    body='{"error": {"message": "Unsupported request - method type: get", "code": 100}}',
+                ),
+            ),
+            "remove_funding_source_details",
+            None,
+            id="airbyte_traced_wrapping_funding_source_error_removes_field",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="The access token for this connection is invalid or corrupted.",
+                failure_type=FailureType.config_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=400,
+                    http_headers={},
+                    body='{"error": {"message": "Invalid OAuth access token", "code": 190}}',
+                ),
+            ),
+            "raise",
+            FacebookRequestError,
+            id="airbyte_traced_wrapping_unrelated_fb_error_raises",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Some unrelated error.",
+                failure_type=FailureType.system_error,
+            ),
+            "raise",
+            AirbyteTracedException,
+            id="airbyte_traced_without_wrapped_fb_error_raises",
+        ),
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "Invalid OAuth access token", "code": 190}}',
+            ),
+            "raise",
+            FacebookRequestError,
+            id="fb_error_unrelated_raises",
+        ),
+    ],
+)
+def test_ad_account_list_objects_handles_facebook_and_traced_exceptions(
+    api, some_config, exception, expected_behavior, expected_raise_type
+):
+    """Test that AdAccount.list_objects handles FacebookRequestError and AirbyteTracedException
+    wrapping FacebookRequestError for the owner permission and funding_source_details errors,
+    and re-raises all others."""
+    stream = AdAccount(api=api, account_ids=some_config["account_ids"])
+    account_id = some_config["account_ids"][0]
+
+    with (
+        patch.object(stream, "fields", return_value=["owner", "funding_source_details", "id"]),
+        patch("source_facebook_marketing.streams.streams.FBAdAccount") as mock_fb_account,
+    ):
+        mock_account_instance = MagicMock()
+        mock_fb_account.return_value = mock_account_instance
+        # First call raises the exception; second call (after field removal) succeeds
+        mock_account_instance.api_get.side_effect = [exception, MagicMock()]
+
+        if expected_behavior == "raise":
+            with pytest.raises(expected_raise_type):
+                stream.list_objects(params={}, account_id=account_id)
+        elif expected_behavior == "remove_owner":
+            stream.list_objects(params={}, account_id=account_id)
+            # Verify api_get was called twice (first raises, second succeeds after removing "owner")
+            assert mock_account_instance.api_get.call_count == 2
+        elif expected_behavior == "remove_funding_source_details":
+            stream.list_objects(params={}, account_id=account_id)
+            assert mock_account_instance.api_get.call_count == 2

@@ -46,6 +46,10 @@ Visit `https://apidoc.factorialhr.com/reference` for API documentation
 | work_areas | id | DefaultPaginator | ✅ |  ❌  |
 | shifts | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -53,6 +57,9 @@ Visit `https://apidoc.factorialhr.com/reference` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.51 | 2026-06-02 | [78715](https://github.com/airbytehq/airbyte/pull/78715) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77211](https://github.com/airbytehq/airbyte/pull/77211) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76599](https://github.com/airbytehq/airbyte/pull/76599) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75809](https://github.com/airbytehq/airbyte/pull/75809) | Update dependencies |
 | 0.0.47 | 2026-03-24 | [74467](https://github.com/airbytehq/airbyte/pull/74467) | Update dependencies |
 | 0.0.46 | 2026-03-03 | [74190](https://github.com/airbytehq/airbyte/pull/74190) | Update dependencies |
