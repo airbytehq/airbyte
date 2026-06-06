@@ -1,0 +1,53 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - api.twitch.tv
+      - id.twitch.tv
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fae41b28-735c-41ae-8e56-d6f5bdcd0cfe
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-twitch
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twitch
+  externalDocumentationUrls:
+    - title: Twitch API Reference
+      url: https://dev.twitch.tv/docs/api/
+      type: api_reference
+    - title: Twitch OAuth Guide
+      url: https://dev.twitch.tv/docs/authentication/
+      type: authentication_guide
+  githubIssueLabel: source-twitch
+  icon: icon.svg
+  license: ELv2
+  name: Twitch
+  releaseDate: 2026-05-08
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-twitch
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  suggestedStreams:
+    streams:
+      - users
+      - clips
+      - videos
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorTestSuitesOptions:
+    - suite: unitTests

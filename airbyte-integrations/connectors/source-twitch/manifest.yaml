@@ -1,0 +1,1117 @@
+spec:
+  type: Spec
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        required:
+        - refresh_token
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - client_refresh_token
+      oauth_connector_input_specification:
+        consent_url: https://id.twitch.tv/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&response_type=code&scope=
+        extract_output:
+        - access_token
+        - refresh_token
+        access_token_url: https://id.twitch.tv/oauth2/token
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+        access_token_params:
+          client_id: '{{ client_id_value }}'
+          client_secret: '{{ client_secret_value }}'
+          code: '{{ auth_code_value }}'
+          grant_type: authorization_code
+          redirect_uri: '{{ redirect_uri_value }}'
+      complete_oauth_server_input_specification:
+        required:
+        - client_id
+        - client_secret
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        required:
+        - client_id
+        - client_secret
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - client_secret
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+    - client_id
+    - client_secret
+    - login
+    properties:
+      login:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: string
+          minLength: 1
+        order: 3
+        title: Twitch Username(s)
+        description: Enter a list of twitch usernames you want to sync data for. Note,
+          some streams require the streamer to authenticate, see troubleshooting and
+          limitations for details.
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 4
+        title: Start Date
+        format: date-time
+        default: '2011-01-01T00:00:00Z'
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: The start date to sync data from
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      custom_reports:
+        type: object
+        order: 6
+        title: Custom Reports
+        properties:
+          clips:
+            type: array
+            items:
+              type: object
+              required:
+              - name
+              - game_name
+              properties:
+                name:
+                  type: string
+                  title: Report Name
+                  minLength: 1
+                  description: Used to generate the stream name as custom_clips_<snake_case(name)>.
+                game_name:
+                  type: string
+                  title: Game Name
+                  minLength: 1
+                  description: Exact Twitch category name to look up the game ID.
+                is_featured:
+                  type: boolean
+                  title: Featured Clips Only
+                  description: When set, filters the report to featured or non-featured
+                    clips.
+              additionalProperties: false
+            title: Custom Clip Reports
+            description: Create custom clip streams filtered by an exact Twitch category
+              name match.
+          videos:
+            type: array
+            items:
+              type: object
+              required:
+              - name
+              - game_name
+              properties:
+                name:
+                  type: string
+                  title: Report Name
+                  minLength: 1
+                  description: Used to generate the stream name as custom_videos_<snake_case(name)>.
+                sort:
+                  enum:
+                  - time
+                  - trending
+                  - views
+                  type: string
+                  title: Sort
+                type:
+                  enum:
+                  - all
+                  - archive
+                  - highlight
+                  - upload
+                  type: string
+                  title: Video Type
+                period:
+                  enum:
+                  - all
+                  - day
+                  - month
+                  - week
+                  type: string
+                  title: Period
+                language:
+                  type: string
+                  title: Language
+                  minLength: 1
+                game_name:
+                  type: string
+                  title: Game Name
+                  minLength: 1
+                  description: Exact Twitch category name to look up the game ID.
+              additionalProperties: false
+            title: Custom Video Reports
+            description: Create custom video streams filtered by an exact Twitch category
+              name match.
+        description: Configure custom clip and video streams that resolve a game name
+          to Twitch's category ID before reading records.
+        additionalProperties: false
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_hidden: true
+        airbyte_secret: true
+    additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    validations:
+    - type: DpathValidator
+      field_path:
+      - login
+      validation_strategy:
+        type: ValidateAdheresToSchema
+        base_schema:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+    - type: DpathValidator
+      field_path:
+      - custom_reports
+      validation_strategy:
+        type: ValidateAdheresToSchema
+        base_schema:
+          type: object
+          properties:
+            clips:
+              type: array
+              items:
+                type: object
+                required:
+                - name
+                - game_name
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                  game_name:
+                    type: string
+                    minLength: 1
+                  is_featured:
+                    type: boolean
+                additionalProperties: false
+            videos:
+              type: array
+              items:
+                type: object
+                required:
+                - name
+                - game_name
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                  sort:
+                    enum:
+                    - time
+                    - trending
+                    - views
+                    type: string
+                  type:
+                    enum:
+                    - all
+                    - archive
+                    - highlight
+                    - upload
+                    type: string
+                  period:
+                    enum:
+                    - all
+                    - day
+                    - month
+                    - week
+                    type: string
+                  language:
+                    type: string
+                    minLength: 1
+                  game_name:
+                    type: string
+                    minLength: 1
+                additionalProperties: false
+          additionalProperties: false
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+  - users
+streams:
+- name: users
+  type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    decoder:
+      type: JsonDecoder
+    requester:
+      url: https://api.twitch.tv/helix/users
+      type: HttpRequester
+      http_method: GET
+      authenticator:
+        $ref: '#/definitions/linked/HttpRequester/authenticator'
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 401
+          failure_type: config_error
+          error_message: Authentication credentials are invalid.
+        backoff_strategies: []
+      request_headers:
+        $ref: '#/definitions/linked/HttpRequester/request_headers'
+      request_parameters:
+        $ref: '#/definitions/linked/HttpRequester/request_parameters'
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    partition_router:
+      type: GroupingPartitionRouter
+      group_size: 100
+      deduplicate: true
+      underlying_partition_router:
+        type: ListPartitionRouter
+        values: '{{ config[''login''] }}'
+        cursor_field: username
+  primary_key:
+  - id
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/schema#
+      required:
+      - id
+      properties:
+        id:
+          type: string
+        type:
+          type:
+          - string
+          - 'null'
+        login:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+        view_count:
+          type:
+          - number
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        display_name:
+          type:
+          - string
+          - 'null'
+        broadcaster_type:
+          type:
+          - string
+          - 'null'
+        offline_image_url:
+          type:
+          - string
+          - 'null'
+        profile_image_url:
+          type:
+          - string
+          - 'null'
+      additionalProperties: true
+- name: clips
+  type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    decoder:
+      type: JsonDecoder
+    paginator:
+      $ref: '#/definitions/linked/SimpleRetriever/paginator'
+    requester:
+      url: https://api.twitch.tv/helix/clips
+      type: HttpRequester
+      http_method: GET
+      authenticator:
+        $ref: '#/definitions/linked/HttpRequester/authenticator'
+      error_handler:
+        $ref: '#/definitions/linked/HttpRequester/error_handler'
+      request_headers:
+        $ref: '#/definitions/linked/HttpRequester/request_headers'
+      request_parameters:
+        ended_at: '{{ stream_interval[''end_time''] }}'
+        started_at: '{{ stream_interval[''start_time''] }}'
+        broadcaster_id: '{{ stream_partition[''parent_broadcaster_id''] }}'
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: '#/streams/0'
+        parent_key: id
+        partition_field: parent_broadcaster_id
+        lazy_read_pointer: []
+  primary_key: id
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/schema#
+      required:
+      - id
+      - created_at
+      properties:
+        id:
+          type: string
+        url:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        game_id:
+          type:
+          - string
+          - 'null'
+        duration:
+          type:
+          - number
+          - 'null'
+        language:
+          type:
+          - string
+          - 'null'
+        video_id:
+          type:
+          - string
+          - 'null'
+        embed_url:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+        creator_id:
+          type:
+          - string
+          - 'null'
+        view_count:
+          type:
+          - number
+          - 'null'
+        vod_offset:
+          type:
+          - number
+          - 'null'
+        is_featured:
+          type:
+          - boolean
+          - 'null'
+        creator_name:
+          type:
+          - string
+          - 'null'
+        thumbnail_url:
+          type:
+          - string
+          - 'null'
+        broadcaster_id:
+          type:
+          - string
+          - 'null'
+        broadcaster_name:
+          type:
+          - string
+          - 'null'
+      additionalProperties: true
+  incremental_sync:
+    step: PT1H
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date'']}}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    cursor_granularity: PT1S
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+- name: videos
+  type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    decoder:
+      type: JsonDecoder
+    paginator:
+      $ref: '#/definitions/linked/SimpleRetriever/paginator'
+    requester:
+      url: https://api.twitch.tv/helix/videos
+      type: HttpRequester
+      http_method: GET
+      authenticator:
+        $ref: '#/definitions/linked/HttpRequester/authenticator'
+      error_handler:
+        $ref: '#/definitions/linked/HttpRequester/error_handler'
+      request_headers:
+        $ref: '#/definitions/linked/HttpRequester/request_headers'
+      request_parameters:
+        user_id: '{{ stream_partition[''parent_broadcaster_id''] }}'
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: '#/streams/0'
+        parent_key: id
+        partition_field: parent_broadcaster_id
+        lazy_read_pointer: []
+  primary_key: id
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/schema#
+      required:
+      - id
+      - created_at
+      properties:
+        id:
+          type: string
+        url:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        user_id:
+          type:
+          - string
+          - 'null'
+        duration:
+          type:
+          - string
+          - 'null'
+        language:
+          type:
+          - string
+          - 'null'
+        viewable:
+          type:
+          - string
+          - 'null'
+        stream_id:
+          type:
+          - string
+          - 'null'
+        user_name:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+        user_login:
+          type:
+          - string
+          - 'null'
+        view_count:
+          type:
+          - number
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        published_at:
+          type:
+          - string
+          - 'null'
+        thumbnail_url:
+          type:
+          - string
+          - 'null'
+        muted_segments:
+          type:
+          - array
+          - 'null'
+          items:
+            type:
+            - object
+            - 'null'
+            properties:
+              offset:
+                type:
+                - number
+                - 'null'
+              duration:
+                type:
+                - number
+                - 'null'
+      additionalProperties: true
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date'']}}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+version: 7.17.1
+metadata:
+  assist:
+    docsUrl: https://dev.twitch.tv/docs/api/
+    openapiSpecUrl: https://twitch-api-swagger.surge.sh/openapi.json
+  testedStreams:
+    clips:
+      isStale: false
+      hasRecords: true
+      streamHash: adaa94ad4d1e6183ce98c068083b55d61d5e0304
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      isStale: false
+      hasRecords: true
+      streamHash: 7329a0ee3998d828eed12d6ce41d3eb251bce956
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    videos:
+      isStale: false
+      hasRecords: true
+      streamHash: b8160c8e3068d4e8f7950323d850cbb939ef7936
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    clips: true
+    users: true
+    videos: true
+    custom_clips_template: true
+    custom_videos_template: true
+  applied_migrations:
+  - migration: HttpRequesterUrlBaseToUrl
+    to_version: '*'
+    migrated_at: '2026-03-31T21:07:24.849132+00:00'
+    from_version: 6.48.15
+  - migration: HttpRequesterPathToUrl
+    to_version: '*'
+    migrated_at: '2026-03-31T21:07:24.850286+00:00'
+    from_version: 6.48.15
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: 800
+      interval: PT1M
+    matchers: []
+  ratelimit_reset_header: Ratelimit-Reset
+  ratelimit_remaining_header: Ratelimit-Remaining
+  status_codes_for_ratelimit_hit:
+  - 429
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: OAuthAuthenticator
+        scopes: []
+        client_id: '{{ config["client_id"] }}'
+        grant_type: refresh_token
+        client_secret: '{{ config["client_secret"] }}'
+        refresh_token: '{{ config["client_refresh_token"] }}'
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          refresh_token_config_path:
+          - client_refresh_token
+        token_refresh_endpoint: https://id.twitch.tv/oauth2/token
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+      request_headers:
+        Client-Id: '{{ config[''client_id''] }}'
+      request_parameters:
+        login: '{{ stream_partition[''username''] }}'
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: first
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: after
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("pagination", {}).get("cursor", {}) }}'
+          stop_condition: '{{ not response.get("pagination", {}).get("cursor", {})
+            }}'
+  custom_category_lookup_stream:
+    name: game_id_resolver
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: NoPagination
+      requester:
+        url: https://api.twitch.tv/helix/games
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: '#/definitions/linked/HttpRequester/authenticator'
+        error_handler:
+          $ref: '#/definitions/linked/HttpRequester/error_handler'
+        request_headers:
+          $ref: '#/definitions/linked/HttpRequester/request_headers'
+        request_parameters:
+          name: '{{ parameters["game_name"] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+dynamic_streams:
+- name: custom_clips_template
+  type: DynamicDeclarativeStream
+  stream_template:
+    name: custom_clips_template
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        $ref: '#/definitions/linked/SimpleRetriever/paginator'
+      requester:
+        url: https://api.twitch.tv/helix/clips
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: '#/definitions/linked/HttpRequester/authenticator'
+        error_handler:
+          $ref: '#/definitions/linked/HttpRequester/error_handler'
+        request_headers:
+          $ref: '#/definitions/linked/HttpRequester/request_headers'
+        request_parameters:
+          game_id: '{{ stream_partition[''game_id''] }}'
+          ended_at: '{{ stream_interval[''end_time''] }}'
+          started_at: '{{ stream_interval[''start_time''] }}'
+          is_featured: ''
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: '#/definitions/custom_category_lookup_stream'
+          parent_key: id
+          partition_field: game_id
+          lazy_read_pointer: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+        - id
+        - created_at
+        properties:
+          id:
+            type: string
+          url:
+            type:
+            - string
+            - 'null'
+          title:
+            type:
+            - string
+            - 'null'
+          game_id:
+            type:
+            - string
+            - 'null'
+          duration:
+            type:
+            - number
+            - 'null'
+          language:
+            type:
+            - string
+            - 'null'
+          video_id:
+            type:
+            - string
+            - 'null'
+          embed_url:
+            type:
+            - string
+            - 'null'
+          created_at:
+            type: string
+          creator_id:
+            type:
+            - string
+            - 'null'
+          view_count:
+            type:
+            - number
+            - 'null'
+          vod_offset:
+            type:
+            - number
+            - 'null'
+          is_featured:
+            type:
+            - boolean
+            - 'null'
+          creator_name:
+            type:
+            - string
+            - 'null'
+          thumbnail_url:
+            type:
+            - string
+            - 'null'
+          broadcaster_id:
+            type:
+            - string
+            - 'null'
+          broadcaster_name:
+            type:
+            - string
+            - 'null'
+        additionalProperties: true
+    incremental_sync:
+      step: PT1H
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date'']}}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+  components_resolver:
+    type: ConfigComponentsResolver
+    stream_config:
+      type: StreamConfig
+      configs_pointer:
+      - custom_reports
+      - clips
+    components_mapping:
+    - type: ComponentMappingDefinition
+      value: '{{ ''custom_clips_'' + camel_case_to_snake_case(components_values[''name'']).replace(''
+        '', ''_'').replace(''-'', ''_'').replace(''__'', ''_'') }}'
+      field_path:
+      - name
+      create_or_update: true
+    - type: ComponentMappingDefinition
+      field_path:
+      - retriever
+      - partition_router
+      - parent_stream_configs
+      - "0"
+      - stream
+      - retriever
+      - requester
+      - request_parameters
+      - name
+      value: '{{ components_values[''game_name''] }}'
+      create_or_update: true
+      value_type: string
+    - type: ComponentMappingDefinition
+      field_path:
+      - retriever
+      - requester
+      - request_parameters
+      - is_featured
+      value: '{{ components_values.get(''is_featured'') | string | lower }}'
+      value_type: string
+      create_or_update: true
+      condition: '{{ components_values.get(''is_featured'') is not none }}'
+- name: custom_videos_template
+  type: DynamicDeclarativeStream
+  stream_template:
+    name: custom_videos_template
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: NoPagination
+      requester:
+        url: https://api.twitch.tv/helix/videos
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: '#/definitions/linked/HttpRequester/authenticator'
+        error_handler:
+          $ref: '#/definitions/linked/HttpRequester/error_handler'
+        request_headers:
+          $ref: '#/definitions/linked/HttpRequester/request_headers'
+        request_parameters:
+          game_id: '{{ stream_partition[''game_id''] }}'
+          first: '100'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: '#/definitions/custom_category_lookup_stream'
+          parent_key: id
+          partition_field: game_id
+          lazy_read_pointer: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+        - id
+        - created_at
+        properties:
+          id:
+            type: string
+          url:
+            type:
+            - string
+            - 'null'
+          type:
+            type:
+            - string
+            - 'null'
+          title:
+            type:
+            - string
+            - 'null'
+          user_id:
+            type:
+            - string
+            - 'null'
+          duration:
+            type:
+            - string
+            - 'null'
+          language:
+            type:
+            - string
+            - 'null'
+          viewable:
+            type:
+            - string
+            - 'null'
+          stream_id:
+            type:
+            - string
+            - 'null'
+          user_name:
+            type:
+            - string
+            - 'null'
+          created_at:
+            type: string
+          user_login:
+            type:
+            - string
+            - 'null'
+          view_count:
+            type:
+            - number
+            - 'null'
+          description:
+            type:
+            - string
+            - 'null'
+          published_at:
+            type:
+            - string
+            - 'null'
+          thumbnail_url:
+            type:
+            - string
+            - 'null'
+          muted_segments:
+            type:
+            - array
+            - 'null'
+            items:
+              type:
+              - object
+              - 'null'
+              properties:
+                offset:
+                  type:
+                  - number
+                  - 'null'
+                duration:
+                  type:
+                  - number
+                  - 'null'
+        additionalProperties: true
+  components_resolver:
+    type: ConfigComponentsResolver
+    stream_config:
+      type: StreamConfig
+      configs_pointer:
+      - custom_reports
+      - videos
+    components_mapping:
+    - type: ComponentMappingDefinition
+      value: '{{ ''custom_videos_'' + camel_case_to_snake_case(components_values[''name'']).replace(''
+        '', ''_'').replace(''-'', ''_'').replace(''__'', ''_'') }}'
+      field_path:
+      - name
+      create_or_update: true
+    - type: ComponentMappingDefinition
+      field_path:
+      - retriever
+      - partition_router
+      - parent_stream_configs
+      - "0"
+      - stream
+      - retriever
+      - requester
+      - request_parameters
+      - name
+      value: '{{ components_values[''game_name''] }}'
+      create_or_update: true
+      value_type: string
+    - type: ComponentMappingDefinition
+      field_path:
+      - retriever
+      - requester
+      - request_parameters
+      - sort
+      value: '{{ components_values.get(''sort'') }}'
+      create_or_update: true
+      condition: '{{ components_values.get(''sort'') is not none }}'
+      value_type: string
+    - type: ComponentMappingDefinition
+      field_path:
+      - retriever
+      - requester
+      - request_parameters
+      - type
+      value: '{{ components_values.get(''type'') }}'
+      create_or_update: true
+      condition: '{{ components_values.get(''type'') is not none }}'
+      value_type: string
+    - type: ComponentMappingDefinition
+      field_path:
+      - retriever
+      - requester
+      - request_parameters
+      - period
+      value: '{{ components_values.get(''period'') }}'
+      create_or_update: true
+      condition: '{{ components_values.get(''period'') is not none }}'
+      value_type: string
+    - type: ComponentMappingDefinition
+      field_path:
+      - retriever
+      - requester
+      - request_parameters
+      - language
+      value: '{{ components_values.get(''language'') }}'
+      create_or_update: true
+      condition: '{{ components_values.get(''language'') is not none }}'
+      value_type: string
+concurrency_level:
+  type: ConcurrencyLevel
+  max_concurrency: 20
+  default_concurrency: 10
