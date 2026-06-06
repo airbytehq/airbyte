@@ -104,7 +104,7 @@ jobs:
             message+=$'\n\n'
             message+="PR <${pr_url}|#${pr_number}>: ${pr_title}"
             message+=$'\n'
-            message+="Created ${age_hours}h ago — expected merge via \`auto-merge-cron\` within 2h."
+            message+="This pull request was created ${age_hours}h ago. I expected merge via \`auto-merge-cron\` within two hours, but the pull request is still open."
             message+=$'\n\n'
             message+="Investigate and repair this PR and, if necessary, the root cause of its failure to merge."
             message+=$'\n'
