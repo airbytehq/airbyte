@@ -68,6 +68,31 @@ definitions:
             Requested resource no longer exists.
             The record is skipped. Remaining resources continue syncing.
 
+  private_archived_threads_requester:
+    type: HttpRequester
+    url_base: "https://discord.com/api/v10"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
+          error_message: Rate limited by Discord API.
+        - http_codes: [500, 502, 503]
+          action: RETRY
+          error_message: Discord API server error.
+        - http_codes: [403]
+          action: FAIL
+          error_message: >-
+            Bot lacks MANAGE_THREADS permission required to read private archived
+            threads. Grant the bot Manage Threads and Read Message History, or
+            disable private-archived-thread coverage.
+
   base_record_selector:
     type: RecordSelector
     extractor:
@@ -169,7 +194,7 @@ definitions:
               parent_key: id
               partition_field: channel_id
               stream:
-                $ref: "#/definitions/streams/channels"
+                $ref: "#/definitions/streams/message_parent_channels"
             - type: ParentStreamConfig
               parent_key: id
               partition_field: channel_id
@@ -342,7 +367,7 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ last_record['thread_metadata']['archive_timestamp'] }}"
-            stop_condition: "{{ last_page_size < 100 }}"
+            stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -350,7 +375,7 @@ definitions:
               parent_key: id
               partition_field: channel_id
               stream:
-                $ref: "#/definitions/streams/channels"
+                $ref: "#/definitions/streams/archived_public_thread_parent_channels"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -364,7 +389,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/permissive_requester"
+          $ref: "#/definitions/private_archived_threads_requester"
           path: "/channels/{{ stream_partition['channel_id'] }}/threads/archived/private"
         record_selector:
           type: RecordSelector
@@ -386,7 +411,7 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ last_record['thread_metadata']['archive_timestamp'] }}"
-            stop_condition: "{{ last_page_size < 100 }}"
+            stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -394,11 +419,107 @@ definitions:
               parent_key: id
               partition_field: channel_id
               stream:
-                $ref: "#/definitions/streams/channels"
+                $ref: "#/definitions/streams/archived_private_thread_parent_channels"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/threads"
+
+    message_parent_channels:
+      type: DeclarativeStream
+      name: message_parent_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/channels"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            condition: "{{ record.get('type') in [0, 5] }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+
+    archived_public_thread_parent_channels:
+      type: DeclarativeStream
+      name: archived_public_thread_parent_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/channels"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            condition: "{{ record.get('type') in [0, 5] }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+
+    archived_private_thread_parent_channels:
+      type: DeclarativeStream
+      name: archived_private_thread_parent_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/channels"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            condition: "{{ record.get('type') == 0 }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
 
     scheduled_events:
       type: DeclarativeStream
@@ -478,7 +599,8 @@ spec:
           Discord Bot Token used for authentication. Create a bot at
           https://discord.com/developers/applications, then copy the token from
           the Bot section. The bot must be invited to target guilds with
-          VIEW_CHANNEL and READ_MESSAGE_HISTORY permissions. Enable the
+          VIEW_CHANNEL, READ_MESSAGE_HISTORY, and MANAGE_THREADS permissions.
+          MANAGE_THREADS is required to read private archived threads. Enable the
           MESSAGE_CONTENT and GUILD_MEMBERS privileged intents in the Developer
           Portal if you want full message content and member data.
         airbyte_secret: true

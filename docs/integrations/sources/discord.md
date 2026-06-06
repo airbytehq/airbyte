@@ -37,7 +37,8 @@ Some streams require privileged intents to be enabled in the Developer Portal:
 2. Under **OAuth2 URL Generator**, select the `bot` scope.
 3. Under **Bot Permissions**, select:
    - **View Channels** --- required for reading channels and messages
-   - **Read Message History** --- required for accessing historical messages
+   - **Read Message History** --- required for accessing historical messages and archived threads
+   - **Manage Threads** --- required for reading private archived threads
 4. Copy the generated URL and open it in your browser.
 5. Select the guild you want to add the bot to and click **Authorize**.
 
@@ -107,7 +108,7 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 - **Message Content Intent**: Without the `MESSAGE_CONTENT` privileged intent enabled in the Developer Portal, the `messages` stream will return empty `content` fields for most messages. Only messages that mention the bot or are DMs will have content populated.
 - **Server Members Intent**: The `members` stream requires the `GUILD_MEMBERS` privileged intent. Without it, requests to list guild members will return a 403 error. The connector surfaces this error clearly so users know to enable the intent.
 - **Messages pagination**: The `messages` stream performs a full refresh walking newest-to-oldest using the `before` cursor parameter. For channels with very large message histories, the initial sync may take a long time. Incremental sync is not yet supported.
-- **Thread messages**: Messages from active threads and archived threads (both public and private) are automatically included in the `messages` stream alongside regular channel messages.
+- **Thread messages**: Messages from active threads and archived threads are automatically included in the `messages` stream alongside regular channel messages. Private archived threads require the bot to have **Manage Threads** and **Read Message History**; without those permissions, the connector fails with an actionable permission error instead of silently skipping those records.
 - **Channel permissions**: The connector gracefully handles channels where the bot lacks access by skipping those channels (403 errors are ignored for per-channel streams). Streams that require guild-level permissions (`members`) will fail with an actionable error if permissions are missing.
 
 ## Changelog

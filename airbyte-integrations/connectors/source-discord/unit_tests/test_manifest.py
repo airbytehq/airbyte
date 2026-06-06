@@ -70,7 +70,7 @@ def test_messages_partition_router_is_union_not_cartesian(manifest):
     assert router["type"] == "SubstreamPartitionRouter"
     parent_configs = router["parent_stream_configs"]
     parent_refs = [cfg["stream"]["$ref"].split("/")[-1] for cfg in parent_configs]
-    assert "channels" in parent_refs
+    assert "message_parent_channels" in parent_refs
     assert "threads" in parent_refs
     assert "archived_public_threads" in parent_refs
     assert "archived_private_threads" in parent_refs
@@ -78,10 +78,8 @@ def test_messages_partition_router_is_union_not_cartesian(manifest):
         assert cfg["partition_field"] == "channel_id"
 
 
-def test_messages_read_emits_requests_for_channels_and_threads():
-    """Verify messages stream emits HTTP requests for both channel and thread
-    IDs, proving union behavior. When threads return no results, channel
-    messages are still fetched."""
+def test_messages_stream_instantiates_with_cdk():
+    """Verify the CDK can instantiate the messages stream and it is discoverable."""
     from airbyte_cdk import YamlDeclarativeSource
 
     source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH))
@@ -90,19 +88,17 @@ def test_messages_read_emits_requests_for_channels_and_threads():
         config={"bot_token": "test-token"},
     )
 
-    messages_stream_catalog = None
-    for stream in catalog.streams:
-        if stream.name == "messages":
-            messages_stream_catalog = stream
-            break
+    messages_stream_catalog = next(
+        (stream for stream in catalog.streams if stream.name == "messages"),
+        None,
+    )
     assert messages_stream_catalog is not None
 
     streams = source.streams(config={"bot_token": "test-token"})
-    messages_stream = None
-    for stream in streams:
-        if stream.name == "messages":
-            messages_stream = stream
-            break
+    messages_stream = next(
+        (stream for stream in streams if stream.name == "messages"),
+        None,
+    )
     assert messages_stream is not None
 
 
@@ -138,11 +134,14 @@ def test_exposed_streams_match_expected(manifest):
 
 
 def test_internal_streams_not_exposed(manifest):
-    """current_user, archived thread streams are internal — not in top-level streams."""
+    """current_user, archived thread streams, and filtered parent streams are internal."""
     ref_names = [ref["$ref"].split("/")[-1] for ref in manifest["streams"]]
     assert "current_user" not in ref_names
     assert "archived_public_threads" not in ref_names
     assert "archived_private_threads" not in ref_names
+    assert "message_parent_channels" not in ref_names
+    assert "archived_public_thread_parent_channels" not in ref_names
+    assert "archived_private_thread_parent_channels" not in ref_names
 
 
 def test_removed_streams_not_in_definitions(manifest):
@@ -408,6 +407,89 @@ def test_archived_threads_definition(manifest, stream_name, expected_path_fragme
     paginator = stream["retriever"]["paginator"]
     assert paginator["type"] == "DefaultPaginator"
     assert paginator["page_token_option"]["field_name"] == "before"
+
+
+@pytest.mark.parametrize("stream_name", ["archived_public_threads", "archived_private_threads"])
+def test_archived_threads_stop_on_has_more(manifest, stream_name):
+    """Archived thread pagination uses has_more, not last_page_size."""
+    strategy = manifest["definitions"]["streams"][stream_name]["retriever"]["paginator"]["pagination_strategy"]
+    assert strategy["stop_condition"] == "{{ not response.get('has_more', False) }}"
+
+
+# ---------------------------------------------------------------------------
+# Private archived threads requester
+# ---------------------------------------------------------------------------
+
+
+def test_private_archived_threads_uses_failing_requester(manifest):
+    """Private archived threads require MANAGE_THREADS, so 403 must fail loudly."""
+    requester = manifest["definitions"]["streams"]["archived_private_threads"]["retriever"]["requester"]
+    assert requester["$ref"] == "#/definitions/private_archived_threads_requester"
+
+
+def test_private_archived_threads_requester_fails_on_403(manifest):
+    """Verify missing MANAGE_THREADS does not silently skip private archived threads."""
+    filters = manifest["definitions"]["private_archived_threads_requester"]["error_handler"]["response_filters"]
+    forbidden = [f for f in filters if 403 in f.get("http_codes", [])]
+
+    assert len(forbidden) == 1
+    assert forbidden[0]["action"] == "FAIL"
+    assert "MANAGE_THREADS" in forbidden[0]["error_message"]
+
+
+def test_private_archived_threads_requester_preserves_retries(manifest):
+    """Verify dedicated requester still retries rate limits and transient server errors."""
+    filters = manifest["definitions"]["private_archived_threads_requester"]["error_handler"]["response_filters"]
+
+    rate_limit = [f for f in filters if 429 in f.get("http_codes", [])]
+    server_errors = [f for f in filters if any(code in f.get("http_codes", []) for code in [500, 502, 503])]
+
+    assert rate_limit[0]["action"] == "RETRY"
+    assert server_errors[0]["action"] == "RETRY"
+
+
+# ---------------------------------------------------------------------------
+# Filtered parent channel streams
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "stream_name,expected_condition",
+    [
+        pytest.param(
+            "message_parent_channels",
+            "{{ record.get('type') in [0, 5] }}",
+            id="message_parent_channels",
+        ),
+        pytest.param(
+            "archived_public_thread_parent_channels",
+            "{{ record.get('type') in [0, 5] }}",
+            id="archived_public_thread_parent_channels",
+        ),
+        pytest.param(
+            "archived_private_thread_parent_channels",
+            "{{ record.get('type') == 0 }}",
+            id="archived_private_thread_parent_channels",
+        ),
+    ],
+)
+def test_internal_parent_channel_filters(manifest, stream_name, expected_condition):
+    """Internal parent channel streams filter to thread-capable channel types."""
+    selector = manifest["definitions"]["streams"][stream_name]["retriever"]["record_selector"]
+    assert selector["record_filter"]["condition"] == expected_condition
+
+
+def test_archived_thread_streams_use_filtered_channel_parents(manifest):
+    """Archived thread streams use type-filtered parent channels, not the raw channels stream."""
+    public_parent = manifest["definitions"]["streams"]["archived_public_threads"]["retriever"]["partition_router"]["parent_stream_configs"][
+        0
+    ]
+    private_parent = manifest["definitions"]["streams"]["archived_private_threads"]["retriever"]["partition_router"][
+        "parent_stream_configs"
+    ][0]
+
+    assert public_parent["stream"]["$ref"] == "#/definitions/streams/archived_public_thread_parent_channels"
+    assert private_parent["stream"]["$ref"] == "#/definitions/streams/archived_private_thread_parent_channels"
 
 
 # ---------------------------------------------------------------------------
