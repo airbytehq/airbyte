@@ -71,6 +71,14 @@ class S3DataLakeSpecification :
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
 
+    @get:JsonSchemaTitle("Delete Staging Branch on Successful Sync")
+    @get:JsonPropertyDescription(
+        "Deletes the Iceberg staging branch only after a successful committed sync. This is useful when external compaction rewrites the main branch so the next staging branch is recreated from compacted main lineage."
+    )
+    @get:JsonProperty("delete_staging_branch_on_success", required = false)
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8, "default": false}""")
+    val deleteStagingBranchOnSuccess: Boolean? = false
+
     @get:JsonSchemaTitle("Flush Batch Size (MB)")
     @get:JsonPropertyDescription(
         "The approximate size in megabytes of each batch of data written to Iceberg. " +
@@ -80,7 +88,7 @@ class S3DataLakeSpecification :
     )
     @get:JsonProperty("flush_batch_size_mb", required = false)
     @get:JsonSchemaInject(
-        json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
+        json = """{"examples":[200], "default": 200, "order": 9, "airbyte_hidden": true}"""
     )
     val flushBatchSizeMb: Long? = null
 }
@@ -94,4 +102,8 @@ class S3DataLakeSpecificationExtension : DestinationSpecificationExtension {
             DestinationSyncMode.APPEND_DEDUP
         )
     override val supportsIncremental = true
+    override val groups =
+        listOf(
+            DestinationSpecificationExtension.Group("advanced", "Advanced"),
+        )
 }

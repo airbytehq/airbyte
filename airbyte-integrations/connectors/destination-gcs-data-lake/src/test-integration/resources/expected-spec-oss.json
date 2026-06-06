@@ -132,9 +132,21 @@
         "description" : "Optional custom GCS endpoint URL. Use this for testing with local GCS emulators.",
         "title" : "GCS Endpoint (Optional)",
         "order" : 8
+      },
+      "delete_staging_branch_on_success" : {
+        "type" : "boolean",
+        "description" : "Deletes the Iceberg staging branch only after a successful committed sync. This is useful when external compaction rewrites the main branch so the next staging branch is recreated from compacted main lineage.",
+        "title" : "Delete Staging Branch on Successful Sync",
+        "group" : "advanced",
+        "order" : 9,
+        "default" : false
       }
     },
-    "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type" ]
+    "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type" ],
+    "groups" : [ {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

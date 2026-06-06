@@ -31,7 +31,12 @@ data class IcebergCatalogConfiguration(
     @JsonPropertyDescription(
         "The specific configuration details of the chosen Iceberg catalog type."
     )
-    val catalogConfiguration: CatalogConfiguration
+    val catalogConfiguration: CatalogConfiguration,
+    @JsonSchemaTitle("Delete Staging Branch on Successful Sync")
+    @JsonPropertyDescription(
+        "Whether to delete the Iceberg staging branch after a successful committed sync."
+    )
+    val deleteStagingBranchOnSuccess: Boolean = false
 )
 
 /**

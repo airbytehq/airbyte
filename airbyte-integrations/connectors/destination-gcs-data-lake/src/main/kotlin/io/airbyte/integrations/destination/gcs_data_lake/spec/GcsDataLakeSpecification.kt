@@ -115,6 +115,14 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"order": 8}""")
     val gcsEndpoint: String? = null
 
+    @get:JsonSchemaTitle("Delete Staging Branch on Successful Sync")
+    @get:JsonPropertyDescription(
+        "Deletes the Iceberg staging branch only after a successful committed sync. This is useful when external compaction rewrites the main branch so the next staging branch is recreated from compacted main lineage."
+    )
+    @get:JsonProperty("delete_staging_branch_on_success", required = false)
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9, "default": false}""")
+    val deleteStagingBranchOnSuccess: Boolean? = false
+
     fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
         val catalogConfig =
             when (catalogType) {
@@ -139,6 +147,7 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
         return GcsCatalogConfiguration(
             warehouseLocation = warehouseLocation,
             mainBranchName = mainBranchName,
+            deleteStagingBranchOnSuccess = deleteStagingBranchOnSuccess ?: false,
             catalogConfiguration = catalogConfig
         )
     }
@@ -153,4 +162,8 @@ class GcsDataLakeSpecificationExtension : DestinationSpecificationExtension {
             DestinationSyncMode.APPEND_DEDUP
         )
     override val supportsIncremental = true
+    override val groups =
+        listOf(
+            DestinationSpecificationExtension.Group("advanced", "Advanced"),
+        )
 }

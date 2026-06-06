@@ -28,6 +28,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SchemaUpdateResult
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
@@ -35,15 +36,19 @@ import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRA
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
+import org.apache.iceberg.ManageSnapshots
 import org.apache.iceberg.Schema
+import org.apache.iceberg.SnapshotRef
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
@@ -54,6 +59,7 @@ import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class S3DataLakeStreamLoaderTest {
     @MockK(relaxed = true)
@@ -88,6 +94,56 @@ internal class S3DataLakeStreamLoaderTest {
     @BeforeEach
     fun setup() {
         every { streamStateStore.put(any(), any()) } returns Unit
+    }
+
+    @Test
+    fun testOptInDeletesStagingBranchAfterSuccessfulTeardown() {
+        val fixture = createMinimalStartedLoader(deleteStagingBranchOnSuccess = true)
+
+        runBlocking { fixture.streamLoader.teardown(true) }
+
+        verifyOrder {
+            fixture.table.refresh()
+            fixture.manageSnapshots.replaceBranch("main", DEFAULT_STAGING_BRANCH)
+            fixture.manageSnapshots.commit()
+            fixture.table.refresh()
+            fixture.manageSnapshots.removeBranch(DEFAULT_STAGING_BRANCH)
+            fixture.manageSnapshots.commit()
+        }
+    }
+
+    @Test
+    fun testDefaultLeavesStagingBranchAfterSuccessfulTeardown() {
+        val fixture = createMinimalStartedLoader(deleteStagingBranchOnSuccess = false)
+
+        runBlocking { fixture.streamLoader.teardown(true) }
+
+        verify(exactly = 0) {
+            fixture.manageSnapshots.removeBranch(any())
+        }
+    }
+
+    @Test
+    fun testFailedSyncLeavesStagingBranch() {
+        val fixture = createMinimalStartedLoader(deleteStagingBranchOnSuccess = true)
+
+        runBlocking { fixture.streamLoader.teardown(false) }
+
+        verify(exactly = 0) {
+            fixture.manageSnapshots.removeBranch(any())
+        }
+        verify(exactly = 0) { fixture.manageSnapshots.replaceBranch(any<String>(), any<String>()) }
+    }
+
+    @Test
+    fun testStagingBranchDeletionFailureDoesNotFailTeardown() {
+        val fixture = createMinimalStartedLoader(deleteStagingBranchOnSuccess = true)
+        every { fixture.manageSnapshots.removeBranch(DEFAULT_STAGING_BRANCH) } throws
+            RuntimeException("catalog failure")
+
+        assertDoesNotThrow { runBlocking { fixture.streamLoader.teardown(true) } }
+
+        verify(exactly = 1) { fixture.manageSnapshots.removeBranch(DEFAULT_STAGING_BRANCH) }
     }
 
     @Test
@@ -212,6 +268,7 @@ internal class S3DataLakeStreamLoaderTest {
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                deleteStagingBranchOnSuccess = false,
                 streamStateStore = streamStateStore,
             )
         Assertions.assertNotNull(streamLoader)
@@ -285,6 +342,7 @@ internal class S3DataLakeStreamLoaderTest {
         every { updateSchema.commit() } just runs
         every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
+        every { table.refs() } returns mapOf(DEFAULT_STAGING_BRANCH to mockk<SnapshotRef>())
         every { table.manageSnapshots().createBranch(any()).commit() } throws
             IllegalArgumentException("branch already exists")
         every {
@@ -316,6 +374,7 @@ internal class S3DataLakeStreamLoaderTest {
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                deleteStagingBranchOnSuccess = false,
                 streamStateStore = streamStateStore,
             )
         runBlocking { streamLoader.start() }
@@ -461,6 +520,7 @@ internal class S3DataLakeStreamLoaderTest {
         every { updateSchema.commit() } just runs
         every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
+        every { table.refs() } returns emptyMap()
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
         every {
             table.manageSnapshots().replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
@@ -491,6 +551,7 @@ internal class S3DataLakeStreamLoaderTest {
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                deleteStagingBranchOnSuccess = false,
                 streamStateStore = streamStateStore,
             )
         runBlocking { streamLoader.start() }
@@ -549,6 +610,7 @@ internal class S3DataLakeStreamLoaderTest {
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                deleteStagingBranchOnSuccess = false,
                 streamStateStore = streamStateStore,
             )
 
@@ -556,5 +618,75 @@ internal class S3DataLakeStreamLoaderTest {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
             streamLoader.columnTypeChangeBehavior,
         )
+    }
+
+    private data class MinimalLoaderFixture(
+        val streamLoader: S3DataLakeStreamLoader,
+        val table: Table,
+        val manageSnapshots: ManageSnapshots,
+    )
+
+    private fun createMinimalStartedLoader(
+        deleteStagingBranchOnSuccess: Boolean
+    ): MinimalLoaderFixture {
+        val schema = Schema(Types.NestedField.of(1, true, "id", Types.LongType.get()))
+        val stream =
+            DestinationStream(
+                generationId = 1,
+                minimumGenerationId = 0,
+                syncId = 1,
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
+            )
+        val catalog: Catalog = mockk()
+        val manageSnapshots: ManageSnapshots = mockk()
+        val table: Table = mockk {
+            every { schema() } returns schema
+            every { refresh() } just runs
+            every { refs() } returnsMany
+                listOf(emptyMap(), mapOf(DEFAULT_STAGING_BRANCH to mockk<SnapshotRef>()))
+            every { manageSnapshots() } returns manageSnapshots
+        }
+        every { manageSnapshots.createBranch(DEFAULT_STAGING_BRANCH) } returns manageSnapshots
+        every { manageSnapshots.replaceBranch("main", DEFAULT_STAGING_BRANCH) } returns
+            manageSnapshots
+        every { manageSnapshots.removeBranch(DEFAULT_STAGING_BRANCH) } returns manageSnapshots
+        every { manageSnapshots.commit() } just runs
+
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
+            every { toCatalogProperties(any()) } returns mapOf()
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns catalog
+            every { createTable(any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns schema
+        }
+        val icebergTableSynchronizer: IcebergTableSynchronizer = mockk {
+            every { maybeApplySchemaChanges(any(), any(), any()) } returns
+                SchemaUpdateResult(schema, emptyList())
+            every { maybeApplySchemaChanges(any(), any(), any(), any()) } returns
+                SchemaUpdateResult(schema, emptyList())
+        }
+        val streamLoader =
+            S3DataLakeStreamLoader(
+                icebergConfiguration = mockk(),
+                stream = stream,
+                icebergTableSynchronizer = icebergTableSynchronizer,
+                s3DataLakeUtil = s3DataLakeUtil,
+                icebergUtil = icebergUtil,
+                stagingBranchName = DEFAULT_STAGING_BRANCH,
+                mainBranchName = "main",
+                deleteStagingBranchOnSuccess = deleteStagingBranchOnSuccess,
+                streamStateStore = streamStateStore,
+        )
+        runBlocking { streamLoader.start() }
+        clearMocks(table, manageSnapshots, answers = false)
+        every { table.refs() } returns mapOf(DEFAULT_STAGING_BRANCH to mockk<SnapshotRef>())
+
+        return MinimalLoaderFixture(streamLoader, table, manageSnapshots)
     }
 }

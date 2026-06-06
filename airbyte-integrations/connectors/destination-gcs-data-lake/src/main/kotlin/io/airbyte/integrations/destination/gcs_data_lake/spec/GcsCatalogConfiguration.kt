@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.gcs_data_lake.spec
 data class GcsCatalogConfiguration(
     val warehouseLocation: String,
     val mainBranchName: String,
+    val deleteStagingBranchOnSuccess: Boolean,
     val catalogConfiguration: GcsCatalogConfig
 )
 

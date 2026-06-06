@@ -71,6 +71,7 @@ class GcsDataLakeWriter(
             stagingBranchName =
                 io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.gcsCatalogConfiguration.mainBranchName,
+            deleteStagingBranchOnSuccess = icebergConfiguration.deleteStagingBranchOnSuccess,
             streamStateStore = streamStateStore,
         )
     }
