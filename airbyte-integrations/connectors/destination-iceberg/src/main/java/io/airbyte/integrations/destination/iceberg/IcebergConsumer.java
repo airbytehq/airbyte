@@ -10,6 +10,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMI
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import io.airbyte.cdk.integrations.base.CommitOnStateAirbyteMessageConsumer;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.iceberg.config.WriteConfig;
 import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfig;
@@ -21,6 +22,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +44,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
+import org.apache.spark.sql.expressions.Window;
+import org.apache.spark.sql.expressions.WindowSpec;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.types.StringType$;
 import org.apache.spark.sql.types.StructType;
@@ -105,9 +109,24 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       schema = schema.add(COLUMN_NAME_AB_ID, StringType$.MODULE$)
           .add(COLUMN_NAME_EMITTED_AT, TimestampType$.MODULE$);
 
-      // Get merge configuration from format config
-      boolean mergeMode = catalogConfig.getFormatConfig().isMergeMode();
-      List<String> mergeKeys = catalogConfig.getFormatConfig().getMergeKeys();
+      // Dedup configuration: APPEND_DEDUP streams auto-enable merge using the
+      // stream's primary key (falling back to configured merge_keys). Other
+      // streams keep the existing manual merge behavior.
+      boolean mergeMode;
+      List<String> mergeKeys;
+      if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
+        mergeKeys = resolveMergeKeys(stream);
+        if (mergeKeys.isEmpty()) {
+          throw new ConfigErrorException(
+              "Stream '" + streamName + "' uses Append + Dedup but has no primary key and no configured "
+                  + "merge_keys. A primary key or merge_keys is required to deduplicate records.");
+        }
+        mergeMode = true;
+        log.info("=> Stream {} is Append+Dedup; enabling merge with keys {}", streamName, mergeKeys);
+      } else {
+        mergeMode = catalogConfig.getFormatConfig().isMergeMode();
+        mergeKeys = catalogConfig.getFormatConfig().getMergeKeys();
+      }
       boolean partitionMode = catalogConfig.getFormatConfig().isPartitionMode();
       List<String> partitionKeys = catalogConfig.getFormatConfig().getPartitionKeys();
       
@@ -228,12 +247,20 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
           SaveMode saveMode = writeConfig.isAppendMode() ? SaveMode.Append : SaveMode.Overwrite;
           boolean tableExists = spark.catalog().tableExists(finalTableName);
 
+          // For dedup streams, collapse the batch to one row per key (latest by
+          // _airbyte_emitted_at) before any write. This guarantees the initial
+          // create and the merge never see duplicate keys.
+          Dataset<Row> sourceDf = spark.table(tempTableName);
+          if (writeConfig.shouldMerge()) {
+            sourceDf = dedupeLatestPerKey(sourceDf, writeConfig.getMergeKeys());
+          }
+
           // Check if merge mode is enabled for this write config
           if (writeConfig.shouldMerge() && tableExists) {
             log.info("=> Migration(merge) data from {} to {}",
                 tempTableName,
                 finalTableName);
-            mergeToFinalTable(writeConfig, tempTableName, finalTableName);
+            mergeToFinalTable(writeConfig, sourceDf, finalTableName);
           } else if (writeConfig.shouldDatePartition()) {
             // Date-based hierarchical partitioning (year/month/day)
             log.info("=> Migration({}) with date partitioning from {} to {}",
@@ -244,8 +271,8 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
             String sourceCol = writeConfig.getDatePartitionSourceColumn();
             log.info("=> Deriving year/month/day partitions from column: {}", sourceCol);
             
-            // Read temp table and add derived year/month/day columns
-            Dataset<Row> df = spark.table(tempTableName)
+            // Add derived year/month/day columns to the (possibly deduped) source
+            Dataset<Row> df = sourceDf
                 .withColumn("year", functions.year(functions.col(sourceCol)))
                 .withColumn("month", functions.month(functions.col(sourceCol)))
                 .withColumn("day", functions.dayofmonth(functions.col(sourceCol)));
@@ -271,7 +298,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
                 tempTableName,
                 finalTableName);
 
-            DataFrameWriterV2<Row> writer = spark.table(tempTableName)
+            DataFrameWriterV2<Row> writer = sourceDf
                 .writeTo(finalTableName)
                 .using("iceberg");
 
@@ -313,18 +340,77 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
   }
 
   /**
-   * Merge data from temp table to final table using merge keys.
-   * TODO: Fill in the merge implementation details
+   * Resolve the columns used to deduplicate a stream: prefer the stream's
+   * primary key, falling back to the connector-level configured merge keys.
+   *
+   * @param stream the configured stream
+   * @return the flattened column names to dedup on (may be empty if none defined)
+   */
+  private List<String> resolveMergeKeys(ConfiguredAirbyteStream stream) {
+    List<List<String>> primaryKey = stream.getPrimaryKey();
+    if (primaryKey != null && !primaryKey.isEmpty()) {
+      List<String> keys = new ArrayList<>();
+      for (List<String> keyPath : primaryKey) {
+        if (keyPath != null && !keyPath.isEmpty()) {
+          // Use the last path element as the flattened top-level column name
+          keys.add(keyPath.get(keyPath.size() - 1));
+        }
+      }
+      if (!keys.isEmpty()) {
+        return keys;
+      }
+    }
+    return new ArrayList<>(catalogConfig.getFormatConfig().getMergeKeys());
+  }
+
+  /**
+   * Collapse a batch to a single row per key, keeping the latest record ordered
+   * by {@code _airbyte_emitted_at} descending. Prevents duplicate keys within a
+   * batch from being inserted multiple times by the merge.
+   *
+   * @param df       the source dataset
+   * @param keyCols  the columns identifying a logical record
+   * @return the deduplicated dataset
+   */
+  private Dataset<Row> dedupeLatestPerKey(Dataset<Row> df, List<String> keyCols) {
+    Column[] partitionCols = keyCols.stream().map(functions::col).toArray(Column[]::new);
+    WindowSpec window = Window.partitionBy(partitionCols)
+        .orderBy(functions.col(COLUMN_NAME_EMITTED_AT).desc());
+    return df
+        .withColumn("_ab_dedup_rn", functions.row_number().over(window))
+        .filter("_ab_dedup_rn = 1")
+        .drop("_ab_dedup_rn");
+  }
+
+  /**
+   * Merge an already-deduped increment dataset into the final table using merge
+   * keys. The match condition is on the merge keys only: when a record's
+   * partition column (the cursor) changes, Iceberg moves the row to its new
+   * partition instead of leaving a duplicate behind. An older record (smaller
+   * {@code _airbyte_emitted_at}) never overwrites a newer one already in the table.
    *
    * @param writeConfig    The write configuration containing merge settings
-   * @param tempTableName  The full temp table name
+   * @param increment      The deduped increment dataset
    * @param finalTableName The full final table name
    */
-  private void mergeToFinalTable(WriteConfig writeConfig, String tempTableName, String finalTableName) {
+  private void mergeToFinalTable(WriteConfig writeConfig, Dataset<Row> increment, String finalTableName) {
     log.info("=> Starting merge operation");
     log.info("   Merge keys: {}", writeConfig.getMergeKeys());
-    log.info("   Temp table: {}", tempTableName);
     log.info("   Final table: {}", finalTableName);
+
+    // When the final table is date-partitioned, derive year/month/day so the
+    // increment's columns align with the partitioned table for updateAll/insertAll.
+    // These are intentionally NOT added to the match condition: the partition
+    // column is the mutable cursor, so matching on it would miss updated rows
+    // and reintroduce duplicates. Matching on the merge keys lets Iceberg move
+    // the row across partitions on update.
+    if (writeConfig.shouldDatePartition()) {
+      String sourceCol = writeConfig.getDatePartitionSourceColumn();
+      increment = increment
+          .withColumn("year", functions.year(functions.col(sourceCol)))
+          .withColumn("month", functions.month(functions.col(sourceCol)))
+          .withColumn("day", functions.dayofmonth(functions.col(sourceCol)));
+    }
 
     StringBuilder condition = new StringBuilder();
     boolean first = true;
@@ -338,12 +424,13 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
 
     log.info("=> Merge condition: {}", condition.toString());
 
-    spark.table(tempTableName)
+    increment
         .as("increment")
         .mergeInto(
             finalTableName,
             functions.expr(condition.toString()))
-        .whenMatched()
+        .whenMatched(functions.expr(
+            "increment.%s >= %s.%s".formatted(COLUMN_NAME_EMITTED_AT, finalTableName, COLUMN_NAME_EMITTED_AT)))
         .updateAll()
         .whenNotMatched()
         .insertAll()
