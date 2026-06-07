@@ -68,6 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 1.0.2 | 2026-06-05 | [79143](https://github.com/airbytehq/airbyte/pull/79143) | Revert connector base image to 4.0.0 (4.1.0 ships Python 3.13, incompatible with the connector's pinned CDK). |
 | 1.0.1 | 2026-06-02 | [78805](https://github.com/airbytehq/airbyte/pull/78805) | Update dependencies |
 | 1.0.0 | 2026-05-06 | [77565](https://github.com/airbytehq/airbyte/pull/77565) | Map DateOnly fields to `date` format instead of `date-time`. Add `$select` projection to discovery to reduce metadata payload size. Streams with DateOnly fields require a schema refresh and data reset. |
 | 0.1.32 | 2025-05-10 | [60052](https://github.com/airbytehq/airbyte/pull/60052) | Update dependencies |
