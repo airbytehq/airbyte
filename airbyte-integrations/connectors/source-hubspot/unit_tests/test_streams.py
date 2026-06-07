@@ -545,12 +545,33 @@ def test_client_side_incremental_stream(mock_dynamic_schema_requests, requests_m
     assert output.state_messages[-1].state.stream.stream_state.__dict__["updatedAt"] == latest_cursor_value
 
 
+@pytest.mark.parametrize(
+    "schema_name, fqn, expected_stream_name",
+    [
+        pytest.param("animals", "p19936848_Animal", "p19936848_Animal", id="fqn_used_over_short_name"),
+        pytest.param("form_submissions", "p19936848_form_submissions", "p19936848_form_submissions", id="fqn_prevents_builtin_collision"),
+        pytest.param("owners", "p19936848_owners", "p19936848_owners", id="fqn_prevents_owners_collision"),
+        pytest.param("legacy_obj", None, "p_legacy_obj", id="missing_fqn_falls_back_to_p_prefix"),
+    ],
+)
+def test_custom_object_stream_uses_fully_qualified_name(
+    requests_mock, config, mock_dynamic_schema_requests, schema_name, fqn, expected_stream_name
+):
+    schema = {"name": schema_name, "properties": []}
+    if fqn is not None:
+        schema["fullyQualifiedName"] = fqn
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [schema]})
+    streams = discover(get_source(config), config)
+    stream_names = [s.name for s in streams.catalog.catalog.streams]
+    assert expected_stream_name in stream_names, f"Expected '{expected_stream_name}' in {stream_names}"
+
+
 def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
     requests_mock, custom_object_schema, config, expected_custom_object_json_schema, mock_dynamic_schema_requests
 ):
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     streams = discover(get_source(config), config)
-    json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "animals"][0]
+    json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "p19936848_Animal"][0]
 
     assert json_schema == expected_custom_object_json_schema
     # called only once when creating dynamic streams
@@ -563,8 +584,8 @@ def test_get_custom_objects_metadata_success(
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     source_hubspot = get_source(config)
     streams = discover(source_hubspot, config)
-    custom_stream = [s for s in source_hubspot.streams(config) if s.name == "animals"][0]
-    custom_stream_json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "animals"][0]
+    custom_stream = [s for s in source_hubspot.streams(config) if s.name == "p19936848_Animal"][0]
+    custom_stream_json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "p19936848_Animal"][0]
 
     assert custom_stream_json_schema == expected_custom_object_json_schema
     assert custom_stream._stream_partition_generator._partition_factory._retriever._parameters["entity"] == "p19936848_Animal"
