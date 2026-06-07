@@ -358,6 +358,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.5.6 | 2026-04-28 | [77526](https://github.com/airbytehq/airbyte/pull/77526) | Use fully qualified names for HubSpot custom object streams to avoid collisions with built-in stream names |
 | 6.5.5 | 2026-04-22 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
 | 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
 | 6.5.3 | 2026-04-21 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |

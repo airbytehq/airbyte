@@ -118,6 +118,29 @@ def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_s
     assert len(streams) == 37
 
 
+def test_custom_object_stream_uses_fully_qualified_name_to_avoid_builtin_collision(requests_mock, config, mock_dynamic_schema_requests):
+    adapter = requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={
+            "results": [
+                {
+                    "name": "form_submissions",
+                    "fullyQualifiedName": "p123456_form_submissions",
+                    "properties": {},
+                }
+            ]
+        },
+        status_code=200,
+    )
+
+    stream_names = [stream.name for stream in discover(get_source(config), config).catalog.catalog.streams]
+
+    assert adapter.called
+    assert "form_submissions" in stream_names
+    assert "p123456_form_submissions" in stream_names
+    assert stream_names.count("form_submissions") == 1
+
+
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     """Error once, check that we retry and not fail"""
     prop_response = [
