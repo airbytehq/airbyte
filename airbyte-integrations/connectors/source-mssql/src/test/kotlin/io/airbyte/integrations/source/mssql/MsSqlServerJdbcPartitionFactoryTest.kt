@@ -856,6 +856,43 @@ class MsSqlServerJdbcPartitionFactoryTest {
     }
 
     @Test
+    fun testCursorIncrementalPartitionHasNoUpperBound() {
+        // Regression test for oncall#12592: datetime2(7) cursor boundary issue.
+        // The upper bound must be null so the predicate is `cursor > lower` without a ceiling.
+        // A `<= MAX(cursor)` ceiling would exclude rows whose datetime2(7) value exceeds
+        // the 6-digit-truncated max.
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+                  "cursor": "2026-04-23T12:54:31.693333",
+                  "version": 3,
+                  "state_type": "cursor_based",
+                  "stream_name": "datetime_table",
+                  "cursor_field": [
+                    "datetime_col"
+                  ],
+                  "stream_namespace": "dbo",
+                  "cursor_record_count": 1 
+              } 
+        """.trimIndent()
+            )
+
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(
+                streamFeedBootstrap(datetimeStream, incomingStateValue)
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        val partition = jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition
+        assertNull(
+            partition.upperBound,
+            "upperBound must be null to avoid excluding datetime2(7) rows " +
+                "whose 7th fractional digit makes them greater than the truncated max"
+        )
+    }
+
+    @Test
     fun testViewInCursorIncrementalPhase() {
         // Views or table with no ordered column in cursor-incremental phase must route to
         // MsSqlServerJdbcNonResumableCursorIncrementalPartition.

@@ -274,13 +274,13 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
 
     override val nonResumableQuerySpec: SelectQuerySpec
         get() {
-            // upperBound shouldn't be null in incremental syncs
-            val upperBound: JsonNode = streamState.cursorUpperBound!!
-            return SelectQuerySpec(
-                SelectColumns(stream.fields),
-                from,
-                Where(And(Greater(cursor, cursorLowerBound), LesserOrEqual(cursor, upperBound)))
-            )
+            val whereClause =
+                if (cursorCutoffTime != null) {
+                    And(Greater(cursor, cursorLowerBound), Lesser(cursor, cursorCutoffTime))
+                } else {
+                    Greater(cursor, cursorLowerBound)
+                }
+            return SelectQuerySpec(SelectColumns(stream.fields), from, Where(whereClause))
         }
 }
 
@@ -612,8 +612,10 @@ class MsSqlServerJdbcCursorIncrementalPartition(
         cursorCutoffTime
     ) {
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
-    override val upperBound: List<JsonNode>?
-        get() = cursorUpperBound?.let { listOf(it) }
+    // Deliberately no upper bound: the cursor is truncated to 6 fractional digits, so a
+    // `<= MAX(cursor)` ceiling would miss rows whose datetime2(7) value has a non-zero
+    // 7th digit. With upperBound == null the predicate is just `cursor > lower`.
+    override val upperBound: List<JsonNode>? = null
 
     override val completeState: OpaqueStateValue
         get() =
