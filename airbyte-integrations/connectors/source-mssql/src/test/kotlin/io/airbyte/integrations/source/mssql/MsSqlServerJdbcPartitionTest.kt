@@ -256,10 +256,7 @@ class MsSqlServerJdbcPartitionTest {
                 "6-digit-truncated max. Got: $sql"
         )
         // The query must still have a > lower bound
-        assertTrue(
-            sql.contains(">"),
-            "Query must contain '>' lower bound clause. Got: $sql"
-        )
+        assertTrue(sql.contains(">"), "Query must contain '>' lower bound clause. Got: $sql")
     }
 
     @Test
