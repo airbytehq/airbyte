@@ -14,7 +14,6 @@ import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
-import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
@@ -23,13 +22,11 @@ import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
-import io.airbyte.cdk.read.Greater
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.StateManager
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -39,6 +36,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -258,9 +256,10 @@ class MsSqlServerJdbcPartitionTest {
                 "6-digit-truncated max. Got: $sql"
         )
         // The query must still have a > lower bound
-        assert(sql.contains(">")) {
+        assertTrue(
+            sql.contains(">"),
             "Query must contain '>' lower bound clause. Got: $sql"
-        }
+        )
     }
 
     @Test
@@ -288,8 +287,8 @@ class MsSqlServerJdbcPartitionTest {
             sql.contains("<="),
             "Query with cutoffTime must not contain '<=' ceiling. Got: $sql"
         )
-        assert(sql.contains(">")) { "Query must contain '>' lower bound. Got: $sql" }
-        assert(sql.contains("<")) { "Query with cutoffTime must contain '<' cutoff. Got: $sql" }
+        assertTrue(sql.contains(">"), "Query must contain '>' lower bound. Got: $sql")
+        assertTrue(sql.contains("<"), "Query with cutoffTime must contain '<' cutoff. Got: $sql")
     }
 
     @Test
