@@ -1,0 +1,44 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - "studio.biggeo.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a1b2c3d4-5e6f-4a5b-8c9d-0e1f2a3b4c5d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-biggeo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/biggeo
+  githubIssueLabel: source-biggeo
+  icon: icon.svg
+  license: MIT
+  name: BigGeo
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  releaseDate: 2024-01-01
+  supportLevel: community
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-biggeo
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE_BIGGEO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

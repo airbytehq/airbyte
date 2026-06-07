@@ -1,0 +1,17 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_data_source",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
