@@ -36,7 +36,8 @@ class PostgresExceptionClassifierTest {
     @Test
     fun testSocketTimeoutWrappedInPSQLExceptionClassifiedAsTransient() {
         val cause = SocketTimeoutException("Connect timed out")
-        val exception = PSQLException("The connection attempt failed.", PSQLState.CONNECTION_FAILURE, cause)
+        val exception =
+            PSQLException("The connection attempt failed.", PSQLState.CONNECTION_FAILURE, cause)
         val result = classifier.classify(exception)
         assertNotNull(result)
         assertTrue(result is TransientError, "Expected TransientError but got $result")
