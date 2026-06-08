@@ -70,7 +70,6 @@ class IcebergTableWriterFactory {
             createWriterFactory(
                 table = table,
                 schema = schema,
-                format,
                 identifierFieldIds = identifierFieldIds
             )
         val outputFileFactory =
@@ -109,12 +108,10 @@ class IcebergTableWriterFactory {
     private fun createWriterFactory(
         table: Table,
         schema: Schema,
-        format: FileFormat,
         identifierFieldIds: Set<Int>?
     ): GenericFileWriterFactory {
-        val builder = GenericFileWriterFactory.Builder()
+        val builder = GenericFileWriterFactory.Builder(table)
             .dataSchema(schema)
-            .dataFileFormat(format)
             .writerProperties(table.properties())
         if (identifierFieldIds != null) {
             builder
