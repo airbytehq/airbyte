@@ -8,7 +8,6 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
@@ -16,6 +15,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.FinalTableIni
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDatabaseInitialStatus
+import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 
 class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQuery) :
     DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus> {

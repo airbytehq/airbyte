@@ -52,24 +52,25 @@ class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
     private val tempTableName = TableName("test_namespace", "test_stream_tmp")
 
     @Test
-    fun `InterruptedException during getTable is wrapped as TransientErrorException`() = runBlocking {
-        val interruptedException = InterruptedException("thread interrupted")
-        val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
+    fun `InterruptedException during getTable is wrapped as TransientErrorException`() =
+        runBlocking {
+            val interruptedException = InterruptedException("thread interrupted")
+            val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
 
-        every { bigquery.getTable(any<TableId>()) } throws bigQueryException
-        every { tempTableNameGenerator.generate(any()) } returns tempTableName
+            every { bigquery.getTable(any<TableId>()) } throws bigQueryException
+            every { tempTableNameGenerator.generate(any()) } returns tempTableName
 
-        val tableNames = TableNames(finalTableName = tableName, rawTableName = null)
-        val catalog =
-            TableCatalog(
-                mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
-            )
+            val tableNames = TableNames(finalTableName = tableName, rawTableName = null)
+            val catalog =
+                TableCatalog(
+                    mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
+                )
 
-        assertThrows<TransientErrorException> { gatherer.gatherInitialStatus(catalog) }
+            assertThrows<TransientErrorException> { gatherer.gatherInitialStatus(catalog) }
 
-        // Clear interrupted status
-        Thread.interrupted()
-    }
+            // Clear interrupted status
+            Thread.interrupted()
+        }
 
     @Test
     fun `successful getTable returns status normally`() = runBlocking {
@@ -81,9 +82,7 @@ class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
 
         val tableNames = TableNames(finalTableName = tableName, rawTableName = null)
         val catalog =
-            TableCatalog(
-                mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
-            )
+            TableCatalog(mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap()))))
 
         val result = gatherer.gatherInitialStatus(catalog)
         assertNotNull(result[stream])
@@ -98,9 +97,7 @@ class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
 
         val tableNames = TableNames(finalTableName = tableName, rawTableName = null)
         val catalog =
-            TableCatalog(
-                mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
-            )
+            TableCatalog(mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap()))))
 
         assertThrows<BigQueryException> { gatherer.gatherInitialStatus(catalog) }
     }

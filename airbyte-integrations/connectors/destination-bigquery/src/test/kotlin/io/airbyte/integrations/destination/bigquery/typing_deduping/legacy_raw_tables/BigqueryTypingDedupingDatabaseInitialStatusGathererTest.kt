@@ -48,23 +48,25 @@ class BigqueryTypingDedupingDatabaseInitialStatusGathererTest {
     private val finalTableName = TableName("test_namespace", "test_stream")
 
     @Test
-    fun `InterruptedException during getTable is wrapped as TransientErrorException`() = runBlocking {
-        val interruptedException = InterruptedException("thread interrupted")
-        val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
+    fun `InterruptedException during getTable is wrapped as TransientErrorException`() =
+        runBlocking {
+            val interruptedException = InterruptedException("thread interrupted")
+            val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
 
-        every { bq.getTable(any<TableId>()) } throws bigQueryException
+            every { bq.getTable(any<TableId>()) } throws bigQueryException
 
-        val tableNames = TableNames(rawTableName = rawTableName, finalTableName = finalTableName)
-        val catalog =
-            TableCatalog(
-                mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
-            )
+            val tableNames =
+                TableNames(rawTableName = rawTableName, finalTableName = finalTableName)
+            val catalog =
+                TableCatalog(
+                    mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
+                )
 
-        assertThrows<TransientErrorException> { gatherer.gatherInitialStatus(catalog) }
+            assertThrows<TransientErrorException> { gatherer.gatherInitialStatus(catalog) }
 
-        // Clear interrupted status
-        Thread.interrupted()
-    }
+            // Clear interrupted status
+            Thread.interrupted()
+        }
 
     @Test
     fun `table not found returns status with null raw table state`() = runBlocking {
@@ -72,9 +74,7 @@ class BigqueryTypingDedupingDatabaseInitialStatusGathererTest {
 
         val tableNames = TableNames(rawTableName = rawTableName, finalTableName = finalTableName)
         val catalog =
-            TableCatalog(
-                mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
-            )
+            TableCatalog(mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap()))))
 
         val result = gatherer.gatherInitialStatus(catalog)
         assertNotNull(result[stream])
@@ -89,9 +89,7 @@ class BigqueryTypingDedupingDatabaseInitialStatusGathererTest {
 
         val tableNames = TableNames(rawTableName = rawTableName, finalTableName = finalTableName)
         val catalog =
-            TableCatalog(
-                mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap())))
-            )
+            TableCatalog(mapOf(stream to TableNameInfo(tableNames, ColumnNameMapping(emptyMap()))))
 
         assertThrows<BigQueryException> { gatherer.gatherInitialStatus(catalog) }
     }
