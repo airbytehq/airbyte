@@ -41,7 +41,7 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
             val provider =
                 when (mode) {
                     AWS_CREDENTIALS_MODE_STATIC_CREDS -> {
-                        if (accessKey != null && secretKey != null) {
+                        if (!accessKey.isNullOrBlank() && !secretKey.isNullOrBlank()) {
                             StaticCredentialsProvider.create(
                                 AwsBasicCredentials.create(accessKey, secretKey)
                             )
@@ -51,7 +51,7 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                     }
                     AWS_CREDENTIALS_MODE_ASSUME_ROLE -> {
                         val baseCredentials =
-                            if (accessKey != null && secretKey != null) {
+                            if (!accessKey.isNullOrBlank() && !secretKey.isNullOrBlank()) {
                                 StaticCredentialsProvider.create(
                                     AwsBasicCredentials.create(accessKey, secretKey)
                                 )
