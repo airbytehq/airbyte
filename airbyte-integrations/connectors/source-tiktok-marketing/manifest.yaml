@@ -31,6 +31,10 @@ definitions:
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 40001 }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Insufficient permissions for this endpoint (error 40001). Verify that the access token has the required scopes and re-authorize the API app. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -2260,6 +2264,7 @@ definitions:
               error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40001 and 'Adv has no permission to operate on the Pixel' in response['message'] }}"
               action: IGNORE
+              failure_type: config_error
               error_message: "{{ response['message'] }}"
             - predicate: "{{ response.get('code') == 60001 }}"
               action: RETRY

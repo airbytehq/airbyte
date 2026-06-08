@@ -7,7 +7,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from airbyte_cdk.models import ConnectorSpecification, Status
+from airbyte_cdk.models import ConnectorSpecification, FailureType, Status, SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import get_source
 
@@ -96,6 +98,11 @@ def test_source_check_connection_ok(config, requests_mock):
             None,
         ),
         ({"code": 40100, "message": "App reaches the QPS limit."}, None, 6),
+        (
+            {"code": 40001, "message": "Permission error: The access token lacks the required scope for endpoint."},
+            (Status.FAILED, "Insufficient permissions for this endpoint (error 40001)"),
+            None,
+        ),
     ],
 )
 @pytest.mark.usefixtures("mock_sleep")
@@ -115,3 +122,23 @@ def test_source_check_connection_failed(config, requests_mock, capsys, json_resp
     if expected_message is not None:
         trace_messages = capsys.readouterr().out.split()
         assert len(trace_messages) == expected_message
+
+
+def test_error_40001_classified_as_config_error(config, requests_mock):
+    """Error code 40001 (PERMISSION_ERROR) must be classified as config_error, not system_error."""
+    json_response = {"code": 40001, "message": "Permission error: The access token lacks the required scope."}
+    ok_response = {"code": 0, "message": "ok", "data": {"list": [{"advertiser_id": "917429327", "advertiser_name": "name"}]}}
+
+    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/", json=ok_response)
+    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/advertiser/info/", json=ok_response)
+    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/", json=json_response)
+
+    catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.full_refresh).build()
+    source = get_source(config=config, state=None)
+    output = read(source, config, catalog)
+
+    assert len(output.errors) > 0, "Expected at least one error trace for 40001"
+    for error_msg in output.errors:
+        assert error_msg.trace.error.failure_type == FailureType.config_error, (
+            f"Error 40001 should be config_error but got {error_msg.trace.error.failure_type}"
+        )
