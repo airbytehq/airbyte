@@ -317,7 +317,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.23.18 | 2026-06-08 | []() | Classify 403 and 400 authorization errors as config errors on async report and bulk streams to surface clear messages instead of generic retry failures |
+| 2.23.18 | 2026-06-08 | [79187](https://github.com/airbytehq/airbyte/pull/79187) | Classify 403 and 400 authorization errors as config errors on async report and bulk streams to surface clear messages instead of generic retry failures |
 | 2.23.17 | 2026-05-29 | [78518](https://github.com/airbytehq/airbyte/pull/78518) | Add num_workers config for user-adjustable concurrency |
 | 2.23.17-rc.2 | 2026-05-27 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Revert concurrency to 10, add num_workers config and HTTP API budget |
 | 2.23.17-rc.1 | 2026-05-26 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Enable progressive rollout for concurrency tuning |
