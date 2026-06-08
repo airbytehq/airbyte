@@ -57,6 +57,63 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/consumers"
+    executions:
+      type: DeclarativeStream
+      name: executions
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 0
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /syncs/{{ stream_partition.sync_id }}/executions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/syncs"
+              parent_key: syncid
+              partition_field: sync_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/executions"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%dT%H:%M:%S"
     connections:
       type: DeclarativeStream
       name: connections
@@ -107,9 +164,9 @@ definitions:
           type: NoAuth
         request_headers: {}
         request_body_json:
-          clientId: "{{ config['client_id'] }}"
-          accountId: "{{ config['account_id'] }}"
-          clientSecret: "{{ config['client_secret'] }}"
+          clientId: "\"{{ config['client_id'] }}\""
+          accountId: "\"{{ config['account_id'] }}\""
+          clientSecret: "\"{{ config['client_secret'] }}\""
         request_parameters: {}
       session_token_path:
         - access_token
@@ -120,6 +177,7 @@ streams:
   - $ref: "#/definitions/streams/consumers"
   - $ref: "#/definitions/streams/connections"
   - $ref: "#/definitions/streams/syncs"
+  - $ref: "#/definitions/streams/executions"
 
 spec:
   type: Spec
@@ -130,6 +188,7 @@ spec:
       - client_id
       - client_secret
       - account_id
+      - start_date
     properties:
       client_id:
         type: string
@@ -141,6 +200,11 @@ spec:
         order: 2
         title: Account Id
         airbyte_secret: true
+      start_date:
+        type: string
+        order: 3
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
       client_secret:
         type: string
         order: 1
@@ -153,7 +217,7 @@ metadata:
   testedStreams:
     syncs:
       hasRecords: true
-      streamHash: 9ab33623df884c15f3c8e6fe91c1ba67ada79310
+      streamHash: ba830527b9cefcf3543c815bf18760b2f441e7ed
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -165,9 +229,16 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    executions:
+      hasRecords: true
+      streamHash: f29221d17e5017d8b49dee0a04a0cc032a4a309f
+      hasResponse: true
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     connections:
       hasRecords: true
-      streamHash: 654088bf639287791880bdd88582e496aeef0386
+      streamHash: 8784b67048af9b6482bc21c691638beb7867460f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -175,6 +246,7 @@ metadata:
   autoImportSchema:
     syncs: true
     consumers: true
+    executions: true
     connections: true
 
 schemas:
@@ -297,6 +369,10 @@ schemas:
                         type:
                           - string
                           - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
                       data:
                         type:
                           - array
@@ -360,6 +436,28 @@ schemas:
                       - array
                       - "null"
                     items:
+                      type:
+                        - string
+                        - "null"
+                  definitionFields:
+                    type:
+                      - array
+                      - "null"
+            execution:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
                       type:
                         - string
                         - "null"
@@ -449,6 +547,37 @@ schemas:
                           - object
                           - "null"
                         properties:
+                          "!":
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                or:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      "==":
+                                        type:
+                                          - array
+                                          - "null"
+                                        items:
+                                          anyOf:
+                                            - type:
+                                                - "null"
+                                                - string
+                                            - type: object
+                                              properties:
+                                                var:
+                                                  type: string
                           in:
                             type:
                               - array
@@ -533,6 +662,38 @@ schemas:
           - string
           - "null"
     additionalProperties: true
+  executions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - start
+    properties:
+      id:
+        type: string
+      end:
+        type:
+          - string
+          - "null"
+      start:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      flow_id:
+        type:
+          - string
+          - "null"
+      consumer_id:
+        type:
+          - string
+          - "null"
+      parentexecutionid:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
   connections:
     type: object
     $schema: http://json-schema.org/schema#
@@ -547,15 +708,19 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          folder_id:
-            type:
-              - string
-              - "null"
       name:
         type:
           - string
           - "null"
+      agent:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
       status:
         type:
           - string
