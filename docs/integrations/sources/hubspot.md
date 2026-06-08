@@ -164,8 +164,6 @@ Association stream records include:
 - `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
 - `label`: The association label. This is `null` for unlabeled associations.
 
-Association streams support incremental sync. Airbyte checks for updated source object records before reading their associations. For `contacts`, the stream uses `lastmodifieddate` as the cursor. For other standard objects, the stream uses `hs_lastmodifieddate`.
-
 If you authenticate with a Private App, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` and `crm.objects.companies.read` scopes.
 
 </FieldAnchor>
@@ -191,7 +189,7 @@ For custom objects, use either:
 
 You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
 
-Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. These streams use `hs_lastmodifieddate` on the source object when checking for updated source records during incremental syncs.
+Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`.
 
 If you authenticate with a Private App, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
 
@@ -266,7 +264,7 @@ The HubSpot source connector supports the following streams:
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
-- Configured association streams, such as `associations_tickets_companies` \(Incremental\)
+- Configured association streams, such as `associations_tickets_companies` \(Full Refresh\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
