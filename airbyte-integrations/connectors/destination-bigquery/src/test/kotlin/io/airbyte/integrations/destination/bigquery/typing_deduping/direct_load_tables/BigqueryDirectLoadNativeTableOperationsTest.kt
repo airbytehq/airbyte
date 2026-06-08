@@ -302,9 +302,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
     }
 
     /**
-     * When a column being type-changed is also a clustering column, ensureSchemaMatches should
-     * use the recreateTable path (which uses INSERT...SELECT with CAST) instead of the alterTable
-     * path (which uses RENAME COLUMN and would fail on BigQuery clustering columns).
+     * When a column being type-changed is also a clustering column, ensureSchemaMatches should use
+     * the recreateTable path (which uses INSERT...SELECT with CAST) instead of the alterTable path
+     * (which uses RENAME COLUMN and would fail on BigQuery clustering columns).
      */
     @Test
     fun testEnsureSchemaMatchesRecreatesTableWhenClusteringColumnTypeChanges() {
