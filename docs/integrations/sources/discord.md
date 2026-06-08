@@ -118,6 +118,6 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 
 | Version | Date       | Pull Request | Subject                         |
 | :------ | :--------- | :----------- | :------------------------------ |
-| 0.1.0   | 2026-04-16 | [76376](https://github.com/airbytehq/airbyte/pull/76376) | Initial release of source-discord connector with 7 streams: guilds, channels, messages, members, roles, threads, and scheduled_events. |
+| 0.1.0   | 2026-06-08 | [76376](https://github.com/airbytehq/airbyte/pull/76376) | Initial release of source-discord connector with 7 streams: guilds, channels, messages, members, roles, threads, and scheduled_events. |
 
 </details>
