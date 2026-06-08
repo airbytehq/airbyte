@@ -2423,6 +2423,138 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
                 yield self._process_fulfillment(fulfillment, record.get("id"))
 
 
+class OrderRefund(MoneyBagMixin, ShopifyBulkQuery):
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    duty_fields: List[Field] = [
+        Field(name="id", alias="duty_id"),
+        Field(name="amountSet", alias="amount_set", fields=MoneyBagMixin.money_bag_fields),
+    ]
+
+    line_item_fields: List[Field] = [
+        "id",
+        "currentQuantity",
+        "discountedTotal",
+        "discountedUnitPrice",
+        "name",
+        "quantity",
+        "requiresShipping",
+        "sku",
+        "taxable",
+        "title",
+        "unfulfilledQuantity",
+        "vendor",
+        Field(name="discountedTotalSet", alias="total_discount_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="discountAllocations", alias="discount_allocations", fields=MoneyBagMixin.discount_allocation_fields),
+        Field(name="duties", fields=duty_fields),
+        Field(name="originalUnitPriceSet", alias="price_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
+        Field(name="variant", fields=["id", "inventoryManagement", "title"]),
+        Field(name="product", fields=["id"]),
+    ]
+
+    refund_line_item_fields: List[Field] = [
+        "__typename",
+        "id",
+        "quantity",
+        "restockType",
+        "subtotal",
+        Field(name="subtotalSet", alias="subtotal_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="totalTaxSet", alias="total_tax_set", fields=MoneyBagMixin.money_bag_fields),
+        Field(name="lineItem", alias="line_item", fields=line_item_fields),
+        Field(name="location", fields=["id"]),
+    ]
+
+    refund_fields: List[Field] = [
+        "__typename",
+        "id",
+        "createdAt",
+        "note",
+        "updatedAt",
+        Field(name="refundLineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=refund_line_item_fields)])]),
+        Field(name="return", fields=["id"]),
+        Field(name="totalRefundedSet", alias="total_duties_set", fields=MoneyBagMixin.money_bag_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+        "record_components": ["Refund", "RefundLineItem"],
+    }
+
+    def _refund_field(self, filter_query: Optional[str]) -> Field:
+        arguments = [Argument(name="query", value=f'"{filter_query}"')] if filter_query else []
+        return Field(
+            name="refunds",
+            arguments=arguments,
+            fields=[Field(name="edges", fields=[Field(name="node", fields=self.refund_fields)])],
+        )
+
+    def query(self, filter_query: Optional[str] = None) -> Query:
+        return self.build(self.query_name, ["__typename", "id", "updatedAt", self._refund_field(filter_query)])
+
+    def _process_duties(self, duties: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for duty in duties:
+            if duty.get("duty_id"):
+                duty["duty_id"] = self.tools.resolve_str_id(duty["duty_id"])
+            self._process_money_bag(duty.get("amount_set"))
+        return duties
+
+    def _process_line_item(self, line_item: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        line_item = self._process_line_item_base(line_item)
+        if line_item.get("discountedUnitPrice") is not None:
+            line_item["pre_tax_price"] = float(line_item.pop("discountedUnitPrice"))
+        return self.tools.fields_names_to_snake_case(line_item)
+
+    def _process_refund_line_items(self, refund_line_items: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for refund_line_item in refund_line_items:
+            refund_line_item["id"] = self.tools.resolve_str_id(refund_line_item.get("id"))
+            refund_line_item["location_id"] = self.tools.resolve_str_id((refund_line_item.pop("location", None) or {}).get("id"))
+            refund_line_item["line_item"] = self._process_line_item(refund_line_item.get("line_item") or {})
+            refund_line_item["line_item_id"] = refund_line_item["line_item"].get("id")
+            self._process_money_bag(refund_line_item.get("subtotal_set"))
+            self._process_money_bag(refund_line_item.get("total_tax_set"))
+            if refund_line_item.get("subtotal") is not None:
+                refund_line_item["subtotal"] = float(refund_line_item["subtotal"])
+            shop_money = (refund_line_item.get("total_tax_set") or {}).get("shop_money") or {}
+            refund_line_item["total_tax"] = shop_money.get("amount")
+            refund_line_item.pop(BULK_PARENT_KEY, None)
+            refund_line_item.pop("refund_line_items", None)
+            yield self.tools.fields_names_to_snake_case(refund_line_item)
+
+    def _process_refund(self, refund: MutableMapping[str, Any], order_id: Optional[str]) -> MutableMapping[str, Any]:
+        refund["admin_graphql_api_id"] = refund.get("id")
+        refund["id"] = self.tools.resolve_str_id(refund.get("id"))
+        refund["order_id"] = order_id if isinstance(order_id, int) else self.tools.resolve_str_id(order_id)
+        refund["createdAt"] = self.tools.from_iso8601_to_rfc3339(refund, "createdAt")
+        refund["updatedAt"] = self.tools.from_iso8601_to_rfc3339(refund, "updatedAt")
+        record_components = refund.pop("record_components", {})
+        refund_line_items = refund.pop("refund_line_items", refund.pop("refundLineItems", []))
+        refund_line_items.extend(record_components.get("RefundLineItem", []))
+        refund["refund_line_items"] = list(self._process_refund_line_items(refund_line_items))
+        return_obj = refund.pop("return", None)
+        if return_obj:
+            refund["return"] = {
+                "admin_graphql_api_id": return_obj.get("id"),
+                "id": self.tools.resolve_str_id(return_obj.get("id")),
+            }
+        self._process_money_bag(refund.get("total_duties_set"))
+        refund.pop(BULK_PARENT_KEY, None)
+        return self.tools.fields_names_to_snake_case(refund)
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        record_components = record.get("record_components", {})
+        refunds = record_components.get("Refund", [])
+        refund_line_items = record_components.get("RefundLineItem", [])
+        line_items_by_refund_id: Dict[str, List[MutableMapping[str, Any]]] = {}
+        for line_item in refund_line_items:
+            line_items_by_refund_id.setdefault(line_item.get(BULK_PARENT_KEY), []).append(line_item)
+        if refunds:
+            for refund in refunds:
+                refund["refund_line_items"] = line_items_by_refund_id.get(refund.get("admin_graphql_api_id", refund.get("id")), [])
+                yield self._process_refund(refund, record.get("id"))
+
+
 class Product(ShopifyBulkQuery):
     """
     {

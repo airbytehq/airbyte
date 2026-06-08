@@ -670,6 +670,15 @@ def fulfillment_jsonl_content_example():
 
 
 @pytest.fixture
+def order_refund_jsonl_content_example():
+    return """{"__typename":"Order","id":"gid://shopify/Order/10","updatedAt":"2023-04-24T18:00:10Z"}
+{"__typename":"Refund","id":"gid://shopify/Refund/11","createdAt":"2023-04-24T18:00:09Z","updatedAt":"2023-04-24T18:00:10Z","note":"Customer return","return":{"id":"gid://shopify/Return/12"},"__parentId":"gid://shopify/Order/10"}
+{"__typename":"RefundLineItem","refund_line_items":{},"id":"gid://shopify/RefundLineItem/13","quantity":1,"restockType":"RETURN","subtotal":"10.50","subtotal_set":{"shop_money":{"amount":"10.50","currency_code":"USD"},"presentment_money":{"amount":"10.50","currency_code":"USD"}},"total_tax_set":{"shop_money":{"amount":"0.95","currency_code":"USD"},"presentment_money":{"amount":"0.95","currency_code":"USD"}},"location":{"id":"gid://shopify/Location/14"},"line_item":{"id":"gid://shopify/LineItem/15","discountedUnitPrice":"9.55","name":"Widget","quantity":1,"sku":"SKU-1","taxable":true,"title":"Widget","unfulfilledQuantity":0,"vendor":"Vendor","price_set":{"shop_money":{"amount":"10.50","currency_code":"USD"},"presentment_money":{"amount":"10.50","currency_code":"USD"}},"variant":{"id":"gid://shopify/ProductVariant/16","inventoryManagement":"SHOPIFY","title":"Blue"},"product":{"id":"gid://shopify/Product/17"}},"__parentId":"gid://shopify/Refund/11"}
+{"__typename":"Order","id":"gid://shopify/Order/18","updatedAt":"2023-04-24T18:00:11Z"}
+"""
+
+
+@pytest.fixture
 def order_risks_jsonl_content_example():
     return """{"__typename":"Order","updatedAt":"2023-09-09T09:57:43Z","order_id":"gid:\/\/shopify\/Order\/3944273805501","risk":{"recommendation":"NONE","assessments":[{"risk_level":"NONE","facts":[{"description":"Card Verification Value (CVV) isn't available","sentiment":"NEUTRAL"},{"description":"Billing address or credit card's address wasn't available","sentiment":"NEUTRAL"},{"description":"Billing address ZIP or postal code isn't available to match with credit card's registered address","sentiment":"NEUTRAL"},{"description":"The payment method used isn't available","sentiment":"NEUTRAL"},{"description":"Location of IP address used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Distance between shipping address and location of IP address isn't available","sentiment":"NEUTRAL"},{"description":"The billing country or the country of the IP used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Can't determine if a high risk internet connection was used because the IP address isn't available","sentiment":"NEUTRAL"},{"description":"There was 1 payment attempt","sentiment":"POSITIVE"}],"provider":null}]}}
 {"__typename":"Order","updatedAt":"2023-09-19T14:29:22Z","order_id":"gid:\/\/shopify\/Order\/3945528492221","risk":{"recommendation":"CANCEL","assessments":[{"risk_level":"NONE","facts":[{"description":"Card Verification Value (CVV) isn't available","sentiment":"NEUTRAL"},{"description":"Billing address or credit card's address wasn't available","sentiment":"NEUTRAL"},{"description":"Billing address ZIP or postal code isn't available to match with credit card's registered address","sentiment":"NEUTRAL"},{"description":"The payment method used isn't available","sentiment":"NEUTRAL"},{"description":"Location of IP address used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Distance between shipping address and location of IP address isn't available","sentiment":"NEUTRAL"},{"description":"The billing country or the country of the IP used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Can't determine if a high risk internet connection was used because the IP address isn't available","sentiment":"NEUTRAL"},{"description":"There was 1 payment attempt","sentiment":"POSITIVE"}],"provider":null},{"risk_level":"HIGH","facts":[{"description":"This order came from an anonymous proxy","sentiment":"NEGATIVE"}],"provider":{"features":[],"description":null,"handle":null,"embedded":false,"title":"Airbyte Test","published":false,"developer_name":"app developer","developer_type":"MERCHANT","app_store_app_url":null,"install_url":null,"app_store_developer_url":null,"is_post_purchase_app_in_use":false,"previously_installed":false,"pricing_details_summary":"Free","pricing_details":null,"privacy_policy_url":null,"public_category":"CUSTOM","uninstall_message":"You won't be able to view or access features for this app anymore. Discounts that use this app will also be deleted.","webhook_api_version":"2023-04","shopify_developed":false,"provider_id":"gid:\/\/shopify\/App\/5505221","failed_requirements":[],"feedback":null}}]}}\n"""
@@ -871,6 +880,60 @@ def fulfillment_response_expected_result():
                 "fulfillment_line_item_id": 4,
             }
         ],
+        "shop_url": "test_shop",
+    }
+
+
+@pytest.fixture
+def order_refund_response_expected_result():
+    return {
+        "id": 11,
+        "created_at": "2023-04-24T18:00:09+00:00",
+        "updated_at": "2023-04-24T18:00:10+00:00",
+        "note": "Customer return",
+        "admin_graphql_api_id": "gid://shopify/Refund/11",
+        "order_id": 10,
+        "refund_line_items": [
+            {
+                "id": 13,
+                "quantity": 1,
+                "restock_type": "RETURN",
+                "subtotal": 10.5,
+                "subtotal_set": {
+                    "shop_money": {"amount": 10.5, "currency_code": "USD"},
+                    "presentment_money": {"amount": 10.5, "currency_code": "USD"},
+                },
+                "total_tax_set": {
+                    "shop_money": {"amount": 0.95, "currency_code": "USD"},
+                    "presentment_money": {"amount": 0.95, "currency_code": "USD"},
+                },
+                "line_item": {
+                    "admin_graphql_api_id": "gid://shopify/LineItem/15",
+                    "id": 15,
+                    "name": "Widget",
+                    "quantity": 1,
+                    "sku": "SKU-1",
+                    "taxable": True,
+                    "title": "Widget",
+                    "vendor": "Vendor",
+                    "price_set": {
+                        "shop_money": {"amount": 10.5, "currency_code": "USD"},
+                        "presentment_money": {"amount": 10.5, "currency_code": "USD"},
+                    },
+                    "variant_id": 16,
+                    "variant_inventory_management": "SHOPIFY",
+                    "variant_title": "Blue",
+                    "product_id": 17,
+                    "price": 10.5,
+                    "fulfillable_quantity": 0,
+                    "pre_tax_price": 9.55,
+                },
+                "location_id": 14,
+                "line_item_id": 15,
+                "total_tax": 0.95,
+            }
+        ],
+        "return": {"admin_graphql_api_id": "gid://shopify/Return/12", "id": 12},
         "shop_url": "test_shop",
     }
 
