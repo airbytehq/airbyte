@@ -14,7 +14,7 @@ The Gong connector supports the following entities and actions.
 | Call Audio | [Download](#call-audio-download) |
 | Call Video | [Download](#call-video-download) |
 | Workspaces | [List](#workspaces-list) |
-| Call Transcripts | [List](#call-transcripts-list) |
+| Call Transcripts | [List](#call-transcripts-list), [Context Store Search](#call-transcripts-context-store-search) |
 | Stats Activity Aggregate | [List](#stats-activity-aggregate-list) |
 | Stats Activity Day By Day | [List](#stats-activity-day-by-day-list) |
 | Stats Interaction | [List](#stats-interaction-list) |
@@ -999,6 +999,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `cursor` | `string \| null` |  |
 | `total_records` | `integer` |  |
 | `current_page_number` | `integer` |  |
+
+</details>
+
+### Call Transcripts Context Store Search
+
+Search and filter call transcripts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "call_transcripts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "callId": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gong.call_transcripts.context_store_search(
+    query={"filter": {"eq": {"callId": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "call_transcripts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"callId": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `callId` | `string` | Unique identifier for the call. |
+| `started` | `string` | Timestamp the call started. Filterable for narrowing transcript search by call time. |
+| `transcript` | `array` | Gong transcript speaker turns. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].callId` | `string` | Unique identifier for the call. |
+| `data[].started` | `string` | Timestamp the call started. Filterable for narrowing transcript search by call time. |
+| `data[].transcript` | `array` | Gong transcript speaker turns. |
 
 </details>
 
