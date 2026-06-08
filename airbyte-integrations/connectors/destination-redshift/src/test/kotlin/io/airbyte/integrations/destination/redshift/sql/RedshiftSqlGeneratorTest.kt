@@ -621,7 +621,7 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `matchSchemas SUPER to VARCHAR uses JSON_SERIALIZE`() {
+    fun `matchSchemas SUPER to VARCHAR uses JSON_SERIALIZE guarded by JSON_SIZE`() {
         val tableName = TableName(namespace = "ns", name = "tbl")
         val sql =
             sqlGenerator.matchSchemas(
@@ -639,12 +639,46 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_json_col" varchar(65535);"""))
+        // JSON_SIZE guard prevents "SUPER value exceeds export size" (error 8001)
+        assertTrue(sql.contains("""JSON_SIZE("json_col") <= 65535"""))
         assertTrue(sql.contains("""JSON_SERIALIZE("json_col")"""))
         assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
         assertTrue(sql.contains(""""json_col" IS NOT NULL"""))
         assertTrue(sql.contains(""""_airbyte_tmp_json_col" IS NULL"""))
         assertTrue(sql.contains("""DROP COLUMN "json_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_json_col" TO "json_col";"""))
+    }
+
+    @Test
+    fun `matchSchemas SUPER to VARCHAR oversized values are NULLed and tracked in meta`() {
+        val tableName = TableName(namespace = "ns", name = "tbl")
+        val sql =
+            sqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd = emptyMap(),
+                columnsToRemove = emptyMap(),
+                columnsToModify =
+                    mapOf(
+                        "filters" to
+                            ColumnTypeChange(
+                                originalType = ColumnType("super", true),
+                                newType = ColumnType("varchar(65535)", true),
+                            )
+                    ),
+            )
+
+        // The CASE expression should produce NULL for oversized SUPER values,
+        // then buildMetaUpdateForTypecastError records DESTINATION_TYPECAST_ERROR.
+        val castLine = sql.lines().first { it.contains("JSON_SIZE") }
+        assertTrue(castLine.contains("CASE WHEN"))
+        assertTrue(castLine.contains("JSON_SIZE(\"filters\") <= 65535"))
+        assertTrue(castLine.contains("THEN JSON_SERIALIZE(\"filters\")"))
+        assertTrue(castLine.contains("END"))
+
+        // Meta update marks rows where original was non-null but cast produced null
+        assertTrue(sql.contains(""""filters" IS NOT NULL"""))
+        assertTrue(sql.contains(""""_airbyte_tmp_filters" IS NULL"""))
+        assertTrue(sql.contains("DESTINATION_TYPECAST_ERROR"))
     }
 
     @Test
