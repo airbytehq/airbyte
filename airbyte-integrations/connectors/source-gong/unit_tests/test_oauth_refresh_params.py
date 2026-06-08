@@ -5,7 +5,8 @@
 Gong's documented OAuth refresh endpoint expects `grant_type` and `refresh_token`
 on the URL **query string**, with credentials passed via `Authorization: Basic ...`.
 This test verifies the connector's manifest configures the `OAuthAuthenticator`
-with `refresh_request_query_params` containing the right values.
+with `send_refresh_request_as_query_params: true` so the CDK routes the standard
+OAuth refresh args to the URL query string instead of the request body.
 
 See: <https://gong.app.gong.io/settings/api/documentation#section/Authentication/OAuth-2.0>
 """
@@ -23,17 +24,13 @@ def _oauth_authenticator_block() -> dict:
     return manifest["definitions"]["base_requester"]["authenticator"]["authenticators"]["OAuth2.0"]
 
 
-def test_oauth_authenticator_has_refresh_request_query_params():
-    """The OAuth authenticator declares `refresh_request_query_params` with
-    `grant_type` and `refresh_token` so the refresh request hits Gong's
-    documented URL shape.
+def test_oauth_authenticator_sends_refresh_request_as_query_params():
+    """The OAuth authenticator opts into the URL-query-string refresh shape so
+    the refresh request hits Gong's documented URL shape.
     """
     oauth = _oauth_authenticator_block()
     assert oauth["type"] == "OAuthAuthenticator"
-    assert oauth.get("refresh_request_query_params") == {
-        "grant_type": "refresh_token",
-        "refresh_token": "{{ config['credentials']['refresh_token'] }}",
-    }
+    assert oauth.get("send_refresh_request_as_query_params") is True
 
 
 def test_oauth_authenticator_keeps_basic_auth_header():
