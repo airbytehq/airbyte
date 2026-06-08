@@ -2926,10 +2926,14 @@ schemas:
     properties:
       from_id:
         description: Source object ID
-        type: string
+        type:
+          - "null"
+          - string
       to_id:
         description: Target object ID
-        type: string
+        type:
+          - "null"
+          - string
       association_type_id:
         description: Numeric association type identifier
         type:
