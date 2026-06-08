@@ -112,43 +112,37 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val icebergSchema =
             Schema(
-                Types.NestedField.of(1, true, "id", Types.LongType.get()),
-                Types.NestedField.of(2, true, "name", Types.StringType.get()),
-                Types.NestedField.of(
+                Types.NestedField.optional(1, "id", Types.LongType.get()),
+                Types.NestedField.optional(2, "name", Types.StringType.get()),
+                Types.NestedField.required(
                     3,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_RAW_ID,
                     Types.StringType.get()
                 ),
-                Types.NestedField.of(
+                Types.NestedField.required(
                     4,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT,
                     Types.LongType.get()
                 ),
-                Types.NestedField.of(
+                Types.NestedField.required(
                     5,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_META,
                     Types.StructType.of(
-                        Types.NestedField.of(6, false, "sync_id", Types.LongType.get()),
-                        Types.NestedField.of(
+                        Types.NestedField.required(6, "sync_id", Types.LongType.get()),
+                        Types.NestedField.required(
                             7,
-                            false,
                             "changes",
                             Types.ListType.ofRequired(
                                 8,
                                 Types.StructType.of(
-                                    Types.NestedField.of(9, false, "field", Types.StringType.get()),
-                                    Types.NestedField.of(
+                                    Types.NestedField.required(9, "field", Types.StringType.get()),
+                                    Types.NestedField.required(
                                         10,
-                                        false,
                                         "change",
                                         Types.StringType.get(),
                                     ),
-                                    Types.NestedField.of(
+                                    Types.NestedField.required(
                                         11,
-                                        false,
                                         "reason",
                                         Types.StringType.get(),
                                     ),
@@ -157,9 +151,8 @@ internal class S3DataLakeStreamLoaderTest {
                         ),
                     ),
                 ),
-                Types.NestedField.of(
+                Types.NestedField.required(
                     12,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_GENERATION_ID,
                     Types.LongType.get()
                 ),
@@ -239,7 +232,7 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val icebergSchema =
             Schema(
-                Types.NestedField.of(2, true, "name", Types.StringType.get()),
+                Types.NestedField.optional(2, "name", Types.StringType.get()),
             )
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
@@ -282,6 +275,7 @@ internal class S3DataLakeStreamLoaderTest {
             )
         } returns updateSchema
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
+
         every { updateSchema.commit() } just runs
         every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
@@ -363,43 +357,37 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val columns =
             listOf(
-                Types.NestedField.of(1, false, "id", Types.LongType.get()),
-                Types.NestedField.of(2, true, "name", Types.StringType.get()),
-                Types.NestedField.of(
+                Types.NestedField.required(1, "id", Types.LongType.get()),
+                Types.NestedField.optional(2, "name", Types.StringType.get()),
+                Types.NestedField.required(
                     3,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_RAW_ID,
                     Types.StringType.get()
                 ),
-                Types.NestedField.of(
+                Types.NestedField.required(
                     4,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT,
                     Types.LongType.get()
                 ),
-                Types.NestedField.of(
+                Types.NestedField.required(
                     5,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_META,
                     Types.StructType.of(
-                        Types.NestedField.of(6, false, "sync_id", Types.LongType.get()),
-                        Types.NestedField.of(
+                        Types.NestedField.required(6, "sync_id", Types.LongType.get()),
+                        Types.NestedField.required(
                             7,
-                            false,
                             "changes",
                             Types.ListType.ofRequired(
                                 8,
                                 Types.StructType.of(
-                                    Types.NestedField.of(9, false, "field", Types.StringType.get()),
-                                    Types.NestedField.of(
+                                    Types.NestedField.required(9, "field", Types.StringType.get()),
+                                    Types.NestedField.required(
                                         10,
-                                        false,
                                         "change",
                                         Types.StringType.get(),
                                     ),
-                                    Types.NestedField.of(
+                                    Types.NestedField.required(
                                         11,
-                                        false,
                                         "reason",
                                         Types.StringType.get(),
                                     ),
@@ -408,9 +396,8 @@ internal class S3DataLakeStreamLoaderTest {
                         ),
                     ),
                 ),
-                Types.NestedField.of(
+                Types.NestedField.required(
                     12,
-                    false,
                     Meta.Companion.COLUMN_NAME_AB_GENERATION_ID,
                     Types.LongType.get()
                 ),
