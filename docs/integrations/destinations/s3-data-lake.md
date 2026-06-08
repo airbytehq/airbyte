@@ -335,11 +335,11 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - In each sync, each microbatch creates a new snapshot.
 
-- During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and replaces the `main` branch with the `airbyte_staging` at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
+- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch and replaces the `main` branch with that staging branch at the end of a successful sync. Since most query engines target the `main` branch, people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version. The connector removes the staging branch after a successful promotion, and preserves it after failed syncs so retries can recover staged data.
 
 ### Branch replacement
 
-At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
+At the end of stream sync, we replace the current `main` branch with the unique staging branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
 **Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
 
 ## Compaction
@@ -395,6 +395,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.50      | 2026-06-03 |                                                             | Use unique staging branches and clean them up after each sync.                                                                  |
 | 0.3.49      | 2026-05-19 | [78232](https://github.com/airbytehq/airbyte/pull/78232)  | Upgrade CDK to 1.0.13 |
 | 0.3.48      | 2026-05-01 | [77677](https://github.com/airbytehq/airbyte/pull/77677)  | Add configurable flush batch size for aggregate publishing.                                                                     |
 | 0.3.47      | 2026-04-16 | [76410](https://github.com/airbytehq/airbyte/pull/76410) | Upgrade CDK to 1.0.9.                                                  |

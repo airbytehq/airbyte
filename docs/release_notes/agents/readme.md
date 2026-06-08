@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## June 8, 2026
+
+Connectors
+
+- The TikTok Marketing connector now supports Spark Ads and product catalogs, letting your agent list authorized Spark Ad posts and browse product catalog details for an advertiser.
+
 ## June 5, 2026
 
 MCP
