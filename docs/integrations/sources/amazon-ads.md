@@ -69,6 +69,10 @@ The Amazon Ads source connector uses Sponsored Products, Sponsored Brands, and S
 If you have only agency profile, please use accounts associated with the profile of seller/vendor type.
 :::
 
+:::important
+Amazon Ads refresh tokens expire **365 days** after the advertiser grants consent. When a refresh token expires, the connector surfaces a configuration error indicating the token is invalid. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+:::
+
 ## Supported sync modes
 
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -170,6 +174,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 8.1.1 | 2026-06-04 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Handle expired refresh tokens as configuration errors |
 | 8.1.0 | 2026-05-28 | [78487](https://github.com/airbytehq/airbyte/pull/78487) | Added Sponsored Brands campaign and ad group report streams with spend and performance metrics. |
 | 8.0.4 | 2026-06-02 | [78596](https://github.com/airbytehq/airbyte/pull/78596) | Update dependencies |
 | 8.0.3 | 2026-05-18 | [78162](https://github.com/airbytehq/airbyte/pull/78162) | Promoted release candidate to GA |
