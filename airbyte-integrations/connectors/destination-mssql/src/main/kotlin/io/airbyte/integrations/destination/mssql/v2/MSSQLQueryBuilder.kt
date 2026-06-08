@@ -403,9 +403,7 @@ class MSSQLQueryBuilder(
                         (value.abValue as TimestampWithTimezoneValue).value
                     )
                 TimestampTypeWithoutTimezone ->
-                    LIMITS.validateTimestamp(value)?.let {
-                        statement.setObject(statementIndex, it)
-                    }
+                    LIMITS.validateTimestamp(value)?.let { statement.setObject(statementIndex, it) }
                         ?: statement.setAsNullValue(statementIndex, field.type.type)
 
                 // Serialize complex types to string
