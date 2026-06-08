@@ -974,12 +974,9 @@ internal class PostgresAirbyteClientTest {
         val namespace = "test_namespace"
         val psqlException =
             org.postgresql.util.PSQLException(
-                "cannot drop table because other objects depend on it",
-                org.postgresql.util.PSQLState.OBJECT_IN_USE
+                "cannot drop column because view depends on it",
+                null
             )
-        // PSQLState.OBJECT_IN_USE doesn't give us 2BP01. Let's use a simpler approach:
-        // The handler checks e.sqlState == "2BP01" || e.message?.contains("depends on")
-        // The message contains "depend on" which includes "depends on" check.
         val statement =
             mockk<Statement> {
                 every { execute(any()) } throws psqlException
