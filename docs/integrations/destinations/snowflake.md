@@ -288,6 +288,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.44          | 2026-06-08 | [79181](https://github.com/airbytehq/airbyte/pull/79181)   | Upgrade CDK to 1.0.14: fix reserved column name collisions |
 | 4.0.43          | 2026-05-19 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
 | 4.0.42          | 2026-05-11 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
 | 4.0.41          | 2026-05-06 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
