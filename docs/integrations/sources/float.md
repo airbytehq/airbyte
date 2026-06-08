@@ -7,6 +7,7 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 |-------|------|-------------|---------------|
 | `access_token` | `string` | Float Access Token. API token obtained from your Float Account Settings page |  |
 | `start_date` | `datetime` | Start Date. | |
+| `end_date` | `string` | End Date (YYYY-MM-DD). Used by the reports streams. Defaults to today if not set. | |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -27,6 +28,8 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 | milestones | milestone_id | DefaultPaginator | ✅ |  ❌  |
 | tasks | task_id | DefaultPaginator | ✅ |  ❌  |
 | logged-time | logged_time_id | DefaultPaginator | ✅ |  ✅  |
+| reports-people | people_id | No pagination | ✅ |  ❌  |
+| reports-projects | project_id | No pagination | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -39,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-06-02 | | Add reports-people and reports-projects streams |
 | 0.0.47 | 2026-06-02 | [78694](https://github.com/airbytehq/airbyte/pull/78694) | Update dependencies |
 | 0.0.46 | 2026-04-28 | [77259](https://github.com/airbytehq/airbyte/pull/77259) | Update dependencies |
 | 0.0.45 | 2026-04-21 | [75761](https://github.com/airbytehq/airbyte/pull/75761) | Update dependencies |
