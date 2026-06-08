@@ -207,7 +207,7 @@ class NetsuiteStream(HttpStream, ABC):
                 if error_code == "USER_ERROR":
                     self._user_error_skipped += 1
         except (ValueError, KeyError, IndexError):
-            pass
+            self.logger.debug("Could not parse error details from 400 response", exc_info=True)
 
     def _emit_skipped_records_summary(self) -> None:
         if self._user_error_skipped == 0:
