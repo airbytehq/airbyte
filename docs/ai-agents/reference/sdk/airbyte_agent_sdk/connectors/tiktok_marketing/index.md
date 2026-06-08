@@ -836,6 +836,7 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CampaignsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsImagesSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsVideosSearchData]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[SparkAdsSearchData]
 
     ### Class variables
 
@@ -1031,6 +1032,24 @@ Classes
 <a id="CreativeAssetsVideosSearchResult"></a>
 
 `CreativeAssetsVideosSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SparkAdsSearchResult"></a>
+
+`SparkAdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -1388,6 +1407,39 @@ Classes
     `width: int | None`
     :   Width of the video in pixels.
 
+<a id="SparkAdsSearchData"></a>
+
+`SparkAdsSearchData(**data: Any)`
+:   Search result data for spark_ads entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `auth_info: dict[str, typing.Any] | None`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: dict[str, typing.Any] | None`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `user_info: dict[str, typing.Any] | None`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: dict[str, typing.Any] | None`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
 <a id="TiktokMarketingAuthConfig"></a>
 
 `TiktokMarketingAuthConfig(**data: Any)`
@@ -1551,7 +1603,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1563,6 +1615,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
