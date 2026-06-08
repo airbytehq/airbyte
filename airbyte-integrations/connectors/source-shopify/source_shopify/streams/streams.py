@@ -464,23 +464,17 @@ class Fulfillments(IncrementalShopifyGraphQlBulkStream):
         fulfillment: MutableMapping[str, Any],
         order_id: Optional[str],
     ) -> Iterable[MutableMapping[str, Any]]:
-        fulfillment_id = fulfillment.get("admin_graphql_api_id") or fulfillment.get("id")
-        has_next_page = True
-        after = None
-        while has_next_page:
-            _, response = self._http_client.send_request(
-                http_method="POST",
-                url=f"{self.url_base}{self.path()}",
-                json={"query": self.job_manager.query.fulfillment_line_items_query(fulfillment_id, after)},
-                request_kwargs={},
-                headers=self.request_headers(stream_state=None),
-            )
-            fulfillment_line_items = response.json().get("data", {}).get("fulfillment", {}).get("fulfillmentLineItems", {})
-            for edge in fulfillment_line_items.get("edges", []):
-                yield edge.get("node", {})
-            page_info = fulfillment_line_items.get("pageInfo", {})
-            has_next_page = page_info.get("hasNextPage", False)
-            after = page_info.get("endCursor")
+        resolved_order_id = order_id if isinstance(order_id, int) else fulfillment.get("order_id") or str(order_id).rsplit("/", 1)[-1]
+        fulfillment_id = fulfillment.get("id")
+        if not isinstance(fulfillment_id, int):
+            fulfillment_id = str(fulfillment_id).rsplit("/", 1)[-1]
+        _, response = self._http_client.send_request(
+            http_method="GET",
+            url=f"{self.url_base}orders/{resolved_order_id}/fulfillments/{fulfillment_id}.json",
+            request_kwargs={},
+            headers=self.request_headers(stream_state=None),
+        )
+        yield from response.json().get("fulfillment", {}).get("line_items", [])
 
     def _get_fulfillment_line_items(
         self, fulfillment: MutableMapping[str, Any], order_id: Optional[str]

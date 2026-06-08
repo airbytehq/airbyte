@@ -849,24 +849,14 @@ def fulfillment_response_expected_result():
                 "title": "Widget",
                 "vendor": "Vendor",
                 "price_set": {
-                    "shop_money": {"amount": 10.5, "currency_code": "USD"},
-                    "presentment_money": {"amount": 10.5, "currency_code": "USD"},
+                    "shop_money": {"amount": "10.50", "currency_code": "USD"},
+                    "presentment_money": {"amount": "10.50", "currency_code": "USD"},
                 },
                 "variant_id": 6,
                 "variant_inventory_management": None,
                 "variant_title": "Blue",
                 "product_id": 7,
-                "price": 10.5,
-                "duties": [
-                    {
-                        "id": 9,
-                        "country_code_of_origin": "US",
-                        "harmonized_system_code": "123456",
-                        "shop_money": {"amount": 1.25, "currency_code": "USD"},
-                        "presentment_money": {"amount": 1.25, "currency_code": "USD"},
-                        "tax_lines": [],
-                    }
-                ],
+                "price": "10.50",
                 "fulfillable_quantity": 0,
                 "fulfillment_line_item_id": 4,
             }
