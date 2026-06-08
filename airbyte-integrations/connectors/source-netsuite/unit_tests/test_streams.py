@@ -7,10 +7,10 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+from source_netsuite.streams import NetsuiteStream
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import FailureType
-from source_netsuite.streams import NetsuiteStream
 
 
 def _make_stream(object_name: str = "journalentry") -> NetsuiteStream:
@@ -50,6 +50,7 @@ _USER_ERROR_JSON = {
 # ---------------------------------------------------------------------------
 # _track_skipped_record
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize(
     "json_body, expected_skipped",
@@ -100,6 +101,7 @@ def test_track_skipped_record_malformed_json():
 # fetch_record
 # ---------------------------------------------------------------------------
 
+
 def test_fetch_record_yields_on_200():
     stream = _make_stream()
     ok_resp = _make_response(200, {"id": "42", "type": "journalentry"})
@@ -140,6 +142,7 @@ def test_fetch_record_does_not_track_non_400():
 # ---------------------------------------------------------------------------
 # _emit_skipped_records_summary
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize(
     "attempted, skipped, should_raise",
@@ -186,6 +189,7 @@ def test_emit_skipped_records_summary_warning_content(caplog):
 # should_retry — typo fix verification
 # ---------------------------------------------------------------------------
 
+
 def test_should_retry_user_error_corrected_spelling(caplog):
     stream = _make_stream()
     response = _make_response(400, _USER_ERROR_JSON)
@@ -203,6 +207,7 @@ def test_should_retry_user_error_corrected_spelling(caplog):
 # ---------------------------------------------------------------------------
 # Integration: mixed OK and USER_ERROR across multiple records
 # ---------------------------------------------------------------------------
+
 
 def test_fetch_record_accumulation_mixed_responses():
     stream = _make_stream()
