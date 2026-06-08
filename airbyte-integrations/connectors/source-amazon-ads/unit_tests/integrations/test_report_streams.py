@@ -1,13 +1,14 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import gzip
+from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 
 import pytest
 import requests_mock
 
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models import Level as LogLevel
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -485,3 +486,66 @@ class TestDisplayReportStreams:
         assert output.records[0].record.data["reportDate"] is not None
         # Verify cursor state uses 'reportDate' field
         assert output.most_recent_state.stream_state.states[0]["cursor"]["reportDate"] is not None
+
+    def test_sixty_day_cap_uses_exactly_60_days_from_today(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """
+        Verify that the 60-day data retention cap calculates sixty_days_ago from today_utc(),
+        not from the 'today' variable (which is yesterday). A start_date older than 60 days
+        should be clamped to exactly 60 days ago from the current UTC date.
+        """
+        old_start_date = (datetime.now(timezone.utc) - timedelta(days=90)).strftime("%Y-%m-%d")
+        config_with_old_start = {**config, "start_date": old_start_date}
+
+        report_id = "report-id-sixty-day-cap-test"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        report_data = gzip.compress(b'[{"date": "2023-01-01", "record": "data"}]')
+        requests_mock.get(download_url, content=report_data, status_code=200)
+
+        self._read(config_with_old_start, "sponsored_brands_v3_report_stream_daily", SyncMode.incremental)
+
+        report_creation_requests = [r for r in requests_mock.request_history if r.method == "POST" and r.url.endswith("/reporting/reports")]
+        assert len(report_creation_requests) > 0
+        first_request_body = report_creation_requests[0].json()
+        requested_start_date = first_request_body["startDate"].strip()
+
+        expected_sixty_days_ago = (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d")
+        assert requested_start_date == expected_sixty_days_ago, (
+            f"Expected startDate to be exactly 60 days ago ({expected_sixty_days_ago}), "
+            f"but got {requested_start_date}. This indicates the off-by-one error is present."
+        )
+
+    def test_retention_date_error_handled_as_config_error(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """
+        Verify that when the Amazon Ads API returns the 'startDate must be equal to or after
+        report type data retention start date' error, the connector treats it as a config_error
+        (fails gracefully) and does not retry endlessly through the async job system.
+        """
+        error_details = "startDate (2024-03-01) must be equal to or after report type data retention start date (2024-03-02)"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"code": "400", "details": error_details, "requestId": "test-req-id"},
+            status_code=400,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        output = self._read(config, "sponsored_brands_v3_report_stream_daily", SyncMode.incremental)
+        assert len(output.records) == 0
+        # The error handler should classify this as a config_error (not transient/system)
+        error_traces = [msg for msg in output.errors if msg.trace.error.failure_type == FailureType.config_error]
+        assert len(error_traces) > 0, "Expected retention date error to be classified as config_error"
+        assert "must be equal to or after report type data retention start date" in error_traces[0].trace.error.message
