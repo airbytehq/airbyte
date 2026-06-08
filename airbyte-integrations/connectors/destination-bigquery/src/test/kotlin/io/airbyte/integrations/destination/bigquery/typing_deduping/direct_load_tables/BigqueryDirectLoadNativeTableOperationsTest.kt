@@ -24,16 +24,15 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -300,9 +299,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
     }
 
     /**
-     * When the existing table has only columns that don't match the stream schema at all
-     * (no meta columns, all user columns differ), buildAlterTableReport should return
-     * empty columnsToRetain and empty columnsToChangeType.
+     * When the existing table has only columns that don't match the stream schema at all (no meta
+     * columns, all user columns differ), buildAlterTableReport should return empty columnsToRetain
+     * and empty columnsToChangeType.
      */
     @Test
     fun testBuildAlterTableReportAllColumnsRemoved() {
@@ -323,7 +322,8 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 syncId = 0,
                 namespaceMapper = NamespaceMapper()
             )
-        val columnNameMapping = ColumnNameMapping(mapOf("new_col1" to "new_col1", "new_col2" to "new_col2"))
+        val columnNameMapping =
+            ColumnNameMapping(mapOf("new_col1" to "new_col1", "new_col2" to "new_col2"))
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
         // Existing table has only "old_col1" and "old_col2" - no overlap with expected columns
         Mockito.`when`(existingTable.schema!!.fields)
@@ -376,9 +376,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
     }
 
     /**
-     * When recreateTable is triggered with empty columnsToRetain and empty columnsToChange,
-     * the INSERT INTO statement should be skipped to avoid generating invalid SQL with
-     * an empty column list.
+     * When recreateTable is triggered with empty columnsToRetain and empty columnsToChange, the
+     * INSERT INTO statement should be skipped to avoid generating invalid SQL with an empty column
+     * list.
      */
     @Test
     fun testRecreateTableSkipsInsertWhenNoColumnsToRetain() {
@@ -428,17 +428,15 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 tempTableNameGenerator = DefaultTempTableNameGenerator("test_project"),
             )
 
-        runBlocking {
-            operations.ensureSchemaMatches(stream, tableName, columnNameMapping)
-        }
+        runBlocking { operations.ensureSchemaMatches(stream, tableName, columnNameMapping) }
 
         // Verify that databaseHandler.execute was never called (INSERT was skipped)
         verify(databaseHandler, never()).execute(anyNonNull())
     }
 
     /**
-     * When recreateTable is triggered with non-empty columnsToRetain,
-     * the INSERT INTO statement should be executed.
+     * When recreateTable is triggered with non-empty columnsToRetain, the INSERT INTO statement
+     * should be executed.
      */
     @Test
     fun testRecreateTableExecutesInsertWhenColumnsToRetain() {
@@ -462,7 +460,8 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 syncId = 0,
                 namespaceMapper = NamespaceMapper()
             )
-        val columnNameMapping = ColumnNameMapping(mapOf("existing_col" to "existing_col", "new_col" to "new_col"))
+        val columnNameMapping =
+            ColumnNameMapping(mapOf("existing_col" to "existing_col", "new_col" to "new_col"))
         val tableName = TableName("test_ns", "test_table")
 
         // Mock bigquery.getTable() to return a StandardTableDefinition with:
@@ -486,9 +485,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 tempTableNameGenerator = DefaultTempTableNameGenerator("test_project"),
             )
 
-        runBlocking {
-            operations.ensureSchemaMatches(stream, tableName, columnNameMapping)
-        }
+        runBlocking { operations.ensureSchemaMatches(stream, tableName, columnNameMapping) }
 
         // Verify that databaseHandler.execute was called (INSERT was executed)
         verify(databaseHandler).execute(anyNonNull())
