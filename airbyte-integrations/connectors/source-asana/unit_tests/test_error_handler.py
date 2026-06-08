@@ -3,26 +3,14 @@
 #
 
 import pytest
-import requests
+from source_asana.source import SourceAsana
 
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-from yaml import safe_load
-
-from source_asana.source import SourceAsana
 
 
 def _load_manifest():
     source = SourceAsana(catalog=None, config=None, state=None)
     return source._source_config
-
-
-def _build_response(status_code, json_body):
-    resp = requests.Response()
-    resp.status_code = status_code
-    resp._content = __import__("json").dumps(json_body).encode("utf-8")
-    resp.headers["Content-Type"] = "application/json"
-    resp.encoding = "utf-8"
-    return resp
 
 
 @pytest.mark.parametrize(
@@ -94,8 +82,7 @@ def test_pagination_limit_filter_precedes_generic_400():
     assert pagination_idx is not None, "Pagination-limit IGNORE filter must exist"
     assert generic_400_idx is not None, "Generic HTTP 400 FAIL filter must exist"
     assert pagination_idx < generic_400_idx, (
-        f"Pagination-limit filter (index {pagination_idx}) must precede "
-        f"generic 400 filter (index {generic_400_idx})"
+        f"Pagination-limit filter (index {pagination_idx}) must precede " f"generic 400 filter (index {generic_400_idx})"
     )
 
 
@@ -107,8 +94,7 @@ def test_pagination_limit_filter_has_no_http_codes():
     for f in response_filters:
         if f.get("error_message_contains") == "upper limit on the number of results":
             assert "http_codes" not in f, (
-                "Pagination-limit IGNORE filter must not specify http_codes "
-                "(relies solely on error_message_contains matching)"
+                "Pagination-limit IGNORE filter must not specify http_codes " "(relies solely on error_message_contains matching)"
             )
             return
 
