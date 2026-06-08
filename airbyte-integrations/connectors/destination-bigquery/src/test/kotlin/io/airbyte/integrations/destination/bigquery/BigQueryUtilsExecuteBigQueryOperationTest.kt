@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.bigquery
 
 import com.google.cloud.bigquery.BigQueryException
-import io.airbyte.commons.exceptions.TransientErrorException
+import io.airbyte.cdk.TransientErrorException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

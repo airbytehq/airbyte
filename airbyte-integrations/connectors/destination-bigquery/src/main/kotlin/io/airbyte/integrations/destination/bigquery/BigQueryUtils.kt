@@ -10,8 +10,8 @@ import com.google.cloud.bigquery.*
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.commons.exceptions.TransientErrorException
 import java.util.*
 import java.util.stream.Collectors
 import org.apache.commons.lang3.StringUtils
@@ -193,7 +193,6 @@ object BigQueryUtils {
                 throw TransientErrorException(
                     "BigQuery API call interrupted.",
                     e,
-                    "BigQuery operation interrupted, likely due to sync cancellation: ${e.message}",
                 )
             }
             throw e

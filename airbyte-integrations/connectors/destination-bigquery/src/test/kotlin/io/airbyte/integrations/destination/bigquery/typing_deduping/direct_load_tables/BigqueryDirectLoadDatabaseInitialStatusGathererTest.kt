@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.Table
 import com.google.cloud.bigquery.TableId
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -18,7 +19,6 @@ import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableNameInfo
-import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
 import io.mockk.every
 import io.mockk.mockk
