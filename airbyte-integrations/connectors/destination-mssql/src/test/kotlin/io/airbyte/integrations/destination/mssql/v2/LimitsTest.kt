@@ -60,4 +60,14 @@ class LimitsTest {
         assertTrue(value.abValue is NullValue)
         assertEquals(1, value.changes.size)
     }
+
+    @Test
+    fun `validateTimestamp passes through value with sub-millisecond precision`() {
+        val ts = LocalDateTime.of(2023, 1, 15, 10, 30, 0, 123456700)
+        val value = makeTimestampValue(ts)
+        val result = LIMITS.validateTimestamp(value)
+        assertNotNull(result)
+        assertEquals(ts, result)
+        assertTrue(value.abValue is TimestampWithoutTimezoneValue)
+    }
 }
