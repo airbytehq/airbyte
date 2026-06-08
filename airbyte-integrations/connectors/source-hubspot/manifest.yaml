@@ -2721,7 +2721,7 @@ spec:
                 - taxes
                 - tickets
             to_object:
-              title: TO Object
+              title: To Object
               description: The name of the object associating the record to.
               type: string
               enum:
