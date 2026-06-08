@@ -973,10 +973,7 @@ internal class PostgresAirbyteClientTest {
     fun testExecuteThrowsConfigErrorOnDependentObjectsError() {
         val namespace = "test_namespace"
         val psqlException =
-            org.postgresql.util.PSQLException(
-                "cannot drop column because view depends on it",
-                null
-            )
+            org.postgresql.util.PSQLException("cannot drop column because view depends on it", null)
         val statement =
             mockk<Statement> {
                 every { execute(any()) } throws psqlException
