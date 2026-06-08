@@ -691,9 +691,12 @@ class TestIncremental:
             _download_document_response(download_response_stream_name, data_format="json"),
         )
 
+        config_builder = config().with_report_stream_lookback_window_in_hours(6).with_end_date(pendulum.parse("2023-01-16T00:00:00Z"))
+        if "VENDOR" in stream_name:
+            config_builder = config_builder.with_account_type("Vendor")
         output = self._read(
             stream_name,
-            config().with_report_stream_lookback_window_in_hours(6).with_end_date(pendulum.parse("2023-01-16T00:00:00Z")),
+            config_builder,
             state=initial_state,
         )
         assert len(output.records) > 0
@@ -834,7 +837,7 @@ class TestVendorSalesReportsFullRefresh:
     @staticmethod
     def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
-            config_builder=config_,
+            config_builder=config_.with_account_type("Vendor"),
             stream_name=stream_name,
             sync_mode=SyncMode.full_refresh,
             expecting_exception=expecting_exception,

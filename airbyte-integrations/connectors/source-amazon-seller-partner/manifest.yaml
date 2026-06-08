@@ -3365,9 +3365,6 @@ streams:
   - $ref: "#/definitions/streams/order_items"
   - $ref: "#/definitions/streams/list_financial_event_groups"
   - $ref: "#/definitions/streams/list_financial_events"
-  - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
-  - $ref: "#/definitions/streams/vendor_orders"
-  - $ref: "#/definitions/streams/vendor_orders_status"
 
     # Reports Streams
   - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"
@@ -3406,8 +3403,6 @@ streams:
   - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
 
   # Analytics Streams
-  - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
-  - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
   - $ref: "#/definitions/streams/get_brand_analytics_market_basket_report"
   - $ref: "#/definitions/streams/get_brand_analytics_search_terms_report"
   - $ref: "#/definitions/streams/get_brand_analytics_repeat_purchase_report"
@@ -3416,8 +3411,19 @@ streams:
   - $ref: "#/definitions/streams/get_sales_and_traffic_report"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_date"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_month"
-  - $ref: "#/definitions/streams/get_vendor_sales_report"
-  - $ref: "#/definitions/streams/get_vendor_inventory_report"
+
+  # Vendor-only streams: only available for Vendor accounts.
+  # Amazon SP-API rejects these with 403 (REST) or 400 InvalidInput (reports) for Seller accounts.
+  - type: ConditionalStreams
+    condition: "{{ config.get('account_type') == 'Vendor' }}"
+    streams:
+      - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
+      - $ref: "#/definitions/streams/vendor_orders"
+      - $ref: "#/definitions/streams/vendor_orders_status"
+      - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
+      - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
+      - $ref: "#/definitions/streams/get_vendor_sales_report"
+      - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
 concurrency_level:
   type: ConcurrencyLevel

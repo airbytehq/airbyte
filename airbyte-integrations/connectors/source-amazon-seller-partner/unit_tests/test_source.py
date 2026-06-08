@@ -139,8 +139,21 @@ def test_streams(connector_config_without_start_date):
         assert isinstance(stream, DefaultStream)
 
 
-def test_streams_count(connector_config_without_start_date, monkeypatch):
+def test_streams_count_seller(connector_config_without_start_date, monkeypatch):
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
+    assert len(streams) == 46
+
+
+def test_streams_count_vendor(monkeypatch):
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Vendor",
+    }
+    streams = get_source(config).streams(config)
     assert len(streams) == 53
 
 
@@ -173,6 +186,58 @@ def test_streams_count(connector_config_without_start_date, monkeypatch):
 #             ).validate_replication_dates(config)
 #             is None
 #         )
+
+
+VENDOR_ONLY_STREAM_NAMES = [
+    "VendorDirectFulfillmentShipping",
+    "VendorOrders",
+    "VendorOrdersStatus",
+    "GET_VENDOR_FORECASTING_FRESH_REPORT",
+    "GET_VENDOR_FORECASTING_RETAIL_REPORT",
+    "GET_VENDOR_SALES_REPORT",
+    "GET_VENDOR_INVENTORY_REPORT",
+]
+
+
+def test_vendor_streams_excluded_for_seller():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Seller",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for vendor_stream in VENDOR_ONLY_STREAM_NAMES:
+        assert vendor_stream not in stream_names, f"{vendor_stream} should not appear for Seller accounts"
+
+
+def test_vendor_streams_included_for_vendor():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Vendor",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for vendor_stream in VENDOR_ONLY_STREAM_NAMES:
+        assert vendor_stream in stream_names, f"{vendor_stream} should appear for Vendor accounts"
+
+
+def test_vendor_streams_excluded_when_account_type_missing():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for vendor_stream in VENDOR_ONLY_STREAM_NAMES:
+        assert vendor_stream not in stream_names, f"{vendor_stream} should not appear when account_type is not set"
 
 
 mock_catalog = ConfiguredAirbyteCatalog(
@@ -345,6 +410,10 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         requests_mock: Fixture to mock HTTP requests.
     """
     now = datetime.strptime("2023-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
+
+    # Vendor streams require account_type=Vendor to appear in the catalog
+    if stream_name.startswith("Vendor"):
+        config = {**config, "account_type": "Vendor"}
 
     # Mock the token refresh endpoint
     requests_mock.post(
