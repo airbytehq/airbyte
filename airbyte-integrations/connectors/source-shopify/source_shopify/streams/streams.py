@@ -42,6 +42,7 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .base_streams import (
     FullRefreshShopifyGraphQlBulkStream,
@@ -557,17 +558,47 @@ class DiscountCodes(IncrementalShopifyStream):
     def _graphql_url(self) -> str:
         return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/graphql.json"
 
+    _GRAPHQL_MAX_RETRIES = 5
+
     def _graphql_request(self, query: str, variables: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Execute a GraphQL request using the stream's authenticated session."""
-        response = self._http_client._session.post(
-            self._graphql_url,
-            json={"query": query, "variables": variables},
-        )
-        response.raise_for_status()
-        result = response.json()
-        # respect Shopify GraphQL rate limits
-        self._apply_graphql_rate_limit(result)
-        return result
+        """Execute a GraphQL request via the stream's `HttpClient` (retry/backoff/OAuth aware).
+
+        Shopify GraphQL may return HTTP 200 with an `errors` array and `data: null` for
+        THROTTLED, MAX_COST_EXCEEDED, or internal errors. This method checks the `errors`
+        array and retries on throttle/transient codes, raising on non-retryable errors.
+        """
+        for attempt in range(1, self._GRAPHQL_MAX_RETRIES + 1):
+            _, response = self._http_client.send_request(
+                http_method="POST",
+                url=self._graphql_url,
+                request_kwargs={},
+                json={"query": query, "variables": variables},
+            )
+            result = response.json()
+            errors = result.get("errors")
+            if errors:
+                if self._is_throttled(errors):
+                    if attempt < self._GRAPHQL_MAX_RETRIES:
+                        ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
+                        continue
+                    raise AirbyteTracedException(
+                        message="GraphQL query for stream `discount_codes` exceeded max retries due to throttling."
+                    )
+                error_messages = "; ".join(e.get("message", str(e)) for e in errors)
+                raise AirbyteTracedException(message=f"GraphQL query failed for stream `discount_codes`: {error_messages}")
+            self._apply_graphql_rate_limit(result)
+            return result
+        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes` exceeded max retries due to throttling.")
+
+    @staticmethod
+    def _is_throttled(errors: list) -> bool:
+        """Return True if the errors array indicates a throttle/rate-limit response."""
+        throttle_codes = {"THROTTLED", "MAX_COST_EXCEEDED"}
+        for error in errors:
+            extensions = error.get("extensions", {})
+            if extensions.get("code") in throttle_codes:
+                return True
+        return False
 
     @staticmethod
     def _apply_graphql_rate_limit(response_json: Mapping[str, Any]) -> None:

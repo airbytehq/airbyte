@@ -8,6 +8,8 @@ import pytest
 import requests_mock as rmock
 from source_shopify.streams.streams import DiscountCodes
 
+from airbyte_cdk.utils import AirbyteTracedException
+
 
 @pytest.fixture
 def auth_config():
@@ -341,3 +343,67 @@ def test_schema_parity_with_json_schema(auth_config, time_sleep_mock):
 
     # Every key in the record should be in the schema
     assert record_keys.issubset(schema_keys), f"Extra keys not in schema: {record_keys - schema_keys}"
+
+
+def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
+    """Non-throttle GraphQL errors raise AirbyteTracedException immediately."""
+    stream = DiscountCodes(auth_config)
+    url = _graphql_url()
+
+    error_response = {
+        "errors": [{"message": "Field 'bogus' not found", "extensions": {"code": "FIELD_NOT_FOUND"}}],
+        "data": None,
+        "extensions": _EXTENSIONS,
+    }
+
+    with rmock.Mocker() as m:
+        m.post(url, [{"json": error_response}])
+        with pytest.raises(AirbyteTracedException, match="Field 'bogus' not found"):
+            list(stream.read_records(sync_mode=None))
+
+
+def test_graphql_throttled_retries_then_succeeds(auth_config, time_sleep_mock):
+    """THROTTLED errors are retried; if a subsequent attempt succeeds, records are emitted."""
+    stream = DiscountCodes(auth_config)
+    url = _graphql_url()
+
+    throttle_response = {
+        "errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}],
+        "data": None,
+        "extensions": _EXTENSIONS,
+    }
+
+    parent_node = _make_parent_node(100)
+    code_node = _make_code_node(200, "RETRY-OK")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": throttle_response},
+                {"json": _parent_response([parent_node])},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        records = list(stream.read_records(sync_mode=None))
+
+    assert len(records) == 1
+    assert records[0]["code"] == "RETRY-OK"
+
+
+def test_graphql_throttled_exhausts_retries(auth_config, time_sleep_mock):
+    """THROTTLED errors exhaust retries and raise AirbyteTracedException."""
+    stream = DiscountCodes(auth_config)
+    url = _graphql_url()
+
+    throttle_response = {
+        "errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}],
+        "data": None,
+        "extensions": _EXTENSIONS,
+    }
+
+    with rmock.Mocker() as m:
+        # Return throttled response for all retry attempts
+        m.post(url, [{"json": throttle_response}] * 10)
+        with pytest.raises(AirbyteTracedException, match="exceeded max retries"):
+            list(stream.read_records(sync_mode=None))
