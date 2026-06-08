@@ -47,7 +47,7 @@ This connector supports the following entities and actions. For more details, se
 | Call Audio | [Download](./REFERENCE.md#call-audio-download) |
 | Call Video | [Download](./REFERENCE.md#call-video-download) |
 | Workspaces | [List](./REFERENCE.md#workspaces-list) |
-| Call Transcripts | [List](./REFERENCE.md#call-transcripts-list) |
+| Call Transcripts | [List](./REFERENCE.md#call-transcripts-list), [Context Store Search](./REFERENCE.md#call-transcripts-context-store-search) |
 | Stats Activity Aggregate | [List](./REFERENCE.md#stats-activity-aggregate-list) |
 | Stats Activity Day By Day | [List](./REFERENCE.md#stats-activity-day-by-day-list) |
 | Stats Interaction | [List](./REFERENCE.md#stats-interaction-list) |
