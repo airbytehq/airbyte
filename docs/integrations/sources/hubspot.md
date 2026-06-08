@@ -62,7 +62,9 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `contact_lists`             | `crm.lists.read`                                                                                             |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_web_analytics`    | `crm.objects.contacts.read`, `business-intelligence`                                                         |
+| `association_streams`       | Read scopes for the selected source and target objects                                                       |
 | Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
+| `custom_object_association_streams` | `crm.objects.custom.read` and the read scope for any selected standard object                         |
 | `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
 | `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
@@ -140,6 +142,61 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 </FieldAnchor>
 
+<FieldAnchor field="association_streams">
+
+### Association streams
+
+Use **Association Between Objects Streams** to sync relationships between two standard HubSpot CRM objects. Add one item for each relationship you want to sync. Each item creates one stream that reads IDs from the source object, calls HubSpot's [associations batch read API](https://developers.hubspot.com/docs/api-reference/crm-associations-v4/batch/post-crm-v4-associations-fromObjectType-toObjectType-batch-read), and emits one record for each association.
+
+Configure these fields for each association stream:
+
+- **From Object**: The source object type, such as `tickets`, `deals`, or `contacts`.
+- **To Object**: The target object type, such as `companies` or `contacts`.
+- **Stream Name**: Optional. If you leave this empty, Airbyte names the stream `associations_<from_object>_<to_object>`.
+
+For example, set **From Object** to `tickets` and **To Object** to `companies` to create the `associations_tickets_companies` stream. After you add or edit association stream settings, refresh the source schema so the generated streams appear in the catalog.
+
+Association stream records include:
+
+- `from_id`: The ID of the source object record.
+- `to_id`: The ID of the target object record.
+- `association_type_id`: HubSpot's numeric association type identifier.
+- `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
+- `label`: The association label. This is `null` for unlabeled associations.
+
+Association streams support incremental sync. Airbyte checks for updated source object records before reading their associations. For `contacts`, the stream uses `lastmodifieddate` as the cursor. For other standard objects, the stream uses `hs_lastmodifieddate`.
+
+If you authenticate with a Private App, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` and `crm.objects.companies.read` scopes.
+
+</FieldAnchor>
+
+<FieldAnchor field="custom_object_association_streams">
+
+### Custom object association streams
+
+Use **Custom Object Association Streams** to sync relationships where at least one side is a custom HubSpot object. Add one item for each relationship you want to sync.
+
+Configure these fields for each custom object association stream:
+
+- **From Object**: The source object name or identifier.
+- **To Object**: The target object name or identifier.
+- **Stream Name**: Optional. If you leave this empty, Airbyte names the stream `associations_<from_object>_<to_object>`.
+
+After you add or edit custom object association stream settings, refresh the source schema so the generated streams appear in the catalog.
+
+For custom objects, use either:
+
+- The custom object's `fullyQualifiedName`, such as `p_my_custom_object`.
+- The custom object's `objectTypeId`, such as `2-12345`.
+
+You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
+
+Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. These streams use `hs_lastmodifieddate` on the source object when checking for updated source records during incremental syncs.
+
+If you authenticate with a Private App, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
+
+</FieldAnchor>
+
 <HideInUI>
 
 ## Supported sync modes
@@ -209,6 +266,7 @@ The HubSpot source connector supports the following streams:
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
+- Configured association streams, such as `associations_tickets_companies` \(Incremental\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
