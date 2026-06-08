@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.iceberg.config;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.iceberg.IcebergConstants;
@@ -39,6 +41,8 @@ public class WriteConfig implements Serializable {
   private final List<String> partitionKeys;
   private final boolean datePartitionMode;
   private final String datePartitionSourceColumn;
+  // Cursor field (for incremental syncs); drives latest-wins ordering during dedup/merge.
+  private final String cursorField;
 
   // TODO perf: use stageFile to do cache, see
   // io.airbyte.integrations.destination.bigquery.BigQueryWriteConfig.addStagedFile
@@ -51,19 +55,27 @@ public class WriteConfig implements Serializable {
   public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
       StructType schema) {
     this(namespace, streamName, isAppendMode, flushBatchSize, schema, false, new ArrayList<>(), false,
-        new ArrayList<>(), false, null);
+        new ArrayList<>(), false, null, null);
   }
 
   // Constructor without date partition params (for backward compatibility)
   public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
       StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys) {
     this(namespace, streamName, isAppendMode, flushBatchSize, schema, mergeMode, mergeKeys, partitionMode,
-        partitionKeys, false, null);
+        partitionKeys, false, null, null);
+  }
+
+  // Constructor without cursor field (for backward compatibility)
+  public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
+      StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys,
+      boolean datePartitionMode, String datePartitionSourceColumn) {
+    this(namespace, streamName, isAppendMode, flushBatchSize, schema, mergeMode, mergeKeys, partitionMode,
+        partitionKeys, datePartitionMode, datePartitionSourceColumn, null);
   }
 
   public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
       StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys,
-      boolean datePartitionMode, String datePartitionSourceColumn) {
+      boolean datePartitionMode, String datePartitionSourceColumn, String cursorField) {
     this.namespace = namingResolver.convertStreamName(namespace);
     this.tableName = namingResolver.convertStreamName(AIRBYTE_RAW_TABLE_PREFIX + streamName);
     this.tempTableName = namingResolver.convertStreamName(AIRBYTE_TMP_TABLE_PREFIX + streamName);
@@ -79,6 +91,7 @@ public class WriteConfig implements Serializable {
     this.partitionKeys = partitionKeys != null ? new ArrayList<>(partitionKeys) : new ArrayList<>();
     this.datePartitionMode = datePartitionMode;
     this.datePartitionSourceColumn = datePartitionSourceColumn;
+    this.cursorField = cursorField;
     this.schema = schema;
     this.dataCache = new ArrayList<>(flushBatchSize);
   }
@@ -102,6 +115,14 @@ public class WriteConfig implements Serializable {
    */
   public boolean shouldDatePartition() {
     return datePartitionMode && datePartitionSourceColumn != null && !datePartitionSourceColumn.isEmpty();
+  }
+
+  /**
+   * Column used to order records when deduplicating / resolving "latest wins". Prefers the cursor
+   * field (incremental syncs); falls back to the Airbyte emitted-at metadata column.
+   */
+  public String getOrderingColumn() {
+    return (cursorField != null && !cursorField.isEmpty()) ? cursorField : COLUMN_NAME_EMITTED_AT;
   }
 
   public List<String> fetchDataCache() {

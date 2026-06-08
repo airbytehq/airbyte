@@ -60,3 +60,56 @@ dependencies {
 test {
     jvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens=java.base/java.nio=ALL-UNNAMED']
 }
+
+// ---------------------------------------------------------------------------
+// Local Docker image build that bypasses airbyte-ci / Dagger.
+//
+// The stock `buildConnectorImage` task routes through airbyte-ci, which starts
+// a Dagger engine container. On networks that cannot reach the Dagger engine
+// registry that fails with "start engine: context deadline exceeded".
+//
+// This task replicates what airbyte-ci would do with a plain `docker build`
+// against the shared java-connector Dockerfile, so it needs only Java + Docker
+// (no Python, no Dagger).
+//
+// Usage:
+//   ./gradlew :airbyte-integrations:connectors:destination-iceberg:buildDockerImage
+//   ./gradlew :airbyte-integrations:connectors:destination-iceberg:buildDockerImage -PimageTag=dedup1
+// ---------------------------------------------------------------------------
+tasks.register('buildDockerImage', Exec) {
+    group = 'docker'
+    description = 'Build the connector image locally using plain docker build (bypasses airbyte-ci/Dagger).'
+    dependsOn tasks.named('distTar')
+
+    def contextDir = layout.buildDirectory.dir('docker-context').get().asFile
+    def distDir = layout.buildDirectory.dir('distributions').get().asFile
+    def sharedDockerfile = rootProject.file('docker-images/Dockerfile.java-connector-non-airbyte-ci')
+    def baseImage = 'airbyte/java-connector-base:2.0.0'
+    def imageTag = (project.findProperty('imageTag') ?: 'dev').toString()
+    def imageName = "airbyte/${project.name}:${imageTag}".toString()
+
+    doFirst {
+        contextDir.mkdirs()
+        def tar = distDir.listFiles()?.find { it.name.endsWith('.tar') }
+        if (tar == null) {
+            throw new GradleException("No distribution tar found in ${distDir}. Did distTar run?")
+        }
+        copy {
+            from tar
+            into contextDir
+            rename { 'airbyte-app.tar' }
+        }
+        copy {
+            from sharedDockerfile
+            into contextDir
+            rename { 'Dockerfile' }
+        }
+        logger.lifecycle("Building ${imageName} from context ${contextDir}")
+    }
+
+    commandLine 'docker', 'build', '--provenance=false',
+            '--build-arg', "BASE_IMAGE=${baseImage}",
+            '--build-arg', "CONNECTOR_NAME=${project.name}",
+            '-t', imageName,
+            contextDir.absolutePath
+}
