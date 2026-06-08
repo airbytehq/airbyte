@@ -529,10 +529,10 @@ jobs:
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
 
-  # --- Soft launch: ops CLI artifact generation + validation (parallel job) ---
-  # Runs alongside existing pre-release checks to validate the new ops CLI path.
-  # continue-on-error: true ensures this does not block the CI pipeline.
-  # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+  # --- Connector build + artifact generation ---
+  # The Docker image build is a required gate for all connectors.
+  # Registry artifact generation and validation remain non-blocking (soft launch).
+  # Soft-launch tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
   build-and-verify-artifacts:
     if: github.event.pull_request.draft == false
     needs: [generate-matrix]
@@ -542,7 +542,6 @@ jobs:
       fail-fast: false
     name: "Build and Verify Artifacts (${{ matrix.connector || 'No-Op' }})"
     runs-on: ubuntu-24.04
-    continue-on-error: true
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -603,6 +602,7 @@ jobs:
 
       - name: Generate and Validate Registry Artifacts (ops CLI)
         if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        continue-on-error: true
         shell: bash
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -615,6 +615,7 @@ jobs:
 
       - name: Upload Registry CI Artifacts
         if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector-version }}
@@ -631,6 +632,7 @@ jobs:
       - non-jvm-connectors-test
       - pre-release-checks
       - connectors-lint
+      - build-and-verify-artifacts
     runs-on: ubuntu-24.04
     outputs:
       result: ${{ steps.evaluate-status.outputs.result }}
@@ -640,7 +642,8 @@ jobs:
         run: |
           if [[ "${{ needs.jvm-connectors-test.result }}" == "success" &&
                 "${{ needs.non-jvm-connectors-test.result }}" == "success" &&
-                "${{ needs.connectors-lint.result }}" == "success" ]]; then
+                "${{ needs.connectors-lint.result }}" == "success" &&
+                "${{ needs.build-and-verify-artifacts.result }}" != "failure" ]]; then
             echo "result=success" | tee -a $GITHUB_OUTPUT
           else
             echo "result=failure" | tee -a $GITHUB_OUTPUT
