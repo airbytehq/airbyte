@@ -139,6 +139,6 @@ def test_error_40001_classified_as_config_error(config, requests_mock):
 
     assert len(output.errors) > 0, "Expected at least one error trace for 40001"
     for error_msg in output.errors:
-        assert error_msg.trace.error.failure_type == FailureType.config_error, (
-            f"Error 40001 should be config_error but got {error_msg.trace.error.failure_type}"
-        )
+        assert (
+            error_msg.trace.error.failure_type == FailureType.config_error
+        ), f"Error 40001 should be config_error but got {error_msg.trace.error.failure_type}"
