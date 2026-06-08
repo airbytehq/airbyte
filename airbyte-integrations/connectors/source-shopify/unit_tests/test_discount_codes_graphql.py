@@ -293,6 +293,38 @@ def test_state_filters_parent_query(auth_config, time_sleep_mock):
     assert "updated_at:>='2023-06-01T00:00:00+00:00'" in variables.get("query", "")
 
 
+def test_lookback_window_applied_to_state(time_sleep_mock):
+    """When lookback_window_in_days is configured, the state filter is adjusted backwards."""
+    config = {
+        "shop": "test_shop",
+        "start_date": "2023-01-01",
+        "credentials": {"auth_method": "api_password", "api_password": "api_password"},
+        "authenticator": None,
+        "lookback_window_in_days": 3,
+    }
+    stream = DiscountCodes(config)
+    url = _graphql_url()
+
+    parent_node = _make_parent_node(100)
+    code_node = _make_code_node(200, "C")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([parent_node])},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        state = {"updated_at": "2023-06-10T00:00:00+00:00"}
+        list(stream.read_records(sync_mode=None, stream_state=state))
+
+    # With 3-day lookback, the filter should use 2023-06-07 instead of 2023-06-10
+    first_request_body = json.loads(m.request_history[0].text)
+    variables = first_request_body["variables"]
+    assert "2023-06-07" in variables.get("query", ""), f"Expected lookback-adjusted date in query, got: {variables}"
+
+
 def test_discount_code_app_typename_no_summary(auth_config, time_sleep_mock):
     """DiscountCodeApp type has no summary field; verify it emits None."""
     stream = DiscountCodes(auth_config)

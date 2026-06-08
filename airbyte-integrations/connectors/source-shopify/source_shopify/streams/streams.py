@@ -685,7 +685,8 @@ class DiscountCodes(IncrementalShopifyStream):
             code_discount = result.get("data", {}).get("codeDiscountNode", {}).get("codeDiscount") or {}
             codes_conn = self._extract_codes_connection(code_discount)
             for code_node in codes_conn.get("nodes", []):
-                yield self._build_child_record(code_node, parent_gid, parent_meta)
+                record = self._build_child_record(code_node, parent_gid, parent_meta)
+                yield self._transformer.transform(record)
             page_info = codes_conn.get("pageInfo", {})
             has_more = page_info.get("hasNextPage", False)
             child_cursor = page_info.get("endCursor")
@@ -698,6 +699,8 @@ class DiscountCodes(IncrementalShopifyStream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         state_value = (stream_state or {}).get(self.cursor_field, self.config.get("start_date", ""))
+        if state_value:
+            state_value = self._apply_lookback_window(state_value)
 
         parent_cursor: Optional[str] = None
         has_more_parents = True
