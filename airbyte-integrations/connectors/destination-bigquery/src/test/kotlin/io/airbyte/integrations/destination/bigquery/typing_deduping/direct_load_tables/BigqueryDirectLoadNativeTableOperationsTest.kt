@@ -28,7 +28,6 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
@@ -344,9 +343,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             )
         Mockito.`when`(existingTableDef.clustering)
             .thenReturn(
-                Clustering.newBuilder()
-                    .setFields(listOf("id", "_airbyte_extracted_at"))
-                    .build()
+                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build()
             )
         Mockito.`when`(existingTableDef.timePartitioning)
             .thenReturn(
@@ -427,9 +424,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             )
         Mockito.`when`(existingTableDef.clustering)
             .thenReturn(
-                Clustering.newBuilder()
-                    .setFields(listOf("id", "_airbyte_extracted_at"))
-                    .build()
+                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build()
             )
         Mockito.`when`(existingTableDef.timePartitioning)
             .thenReturn(
