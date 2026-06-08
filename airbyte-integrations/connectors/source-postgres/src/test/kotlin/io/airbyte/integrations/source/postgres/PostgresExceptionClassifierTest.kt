@@ -120,9 +120,7 @@ class PostgresExceptionClassifierTest {
             )
 
         assertEquals(
-            TransientError(
-                "Postgres connection timeout: Database connection timeout, will retry."
-            ),
+            TransientError("Postgres connection timeout: Database connection timeout, will retry."),
             result,
         )
     }
