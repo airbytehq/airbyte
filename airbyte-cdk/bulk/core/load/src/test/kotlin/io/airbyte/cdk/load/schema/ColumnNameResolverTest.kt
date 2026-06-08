@@ -148,9 +148,10 @@ class ColumnNameResolverTest {
         every { mapper.toColumnName("_airbyte_generation_id") } returns "_airbyte_generation_id"
         every { mapper.toColumnName("_airbyte_meta_1") } returns "_airbyte_meta_1"
         every { mapper.toColumnName("data") } returns "data"
-        every { mapper.colsConflict(any(), any()) } answers {
-            (args[0] as String).equals(args[1] as String, ignoreCase = true)
-        }
+        every { mapper.colsConflict(any(), any()) } answers
+            {
+                (args[0] as String).equals(args[1] as String, ignoreCase = true)
+            }
 
         val result = resolver.getColumnNameMapping(columns)
 
@@ -172,9 +173,10 @@ class ColumnNameResolverTest {
         every { mapper.toColumnName("_AIRBYTE_META") } returns "_airbyte_meta"
         every { mapper.toColumnName("_AIRBYTE_META_1") } returns "_airbyte_meta_1"
         every { mapper.toColumnName("data") } returns "data"
-        every { mapper.colsConflict(any(), any()) } answers {
-            (args[0] as String).equals(args[1] as String, ignoreCase = true)
-        }
+        every { mapper.colsConflict(any(), any()) } answers
+            {
+                (args[0] as String).equals(args[1] as String, ignoreCase = true)
+            }
 
         val result = resolver.getColumnNameMapping(columns)
 
@@ -195,9 +197,10 @@ class ColumnNameResolverTest {
         every { mapper.toColumnName("_airbyte_raw_id_1") } returns "_airbyte_raw_id_1"
         every { mapper.toColumnName("_airbyte_meta_1") } returns "_airbyte_meta_1"
         every { mapper.toColumnName("user_col") } returns "user_col"
-        every { mapper.colsConflict(any(), any()) } answers {
-            (args[0] as String).equals(args[1] as String, ignoreCase = true)
-        }
+        every { mapper.colsConflict(any(), any()) } answers
+            {
+                (args[0] as String).equals(args[1] as String, ignoreCase = true)
+            }
 
         val result = resolver.getColumnNameMapping(columns)
 
