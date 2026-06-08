@@ -11,9 +11,9 @@ import org.apache.iceberg.PartitionKey
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
+import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.InternalRecordWrapper
 import org.apache.iceberg.data.Record
-import org.apache.iceberg.io.FileAppenderFactory
 import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.OutputFileFactory
 import org.apache.iceberg.io.PartitionedWriter
@@ -27,7 +27,7 @@ class PartitionedDeltaWriter(
     table: Table,
     spec: PartitionSpec,
     format: FileFormat,
-    appenderFactory: FileAppenderFactory<Record>,
+    writerFactory: GenericFileWriterFactory,
     outputFileFactory: OutputFileFactory,
     io: FileIO,
     targetFileSize: Long,
@@ -38,7 +38,7 @@ class PartitionedDeltaWriter(
         table,
         spec,
         format,
-        appenderFactory,
+        writerFactory,
         outputFileFactory,
         io,
         targetFileSize,
@@ -83,7 +83,7 @@ class PartitionedDeltaWriter(
 class PartitionedAppendWriter(
     spec: PartitionSpec,
     format: FileFormat,
-    appenderFactory: FileAppenderFactory<Record>,
+    writerFactory: GenericFileWriterFactory,
     outputFileFactory: OutputFileFactory,
     io: FileIO,
     targetFileSize: Long,
@@ -92,7 +92,7 @@ class PartitionedAppendWriter(
     PartitionedWriter<Record>(
         spec,
         format,
-        appenderFactory,
+        writerFactory,
         outputFileFactory,
         io,
         targetFileSize
