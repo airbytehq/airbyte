@@ -441,36 +441,25 @@ def test_bulk_stream_parse_response(
     if isinstance(stream, Fulfillments):
         stream._get_fulfillment_line_items = lambda fulfillment, order_id: [
             {
-                "id": "gid://shopify/FulfillmentLineItem/4",
+                "id": 5,
+                "admin_graphql_api_id": "gid://shopify/LineItem/5",
+                "fulfillment_line_item_id": 4,
                 "quantity": 2,
-                "line_item": {
-                    "id": "gid://shopify/LineItem/5",
-                    "name": "Widget",
-                    "quantity": 2,
-                    "sku": "SKU-1",
-                    "taxable": True,
-                    "title": "Widget",
-                    "unfulfilledQuantity": 0,
-                    "vendor": "Vendor",
-                    "price_set": {
-                        "shop_money": {"amount": "10.50", "currency_code": "USD"},
-                        "presentment_money": {"amount": "10.50", "currency_code": "USD"},
-                    },
-                    "duties": [
-                        {
-                            "id": "gid://shopify/Duty/9",
-                            "country_code_of_origin": "US",
-                            "harmonized_system_code": "123456",
-                            "price_set": {
-                                "shop_money": {"amount": "1.25", "currency_code": "USD"},
-                                "presentment_money": {"amount": "1.25", "currency_code": "USD"},
-                            },
-                            "tax_lines": [],
-                        }
-                    ],
-                    "variant": {"id": "gid://shopify/ProductVariant/6", "title": "Blue"},
-                    "product": {"id": "gid://shopify/Product/7"},
+                "name": "Widget",
+                "sku": "SKU-1",
+                "taxable": True,
+                "title": "Widget",
+                "vendor": "Vendor",
+                "price": "10.50",
+                "price_set": {
+                    "shop_money": {"amount": "10.50", "currency_code": "USD"},
+                    "presentment_money": {"amount": "10.50", "currency_code": "USD"},
                 },
+                "fulfillable_quantity": 0,
+                "variant_id": 6,
+                "variant_inventory_management": None,
+                "variant_title": "Blue",
+                "product_id": 7,
             }
         ]
     # mocking nested api call to get data from result url
@@ -499,18 +488,16 @@ def test_fulfillment_bulk_query_uses_array_shape(auth_config) -> None:
     assert "inventoryManagement" not in query
 
 
-def test_fulfillment_line_items_query_uses_fulfillment_root(auth_config) -> None:
-    query = Fulfillments(auth_config).job_manager.query.fulfillment_line_items_query(
-        "gid://shopify/Fulfillment/2",
-        "cursor",
+def test_fulfillment_line_items_are_fetched_via_rest(auth_config, requests_mock) -> None:
+    stream = Fulfillments(auth_config)
+    requests_mock.get(
+        f"{stream.url_base}orders/1/fulfillments/2.json",
+        json={"fulfillment": {"line_items": [{"id": 5, "fulfillment_line_item_id": 4, "quantity": 2}]}},
     )
 
-    assert 'fulfillment(\n    id: "gid://shopify/Fulfillment/2"\n  )' in query
-    assert 'fulfillmentLineItems(\n      first: 250\n      after: "cursor"\n    )' in query
-    assert "pageInfo" in query
-    assert "price_set: originalUnitPriceSet {\n              shop_money: shopMoney" in query
-    assert "price_set: price" in query
-    assert "inventoryManagement" not in query
+    assert list(stream._request_fulfillment_line_items({"id": 2, "order_id": 1}, None)) == [
+        {"id": 5, "fulfillment_line_item_id": 4, "quantity": 2}
+    ]
 
 
 @pytest.mark.parametrize(

@@ -2255,41 +2255,6 @@ class MoneyBagMixin:
 class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
     query_name = "orders"
     sort_key = "UPDATED_AT"
-    fulfillment_line_items_page_size = 250
-
-    duty_fields: List[Field] = [
-        "id",
-        Field(name="countryCodeOfOrigin", alias="country_code_of_origin"),
-        Field(name="harmonizedSystemCode", alias="harmonized_system_code"),
-        Field(name="price", alias="price_set", fields=MoneyBagMixin.money_bag_fields),
-        Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
-    ]
-
-    line_item_fields: List[Field] = [
-        "id",
-        "name",
-        "quantity",
-        "requiresShipping",
-        "sku",
-        "taxable",
-        "title",
-        "unfulfilledQuantity",
-        "vendor",
-        Field(name="discountedTotalSet", alias="total_discount_set", fields=MoneyBagMixin.money_bag_fields),
-        Field(name="discountAllocations", alias="discount_allocations", fields=MoneyBagMixin.discount_allocation_fields),
-        Field(name="duties", fields=duty_fields),
-        Field(name="originalUnitPriceSet", alias="price_set", fields=MoneyBagMixin.money_bag_fields),
-        Field(name="product", fields=["id"]),
-        Field(name="taxLines", alias="tax_lines", fields=MoneyBagMixin.tax_line_fields),
-        Field(name="variant", fields=["id", "title"]),
-    ]
-
-    fulfillment_line_item_fields: List[Field] = [
-        "__typename",
-        "id",
-        "quantity",
-        Field(name="lineItem", alias="line_item", fields=line_item_fields),
-    ]
 
     fulfillment_fields: List[Field] = [
         "__typename",
@@ -2323,27 +2288,6 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
     def query(self, filter_query: Optional[str] = None) -> Query:
         return self.build(self.query_name, ["__typename", "id", "updatedAt", self._fulfillment_field(filter_query)])
 
-    def fulfillment_line_items_query(self, fulfillment_id: str, after: Optional[str] = None) -> str:
-        arguments = [Argument(name="id", value=f'"{fulfillment_id}"')]
-        line_item_arguments = [Argument(name="first", value=str(self.fulfillment_line_items_page_size))]
-        if after:
-            line_item_arguments.append(Argument(name="after", value=f'"{after}"'))
-        query = Query(
-            name="fulfillment",
-            arguments=arguments,
-            fields=[
-                Field(
-                    name="fulfillmentLineItems",
-                    arguments=line_item_arguments,
-                    fields=[
-                        Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
-                        Field(name="edges", fields=[Field(name="node", fields=self.fulfillment_line_item_fields)]),
-                    ],
-                )
-            ],
-        )
-        return self.resolve(query)
-
     def _process_duties(self, duties: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
         for duty in duties:
             if duty.get("id"):
@@ -2365,9 +2309,12 @@ class Fulfillment(MoneyBagMixin, ShopifyBulkQuery):
     ) -> Iterable[MutableMapping[str, Any]]:
         line_items = []
         for fulfillment_line_item in fulfillment_line_items:
-            line_item = self._process_line_item(fulfillment_line_item.get("line_item") or {})
-            line_item["fulfillment_line_item_id"] = self.tools.resolve_str_id(fulfillment_line_item.get("id"))
-            line_item["quantity"] = fulfillment_line_item.get("quantity")
+            if "line_item" in fulfillment_line_item:
+                line_item = self._process_line_item(fulfillment_line_item.get("line_item") or {})
+                line_item["fulfillment_line_item_id"] = self.tools.resolve_str_id(fulfillment_line_item.get("id"))
+                line_item["quantity"] = fulfillment_line_item.get("quantity")
+            else:
+                line_item = self.tools.fields_names_to_snake_case(fulfillment_line_item)
             line_items.append(line_item)
         return line_items
 
