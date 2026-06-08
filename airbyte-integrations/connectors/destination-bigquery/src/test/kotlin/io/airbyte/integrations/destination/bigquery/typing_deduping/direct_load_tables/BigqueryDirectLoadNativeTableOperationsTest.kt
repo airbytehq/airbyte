@@ -386,8 +386,8 @@ class BigqueryDirectLoadNativeTableOperationsTest {
     }
 
     /**
-     * When a column being type-changed is NOT a clustering column, ensureSchemaMatches should
-     * use the alterTable path (RENAME COLUMN approach) as normal.
+     * When a column being type-changed is NOT a clustering column, ensureSchemaMatches should use
+     * the alterTable path (RENAME COLUMN approach) as normal.
      */
     @Test
     fun testEnsureSchemaMatchesAltersTableWhenNonClusteringColumnTypeChanges() {
