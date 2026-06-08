@@ -35,15 +35,14 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 **- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) to learn how to obtain the access token.
 
-**- OAuth setup:** If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
+**- OAuth setup:** If you are using OAuth to authenticate on Airbyte Open Source, please refer to [HubSpot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
 
 - Client ID
 - Client Secret
 - Refresh Token
 <!-- /env:oss -->
 
-More information on HubSpot authentication methods can be found
-[here](https://developers.hubspot.com/docs/api/intro-to-auth).
+For more details, refer to [HubSpot's authentication documentation](https://developers.hubspot.com/docs/api/intro-to-auth).
 
 ### Step 2: Configure the scopes for your streams (Private App only)
 
@@ -111,7 +110,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 <FieldAnchor field="start_date">
 
-6. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date Hubspot was created) will be used as a start date.
+6. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date HubSpot was created) will be used as a start date.
 
 </FieldAnchor>
 
@@ -130,7 +129,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
    - (Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
    - (Not Recommended:) To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (HubSpot creation date) will be used as start date. It's recommended to provide a start date relevant to your data to optimize synchronization.
 6. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
 7. Click **Set up source** and wait for the tests to complete.
 
@@ -138,7 +137,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 ### Experimental streams
 
-[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature. Note that these streams use a Hubspot API that is currently in beta, and they may be modified or unstable as the API continues to develop.
+[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature. Note that these streams use a HubSpot API that is currently in beta, and they may be modified or unstable as the API continues to develop.
 
 </FieldAnchor>
 
@@ -146,7 +145,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 ### Association streams
 
-Use **Association Between Objects Streams** to sync relationships between two standard HubSpot CRM objects. Add one item for each relationship you want to sync. Each item creates one stream that reads IDs from the source object, calls HubSpot's [associations batch read API](https://developers.hubspot.com/docs/api-reference/crm-associations-v4/batch/post-crm-v4-associations-fromObjectType-toObjectType-batch-read), and emits one record for each association.
+Use **Association Between Objects Streams** to sync relationships between two standard HubSpot CRM objects. Add one item for each relationship you want to sync. Each item creates one stream that reads IDs from the source object, calls HubSpot's [associations batch read API](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations), and emits one record for each association.
 
 Configure these fields for each association stream:
 
@@ -163,6 +162,8 @@ Association stream records include:
 - `association_type_id`: HubSpot's numeric association type identifier.
 - `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
 - `label`: The association label. This is `null` for unlabeled associations.
+
+Association streams sync incrementally. Only associations for records modified since the last sync are fetched.
 
 If you authenticate with a Private App, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` and `crm.objects.companies.read` scopes.
 
@@ -189,7 +190,7 @@ For custom objects, use either:
 
 You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
 
-Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`.
+Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. They also sync incrementally, the same way as standard association streams.
 
 If you authenticate with a Private App, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
 
@@ -264,7 +265,8 @@ The HubSpot source connector supports the following streams:
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
-- [Configured association streams](https://developers.hubspot.com/docs/api-reference/crm-associations-v4/batch/post-crm-v4-associations-fromObjectType-toObjectType-batch-read), such as `associations_tickets_companies` \(Full Refresh\)
+- [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Incremental\)
+- [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Incremental\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -312,9 +314,9 @@ If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or bef
 
 First you need to give the connector some additional permissions:
 
-- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
+- **If you are using OAuth on Airbyte Cloud** go to the HubSpot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
 
-- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+- **If you are using OAuth on OSS or Private App auth** go into the HubSpot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See [HubSpot's scopes documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
 Then, go to the schema tab of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
@@ -322,7 +324,7 @@ Then, go to the schema tab of your connection and click **refresh source schema*
 
 <details>
 <summary>
-Expand to see details about Hubspot connector limitations and troubleshooting.
+Expand to see details about HubSpot connector limitations and troubleshooting.
 </summary>
 
 ### Rate limiting
@@ -344,7 +346,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - **Enabling streams:** Some streams, such as `workflows`, require specific scopes before they can be read. If the authenticated user does not have the necessary permissions, the connector logs a warning and skips the stream.
 
-- **Hubspot object labels** In Hubspot, a label can be applied to a stream that differs from the original API name of the stream. Hubspot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the Hubspot object instead.
+- **HubSpot object labels** In HubSpot, a label can be applied to a stream that differs from the original API name of the stream. HubSpot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the HubSpot object instead.
 
 - **Unnesting top level properties**: Since version 1.5.0, in order to offer users access to nested fields, we also denest the top-level fields into individual fields in the destination. This is most commonly observed in the `properties` field, which is now split into each attribute in the destination.
 
@@ -384,9 +386,9 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - **403 Forbidden Error**
 
-  - Hubspot has **scopes** for each API call.
+  - HubSpot has **scopes** for each API call.
   - Each stream is tied to a scope and will need access to that scope to sync data.
-  - Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+  - Review [HubSpot's OAuth scope documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
   - Additional permissions:
 
     `feedback_submissions`: Service Hub Professional account
@@ -395,10 +397,10 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
     `workflows`: Sales, Service, and Marketing Hub Professional accounts
 
-- Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the HubSpot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 - **Missing records** in CRMSearch streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`): 
-  - If you notice missing records during incremental syncs, it may be due to irregularities in Hubspot's API behavior.
+  - If you notice missing records during incremental syncs, it may be due to irregularities in HubSpot's API behavior.
   - To mitigate this, you can configure a lookback window in the source settings. This setting allows the connector to re-fetch data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
 
 </details>
