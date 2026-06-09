@@ -117,6 +117,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.12 | 2026-04-16 | [74725](https://github.com/airbytehq/airbyte/pull/74725) | Fix: extract failed records from 207 partial success responses |
 | 0.0.11  | 2026-04-15 | [76336](https://github.com/airbytehq/airbyte/pull/76336) | Upgrade Bulk CDK to 1.0.8 (OAuth token expiry fix) |
 | 0.0.10  | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975) | Upgrade CDK to 1.0.1                      |
 | 0.0.9   | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304) | Upgrade CDK to 0.2.0                      |
