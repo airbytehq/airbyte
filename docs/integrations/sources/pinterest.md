@@ -105,7 +105,7 @@ The Pinterest source connector supports the following
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Account analytics](https://developers.pinterest.com/docs/api/v5/#operation/user_account/analytics)
   \(Incremental\)
@@ -195,10 +195,16 @@ properties:
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
 9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as
    INDIVIDUAL or HOUSEHOLD.
-10. **Campaign Statuses, Ad Group Statuses, and Ad Statuses (Optional)**: Lists status values to
-    include in custom report results. Include ARCHIVED to report on archived entities. Pinterest
-    allows up to six values in each status list.
-11. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
+10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT. Include ARCHIVED to report on archived campaigns.
+11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT.
+12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select up to six values
+    from: APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. This filter is not supported for Product Item level reports.
+13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
 For more detailed information and guidelines on creating custom reports, please refer to the
@@ -223,7 +229,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.2.0-rc.1 | 2026-05-21 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added optional custom report status filters so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |
+| 2.2.0-rc.1 | 2026-06-09 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added optional custom report status filters so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |
 | 2.1.30 | 2026-06-09 | [79465](https://github.com/airbytehq/airbyte/pull/79465) | Update dependencies |
 | 2.1.29 | 2026-06-02 | [75841](https://github.com/airbytehq/airbyte/pull/75841) | Update dependencies |
 | 2.1.28 | 2026-06-01 | [78538](https://github.com/airbytehq/airbyte/pull/78538) | Promoted release candidate to GA |
