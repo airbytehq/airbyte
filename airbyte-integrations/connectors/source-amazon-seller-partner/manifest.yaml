@@ -83,7 +83,9 @@ spec:
         description: Your Amazon Application ID.
         order: 4
         airbyte_secret: true
-        type: string
+        type:
+        - string
+        - "null"
       lwa_app_id:
         title: LWA Client Id
         description: Your Login with Amazon Client ID.
@@ -112,7 +114,9 @@ spec:
         examples:
         - '2017-01-25T00:00:00Z'
         order: 8
-        type: string
+        type:
+        - string
+        - "null"
         format: date-time
       replication_end_date:
         title: End Date
@@ -122,7 +126,9 @@ spec:
         examples:
         - '2017-01-25T00:00:00Z'
         order: 9
-        type: string
+        type:
+        - string
+        - "null"
         format: date-time
       period_in_days:
         title: Period In Days
