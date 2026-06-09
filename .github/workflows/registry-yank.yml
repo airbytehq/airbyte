@@ -34,11 +34,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: registry-yank-${{ inputs.connector_name }}
+  group: registry-yank-${{ inputs.connector_name }}-${{ inputs.store }}
   cancel-in-progress: false
 
 jobs:
-  yank-and-compile:
+  yank-version:
     name: "${{ inputs.unyank && 'Unyank' || 'Yank' }} ${{ inputs.connector_name }}@${{ inputs.version }}"
     runs-on: ubuntu-24.04
     steps:
@@ -130,17 +130,6 @@ jobs:
             --version "$INPUT_VERSION" \
             --store "$INPUT_STORE"
 
-      - name: Compile registry (prod)
-        if: ${{ inputs.store == 'coral:prod' }}
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
-          INPUT_STORE: ${{ inputs.store }}
-        run: |
-          airbyte-ops registry store compile \
-            --store "$INPUT_STORE" \
-            --connector-name "$INPUT_CONNECTOR_NAME"
-
       - name: Compile registry (non-prod)
         if: ${{ inputs.store != 'coral:prod' }}
         env:
@@ -151,3 +140,12 @@ jobs:
           airbyte-ops registry store compile \
             --store "$INPUT_STORE" \
             --connector-name "$INPUT_CONNECTOR_NAME"
+
+  compile-prod-registry:
+    name: Compile prod registry
+    needs: yank-version
+    if: ${{ inputs.store == 'coral:prod' }}
+    uses: ./.github/workflows/generate-connector-registries.yml
+    with:
+      connector-name: ${{ inputs.connector_name }}
+    secrets: inherit
