@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 from components import PINTEREST_STATUS_CHUNK_SIZE, StatusChunkPartitionRouter
 
 

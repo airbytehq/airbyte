@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
+
 logger = logging.getLogger("airbyte.source-pinterest")
 
 PINTEREST_STATUS_CHUNK_SIZE = 6
@@ -85,15 +86,11 @@ class StatusChunkPartitionRouter(PartitionRouter):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         fields_over_limit = sum(
-            1
-            for s in (self.campaign_statuses, self.ad_group_statuses, self.ad_statuses)
-            if s and len(s) > PINTEREST_STATUS_CHUNK_SIZE
+            1 for s in (self.campaign_statuses, self.ad_group_statuses, self.ad_statuses) if s and len(s) > PINTEREST_STATUS_CHUNK_SIZE
         )
         if fields_over_limit:
             total_combos = (
-                len(self._chunk(self.campaign_statuses))
-                * len(self._chunk(self.ad_group_statuses))
-                * len(self._chunk(self.ad_statuses))
+                len(self._chunk(self.campaign_statuses)) * len(self._chunk(self.ad_group_statuses)) * len(self._chunk(self.ad_statuses))
             )
             logger.warning(
                 "Status filters exceed Pinterest's %d-value-per-request limit. "
