@@ -14696,9 +14696,10 @@ check:
   stream_names:
   - projects
 
+# Defining a value here is difficult because the Jira API documentation mentions "REST API rate limits are not published because the computation logic is evolving continuously to maximize reliability and performance for customers" regarding the API budget. Hence, we will need to empirically validate the values that are set here.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 7) }}"
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 40
 
 spec:
@@ -14912,11 +14913,11 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 7
+        default: 3
         examples:
         - 1
         - 2
-        - 7
+        - 3
         description: The number of worker threads to use for the sync.
         order: 6
   advanced_auth:
