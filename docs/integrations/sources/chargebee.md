@@ -111,7 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.36 | 2026-06-09 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Clean up cancelled RC; revert source to previous stable |
+| 0.10.36 | 2026-06-09 | [79604](https://github.com/airbytehq/airbyte/pull/79604) | Clean up cancelled RC; revert source to previous stable |
 | 0.10.35 | 2026-04-28 | [77207](https://github.com/airbytehq/airbyte/pull/77207) | Update dependencies |
 | 0.10.34 | 2026-04-21 | [75795](https://github.com/airbytehq/airbyte/pull/75795) | Update dependencies |
 | 0.10.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
