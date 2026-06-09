@@ -40,10 +40,6 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 | **Records Per Stream Slice** | integer | 1000 | The number of records per stream slice before a state checkpoint is emitted. |
 | **Parallelism** | integer | 4 | The number of parallel workers for data generation. Set this to the number of CPUs allocated to the connector. |
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
