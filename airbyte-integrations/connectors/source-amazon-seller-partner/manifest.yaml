@@ -3,9 +3,8 @@ version: 6.5.0
 type: DeclarativeSource
 
 check:
-  type: CheckStream
-  stream_names:
-    - Orders
+  type: CheckDynamicStream
+  stream_count: 1
 
 spec:
   type: Spec
@@ -3375,11 +3374,29 @@ api_budget:
   status_codes_for_ratelimit_hit: [429]
 
 streams:
-  # REST Streams
-  - $ref: "#/definitions/streams/orders"
-  - $ref: "#/definitions/streams/order_items"
-  - $ref: "#/definitions/streams/list_financial_event_groups"
-  - $ref: "#/definitions/streams/list_financial_events"
+  # Seller-only REST streams: only available for non-Vendor accounts.
+  # The Orders/OrderItems endpoints (orders/v0/orders) and Finances API (finances/v0/*)
+  # are seller-only per Amazon SP-API docs. Vendor accounts get HTTP 403.
+  - type: ConditionalStreams
+    condition: "{{ config.get('account_type', 'Seller') != 'Vendor' }}"
+    streams:
+      - $ref: "#/definitions/streams/orders"
+      - $ref: "#/definitions/streams/order_items"
+      - $ref: "#/definitions/streams/list_financial_event_groups"
+      - $ref: "#/definitions/streams/list_financial_events"
+
+  # Vendor-only streams: only available for Vendor accounts.
+  # Amazon SP-API rejects these with 403 (REST) or 400 InvalidInput (reports) for Seller accounts.
+  - type: ConditionalStreams
+    condition: "{{ config.get('account_type') == 'Vendor' }}"
+    streams:
+      - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
+      - $ref: "#/definitions/streams/vendor_orders"
+      - $ref: "#/definitions/streams/vendor_orders_status"
+      - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
+      - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
+      - $ref: "#/definitions/streams/get_vendor_sales_report"
+      - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
     # Reports Streams
   - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"
@@ -3426,19 +3443,6 @@ streams:
   - $ref: "#/definitions/streams/get_sales_and_traffic_report"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_date"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_month"
-
-  # Vendor-only streams: only available for Vendor accounts.
-  # Amazon SP-API rejects these with 403 (REST) or 400 InvalidInput (reports) for Seller accounts.
-  - type: ConditionalStreams
-    condition: "{{ config.get('account_type') == 'Vendor' }}"
-    streams:
-      - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
-      - $ref: "#/definitions/streams/vendor_orders"
-      - $ref: "#/definitions/streams/vendor_orders_status"
-      - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
-      - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
-      - $ref: "#/definitions/streams/get_vendor_sales_report"
-      - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
 concurrency_level:
   type: ConcurrencyLevel

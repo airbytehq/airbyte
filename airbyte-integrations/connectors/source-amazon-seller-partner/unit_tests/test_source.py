@@ -117,6 +117,28 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
     assert result.message is None
 
 
+@freeze_time("2017-02-25T00:00:00Z")
+def test_check_connection_vendor_account(requests_mock, connector_vendor_config_with_report_options):
+    """Vendor accounts should pass the check using a vendor stream (not the seller Orders endpoint)."""
+    requests_mock.register_uri(
+        "POST",
+        "https://api.amazon.com/auth/o2/token",
+        status_code=200,
+        json={"access_token": "access_token", "expires_in": "3600"},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://sandbox.sellingpartnerapi-na.amazon.com/vendor/directFulfillment/shipping/v1/shippingLabels",
+        status_code=200,
+        json={"payload": {"shippingLabels": [{"createdBefore": "2017-02-25T00:00:00Z"}]}},
+    )
+    config = dict(connector_vendor_config_with_report_options)
+    source = get_source(config, config_path=None)
+    result = source.check(logger, source._config)
+    assert result.status == Status.SUCCEEDED
+    assert result.message is None
+
+
 # TODO: Renable this test once this type of validation is supported
 # def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
 #     connector_config_with_report_options["report_options_list"].append(connector_config_with_report_options["report_options_list"][0])
@@ -154,7 +176,7 @@ def test_streams_count_vendor(monkeypatch):
         "account_type": "Vendor",
     }
     streams = get_source(config).streams(config)
-    assert len(streams) == 53
+    assert len(streams) == 49
 
 
 # TODO: Renable this test once this type of validation is supported
@@ -198,6 +220,13 @@ VENDOR_ONLY_STREAM_NAMES = [
     "GET_VENDOR_INVENTORY_REPORT",
 ]
 
+SELLER_ONLY_STREAM_NAMES = [
+    "Orders",
+    "OrderItems",
+    "ListFinancialEventGroups",
+    "ListFinancialEvents",
+]
+
 
 def test_vendor_streams_excluded_for_seller():
     config = {
@@ -238,6 +267,47 @@ def test_vendor_streams_excluded_when_account_type_missing():
     stream_names = [s.name for s in get_source(config).streams(config)]
     for vendor_stream in VENDOR_ONLY_STREAM_NAMES:
         assert vendor_stream not in stream_names, f"{vendor_stream} should not appear when account_type is not set"
+
+
+def test_seller_streams_excluded_for_vendor():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Vendor",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for seller_stream in SELLER_ONLY_STREAM_NAMES:
+        assert seller_stream not in stream_names, f"{seller_stream} should not appear for Vendor accounts"
+
+
+def test_seller_streams_included_for_seller():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Seller",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for seller_stream in SELLER_ONLY_STREAM_NAMES:
+        assert seller_stream in stream_names, f"{seller_stream} should appear for Seller accounts"
+
+
+def test_seller_streams_included_when_account_type_missing():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for seller_stream in SELLER_ONLY_STREAM_NAMES:
+        assert seller_stream in stream_names, f"{seller_stream} should appear when account_type is not set (defaults to Seller)"
 
 
 mock_catalog = ConfiguredAirbyteCatalog(

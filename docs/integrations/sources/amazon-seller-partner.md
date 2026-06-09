@@ -362,6 +362,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.11 | 2026-06-17 | [79614](https://github.com/airbytehq/airbyte/pull/79614) | Fix connectivity check for Vendor Central accounts by using dynamic stream check and gating seller/vendor streams by account type |
 | 5.7.10 | 2026-06-17 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only streams behind account_type=Vendor so Seller accounts no longer see streams that always fail with 403/400 errors |
 | 5.7.9 | 2026-06-16 | [75470](https://github.com/airbytehq/airbyte/pull/75470) | Fix GzipXmlDecoder error handling that caused AttributeError on malformed XML responses |
 | 5.7.8 | 2026-06-11 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
