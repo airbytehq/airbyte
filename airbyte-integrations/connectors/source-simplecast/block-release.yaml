@@ -1,4 +1,5 @@
-reason: "Version 0.0.49 merged via up-to-date pipeline (PR #78946) despite failing Build
+reason:
+  "Version 0.0.49 merged via up-to-date pipeline (PR #78946) despite failing Build
   and Verify Artifacts CI step (Docker Hub timeout — image not built). Version exists
   in registry but may lack a valid Docker image."
 yanked_version: "0.0.49"
