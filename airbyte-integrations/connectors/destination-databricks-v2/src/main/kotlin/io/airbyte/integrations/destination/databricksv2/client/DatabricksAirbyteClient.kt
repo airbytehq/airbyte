@@ -23,6 +23,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.InputStream
 import java.sql.ResultSet
+import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
@@ -33,6 +34,13 @@ class DatabricksAirbyteClient(
     private val sqlGenerator: DatabricksSqlGenerator,
     private val workspaceClient: WorkspaceClient,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
+
+    /** Cache for describeTable results, evicted when schema changes via applyChangeset. */
+    private val describeTableCache =
+        ConcurrentHashMap<TableName, LinkedHashMap<String, ColumnType>>()
+
+    /** Cache of staging volumes created in this session to skip redundant SQL + API calls. */
+    private val stagingVolumeCache: MutableSet<TableName> = ConcurrentHashMap.newKeySet()
 
     override suspend fun createNamespace(namespace: String) {
         execute(sqlGenerator.createNamespace(namespace))
@@ -109,65 +117,40 @@ class DatabricksAirbyteClient(
     }
 
     /**
-     * Returns all column names for the given table in ordinal order, including Airbyte meta
-     * columns. Used by [DatabricksAggregateFactory] to determine the INSERT column list.
-     */
-    fun describeTable(tableName: TableName): List<String> =
-        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-            buildList {
-                while (rs.next()) {
-                    add(rs.getString("column_name"))
-                }
-            }
-        }
-
-    /**
      * Returns all columns with their types for the given table in ordinal order, including Airbyte
      * meta columns. Used to provide an explicit schema to COPY INTO statements.
+     *
+     * Results are cached per table and evicted when [applyChangeset] modifies the schema.
      */
-    fun describeTableWithTypes(tableName: TableName): LinkedHashMap<String, ColumnType> =
-        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-            val result = LinkedHashMap<String, ColumnType>()
-            while (rs.next()) {
-                val name = rs.getString("column_name")
-                val type = rs.getString("data_type")
-                val nullable = rs.getString("is_nullable") == "YES"
-                result[name] = ColumnType(type, nullable)
-            }
-            result
-        }
-
-    override suspend fun discoverSchema(tableName: TableName): TableSchema {
-        val columns =
+    fun describeTable(tableName: TableName): LinkedHashMap<String, ColumnType> =
+        describeTableCache.getOrPut(tableName) {
             executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-                val result = mutableMapOf<String, ColumnType>()
-                val allColumnNames = mutableSetOf<String>()
-
+                val result = LinkedHashMap<String, ColumnType>()
                 while (rs.next()) {
                     val name = rs.getString("column_name")
                     val type = rs.getString("data_type")
                     val nullable = rs.getString("is_nullable") == "YES"
-                    allColumnNames.add(name)
-
-                    // Filter out Airbyte meta columns — only return user columns
-                    if (name !in COLUMN_NAMES) {
-                        result[name] = ColumnType(type, nullable)
-                    }
+                    result[name] = ColumnType(type, nullable)
                 }
-
-                // Validate that all required meta columns exist
-                if (!allColumnNames.containsAll(COLUMN_NAMES)) {
-                    val missing = COLUMN_NAMES - allColumnNames
-                    throw ConfigErrorException(
-                        "Table ${tableName.toPrettyString()} is missing Airbyte meta columns: " +
-                            "$missing. Airbyte can only sync to Airbyte-managed tables."
-                    )
-                }
-
                 result
             }
+        }
 
-        return TableSchema(columns)
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
+        val allColumns = describeTable(tableName)
+
+        // Validate that all required meta columns exist
+        if (!allColumns.keys.containsAll(COLUMN_NAMES)) {
+            val missing = COLUMN_NAMES - allColumns.keys
+            throw ConfigErrorException(
+                "Table ${tableName.toPrettyString()} is missing Airbyte meta columns: " +
+                    "$missing. Airbyte can only sync to Airbyte-managed tables.",
+            )
+        }
+
+        // Return only user columns (filter out Airbyte meta columns)
+        val userColumns = allColumns.filterKeys { it !in COLUMN_NAMES }
+        return TableSchema(userColumns)
     }
 
     override fun computeSchema(
@@ -183,6 +166,7 @@ class DatabricksAirbyteClient(
         columnChangeset: ColumnChangeset,
     ) {
         if (!columnChangeset.isNoop()) {
+            describeTableCache.remove(tableName)
             log.info { "Applying schema changes to ${tableName.toPrettyString()}:" }
             log.info { "  Added: ${columnChangeset.columnsToAdd.keys}" }
             log.info { "  Dropped: ${columnChangeset.columnsToDrop.keys}" }
@@ -191,18 +175,20 @@ class DatabricksAirbyteClient(
         }
     }
 
-    // -- Staging Operations --
-
-    /** Creates the Unity Catalog Volume and staging directory for the given table */
     fun createStagingVolume(tableName: TableName, stagingDirectory: String) {
+        if (stagingVolumeCache.contains(tableName)) {
+            return
+        }
         execute(sqlGenerator.createStagingVolume(tableName))
         workspaceClient
             .files()
             .createDirectory(CreateDirectoryRequest().setDirectoryPath(stagingDirectory))
+        stagingVolumeCache.add(tableName)
     }
 
     /** Uploads a file to a Unity Catalog Volume path. */
     fun uploadToVolume(stagedFilePath: String, inputStream: InputStream) {
+        log.info { "Uploading staged file: $stagedFilePath" }
         workspaceClient
             .files()
             .upload(
@@ -215,12 +201,10 @@ class DatabricksAirbyteClient(
 
     /** Executes a COPY INTO statement to load a staged Avro file into the target table. */
     fun copyFromVolume(tableName: TableName, stagedFilePath: String) {
+        log.info {
+            "Loading staged file into ${tableName.namespace}.${tableName.name}: $stagedFilePath"
+        }
         execute(sqlGenerator.copyIntoFromVolume(tableName, stagedFilePath))
-    }
-
-    /** Drops the Unity Catalog Volume used for staging CSV files. */
-    fun dropStagingVolume(tableName: TableName) {
-        execute(sqlGenerator.dropStagingVolume(tableName))
     }
 
     /** Deletes a staged file from a Unity Catalog Volume. */
@@ -229,6 +213,7 @@ class DatabricksAirbyteClient(
     }
 
     private fun execute(sql: String) {
+        log.info { "Executing query: $sql" }
         dataSource.connection.use { conn -> conn.createStatement().use { it.execute(sql) } }
     }
 

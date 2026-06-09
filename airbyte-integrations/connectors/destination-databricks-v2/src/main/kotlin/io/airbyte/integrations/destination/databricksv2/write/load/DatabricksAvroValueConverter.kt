@@ -19,17 +19,18 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToString
+import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.time.ZoneOffset
 
 /**
  * Converts [AirbyteValue] instances to Avro-compatible values for writing into Avro
  * [org.apache.avro.generic.GenericRecord] fields.
- *
- * Upstream guarantees that values are valid and correctly typed/scaled, so no schema inspection or
- * validation is performed during conversion.
  */
 object DatabricksAvroValueConverter {
+
+    /** Scale used for DECIMAL(38, 10) columns -- must match [DatabricksAvroSchemaBuilder]. */
+    private const val DECIMAL_SCALE = 10
 
     /** Converts an [AirbyteValue] to an Avro-compatible value. */
     fun convert(value: AirbyteValue?): Any? {
@@ -39,16 +40,17 @@ object DatabricksAvroValueConverter {
             is StringValue -> value.value
             is BooleanValue -> value.value
             is IntegerValue -> value.value.toLong()
-            is NumberValue -> ByteBuffer.wrap(value.value.unscaledValue().toByteArray())
+            is NumberValue -> {
+                // Rescale to match the Avro DECIMAL(38, 10) schema so the reader interprets the
+                // bytes correctly.
+                val scaled = value.value.setScale(DECIMAL_SCALE, RoundingMode.HALF_UP)
+                ByteBuffer.wrap(scaled.unscaledValue().toByteArray())
+            }
             is DateValue -> value.value.toEpochDay().toInt()
-            is TimestampWithTimezoneValue -> {
-                val odt = value.value
-                odt.toEpochSecond() * 1_000_000L + odt.nano.toLong() / 1_000L
-            }
-            is TimestampWithoutTimezoneValue -> {
-                val epochSecond = value.value.toEpochSecond(ZoneOffset.UTC)
-                epochSecond * 1_000_000L + value.value.nano.toLong() / 1_000L
-            }
+            is TimestampWithTimezoneValue ->
+                toMicros(value.value.toEpochSecond(), value.value.nano.toLong())
+            is TimestampWithoutTimezoneValue ->
+                toMicros(value.value.toEpochSecond(ZoneOffset.UTC), value.value.nano.toLong())
             is TimeWithTimezoneValue -> value.value.toString()
             is TimeWithoutTimezoneValue -> value.value.toString()
             is ObjectValue -> value.toJson().serializeToString()
@@ -56,4 +58,8 @@ object DatabricksAvroValueConverter {
             is NullValue -> null
         }
     }
+
+    /** Converts epoch seconds + nanos to microseconds (Avro timestamp precision). */
+    private fun toMicros(epochSecond: Long, nanos: Long): Long =
+        epochSecond * 1_000_000L + nanos / 1_000L
 }

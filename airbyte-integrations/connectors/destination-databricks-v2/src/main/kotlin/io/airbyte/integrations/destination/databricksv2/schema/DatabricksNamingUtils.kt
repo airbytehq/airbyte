@@ -24,3 +24,9 @@ fun String.toDatabricksCompatibleName(): String {
 
     return transformed
 }
+
+/**
+ * Sanitizes and lowercases a name for Databricks object identifiers (tables, schemas). Column names
+ * should use [toDatabricksCompatibleName] instead, as Databricks preserves column name casing.
+ */
+fun String.toDatabricksCompatibleNameLowercase(): String = toDatabricksCompatibleName().lowercase()

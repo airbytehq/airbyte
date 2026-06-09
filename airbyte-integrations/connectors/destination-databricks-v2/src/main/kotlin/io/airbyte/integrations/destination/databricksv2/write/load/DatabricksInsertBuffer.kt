@@ -86,8 +86,7 @@ class DatabricksInsertBuffer(
 
             val avroBytes = buffer.toByteArray()
             val stagingDir = stagingDirectory(tableName, config.database)
-            val fileName = "${UUID.randomUUID()}$STAGING_FILE_EXTENSION"
-            val stagedFilePath = "$stagingDir/$fileName"
+            val stagedFilePath = "$stagingDir/${UUID.randomUUID()}$STAGING_FILE_EXTENSION"
 
             logger.info {
                 "Uploading $recordCount record(s) (${avroBytes.size} bytes) " +

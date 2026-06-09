@@ -42,8 +42,8 @@ class DatabricksTableSchemaMapper(
 
     override fun toFinalTableName(desc: DestinationStream.Descriptor): TableName {
         // Databricks downcases all object names (tables, schemas, catalogs).
-        val namespace = (desc.namespace ?: config.schema).toDatabricksCompatibleName().lowercase()
-        val name = desc.name.toDatabricksCompatibleName().lowercase()
+        val namespace = (desc.namespace ?: config.schema).toDatabricksCompatibleNameLowercase()
+        val name = desc.name.toDatabricksCompatibleNameLowercase()
         return TableName(namespace, name)
     }
 
@@ -52,7 +52,6 @@ class DatabricksTableSchemaMapper(
     }
 
     override fun toColumnName(name: String): String {
-        // Databricks preserves column name casing, so do NOT lowercase here.
         return name.toDatabricksCompatibleName()
     }
 

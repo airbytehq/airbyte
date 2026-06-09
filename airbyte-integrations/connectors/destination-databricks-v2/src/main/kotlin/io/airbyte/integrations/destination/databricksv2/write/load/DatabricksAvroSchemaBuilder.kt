@@ -28,12 +28,7 @@ object DatabricksAvroSchemaBuilder {
         val fields =
             columnSchema.map { (name, colType) ->
                 val baseType = databricksTypeToAvro(colType.type)
-                val fieldSchema =
-                    if (colType.nullable) {
-                        Schema.createUnion(Schema.create(Schema.Type.NULL), baseType)
-                    } else {
-                        baseType
-                    }
+                val fieldSchema = Schema.createUnion(Schema.create(Schema.Type.NULL), baseType)
                 Schema.Field(name, fieldSchema, null, null as Any?)
             }
         return Schema.createRecord("record", null, null, false, fields)

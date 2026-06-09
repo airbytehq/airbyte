@@ -56,7 +56,7 @@ class DatabricksChecker(
                 replace = true,
             )
 
-            val columnSchema = databricksClient.describeTableWithTypes(qualifiedTableName)
+            val columnSchema = databricksClient.describeTable(qualifiedTableName)
             val buffer =
                 DatabricksInsertBuffer(
                     tableName = qualifiedTableName,
@@ -77,12 +77,7 @@ class DatabricksChecker(
     }
 
     override fun cleanup() {
-        checkTableName?.let {
-            runBlocking {
-                databricksClient.dropTable(it)
-                databricksClient.dropStagingVolume(it)
-            }
-        }
+        checkTableName?.let { runBlocking { databricksClient.dropTable(it) } }
     }
 
     companion object {

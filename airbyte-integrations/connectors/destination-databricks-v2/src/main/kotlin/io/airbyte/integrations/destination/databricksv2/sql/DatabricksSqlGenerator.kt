@@ -73,9 +73,7 @@ class DatabricksSqlGenerator(
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): List<String> =
         listOf(
             "CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} AS SELECT * FROM ${
-                fullyQualifiedName(
-                    sourceTableName,
-                )
+                fullyQualifiedName(sourceTableName)
             }",
             dropTable(sourceTableName),
         )
@@ -129,11 +127,7 @@ class DatabricksSqlGenerator(
             }
 
         val cdcSkipInsertClause =
-            if (hasCdcDeleteColumn) {
-                "AND staging.${CDC_DELETED_AT_COLUMN.quote()} IS NULL"
-            } else {
-                ""
-            }
+            if (hasCdcDeleteColumn) "AND staging.${CDC_DELETED_AT_COLUMN.quote()} IS NULL" else ""
 
         return """
             |MERGE INTO ${fullyQualifiedName(targetTableName)} AS final
@@ -144,8 +138,6 @@ class DatabricksSqlGenerator(
             |WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT *
         """.trimMargin()
     }
-
-    // -- Query Operations --
 
     /** Returns a query that counts all rows in the table. */
     fun countTable(tableName: TableName): String =
@@ -170,12 +162,20 @@ class DatabricksSqlGenerator(
         |ORDER BY ordinal_position
         """.trimMargin()
 
-    // -- Schema Evolution --
-
     fun alterTable(
         tableName: TableName,
         changeset: ColumnChangeset,
     ): List<String> {
+        val hasTypeChanges =
+            changeset.columnsToChange.any { (_, typeChange) ->
+                typeChange.originalType.type != typeChange.newType.type
+            }
+
+        if (hasTypeChanges) {
+            return listOf(recreateTableWithCast(tableName, changeset))
+        }
+
+        // No type changes — use standard ADD / DROP COLUMN statements.
         val fqn = fullyQualifiedName(tableName)
         val statements = mutableListOf<String>()
 
@@ -183,19 +183,54 @@ class DatabricksSqlGenerator(
             statements.add("ALTER TABLE $fqn ADD COLUMN ${name.quote()} ${columnType.type}")
         }
 
-        changeset.columnsToDrop.forEach { (name, _) ->
-            statements.add("ALTER TABLE $fqn DROP COLUMN ${name.quote()}")
-        }
-
-        changeset.columnsToChange.forEach { (name, typeChange) ->
-            if (typeChange.originalType.type != typeChange.newType.type) {
-                statements.add(
-                    "ALTER TABLE $fqn ALTER COLUMN ${name.quote()} TYPE ${typeChange.newType.type}",
-                )
+        if (changeset.columnsToDrop.isNotEmpty()) {
+            // Enable Column Mapping to support DROP COLUMN on Delta tables.
+            statements.add(
+                "ALTER TABLE $fqn SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name')",
+            )
+            changeset.columnsToDrop.forEach { (name, _) ->
+                statements.add("ALTER TABLE $fqn DROP COLUMN ${name.quote()}")
             }
         }
 
         return statements
+    }
+
+    /**
+     * Rebuilds the table with type-cast columns using CREATE OR REPLACE TABLE ... AS SELECT. This
+     * handles all changeset operations (add, drop, change) in a single atomic statement
+     */
+    private fun recreateTableWithCast(
+        tableName: TableName,
+        changeset: ColumnChangeset,
+    ): String {
+        val fqn = fullyQualifiedName(tableName)
+
+        val selectColumns = buildList {
+            // Meta columns — pass through as-is
+            metaColumns.forEach { (name, _) -> add(name.quote()) }
+
+            // Retained columns — pass through as-is
+            changeset.columnsToRetain.forEach { (name, _) -> add(name.quote()) }
+
+            // Changed columns — CAST to new type
+            changeset.columnsToChange.forEach { (name, typeChange) ->
+                if (typeChange.originalType.type != typeChange.newType.type) {
+                    add("CAST(${name.quote()} AS ${typeChange.newType.type}) AS ${name.quote()}")
+                } else {
+                    add(name.quote())
+                }
+            }
+
+            // Added columns — initialize with NULL of the correct type
+            changeset.columnsToAdd.forEach { (name, columnType) ->
+                add("CAST(NULL AS ${columnType.type}) AS ${name.quote()}")
+            }
+
+            // Dropped columns — omitted from SELECT
+        }
+
+        return "CREATE OR REPLACE TABLE $fqn AS SELECT ${selectColumns.joinToString(", ")} FROM $fqn"
     }
 
     // -- Staging Operations --
@@ -204,14 +239,7 @@ class DatabricksSqlGenerator(
     fun createStagingVolume(tableName: TableName): String =
         "CREATE VOLUME IF NOT EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
 
-    /**
-     * Generates a COPY INTO statement to load a staged Avro file from a Unity Catalog Volume into
-     * the target table.
-     *
-     * Avro files embed their schema in the file header, so Databricks reads exact types without
-     * relying on `inferSchema` or explicit type casts. `mergeSchema=true` is kept as a safety net
-     * for type widening (e.g., Avro string → Databricks TIMESTAMP).
-     */
+    /** load a staged Avro file from a Unity Catalog Volume into the target table */
     fun copyIntoFromVolume(
         tableName: TableName,
         stagedFilePath: String,
@@ -221,10 +249,6 @@ class DatabricksSqlGenerator(
         |FROM '$stagedFilePath'
         |FILEFORMAT = AVRO
         """.trimMargin()
-
-    /** Drops the Unity Catalog Volume used for staging Avro files. */
-    fun dropStagingVolume(tableName: TableName): String =
-        "DROP VOLUME IF EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
 
     /** Returns a [TableName] for the staging volume associated with the given table. */
     internal fun stagingVolumeName(tableName: TableName): TableName =
