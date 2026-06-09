@@ -29,6 +29,11 @@ Currently this source supports the following output streams/endpoints from Zoom:
 - [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
 - [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
 - [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
+- [ZRA Conversations](https://developers.zoom.us/docs/api/iq/#tag/conversations/GET/zra/conversations)
+  - [ZRA Conversation Details](https://developers.zoom.us/docs/api/iq/#tag/conversations/GET/zra/conversations/{conversationId})
+  - [ZRA Conversation Interactions](https://developers.zoom.us/docs/api/iq/#tag/conversations/GET/zra/conversations/{conversationId}/interactions)
+  - [ZRA Conversation Content Analysis](https://developers.zoom.us/docs/api/iq/#tag/conversations/GET/zra/conversations/{conversationId}/content_analysis)
+  - [ZRA Conversation Scorecards](https://developers.zoom.us/docs/api/iq/#tag/conversations/GET/zra/conversations/{conversationId}/scorecards)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -75,6 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.52 | 2026-06-09 | [](https://github.com/airbytehq/airbyte/pull/) | Add Zoom Revenue Accelerator (ZRA) conversation streams |
 | 1.2.51 | 2026-06-09 | [79582](https://github.com/airbytehq/airbyte/pull/79582) | Update dependencies |
 | 1.2.50 | 2026-06-02 | [79076](https://github.com/airbytehq/airbyte/pull/79076) | Update dependencies |
 | 1.2.49 | 2026-04-28 | [77500](https://github.com/airbytehq/airbyte/pull/77500) | Update dependencies |

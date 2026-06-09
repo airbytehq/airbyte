@@ -14143,6 +14143,1307 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_webinar_participants"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      type: HttpRequester
+      path: "/zra/conversations"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 30
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "conversations"
+      type: RecordSelector
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        conversation_id:
+          type:
+          - 'null'
+          - string
+        conversation_topic:
+          type:
+          - 'null'
+          - string
+        conversation_type:
+          type:
+          - 'null'
+          - string
+        deal_id:
+          type:
+          - 'null'
+          - string
+        duration:
+          type:
+          - 'null'
+          - integer
+        engagement_score:
+          type:
+          - 'null'
+          - integer
+        engaging_questions_count:
+          type:
+          - 'null'
+          - integer
+        filler_words_count:
+          type:
+          - 'null'
+          - integer
+        host_id:
+          type:
+          - 'null'
+          - string
+        iq_processed_time:
+          type:
+          - 'null'
+          - string
+        meeting_id:
+          type:
+          - 'null'
+          - integer
+        meeting_start_time:
+          type:
+          - 'null'
+          - string
+        meeting_uuid:
+          type:
+          - 'null'
+          - string
+        next_steps_count:
+          type:
+          - 'null'
+          - integer
+        processing_analysis:
+          type:
+          - 'null'
+          - boolean
+        sentiment_score:
+          type:
+          - 'null'
+          - integer
+        topic:
+          type:
+          - 'null'
+          - string
+  type: DeclarativeStream
+  name: "zra_conversations"
+  primary_key: "conversation_id"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      type: HttpRequester
+      path: "/zra/conversations/{{ stream_partition.parent_id }}"
+    paginator:
+      type: NoPagination
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path: []
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator:
+                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                client_id: "{{ config['client_id'] }}"
+                account_id: "{{ config['account_id'] }}"
+                client_secret: "{{ config['client_secret'] }}"
+                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+                grant_type: "account_credentials"
+                type: CustomAuthenticator
+              type: HttpRequester
+              path: "/zra/conversations"
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response.next_page_token }}"
+                stop_condition: "{{ response.next_page_token == '' }}"
+                page_size: 30
+              page_size_option:
+                field_name: "page_size"
+                inject_into: "request_parameter"
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: "next_page_token"
+                inject_into: "request_parameter"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "conversations"
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                conversation_id:
+                  type:
+                  - 'null'
+                  - string
+          type: DeclarativeStream
+          name: "zra_conversations"
+          primary_key: "conversation_id"
+        parent_key: "conversation_id"
+        partition_field: "parent_id"
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        conversation_id:
+          type:
+          - 'null'
+          - string
+        meeting_id:
+          type:
+          - 'null'
+          - integer
+        meeting_uuid:
+          type:
+          - 'null'
+          - string
+        host_id:
+          type:
+          - 'null'
+          - string
+        host_email:
+          type:
+          - 'null'
+          - string
+        topic:
+          type:
+          - 'null'
+          - string
+        conversation_topic:
+          type:
+          - 'null'
+          - string
+        duration:
+          type:
+          - 'null'
+          - integer
+        summary:
+          type:
+          - 'null'
+          - string
+        conversation_type:
+          type:
+          - 'null'
+          - string
+        stage_during_conversation:
+          type:
+          - 'null'
+          - string
+        start_time:
+          type:
+          - 'null'
+          - string
+        meeting_start_time:
+          type:
+          - 'null'
+          - string
+        iq_processed_time:
+          type:
+          - 'null'
+          - string
+        engagement_score:
+          type:
+          - 'null'
+          - integer
+        sentiment_score:
+          type:
+          - 'null'
+          - integer
+        conversation_url:
+          type:
+          - 'null'
+          - string
+        deal:
+          type:
+          - 'null'
+          - object
+          properties:
+            id:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            stage:
+              type:
+              - 'null'
+              - string
+            customer_crm_account_name:
+              type:
+              - 'null'
+              - string
+            close_date:
+              type:
+              - 'null'
+              - string
+        calendar_client:
+          type:
+          - 'null'
+          - string
+        event_id:
+          type:
+          - 'null'
+          - string
+        duration_sec:
+          type:
+          - 'null'
+          - integer
+        conversation_view:
+          type:
+          - 'null'
+          - object
+          properties:
+            total_view_counts:
+              type:
+              - 'null'
+              - integer
+            view_user_infos:
+              type:
+              - 'null'
+              - array
+              items:
+                type: object
+                properties:
+                  user_id:
+                    type:
+                    - 'null'
+                    - string
+                  user_display_name:
+                    type:
+                    - 'null'
+                    - string
+                  counts:
+                    type:
+                    - 'null'
+                    - integer
+        participants:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              display_name:
+                type:
+                - 'null'
+                - string
+              email:
+                type:
+                - 'null'
+                - string
+              type:
+                type:
+                - 'null'
+                - string
+        moment_info:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              moment_id:
+                type:
+                - 'null'
+                - string
+              moment_name:
+                type:
+                - 'null'
+                - string
+              create_user_id:
+                type:
+                - 'null'
+                - string
+              create_user_display_name:
+                type:
+                - 'null'
+                - string
+              share_counts:
+                type:
+                - 'null'
+                - string
+              share_user_infos:
+                type:
+                - 'null'
+                - array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type:
+                      - 'null'
+                      - string
+                    user_display_name:
+                      type:
+                      - 'null'
+                      - string
+                    counts:
+                      type:
+                      - 'null'
+                      - integer
+        recording_download_url:
+          type:
+          - 'null'
+          - string
+  type: DeclarativeStream
+  name: "zra_conversation_details"
+  primary_key: "conversation_id"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      type: HttpRequester
+      path: "/zra/conversations/{{ stream_partition.parent_id }}/interactions"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 30
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "participants"
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator:
+                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                client_id: "{{ config['client_id'] }}"
+                account_id: "{{ config['account_id'] }}"
+                client_secret: "{{ config['client_secret'] }}"
+                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+                grant_type: "account_credentials"
+                type: CustomAuthenticator
+              type: HttpRequester
+              path: "/zra/conversations"
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response.next_page_token }}"
+                stop_condition: "{{ response.next_page_token == '' }}"
+                page_size: 30
+              page_size_option:
+                field_name: "page_size"
+                inject_into: "request_parameter"
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: "next_page_token"
+                inject_into: "request_parameter"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "conversations"
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                conversation_id:
+                  type:
+                  - 'null'
+                  - string
+          type: DeclarativeStream
+          name: "zra_conversations"
+          primary_key: "conversation_id"
+        parent_key: "conversation_id"
+        partition_field: "parent_id"
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "conversation_id"
+      value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        conversation_id:
+          type:
+          - 'null'
+          - string
+        user_id:
+          type:
+          - 'null'
+          - string
+        display_name:
+          type:
+          - 'null'
+          - string
+        email:
+          type:
+          - 'null'
+          - string
+        speaker_type:
+          type:
+          - 'null'
+          - string
+        transcripts:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              item_id:
+                type:
+                - 'null'
+                - string
+              text:
+                type:
+                - 'null'
+                - string
+              start_time:
+                type:
+                - 'null'
+                - string
+              end_time:
+                type:
+                - 'null'
+                - string
+        metrics:
+          type:
+          - 'null'
+          - object
+          properties:
+            talk_to_listen_ratio:
+              type:
+              - 'null'
+              - number
+            longest_monolog:
+              type:
+              - 'null'
+              - number
+            talk_speed:
+              type:
+              - 'null'
+              - number
+            filler_words:
+              type:
+              - 'null'
+              - number
+            patience:
+              type:
+              - 'null'
+              - number
+  type: DeclarativeStream
+  name: "zra_conversation_interactions"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      type: HttpRequester
+      path: "/zra/conversations/{{ stream_partition.parent_id }}/content_analysis"
+    paginator:
+      type: NoPagination
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path: []
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator:
+                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                client_id: "{{ config['client_id'] }}"
+                account_id: "{{ config['account_id'] }}"
+                client_secret: "{{ config['client_secret'] }}"
+                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+                grant_type: "account_credentials"
+                type: CustomAuthenticator
+              type: HttpRequester
+              path: "/zra/conversations"
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response.next_page_token }}"
+                stop_condition: "{{ response.next_page_token == '' }}"
+                page_size: 30
+              page_size_option:
+                field_name: "page_size"
+                inject_into: "request_parameter"
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: "next_page_token"
+                inject_into: "request_parameter"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "conversations"
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                conversation_id:
+                  type:
+                  - 'null'
+                  - string
+          type: DeclarativeStream
+          name: "zra_conversations"
+          primary_key: "conversation_id"
+        parent_key: "conversation_id"
+        partition_field: "parent_id"
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "conversation_id"
+      value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        conversation_id:
+          type:
+          - 'null'
+          - string
+        summary:
+          type:
+          - 'null'
+          - string
+        smart_chapters:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              title:
+                type:
+                - 'null'
+                - string
+              summary:
+                type:
+                - 'null'
+                - string
+              category:
+                type:
+                - 'null'
+                - string
+              start_time:
+                type:
+                - 'null'
+                - string
+              end_time:
+                type:
+                - 'null'
+                - string
+        analysis:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              section:
+                type:
+                - 'null'
+                - array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type:
+                      - 'null'
+                      - string
+                    display_name:
+                      type:
+                      - 'null'
+                      - string
+                    text:
+                      type:
+                      - 'null'
+                      - string
+                    utterance:
+                      type:
+                      - 'null'
+                      - string
+                    label:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_name:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_id:
+                      type:
+                      - 'null'
+                      - string
+                    key_word:
+                      type:
+                      - 'null'
+                      - string
+                    marked_by:
+                      type:
+                      - 'null'
+                      - string
+                    start_time:
+                      type:
+                      - 'null'
+                      - string
+                    end_time:
+                      type:
+                      - 'null'
+                      - string
+        topics:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              section:
+                type:
+                - 'null'
+                - array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type:
+                      - 'null'
+                      - string
+                    display_name:
+                      type:
+                      - 'null'
+                      - string
+                    text:
+                      type:
+                      - 'null'
+                      - string
+                    utterance:
+                      type:
+                      - 'null'
+                      - string
+                    label:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_name:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_id:
+                      type:
+                      - 'null'
+                      - string
+                    key_word:
+                      type:
+                      - 'null'
+                      - string
+                    marked_by:
+                      type:
+                      - 'null'
+                      - string
+                    start_time:
+                      type:
+                      - 'null'
+                      - string
+                    end_time:
+                      type:
+                      - 'null'
+                      - string
+        next_steps:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              section:
+                type:
+                - 'null'
+                - array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type:
+                      - 'null'
+                      - string
+                    display_name:
+                      type:
+                      - 'null'
+                      - string
+                    text:
+                      type:
+                      - 'null'
+                      - string
+                    utterance:
+                      type:
+                      - 'null'
+                      - string
+                    label:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_name:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_id:
+                      type:
+                      - 'null'
+                      - string
+                    key_word:
+                      type:
+                      - 'null'
+                      - string
+                    marked_by:
+                      type:
+                      - 'null'
+                      - string
+                    start_time:
+                      type:
+                      - 'null'
+                      - string
+                    end_time:
+                      type:
+                      - 'null'
+                      - string
+        good_questions:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              section:
+                type:
+                - 'null'
+                - array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type:
+                      - 'null'
+                      - string
+                    display_name:
+                      type:
+                      - 'null'
+                      - string
+                    text:
+                      type:
+                      - 'null'
+                      - string
+                    utterance:
+                      type:
+                      - 'null'
+                      - string
+                    label:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_name:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_id:
+                      type:
+                      - 'null'
+                      - string
+                    key_word:
+                      type:
+                      - 'null'
+                      - string
+                    marked_by:
+                      type:
+                      - 'null'
+                      - string
+                    start_time:
+                      type:
+                      - 'null'
+                      - string
+                    end_time:
+                      type:
+                      - 'null'
+                      - string
+        indicators:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              section:
+                type:
+                - 'null'
+                - array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type:
+                      - 'null'
+                      - string
+                    display_name:
+                      type:
+                      - 'null'
+                      - string
+                    text:
+                      type:
+                      - 'null'
+                      - string
+                    utterance:
+                      type:
+                      - 'null'
+                      - string
+                    label:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_name:
+                      type:
+                      - 'null'
+                      - string
+                    indicator_id:
+                      type:
+                      - 'null'
+                      - string
+                    key_word:
+                      type:
+                      - 'null'
+                      - string
+                    marked_by:
+                      type:
+                      - 'null'
+                      - string
+                    start_time:
+                      type:
+                      - 'null'
+                      - string
+                    end_time:
+                      type:
+                      - 'null'
+                      - string
+        deal_memo:
+          type:
+          - 'null'
+          - object
+          properties:
+            potential_wins:
+              type:
+              - 'null'
+              - array
+              items:
+                type: object
+                properties:
+                  factor:
+                    type:
+                    - 'null'
+                    - string
+                  explanation:
+                    type:
+                    - 'null'
+                    - string
+            potential_concerns:
+              type:
+              - 'null'
+              - array
+              items:
+                type: object
+                properties:
+                  factor:
+                    type:
+                    - 'null'
+                    - string
+                  explanation:
+                    type:
+                    - 'null'
+                    - string
+        playbooks:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              playbook_id:
+                type:
+                - 'null'
+                - string
+              playbook_name:
+                type:
+                - 'null'
+                - string
+              elements:
+                type:
+                - 'null'
+                - array
+                items:
+                  type: object
+                  properties:
+                    element_id:
+                      type:
+                      - 'null'
+                      - string
+                    element_name:
+                      type:
+                      - 'null'
+                      - string
+                    answer:
+                      type:
+                      - 'null'
+                      - object
+                      properties:
+                        summaries:
+                          type:
+                          - 'null'
+                          - array
+                          items:
+                            type:
+                            - 'null'
+                            - string
+                        sources:
+                          type:
+                          - 'null'
+                          - array
+                          items:
+                            type: object
+                            properties:
+                              item_id:
+                                type:
+                                - 'null'
+                                - string
+                              speaker_name:
+                                type:
+                                - 'null'
+                                - string
+                              start_time:
+                                type:
+                                - 'null'
+                                - string
+                              end_time:
+                                type:
+                                - 'null'
+                                - string
+                              time_s:
+                                type:
+                                - 'null'
+                                - integer
+                              text:
+                                type:
+                                - 'null'
+                                - string
+  type: DeclarativeStream
+  name: "zra_conversation_content_analysis"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      type: HttpRequester
+      path: "/zra/conversations/{{ stream_partition.parent_id }}/scorecards"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 30
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "scorecards"
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator:
+                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                client_id: "{{ config['client_id'] }}"
+                account_id: "{{ config['account_id'] }}"
+                client_secret: "{{ config['client_secret'] }}"
+                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+                grant_type: "account_credentials"
+                type: CustomAuthenticator
+              type: HttpRequester
+              path: "/zra/conversations"
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response.next_page_token }}"
+                stop_condition: "{{ response.next_page_token == '' }}"
+                page_size: 30
+              page_size_option:
+                field_name: "page_size"
+                inject_into: "request_parameter"
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: "next_page_token"
+                inject_into: "request_parameter"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "conversations"
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                conversation_id:
+                  type:
+                  - 'null'
+                  - string
+          type: DeclarativeStream
+          name: "zra_conversations"
+          primary_key: "conversation_id"
+        parent_key: "conversation_id"
+        partition_field: "parent_id"
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "conversation_id"
+      value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        conversation_id:
+          type:
+          - 'null'
+          - string
+        scorecard_id:
+          type:
+          - 'null'
+          - string
+        scorecard_name:
+          type:
+          - 'null'
+          - string
+        scorecard_description:
+          type:
+          - 'null'
+          - string
+        average_score:
+          type:
+          - 'null'
+          - number
+        rate_time:
+          type:
+          - 'null'
+          - string
+        rater:
+          type:
+          - 'null'
+          - object
+          properties:
+            email:
+              type:
+              - 'null'
+              - string
+            display_name:
+              type:
+              - 'null'
+              - string
+            user_id:
+              type:
+              - 'null'
+              - string
+        scorecard_questions:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              question_id:
+                type:
+                - 'null'
+                - string
+              question_title:
+                type:
+                - 'null'
+                - string
+              score:
+                type:
+                - 'null'
+                - number
+              question_description:
+                type:
+                - 'null'
+                - string
+              question_comment:
+                type:
+                - 'null'
+                - string
+              scale:
+                type:
+                - 'null'
+                - object
+                properties:
+                  min_score_label:
+                    type:
+                    - 'null'
+                    - string
+                  max_score_label:
+                    type:
+                    - 'null'
+                    - string
+              justification:
+                type:
+                - 'null'
+                - string
+              answer:
+                type:
+                - 'null'
+                - string
+  type: DeclarativeStream
+  name: "zra_conversation_scorecards"
+
 check:
   stream_names:
   - "users"
