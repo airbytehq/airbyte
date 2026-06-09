@@ -1,9 +1,9 @@
 name: Finalize Progressive Rollout
 # Dispatched by the platform's Temporal connector-rollout worker
 # (PromoteOrRollbackActivityImpl) after a promote/rollback decision.
-# After this workflow completes, verifyDefaultVersionActivity polls
-# for up to 3 hours for the GA version to become default, then
-# finalizeRolloutActivity unpins actors.
+# After promotion completes, verifyDefaultVersionActivity polls for up to
+# 3 hours for the GA version to become default, then finalizeRolloutActivity
+# unpins actors.
 #
 # See: airbyte-platform-internal/.../connector-rollout-worker/
 
@@ -26,11 +26,11 @@ permissions:
   pull-requests: write
 
 # ---------------------------------------------------------------------------
-# Job 1: Registry cleanup (runs for both promote and rollback)
+# Job 1: Registry compile (runs for both promote and rollback)
 # ---------------------------------------------------------------------------
 jobs:
-  rc-registry-cleanup:
-    name: "Registry cleanup (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
+  rc-registry-compile:
+    name: "Registry compile (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
     runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
@@ -44,8 +44,6 @@ jobs:
           fi
         shell: bash
 
-      # The cleanup CLI reads metadata.yaml from the local repo to
-      # resolve the connector's dockerRepository.
       - name: Checkout Airbyte repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -57,19 +55,30 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      # Deletes the release_candidate/ metadata marker from GCS.
-      # The versioned blob (e.g. 1.2.3-rc.1/) is preserved as audit trail.
-      - name: "Delete RC metadata marker"
+      - name: Mark progressive rollout promoted
+        if: env.ACTION == 'promote'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
         run: >
-          airbyte-ops registry progressive-rollout cleanup
+          airbyte-ops registry progressive-rollout finalize-marker
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
+          --outcome promoted
 
-      # Recompile the registry JSON indexes so the RC entry is removed.
+      - name: Mark progressive rollout aborted
+        if: env.ACTION == 'rollback'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: >
+          airbyte-ops registry progressive-rollout finalize-marker
+          --name "${CONNECTOR_NAME}"
+          --store "${REGISTRY_STORE}"
+          --outcome aborted
+
       - name: "Recompile registry for connector"
         shell: bash
         env:
@@ -91,7 +100,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "↩️ Successfully rolled back RC for `${{ env.CONNECTOR_NAME }}` — GCS marker deleted:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "↩️ Successfully rolled back RC for `${{ env.CONNECTOR_NAME }}` — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
       - name: Notify Slack on failure
@@ -104,7 +113,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 Registry cleanup failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🚨 Registry compile failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
   # ---------------------------------------------------------------------------
@@ -112,7 +121,7 @@ jobs:
   # ---------------------------------------------------------------------------
   create-promotion-pr:
     name: "Create and Merge Promotion PR"
-    needs: rc-registry-cleanup
+    needs: rc-registry-compile
     if: >-
       github.event.inputs.action == 'promote'
       || github.event.client_payload.action == 'promote'

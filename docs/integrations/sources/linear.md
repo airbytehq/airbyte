@@ -126,6 +126,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.4 | 2026-06-09 | [79388](https://github.com/airbytehq/airbyte/pull/79388) | Update dependencies |
 | 0.2.3 | 2026-06-02 | [78816](https://github.com/airbytehq/airbyte/pull/78816) | Update dependencies |
 | 0.2.2 | 2026-05-18 | [78160](https://github.com/airbytehq/airbyte/pull/78160) | Promoted release candidate to GA |
 | 0.2.2-rc.2 | 2026-05-15 | [78124](https://github.com/airbytehq/airbyte/pull/78124) | Expose `num_workers` in connector spec (default 4, min 1, max 10) so users can override the per-connection concurrency from the UI |

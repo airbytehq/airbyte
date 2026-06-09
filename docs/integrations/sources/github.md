@@ -241,7 +241,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.30 | 2026-06-08 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
+| 2.1.31 | 2026-06-08 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
+| 2.1.30 | 2026-06-09 | [79312](https://github.com/airbytehq/airbyte/pull/79312) | Update dependencies |
 | 2.1.29 | 2026-06-02 | [78702](https://github.com/airbytehq/airbyte/pull/78702) | Update dependencies |
 | 2.1.28 | 2026-05-07 | [77847](https://github.com/airbytehq/airbyte/pull/77847) | Reduce GraphQL `releases` query cost (mark as large stream), bound page-size halving at 1, and improve 504 Gateway Timeout error messages |
 | 2.1.27 | 2026-05-02 | [77685](https://github.com/airbytehq/airbyte/pull/77685) | Make `parse_response` and error-handler helpers defensive against unexpected response shapes (HTML error pages, malformed JSON, missing keys) |
