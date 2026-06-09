@@ -2,7 +2,7 @@
 
 The Tiktok-Marketing agent connector is a Python package that equips AI agents to interact with Tiktok-Marketing through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, creative assets (images and videos), and daily performance reports at the advertiser, campaign, ad group, and ad levels. Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
+Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, creative assets (images and videos), Spark Ads, product catalogs, and daily performance reports at the advertiser, campaign, ad group, and ad levels. Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
 
 ## Example prompts
 
@@ -18,6 +18,8 @@ The Tiktok-Marketing connector is optimized to handle prompts like these.
 - Show me daily ad performance reports
 - Get campaign performance metrics for the last 30 days
 - Show me advertiser spend reports
+- List all Spark Ad posts
+- Show me my product catalogs
 - Which campaigns have the highest budget?
 - Find all paused ad groups
 - What ads were created last month?
@@ -25,6 +27,8 @@ The Tiktok-Marketing connector is optimized to handle prompts like these.
 - Which ads had the most impressions yesterday?
 - What is my total ad spend this month?
 - Which campaigns have the highest click-through rate?
+- Which Spark Ads are currently authorized?
+- Find catalogs with the most products
 
 ## Unsupported prompts
 
@@ -47,6 +51,8 @@ This connector supports the following entities and actions. For more details, se
 | Audiences | [List](./REFERENCE.md#audiences-list), [Context Store Search](./REFERENCE.md#audiences-context-store-search) |
 | Creative Assets Images | [List](./REFERENCE.md#creative-assets-images-list), [Context Store Search](./REFERENCE.md#creative-assets-images-context-store-search) |
 | Creative Assets Videos | [List](./REFERENCE.md#creative-assets-videos-list), [Context Store Search](./REFERENCE.md#creative-assets-videos-context-store-search) |
+| Spark Ads | [List](./REFERENCE.md#spark-ads-list), [Context Store Search](./REFERENCE.md#spark-ads-context-store-search) |
+| Catalogs | [List](./REFERENCE.md#catalogs-list) |
 | Advertisers Reports Daily | [List](./REFERENCE.md#advertisers-reports-daily-list), [Context Store Search](./REFERENCE.md#advertisers-reports-daily-context-store-search) |
 | Campaigns Reports Daily | [List](./REFERENCE.md#campaigns-reports-daily-list), [Context Store Search](./REFERENCE.md#campaigns-reports-daily-context-store-search) |
 | Ad Groups Reports Daily | [List](./REFERENCE.md#ad-groups-reports-daily-list), [Context Store Search](./REFERENCE.md#ad-groups-reports-daily-context-store-search) |
@@ -57,17 +63,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Tiktok-Marketing API reference](https://business-api.tiktok.com/portal/docs?id=1740302848670722).
 
-## SDK installation
+## Interfaces
+
+Use the Tiktok-Marketing connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -257,7 +312,7 @@ async def tiktok_marketing_execute(entity: str, action: str, params: dict | None
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
