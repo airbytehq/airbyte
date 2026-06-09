@@ -1,0 +1,11 @@
+reason: "Version 0.0.54 merged via up-to-date pipeline (PR #78933) despite failing Build
+  and Verify Artifacts CI step (Docker Hub timeout — image not built). Version exists
+  in registry but may lack a valid Docker image."
+yanked_version: "0.0.54"
+blocked_at: "2026-06-02T17:40:00Z"
+blocked_by: "patrick.nilan@airbyte.io"
+instructions: |
+  This connector's release is blocked due to a known issue.
+  The broken code from the yanked version still lives on master.
+  To unblock, use the 'block-release.yml' workflow with action=unblock
+  or merge a PR that deletes this file.
