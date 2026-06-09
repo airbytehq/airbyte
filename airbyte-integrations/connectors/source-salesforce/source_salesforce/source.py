@@ -79,7 +79,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
 
     @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
-        sf = Salesforce(**config)
+        credentials = config.get("credentials", {})
+        sf = Salesforce(**{**config, **credentials})
         sf.login()
         return sf
 

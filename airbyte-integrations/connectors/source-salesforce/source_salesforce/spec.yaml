@@ -4,9 +4,7 @@ connectionSpecification:
   title: Salesforce Source Spec
   type: object
   required:
-    - client_id
-    - client_secret
-    - refresh_token
+    - credentials
   additionalProperties: true
   properties:
     is_sandbox:
@@ -17,30 +15,78 @@ connectionSpecification:
       type: boolean
       default: false
       order: 1
-    auth_type:
-      type: string
-      const: Client
-    client_id:
-      title: Client ID
-      description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
-      type: string
+    credentials:
+      title: Authentication
+      description: Choose how to authenticate to Salesforce.
+      type: object
       order: 2
-    client_secret:
-      title: Client Secret
-      description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
-      type: string
-      airbyte_secret: true
-      order: 3
-    refresh_token:
-      title: Refresh Token
-      description: >-
-        Enter your application's <a
-        href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
-      type: string
-      airbyte_secret: true
-      order: 4
+      oneOf:
+        - title: OAuth (Recommended)
+          type: object
+          required:
+            - auth_type
+            - client_id
+            - client_secret
+            - refresh_token
+          properties:
+            auth_type:
+              type: string
+              const: Client
+              order: 0
+            client_id:
+              title: Client ID
+              description: Enter your Salesforce developer application's <a
+                href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+              type: string
+              order: 1
+            client_secret:
+              title: Client Secret
+              description: Enter your Salesforce developer application's <a
+                href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+              type: string
+              airbyte_secret: true
+              order: 2
+            refresh_token:
+              title: Refresh Token
+              description: >-
+                Enter your application's <a
+                href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
+              type: string
+              airbyte_secret: true
+              order: 3
+        - title: Manual Authentication (Bring Your Own App)
+          type: object
+          required:
+            - auth_type
+            - client_id
+            - client_secret
+            - refresh_token
+          properties:
+            auth_type:
+              type: string
+              const: ClientManual
+              order: 0
+            client_id:
+              title: Client ID
+              description: >-
+                Enter the Client ID from your own Salesforce Connected App.
+                These credentials will not be overridden by Airbyte's platform-managed OAuth credentials.
+              type: string
+              order: 1
+            client_secret:
+              title: Client Secret
+              description: >-
+                Enter the Client Secret from your own Salesforce Connected App.
+              type: string
+              airbyte_secret: true
+              order: 2
+            refresh_token:
+              title: Refresh Token
+              description: >-
+                Enter the Refresh Token generated from your own Salesforce Connected App.
+              type: string
+              airbyte_secret: true
+              order: 3
     start_date:
       title: Start Date
       description: >-
@@ -53,19 +99,19 @@ connectionSpecification:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
       format: date-time
-      order: 5
+      order: 3
     force_use_bulk_api:
       title: Force to use BULK API
       type: boolean
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
-      order: 6
+      order: 4
     stream_slice_step:
       title: Stream Slice Step for Incremental sync
       type: string
       description: The size of the time window (ISO8601 duration) to slice requests.
       default: P30D
-      order: 7
+      order: 5
       examples:
         - PT12H
         - P7D
@@ -83,14 +129,14 @@ connectionSpecification:
         Increase this value if you observe missing records in your destination.
         See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
-      order: 8
+      order: 6
       examples:
         - PT10M
         - PT30M
         - PT1H
     streams_criteria:
       type: array
-      order: 9
+      order: 7
       items:
         type: object
         required:
@@ -120,6 +166,7 @@ connectionSpecification:
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
+    - credentials
     - auth_type
   predicate_value: Client
   oauth_config_specification:
@@ -156,6 +203,7 @@ advanced_auth:
         refresh_token:
           type: string
           path_in_connector_config:
+            - credentials
             - refresh_token
     complete_oauth_server_input_specification:
       type: object
@@ -172,8 +220,10 @@ advanced_auth:
         client_id:
           type: string
           path_in_connector_config:
+            - credentials
             - client_id
         client_secret:
           type: string
           path_in_connector_config:
+            - credentials
             - client_secret

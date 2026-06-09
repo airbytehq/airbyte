@@ -70,17 +70,12 @@ def stream_config_without_start_date():
     """Generates streams settings for REST logic without start_date"""
     config = ConfigBuilder().build()
     config.pop("start_date")
-    return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
-        "is_sandbox": False,
-        "wait_timeout": 15,
-    }
+    return config
 
 
 def mock_stream_api(stream_config: Mapping[str, Any], describe_response_data=None):
-    sf_object = Salesforce(**stream_config)
+    credentials = stream_config.get("credentials", {})
+    sf_object = Salesforce(**{**stream_config, **credentials})
     sf_object.login = Mock()
     sf_object.access_token = Mock()
     sf_object.instance_url = "https://fase-account.salesforce.com"
