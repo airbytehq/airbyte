@@ -80,7 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.2.52 | 2026-06-09 | [](https://github.com/airbytehq/airbyte/pull/) | Add Zoom Revenue Accelerator (ZRA) conversation streams |
+| 1.2.52 | 2026-06-09 | [79618](https://github.com/airbytehq/airbyte/pull/79618) | Add Zoom Revenue Accelerator (ZRA) conversation streams |
 | 1.2.51 | 2026-06-09 | [79582](https://github.com/airbytehq/airbyte/pull/79582) | Update dependencies |
 | 1.2.50 | 2026-06-02 | [79076](https://github.com/airbytehq/airbyte/pull/79076) | Update dependencies |
 | 1.2.49 | 2026-04-28 | [77500](https://github.com/airbytehq/airbyte/pull/77500) | Update dependencies |
