@@ -6,7 +6,7 @@
 import logging
 import re
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum as pdm
 import requests
