@@ -182,7 +182,7 @@ A plan for teams running more automations.
 
 A plan for large companies and embedded products. Airbyte tailors pricing, usage limits, and feature access to your needs. Custom plans include:
 
-- An [authentication module](/ai-agents/interfaces/api/authentication-module) for embedding connector authentication in your app.
+- An authentication module for embedding connector authentication in your app.
 - A dedicated account manager.
 - Service level agreements.
 - Dedicated human support.
