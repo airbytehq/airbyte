@@ -253,9 +253,10 @@ def test_zra_conversation_details_fetches_child_records():
         assert not output.errors, f"Unexpected errors: {output.errors}"
         records = output.records
         assert len(records) == 2
-        assert records[0].record.data["conversation_id"] == "conv-001"
-        assert records[0].record.data["host_email"] == "host@example.com"
-        assert records[0].record.data["summary"] == "Discussed pricing and next steps."
+        records_by_id = {r.record.data["conversation_id"]: r.record.data for r in records}
+        assert "conv-001" in records_by_id
+        assert records_by_id["conv-001"]["host_email"] == "host@example.com"
+        assert records_by_id["conv-001"]["summary"] == "Discussed pricing and next steps."
 
 
 def test_zra_conversation_interactions_fetches_participants():
@@ -276,10 +277,11 @@ def test_zra_conversation_interactions_fetches_participants():
         assert not output.errors, f"Unexpected errors: {output.errors}"
         records = output.records
         assert len(records) == 2
-        assert records[0].record.data["conversation_id"] == "conv-001"
-        assert records[0].record.data["display_name"] == "Alice"
-        assert records[0].record.data["speaker_type"] == "rep"
-        assert records[0].record.data["metrics"]["talk_to_listen_ratio"] == 0.6
+        records_by_id = {r.record.data["conversation_id"]: r.record.data for r in records}
+        assert "conv-001" in records_by_id
+        assert records_by_id["conv-001"]["display_name"] == "Alice"
+        assert records_by_id["conv-001"]["speaker_type"] == "rep"
+        assert records_by_id["conv-001"]["metrics"]["talk_to_listen_ratio"] == 0.6
 
 
 def test_zra_conversation_content_analysis_fetches_analysis():
@@ -300,9 +302,10 @@ def test_zra_conversation_content_analysis_fetches_analysis():
         assert not output.errors, f"Unexpected errors: {output.errors}"
         records = output.records
         assert len(records) == 2
-        assert records[0].record.data["conversation_id"] == "conv-001"
-        assert records[0].record.data["summary"] == "A productive sales call discussing pricing."
-        assert len(records[0].record.data["smart_chapters"]) == 1
+        records_by_id = {r.record.data["conversation_id"]: r.record.data for r in records}
+        assert "conv-001" in records_by_id
+        assert records_by_id["conv-001"]["summary"] == "A productive sales call discussing pricing."
+        assert len(records_by_id["conv-001"]["smart_chapters"]) == 1
 
 
 def test_zra_conversation_scorecards_fetches_scorecards():
@@ -323,7 +326,8 @@ def test_zra_conversation_scorecards_fetches_scorecards():
         assert not output.errors, f"Unexpected errors: {output.errors}"
         records = output.records
         assert len(records) == 2
-        assert records[0].record.data["conversation_id"] == "conv-001"
-        assert records[0].record.data["scorecard_id"] == "sc-001"
-        assert records[0].record.data["average_score"] == 8.5
-        assert records[0].record.data["rater"]["display_name"] == "Manager"
+        records_by_id = {r.record.data["conversation_id"]: r.record.data for r in records}
+        assert "conv-001" in records_by_id
+        assert records_by_id["conv-001"]["scorecard_id"] == "sc-001"
+        assert records_by_id["conv-001"]["average_score"] == 8.5
+        assert records_by_id["conv-001"]["rater"]["display_name"] == "Manager"
