@@ -273,7 +273,20 @@ jobs:
             --admin
 
       # --- Notifications ---
-      - name: Notify Slack on promote success
+      - name: Notify Slack on GA promote success
+        if: success() && steps.resolve-vars.outputs.is_rc == 'false'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "↗️ Successfully finalized GA rollout for `${{ env.CONNECTOR_NAME }}` — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+      - name: Notify Slack on RC promote success
         if: success() && steps.create-pr.outputs.pull-request-number
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         env:
