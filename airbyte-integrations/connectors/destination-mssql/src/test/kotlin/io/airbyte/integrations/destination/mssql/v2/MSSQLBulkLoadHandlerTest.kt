@@ -385,8 +385,7 @@ class MSSQLBulkLoadHandlerTest {
 
     @Test
     fun `test generateStagingTableName returns expected pattern`() {
-        val method =
-            MSSQLBulkLoadHandler::class.java.getDeclaredMethod("generateStagingTableName")
+        val method = MSSQLBulkLoadHandler::class.java.getDeclaredMethod("generateStagingTableName")
         method.isAccessible = true
 
         val stagingTableName = method.invoke(bulkLoadHandler) as String
@@ -461,9 +460,7 @@ class MSSQLBulkLoadHandlerTest {
         assertTrue(mergeStatement != null, "Expected a MERGE statement into main table")
 
         // Verify no rollback, commits (staging table creation + main transaction + staging table drop)
-        verify(exactly = 3) {
-            connection.commit()
-        }
+        verify(exactly = 3) { connection.commit() }
         verify(exactly = 1) { connection.close() }
         verify(exactly = 0) { connection.rollback() }
     }

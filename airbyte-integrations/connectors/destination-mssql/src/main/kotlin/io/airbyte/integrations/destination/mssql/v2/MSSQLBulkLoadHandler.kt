@@ -103,8 +103,7 @@ class MSSQLBulkLoadHandler(
                 // Bulk load the CSV data into the staging table
                 val bulkInsertSql =
                     buildBulkInsertSql(
-                        quotedTableName =
-                            quoteIdentifier(schemaName, stagingTableName),
+                        quotedTableName = quoteIdentifier(schemaName, stagingTableName),
                         dataFilePath = dataFilePath,
                         formatFilePath = formatFilePath,
                         rowsPerBatch = rowsPerBatch,
@@ -113,7 +112,9 @@ class MSSQLBulkLoadHandler(
                     "Starting bulk insert into staging table: $schemaName.$stagingTableName from file: $dataFilePath"
                 }
                 conn.prepareStatement(bulkInsertSql).use { stmt -> stmt.executeUpdate() }
-                logger.info { "Bulk insert completed successfully for staging table: $schemaName.$stagingTableName" }
+                logger.info {
+                    "Bulk insert completed successfully for staging table: $schemaName.$stagingTableName"
+                }
 
                 // Deduplicate staging table
                 deduplicateStagingTable(conn, stagingTableName, primaryKeyColumns, cursorColumns)
@@ -231,7 +232,10 @@ class MSSQLBulkLoadHandler(
             .trimIndent()
     }
 
-    /** Creates a staging table in the target schema by cloning the column structure from the main table. */
+    /**
+     * Creates a staging table in the target schema by cloning the column structure from the main
+     * table.
+     */
     private fun createStagingTable(conn: Connection, stagingTableName: String) {
         val createStagingTableSql =
             """
