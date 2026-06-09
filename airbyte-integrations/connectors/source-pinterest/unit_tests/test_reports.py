@@ -209,33 +209,88 @@ def test_custom_reports_status_filters(requests_mock, test_config, status_fields
 
 
 @pytest.mark.parametrize(
-    "field_name,valid_statuses,invalid_statuses",
+    "field_name,statuses",
     [
         pytest.param(
             "campaign_statuses",
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
-            id="campaign_statuses",
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT", "DELETED_DRAFT"],
+            id="campaign_statuses_all_eight",
         ),
         pytest.param(
             "ad_group_statuses",
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
             ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
-            id="ad_group_statuses",
+            id="ad_group_statuses_seven",
         ),
         pytest.param(
             "ad_statuses",
-            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED"],
-            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
-            id="ad_statuses",
+            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT", "DELETED_DRAFT"],
+            id="ad_statuses_all_eight",
         ),
     ],
 )
-def test_custom_report_status_filters_allow_at_most_six_values(test_config, field_name, valid_statuses, invalid_statuses):
+def test_custom_report_status_filters_allow_more_than_six_values(test_config, field_name, statuses):
+    """Spec no longer enforces maxItems: 6; all enum values are valid."""
     status_schema = (
         get_source(test_config).spec(None).connectionSpecification["properties"]["custom_reports"]["items"]["properties"][field_name]
     )
+    validate(statuses, status_schema)
 
-    validate(valid_statuses, status_schema)
-    with pytest.raises(ValidationError):
-        validate(invalid_statuses, status_schema)
+
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_status_chunking_splits_requests(requests_mock, test_config):
+    """When >6 campaign statuses are configured, the connector splits them into
+    multiple API requests with ≤6 statuses each."""
+    report_download_url = "https://download.report/custom"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    all_campaign_statuses = [
+        "RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED",
+        "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT", "DELETED_DRAFT",
+    ]
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "chunked_report",
+            "level": "CAMPAIGN",
+            "granularity": "DAY",
+            "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "CAMPAIGN_ID", "SPEND_IN_DOLLAR"],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-20",
+            "campaign_statuses": all_campaign_statuses,
+        }
+    ]
+
+    # Collect bodies from all creation POSTs
+    captured_bodies: list = []
+
+    def capture_body(request):
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        captured_bodies.append(json.loads(raw))
+        return True
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        additional_matcher=capture_body,
+    )
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"campaign_id": [{"spend": 1}]})
+
+    read_from_stream(config, "custom_chunked_report", SyncMode.incremental)
+
+    # 8 statuses → 2 chunks → 2 POST requests
+    assert len(captured_bodies) == 2
+
+    # Each chunk must have ≤6 statuses
+    for body in captured_bodies:
+        assert len(body["campaign_statuses"]) <= 6
+
+    # Union of all chunks must equal the original list
+    all_sent = []
+    for body in captured_bodies:
+        all_sent.extend(body["campaign_statuses"])
+    assert sorted(all_sent) == sorted(all_campaign_statuses)
