@@ -3,6 +3,7 @@ name: "Registry: Yank Connector Version"
 on:
   workflow_dispatch:
     inputs:
+      # Generic slash command inputs:
       repo:
         description: "Repo (passed by slash command dispatcher; ignored)"
         required: false
@@ -20,6 +21,7 @@ on:
         description: "PR number, if triggered from a PR comment."
         required: false
         type: string
+      # Custom inputs for this workflow:
       connector_name:
         description: "Connector name (e.g., 'source-faker')."
         required: false
