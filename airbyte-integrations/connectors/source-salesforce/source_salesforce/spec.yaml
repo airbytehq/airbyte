@@ -25,35 +25,11 @@ connectionSpecification:
           title: OAuth
           required:
             - auth_type
-            - client_id
-            - client_secret
-            - refresh_token
           properties:
             auth_type:
               type: string
               const: OAuth
               order: 0
-            client_id:
-              title: Client ID
-              description: Enter your Salesforce developer application's <a
-                href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
-              type: string
-              order: 1
-            client_secret:
-              title: Client Secret
-              description: Enter your Salesforce developer application's <a
-                href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
-              type: string
-              airbyte_secret: true
-              order: 2
-            refresh_token:
-              title: Refresh Token
-              description: >-
-                Enter your application's <a
-                href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
-              type: string
-              airbyte_secret: true
-              order: 3
         - type: object
           title: Manual Credentials
           required:
