@@ -194,6 +194,10 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -249,10 +253,6 @@ If you synced one of these streams on an earlier connector version and suspect m
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
