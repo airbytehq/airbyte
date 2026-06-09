@@ -6,7 +6,6 @@ These tests mock the Zoom API responses and verify that the 5 new ZRA streams
 correctly fetch, paginate, and extract records from the API.
 """
 
-import pytest
 import requests_mock
 from _helpers import get_source
 
