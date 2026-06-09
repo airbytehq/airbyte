@@ -77,32 +77,10 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      - name: Resolve registry credentials
-        env:
-          INPUT_STORE: ${{ inputs.store || 'coral:prod' }}
-          PROD_REGISTRY_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          NON_PROD_REGISTRY_GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-        run: |
-          if [ "$INPUT_STORE" = "coral:prod" ]; then
-            REGISTRY_GCS_CREDENTIALS="$PROD_REGISTRY_GCS_CREDENTIALS"
-          else
-            REGISTRY_GCS_CREDENTIALS="$NON_PROD_REGISTRY_GCS_CREDENTIALS"
-          fi
-
-          if [ -z "$REGISTRY_GCS_CREDENTIALS" ]; then
-            echo "::error::Registry GCS credentials are not configured for $INPUT_STORE."
-            exit 1
-          fi
-
-          {
-            echo "GCS_CREDENTIALS<<GCS_CREDENTIALS_EOF"
-            printf '%s\n' "$REGISTRY_GCS_CREDENTIALS"
-            echo "GCS_CREDENTIALS_EOF"
-          } >> "$GITHUB_ENV"
-
       - name: Compile Registries
         id: compile-registries
         env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
           CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
         shell: bash
