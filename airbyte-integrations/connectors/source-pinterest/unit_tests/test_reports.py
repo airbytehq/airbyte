@@ -243,8 +243,14 @@ def test_custom_reports_status_chunking_splits_requests(requests_mock, test_conf
     report_download_url = "https://download.report/custom"
     report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
     all_campaign_statuses = [
-        "RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED",
-        "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT", "DELETED_DRAFT",
+        "RUNNING",
+        "PAUSED",
+        "NOT_STARTED",
+        "COMPLETED",
+        "ADVERTISER_DISABLED",
+        "ARCHIVED",
+        "DRAFT",
+        "DELETED_DRAFT",
     ]
     config = copy.deepcopy(test_config)
     config["custom_reports"] = [
