@@ -10,10 +10,22 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.7.23
+  dockerImageTag: 3.0.0
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
+    breakingChanges:
+      3.0.0:
+        message: >-
+          This update restructures the authentication spec to use a `credentials` oneOf
+          block with separate OAuth and Manual Credentials variants. This prevents the
+          platform from overwriting user-provided Salesforce Connected App credentials
+          with Airbyte's managed credentials. Existing connections must be re-authenticated
+          after upgrading. Please refer to the
+          [migration guide](https://docs.airbyte.com/integrations/sources/salesforce-migrations)
+          for more information.
+        upgradeDeadline: "2026-09-30"
+        deadlineAction: "auto_upgrade"
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   externalDocumentationUrls:

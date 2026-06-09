@@ -78,8 +78,17 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         self._job_tracker = JobTracker(limit=100)
 
     @staticmethod
+    def _flatten_config(config: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        flat = dict(config)
+        credentials = flat.pop("credentials", {})
+        flat.pop("auth_type", None)
+        credentials.pop("auth_type", None)
+        flat.update(credentials)
+        return flat
+
+    @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
-        sf = Salesforce(**config)
+        sf = Salesforce(**SourceSalesforce._flatten_config(config))
         sf.login()
         return sf
 
