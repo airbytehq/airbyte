@@ -174,7 +174,7 @@ A plan for teams running more automations.
 - 10,000 AOs per month.
 - Overage AOs are available.
 - Context Store refreshes hourly.
-- Multiple workspaces and an authentication module.
+- Multiple workspaces.
 - Single sign-on and SAML.
 - Standard human support, in addition to AI and community support.
 
@@ -182,6 +182,7 @@ A plan for teams running more automations.
 
 A plan for large companies and embedded products. Airbyte tailors pricing, usage limits, and feature access to your needs. Custom plans include:
 
+- An [authentication module](/ai-agents/interfaces/api/authentication-module) for embedding connector authentication in your app.
 - A dedicated account manager.
 - Service level agreements.
 - Dedicated human support.

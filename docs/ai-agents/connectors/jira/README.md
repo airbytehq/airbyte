@@ -324,10 +324,10 @@ In open source mode, you provide API credentials directly to the connector.
 ```python title="Pydantic AI"
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
     )
@@ -346,10 +346,10 @@ async def jira_execute(entity: str, action: str, params: dict | None = None):
 ```python title="LangChain"
 from langchain_core.tools import tool
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
     )
@@ -369,10 +369,10 @@ async def jira_execute(entity: str, action: str, params: dict | None = None):
 ```python title="OpenAI Agents"
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
     )
@@ -395,10 +395,10 @@ agent = Agent(name="Jira Assistant", tools=[jira_execute])
 ```python title="FastMCP"
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.jira import JiraConnector
-from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira.models import JiraJiraApiTokenAuthenticationAuthConfig
 
 connector = JiraConnector(
-    auth_config=JiraAuthConfig(
+    auth_config=JiraJiraApiTokenAuthenticationAuthConfig(
         username="<Your Atlassian account email address>",
         password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
     )
@@ -424,4 +424,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 1.1.9
+**Connector version:** 1.2.0

@@ -86,6 +86,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.3 | 2026-06-09 | [79338](https://github.com/airbytehq/airbyte/pull/79338) | Update dependencies |
 | 1.2.2 | 2026-06-02 | [77254](https://github.com/airbytehq/airbyte/pull/77254) | Update dependencies |
 | 1.2.1 | 2026-05-07 | [77858](https://github.com/airbytehq/airbyte/pull/77858) | Expose num_workers config field for user-configurable concurrency |
 | 1.2.0 | 2026-05-07 | [77859](https://github.com/airbytehq/airbyte/pull/77859) | Promoted release candidate to GA |
