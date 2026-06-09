@@ -459,7 +459,8 @@ class MSSQLBulkLoadHandlerTest {
             sqlStatements.find { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") }
         assertTrue(mergeStatement != null, "Expected a MERGE statement into main table")
 
-        // Verify no rollback, commits (staging table creation + main transaction + staging table drop)
+        // Verify no rollback, commits (staging table creation + main transaction + staging table
+        // drop)
         verify(exactly = 3) { connection.commit() }
         verify(exactly = 1) { connection.close() }
         verify(exactly = 0) { connection.rollback() }
