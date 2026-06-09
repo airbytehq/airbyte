@@ -404,7 +404,7 @@ class MSSQLQueryBuilder(
                     )
                 TimestampTypeWithoutTimezone ->
                     LIMITS.validateTimestamp(value)?.let {
-                        statement.setObject(statementIndex, it.toString())
+                        statement.setObject(statementIndex, it)
                     }
                         ?: statement.setAsNullValue(statementIndex, field.type.type)
 
