@@ -117,7 +117,7 @@ jobs:
             }
 
   # ---------------------------------------------------------------------------
-  # Job 2: Create and merge finalize PR (promote only)
+  # Job 2: Create and merge finalize PR (RC promote only)
   # ---------------------------------------------------------------------------
   create-promotion-pr:
     name: "Create and Merge Finalize PR"
@@ -129,8 +129,35 @@ jobs:
     env:
       CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     steps:
+      - name: Checkout Airbyte repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      # GA rollout promotion is purely logical: the registry compile job above
+      # removes the rollout marker and recompiles the registry. Only RC rollouts
+      # need a metadata PR to strip the -rc.N suffix.
+      - name: Resolve vars
+        id: resolve-vars
+        shell: bash
+        run: |
+          CURRENT_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${{ github.workspace }}")"
+          echo "current_version=${CURRENT_VERSION}" | tee -a "${GITHUB_OUTPUT}"
+
+          if [[ "${CURRENT_VERSION}" == *-rc.* ]]; then
+            echo "is_release_candidate=true" | tee -a "${GITHUB_OUTPUT}"
+          else
+            echo "is_release_candidate=false" | tee -a "${GITHUB_OUTPUT}"
+            echo "::notice::${CONNECTOR_NAME} is already GA (${CURRENT_VERSION}); registry marker finalization completed in rc-registry-compile."
+          fi
+
       # Authenticate as OCTAVIA_BOT so PRs trigger downstream CI.
       - name: Authenticate as GitHub App
+        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
@@ -140,50 +167,26 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Configure git identity
+        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
         run: |
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
 
-      - name: Checkout Airbyte repo
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          token: ${{ steps.get-app-token.outputs.token }}
-          fetch-depth: 1
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
-
-      - name: Install Ops CLI
-        run: uv tool install airbyte-internal-ops
-
-      # RC rollouts promote by stripping -rc.N. GA rollouts are already on the
-      # final version, so finalization only disables rollout metadata.
       # --no-changelog because RC promotion adds the PR-numbered entry later.
       - name: "Version bump and rollout finalization"
-        id: version-bump
+        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
         shell: bash
         run: |
-          CURRENT_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${{ github.workspace }}")"
-          if [[ "${CURRENT_VERSION}" == *-rc.* ]]; then
-            airbyte-ops local connector bump-version \
-              --name "${CONNECTOR_NAME}" \
-              --repo-path "${{ github.workspace }}" \
-              --bump-type promote \
-              --no-changelog
-            echo "promotion_mode=release_candidate" >> "${GITHUB_OUTPUT}"
-          else
-            airbyte-ops local connector bump-version \
-              --name "${CONNECTOR_NAME}" \
-              --repo-path "${{ github.workspace }}" \
-              --new-version "${CURRENT_VERSION}" \
-              --progressive-rollout-enabled=false \
-              --no-changelog
-            echo "promotion_mode=ga_rollout" >> "${GITHUB_OUTPUT}"
-          fi
+          airbyte-ops local connector bump-version \
+            --name "${CONNECTOR_NAME}" \
+            --repo-path "${{ github.workspace }}" \
+            --bump-type promote \
+            --no-changelog
 
       # Commits finalize changes and opens a draft PR. For RC rollouts this
       # also gives us a PR number for the changelog entry.
       - name: Create finalize PR
+        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
         id: create-pr
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
@@ -211,7 +214,7 @@ jobs:
       # (already bumped to GA by the promote step above) and writes
       # a changelog entry — no version files are modified.
       - name: "Add changelog entry"
-        if: steps.create-pr.outputs.pull-request-number && steps.version-bump.outputs.promotion_mode == 'release_candidate'
+        if: steps.create-pr.outputs.pull-request-number
         shell: bash
         run: >
           airbyte-ops local connector changelog add
@@ -222,7 +225,7 @@ jobs:
 
       # Commit and push the changelog entry to the existing PR branch.
       - name: "Push changelog to PR"
-        if: steps.create-pr.outputs.pull-request-number && steps.version-bump.outputs.promotion_mode == 'release_candidate'
+        if: steps.create-pr.outputs.pull-request-number
         run: |
           git add docs/
           git commit -m "chore: add changelog for ${CONNECTOR_NAME}"
