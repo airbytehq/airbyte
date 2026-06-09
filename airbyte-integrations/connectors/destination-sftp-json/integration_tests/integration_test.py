@@ -63,6 +63,11 @@ def test_check_valid_config(config: Mapping):
     assert outcome.status == Status.SUCCEEDED
 
 
+def test_check_valid_config_ssh_key(config_ssh_key: Mapping):
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), config_ssh_key)
+    assert outcome.status == Status.SUCCEEDED
+
+
 def test_check_invalid_config(config):
     outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), {**config, "destination_path": "/doesnotexist"})
     assert outcome.status == Status.FAILED

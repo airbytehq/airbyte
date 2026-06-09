@@ -2,50 +2,60 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import contextlib
 import errno
+import io
 import json
-from typing import Dict, List, TextIO
+from typing import Dict, List, Mapping, Optional, TextIO
 
 import paramiko
-import smart_open
 
 
-@contextlib.contextmanager
-def sftp_client(
-    host: str,
-    port: int,
-    username: str,
-    password: str,
-) -> paramiko.SFTPClient:
-    with paramiko.SSHClient() as client:
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(
-            host,
-            port,
-            username=username,
-            password=password,
-            look_for_keys=False,
-        )
-        sftp = client.open_sftp()
-        yield sftp
+class SshKeyError(Exception):
+    """Raised when an SSH private key cannot be parsed."""
+
+
+def _supported_key_classes():
+    # DSSKey was removed in newer paramiko releases (DSA is deprecated), so only
+    # include the key types that the installed paramiko version actually exposes.
+    candidates = ("RSAKey", "Ed25519Key", "ECDSAKey", "DSSKey")
+    return tuple(getattr(paramiko, name) for name in candidates if hasattr(paramiko, name))
+
+
+def _load_private_key(key_str: str) -> paramiko.PKey:
+    """
+    Parse a private key supplied as a PEM/OpenSSH string into a paramiko key object.
+
+    The key type is not known ahead of time, so we attempt each of the key
+    classes paramiko supports and return the first one that parses successfully.
+    """
+    last_error: Optional[Exception] = None
+    for key_class in _supported_key_classes():
+        try:
+            return key_class.from_private_key(io.StringIO(key_str))
+        except paramiko.SSHException as err:
+            last_error = err
+    raise SshKeyError("Could not parse the provided SSH private key. Supported formats: RSA, Ed25519, ECDSA, DSA.") from last_error
 
 
 class SftpClient:
+    PASSWORD_AUTH = "SSH_PASSWORD_AUTH"
+    KEY_AUTH = "SSH_KEY_AUTH"
+
     def __init__(
         self,
         host: str,
         username: str,
-        password: str,
+        credentials: Mapping[str, str],
         destination_path: str,
         port: int = 22,
     ):
         self.host = host
         self.port = port
         self.username = username
-        self.password = password
+        self.credentials = credentials
         self.destination_path = destination_path
+        self._ssh: Optional[paramiko.SSHClient] = None
+        self._sftp: Optional[paramiko.SFTPClient] = None
         self._files: Dict[str, TextIO] = {}
 
     def __enter__(self):
@@ -54,43 +64,84 @@ class SftpClient:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    @property
+    def sftp(self) -> paramiko.SFTPClient:
+        """Lazily open (and cache) a single SFTP session for this client."""
+        if self._sftp is None:
+            self._connect()
+        return self._sftp
+
+    def _connect(self) -> None:
+        ssh = paramiko.SSHClient()
+        ssh.load_system_host_keys()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        connect_kwargs: Dict[str, object] = {
+            "hostname": self.host,
+            "port": self.port,
+            "username": self.username,
+        }
+
+        auth_method = self.credentials.get("auth_method")
+        if auth_method == self.PASSWORD_AUTH:
+            connect_kwargs["password"] = self.credentials["auth_user_password"]
+            connect_kwargs["look_for_keys"] = False
+        elif auth_method == self.KEY_AUTH:
+            connect_kwargs["pkey"] = _load_private_key(self.credentials["auth_ssh_key"])
+            connect_kwargs["look_for_keys"] = False
+            connect_kwargs["allow_agent"] = False
+        else:
+            raise ValueError(f"Unsupported SFTP authentication method: {auth_method!r}")
+
+        ssh.connect(**connect_kwargs)
+        self._ssh = ssh
+        self._sftp = ssh.open_sftp()
+
     def _get_path(self, stream: str) -> str:
         return f"{self.destination_path}/airbyte_json_{stream}.jsonl"
 
-    def _get_uri(self, stream: str) -> str:
+    def _open(self, stream: str, mode: str = "a+") -> paramiko.SFTPFile:
         path = self._get_path(stream)
-        return f"sftp://{self.username}:{self.password}@{self.host}:{self.port}/{path}"
-
-    def _open(self, stream: str) -> TextIO:
-        uri = self._get_uri(stream)
-        return smart_open.open(uri, mode="a+")
+        return self.sftp.open(path, mode=mode)
 
     def close(self):
         for file in self._files.values():
             file.close()
+        self._files = {}
+        if self._sftp is not None:
+            self._sftp.close()
+            self._sftp = None
+        if self._ssh is not None:
+            self._ssh.close()
+            self._ssh = None
 
     def write(self, stream: str, record: Dict) -> None:
         if stream not in self._files:
-            self._files[stream] = self._open(stream)
+            # Keep a long-lived append handle per stream so we don't pay the
+            # cost of opening a new remote file for every record.
+            self._files[stream] = self._open(stream, mode="a+")
         text = json.dumps(record)
         self._files[stream].write(f"{text}\n")
 
     def read_data(self, stream: str) -> List[Dict]:
-        with self._open(stream) as file:
-            pos = file.tell()
-            file.seek(0)
+        # Flush any buffered writes for this stream so the read reflects them.
+        cached = self._files.get(stream)
+        if cached is not None:
+            cached.flush()
+        with self._open(stream, mode="r") as file:
             lines = file.readlines()
-            file.seek(pos)
-            data = [json.loads(line.strip()) for line in lines]
-        return data
+        return [json.loads(line.strip()) for line in lines if line.strip()]
 
     def delete(self, stream: str) -> None:
-        with sftp_client(self.host, self.port, self.username, self.password) as sftp:
-            try:
-                path = self._get_path(stream)
-                sftp.remove(path)
-            except IOError as err:
-                # Ignore the case where the file doesn't exist, only raise the
-                # exception if it's something else
-                if err.errno != errno.ENOENT:
-                    raise
+        # Drop any cached write handle for this stream before removing the file.
+        file = self._files.pop(stream, None)
+        if file is not None:
+            file.close()
+        try:
+            path = self._get_path(stream)
+            self.sftp.remove(path)
+        except IOError as err:
+            # Ignore the case where the file doesn't exist, only raise the
+            # exception if it's something else
+            if err.errno != errno.ENOENT:
+                raise

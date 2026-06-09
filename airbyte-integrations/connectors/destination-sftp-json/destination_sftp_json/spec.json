@@ -6,7 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination SFTP JSON",
     "type": "object",
-    "required": ["host", "username", "password", "destination_path"],
+    "required": ["host", "username", "destination_path", "credentials"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -31,12 +31,52 @@
         "type": "string",
         "order": 2
       },
-      "password": {
-        "title": "Password",
-        "description": "Password associated with the username.",
-        "type": "string",
-        "airbyte_secret": true,
-        "order": 3
+      "credentials": {
+        "type": "object",
+        "title": "Authentication",
+        "description": "The server authentication method",
+        "order": 3,
+        "oneOf": [
+          {
+            "title": "Password Authentication",
+            "required": ["auth_method", "auth_user_password"],
+            "properties": {
+              "auth_method": {
+                "description": "Connect through password authentication",
+                "type": "string",
+                "const": "SSH_PASSWORD_AUTH",
+                "order": 0
+              },
+              "auth_user_password": {
+                "title": "Password",
+                "description": "Password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "SSH Key Authentication",
+            "required": ["auth_method", "auth_ssh_key"],
+            "properties": {
+              "auth_method": {
+                "description": "Connect through ssh key",
+                "type": "string",
+                "const": "SSH_KEY_AUTH",
+                "order": 0
+              },
+              "auth_ssh_key": {
+                "title": "SSH Private Key",
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "type": "string",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              }
+            }
+          }
+        ]
       },
       "destination_path": {
         "title": "Destination path",
