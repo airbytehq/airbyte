@@ -10,6 +10,7 @@ from requests import Response
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
@@ -426,9 +427,10 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate(components_module
         ),
     ],
 )
-def test_calculated_property_filter(components_module, properties, expected_names):
-    property_filter = components_module.CalculatedPropertyFilter(config={}, parameters={})
-    filtered = list(property_filter.filter_records(records=properties, stream_state={}))
+def test_calculated_property_filter(properties, expected_names):
+    condition = "{{ not record.get('calculated', false) and record.get('fieldType') != 'calculation_equation' }}"
+    record_filter = RecordFilter(condition=condition, config={}, parameters={})
+    filtered = list(record_filter.filter_records(records=properties, stream_state={}))
     actual_names = [p["name"] for p in filtered]
     assert actual_names == expected_names
 

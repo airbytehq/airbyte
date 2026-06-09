@@ -409,8 +409,8 @@ definitions:
                     type: DpathExtractor
                     field_path: []
                   record_filter:
-                    type: CustomRecordFilter
-                    class_name: source_declarative_manifest.components.CalculatedPropertyFilter
+                    type: RecordFilter
+                    condition: "{{ not record.get('calculated', false) and record.get('fieldType') != 'calculation_equation' }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -502,8 +502,8 @@ definitions:
                     type: DpathExtractor
                     field_path: []
                   record_filter:
-                    type: CustomRecordFilter
-                    class_name: source_declarative_manifest.components.CalculatedPropertyFilter
+                    type: RecordFilter
+                    condition: "{{ not record.get('calculated', false) and record.get('fieldType') != 'calculation_equation' }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -627,8 +627,8 @@ definitions:
                     type: DpathExtractor
                     field_path: []
                   record_filter:
-                    type: CustomRecordFilter
-                    class_name: source_declarative_manifest.components.CalculatedPropertyFilter
+                    type: RecordFilter
+                    condition: "{{ not record.get('calculated', false) and record.get('fieldType') != 'calculation_equation' }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
