@@ -149,15 +149,15 @@ jobs:
           echo "current_version=${CURRENT_VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
           if [[ "${CURRENT_VERSION}" == *-rc.* ]]; then
-            echo "is_release_candidate=true" | tee -a "${GITHUB_OUTPUT}"
+            echo "is_rc=true" | tee -a "${GITHUB_OUTPUT}"
           else
-            echo "is_release_candidate=false" | tee -a "${GITHUB_OUTPUT}"
+            echo "is_rc=false" | tee -a "${GITHUB_OUTPUT}"
             echo "::notice::${CONNECTOR_NAME} is already GA (${CURRENT_VERSION}); registry marker finalization completed in rc-registry-compile."
           fi
 
       # Authenticate as OCTAVIA_BOT so PRs trigger downstream CI.
       - name: Authenticate as GitHub App
-        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
+        if: steps.resolve-vars.outputs.is_rc == 'true'
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
@@ -167,14 +167,14 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Configure git identity
-        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
+        if: steps.resolve-vars.outputs.is_rc == 'true'
         run: |
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
 
       # --no-changelog because RC promotion adds the PR-numbered entry later.
       - name: "Version bump and rollout finalization"
-        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
+        if: steps.resolve-vars.outputs.is_rc == 'true'
         shell: bash
         run: |
           airbyte-ops local connector bump-version \
@@ -186,7 +186,7 @@ jobs:
       # Commits finalize changes and opens a draft PR. For RC rollouts this
       # also gives us a PR number for the changelog entry.
       - name: Create finalize PR
-        if: steps.resolve-vars.outputs.is_release_candidate == 'true'
+        if: steps.resolve-vars.outputs.is_rc == 'true'
         id: create-pr
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
