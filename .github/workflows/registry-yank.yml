@@ -74,10 +74,31 @@ jobs:
           print(f"Validated Slack approval from {approver}.")
           PY
 
-      - name: Yank connector version (prod)
-        if: ${{ !inputs.unyank && inputs.store == 'coral:prod' }}
+      - name: Resolve prod registry credentials
+        if: ${{ inputs.store == 'coral:prod' }}
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: |
+          {
+            echo "GCS_CREDENTIALS<<GCS_CREDENTIALS_EOF"
+            printf '%s\n' "$REGISTRY_GCS_CREDENTIALS"
+            echo "GCS_CREDENTIALS_EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Resolve non-prod registry credentials
+        if: ${{ inputs.store != 'coral:prod' }}
+        env:
+          REGISTRY_GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+        run: |
+          {
+            echo "GCS_CREDENTIALS<<GCS_CREDENTIALS_EOF"
+            printf '%s\n' "$REGISTRY_GCS_CREDENTIALS"
+            echo "GCS_CREDENTIALS_EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Yank connector version
+        if: ${{ !inputs.unyank }}
+        env:
           INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_STORE: ${{ inputs.store }}
@@ -89,38 +110,9 @@ jobs:
             --store "$INPUT_STORE" \
             --reason "$INPUT_REASON"
 
-      - name: Yank connector version (non-prod)
-        if: ${{ !inputs.unyank && inputs.store != 'coral:prod' }}
+      - name: Unyank connector version
+        if: ${{ inputs.unyank }}
         env:
-          GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
-          INPUT_VERSION: ${{ inputs.version }}
-          INPUT_STORE: ${{ inputs.store }}
-          INPUT_REASON: ${{ inputs.reason }}
-        run: |
-          airbyte-ops registry connector-version yank \
-            --name "$INPUT_CONNECTOR_NAME" \
-            --version "$INPUT_VERSION" \
-            --store "$INPUT_STORE" \
-            --reason "$INPUT_REASON"
-
-      - name: Unyank connector version (prod)
-        if: ${{ inputs.unyank && inputs.store == 'coral:prod' }}
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
-          INPUT_VERSION: ${{ inputs.version }}
-          INPUT_STORE: ${{ inputs.store }}
-        run: |
-          airbyte-ops registry connector-version unyank \
-            --name "$INPUT_CONNECTOR_NAME" \
-            --version "$INPUT_VERSION" \
-            --store "$INPUT_STORE"
-
-      - name: Unyank connector version (non-prod)
-        if: ${{ inputs.unyank && inputs.store != 'coral:prod' }}
-        env:
-          GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_STORE: ${{ inputs.store }}
@@ -133,7 +125,6 @@ jobs:
       - name: Compile registry (non-prod)
         if: ${{ inputs.store != 'coral:prod' }}
         env:
-          GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
           INPUT_STORE: ${{ inputs.store }}
         run: |
