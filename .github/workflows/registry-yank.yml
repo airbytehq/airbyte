@@ -1,0 +1,153 @@
+name: "Registry: Yank Connector Version"
+
+on:
+  workflow_dispatch:
+    inputs:
+      connector_name:
+        description: "Connector name (e.g., 'source-faker')."
+        required: true
+        type: string
+      version:
+        description: "Version to yank (e.g., '1.2.3')."
+        required: true
+        type: string
+      store:
+        description: "Store target (e.g., 'coral:dev', 'coral:prod')."
+        required: true
+        type: string
+      reason:
+        description: "Reason for yanking this version."
+        required: false
+        type: string
+        default: ""
+      unyank:
+        description: "Set to true to unyank (restore) the version instead of yanking it."
+        required: false
+        type: boolean
+        default: false
+      approval_comment_url:
+        description: "Slack approval record URL authorizing this yank/unyank operation."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: registry-yank-${{ inputs.connector_name }}
+  cancel-in-progress: false
+
+jobs:
+  yank-and-compile:
+    name: "${{ inputs.unyank && 'Unyank' || 'Yank' }} ${{ inputs.connector_name }}@${{ inputs.version }}"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.11"
+
+      - name: Install Ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      - name: Validate Slack approval
+        env:
+          INPUT_APPROVAL_COMMENT_URL: ${{ inputs.approval_comment_url }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_HYDRA_BOT_TOKEN || secrets.SLACK_BOT_TOKEN_HITL || secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        run: |
+          uv run --with airbyte-internal-ops python - <<'PY'
+          import os
+
+          from airbyte_ops_mcp.approval_resolution import resolve_admin_email_from_approval
+
+          approver = resolve_admin_email_from_approval(
+              approval_comment_url=os.environ["INPUT_APPROVAL_COMMENT_URL"],
+          )
+          print(f"Validated Slack approval from {approver}.")
+          PY
+
+      - name: Yank connector version (prod)
+        if: ${{ !inputs.unyank && inputs.store == 'coral:prod' }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_STORE: ${{ inputs.store }}
+          INPUT_REASON: ${{ inputs.reason }}
+        run: |
+          airbyte-ops registry connector-version yank \
+            --name "$INPUT_CONNECTOR_NAME" \
+            --version "$INPUT_VERSION" \
+            --store "$INPUT_STORE" \
+            --reason "$INPUT_REASON"
+
+      - name: Yank connector version (non-prod)
+        if: ${{ !inputs.unyank && inputs.store != 'coral:prod' }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_STORE: ${{ inputs.store }}
+          INPUT_REASON: ${{ inputs.reason }}
+        run: |
+          airbyte-ops registry connector-version yank \
+            --name "$INPUT_CONNECTOR_NAME" \
+            --version "$INPUT_VERSION" \
+            --store "$INPUT_STORE" \
+            --reason "$INPUT_REASON"
+
+      - name: Unyank connector version (prod)
+        if: ${{ inputs.unyank && inputs.store == 'coral:prod' }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_STORE: ${{ inputs.store }}
+        run: |
+          airbyte-ops registry connector-version unyank \
+            --name "$INPUT_CONNECTOR_NAME" \
+            --version "$INPUT_VERSION" \
+            --store "$INPUT_STORE"
+
+      - name: Unyank connector version (non-prod)
+        if: ${{ inputs.unyank && inputs.store != 'coral:prod' }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_STORE: ${{ inputs.store }}
+        run: |
+          airbyte-ops registry connector-version unyank \
+            --name "$INPUT_CONNECTOR_NAME" \
+            --version "$INPUT_VERSION" \
+            --store "$INPUT_STORE"
+
+      - name: Compile registry (prod)
+        if: ${{ inputs.store == 'coral:prod' }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
+          INPUT_STORE: ${{ inputs.store }}
+        run: |
+          airbyte-ops registry store compile \
+            --store "$INPUT_STORE" \
+            --connector-name "$INPUT_CONNECTOR_NAME"
+
+      - name: Compile registry (non-prod)
+        if: ${{ inputs.store != 'coral:prod' }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
+          INPUT_STORE: ${{ inputs.store }}
+        run: |
+          airbyte-ops registry store compile \
+            --store "$INPUT_STORE" \
+            --connector-name "$INPUT_CONNECTOR_NAME"
