@@ -43,6 +43,10 @@ on:
         required: false
         type: string
         default: ""
+      approval-url:
+        description: "Approval URL for the yank audit trail."
+        required: false
+        type: string
       unyank:
         description: "Set to true to unyank (restore) the version instead of yanking it."
         required: false
@@ -90,6 +94,21 @@ jobs:
             echo "REGISTRY_ACTION=yank" | tee -a "$GITHUB_ENV"
           fi
 
+      - name: Resolve approval URL
+        env:
+          INPUT_APPROVAL_URL: ${{ inputs.approval-url }}
+          INPUT_COMMENT_ID: ${{ inputs.comment-id }}
+          INPUT_PR: ${{ inputs.pr }}
+          INPUT_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -n "$INPUT_APPROVAL_URL" ]; then
+            echo "APPROVAL_URL=$INPUT_APPROVAL_URL" | tee -a "$GITHUB_ENV"
+          elif [ -n "$INPUT_COMMENT_ID" ] && [ -n "$INPUT_PR" ]; then
+            echo "APPROVAL_URL=https://github.com/$INPUT_REPOSITORY/pull/$INPUT_PR#issuecomment-$INPUT_COMMENT_ID" | tee -a "$GITHUB_ENV"
+          else
+            echo "APPROVAL_URL=" | tee -a "$GITHUB_ENV"
+          fi
+
       - name: Update connector version yank marker
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -104,6 +123,9 @@ jobs:
           )
           if [ "$REGISTRY_ACTION" = "yank" ] && [ -n "$INPUT_REASON" ]; then
             args+=(--reason "$INPUT_REASON")
+          fi
+          if [ "$REGISTRY_ACTION" = "yank" ] && [ -n "$APPROVAL_URL" ]; then
+            args+=(--approval-url "$APPROVAL_URL")
           fi
           airbyte-ops registry connector-version "$REGISTRY_ACTION" "${args[@]}"
 
