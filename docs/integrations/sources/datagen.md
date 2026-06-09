@@ -1,6 +1,6 @@
 # DataGen
 
-The DataGen source connector generates synthetic data for testing and development purposes. This connector is designed for end-to-end testing of data destinations and for testing Airbyte configurations in speed mode without requiring access to an external data source.
+The DataGen source connector generates synthetic data for testing and development purposes. Use it for end-to-end testing of destinations, validating Airbyte configurations, or benchmarking throughput without requiring access to an external data source.
 
 ## Prerequisites
 
