@@ -289,6 +289,36 @@ class HubspotSchemaExtractor(RecordExtractor):
 
 
 @dataclass
+class HubspotNumberBooleanStringFallbackTransformation(RecordTransformation):
+    """
+    Schema transformation that adds `string` as a fallback type for `number` and `boolean` dynamic properties.
+
+    HubSpot's properties API declares certain fields as `number` or `boolean`, but the CRM data API
+    can return non-numeric/non-boolean string values for those fields (e.g. semicolon-separated IDs
+    like `"3092727991;3881228353;15895321999"` for a `number`-typed property). The connector's
+    `EntitySchemaNormalization` already handles the cast failure gracefully by returning the original
+    string, but the declared schema must also permit `string` so that downstream destinations accept
+    the value.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        for value in record.values():
+            if not isinstance(value, dict):
+                continue
+            field_types = value.get("type")
+            if not isinstance(field_types, list):
+                continue
+            if ("number" in field_types or "boolean" in field_types) and "string" not in field_types:
+                value["type"] = field_types + ["string"]
+
+
+@dataclass
 class HubspotRenamePropertiesTransformation(RecordTransformation):
     """
     Custom transformation that takes in a record that represents a map of all dynamic properties retrieved
@@ -856,9 +886,9 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
         elif field_type == "date":
             return {"type": ["null", "string"], "format": "date"}
         elif field_type == "number":
-            return {"type": ["null", "number"]}
+            return {"type": ["null", "number", "string"]}
         elif field_type == "boolean" or field_type == "bool":
-            return {"type": ["null", "boolean"]}
+            return {"type": ["null", "boolean", "string"]}
         else:
             logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
             return {"type": ["null", "string"]}

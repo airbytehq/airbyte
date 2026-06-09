@@ -602,7 +602,7 @@ def test_get_custom_objects_metadata_success(
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "boolean")],
-            {"hs_closed_amount": "1"},
+            {"hs_closed_amount": "true"},
             {"hs_closed_amount": True},
         ),
     ],

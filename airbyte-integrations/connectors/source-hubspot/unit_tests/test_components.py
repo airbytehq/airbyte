@@ -643,6 +643,87 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
 
 
 @pytest.mark.parametrize(
+    "input_properties,expected_properties",
+    [
+        pytest.param(
+            {"revenue": {"type": ["null", "number"]}},
+            {"revenue": {"type": ["null", "number", "string"]}},
+            id="number_type_gets_string_fallback",
+        ),
+        pytest.param(
+            {"is_active": {"type": ["null", "boolean"]}},
+            {"is_active": {"type": ["null", "boolean", "string"]}},
+            id="boolean_type_gets_string_fallback",
+        ),
+        pytest.param(
+            {"name": {"type": ["null", "string"]}},
+            {"name": {"type": ["null", "string"]}},
+            id="string_type_unchanged",
+        ),
+        pytest.param(
+            {"created": {"type": ["null", "string"], "format": "date-time"}},
+            {"created": {"type": ["null", "string"], "format": "date-time"}},
+            id="datetime_type_unchanged",
+        ),
+        pytest.param(
+            {
+                "amount": {"type": ["null", "number"]},
+                "name": {"type": ["null", "string"]},
+                "is_won": {"type": ["null", "boolean"]},
+            },
+            {
+                "amount": {"type": ["null", "number", "string"]},
+                "name": {"type": ["null", "string"]},
+                "is_won": {"type": ["null", "boolean", "string"]},
+            },
+            id="mixed_types_only_number_and_boolean_get_fallback",
+        ),
+        pytest.param(
+            {"already_has_string": {"type": ["null", "number", "string"]}},
+            {"already_has_string": {"type": ["null", "number", "string"]}},
+            id="number_with_existing_string_not_duplicated",
+        ),
+    ],
+)
+def test_number_boolean_string_fallback_transformation(components_module, input_properties, expected_properties):
+    transformation = components_module.HubspotNumberBooleanStringFallbackTransformation()
+    transformation.transform(record=input_properties)
+    assert input_properties == expected_properties
+
+
+@pytest.mark.parametrize(
+    "field,expected_schema",
+    [
+        pytest.param(
+            {"name": "revenue", "type": "number"},
+            {"type": ["null", "number", "string"]},
+            id="number_field_includes_string_fallback",
+        ),
+        pytest.param(
+            {"name": "is_active", "type": "boolean"},
+            {"type": ["null", "boolean", "string"]},
+            id="boolean_field_includes_string_fallback",
+        ),
+        pytest.param(
+            {"name": "is_active", "type": "bool"},
+            {"type": ["null", "boolean", "string"]},
+            id="bool_field_includes_string_fallback",
+        ),
+        pytest.param(
+            {"name": "name", "type": "string"},
+            {"type": ["null", "string"]},
+            id="string_field_unchanged",
+        ),
+    ],
+)
+def test_custom_objects_schema_loader_string_fallback(components_module, field, expected_schema):
+    loader = components_module.HubspotCustomObjectsSchemaLoader(config={}, parameters={"schema_properties": [field]})
+    schema = loader.get_json_schema()
+    prop_name = field["name"]
+    assert schema["properties"]["properties"]["properties"][prop_name] == expected_schema
+
+
+@pytest.mark.parametrize(
     "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
     [
         pytest.param(
