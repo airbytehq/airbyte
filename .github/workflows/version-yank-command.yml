@@ -22,13 +22,9 @@ on:
         required: false
         type: string
       # Custom inputs for this workflow:
-      connector_name:
-        description: "Connector name (e.g., 'source-faker')."
-        required: false
-        type: string
       connector-name:
-        description: "Connector name, for slash command usage (e.g., 'source-faker')."
-        required: false
+        description: "Connector name (e.g., 'source-faker')."
+        required: true
         type: string
       version:
         description: "Version to yank (e.g., '1.2.3')."
@@ -57,12 +53,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: version-yank-${{ inputs.connector_name || inputs.connector-name }}-${{ inputs.store }}
+  group: version-yank-${{ inputs.connector-name }}-${{ inputs.store }}
   cancel-in-progress: false
 
 jobs:
   yank-version:
-    name: "${{ inputs.unyank && 'Unyank' || 'Yank' }} ${{ inputs.connector_name || inputs.connector-name }}@${{ inputs.version }}"
+    name: "${{ inputs.unyank && 'Unyank' || 'Yank' }} ${{ inputs.connector-name }}@${{ inputs.version }}"
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
@@ -78,14 +74,9 @@ jobs:
 
       - name: Resolve workflow variables
         env:
-          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name || inputs.connector-name }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector-name }}
           INPUT_UNYANK: ${{ inputs.unyank }}
         run: |
-          if [ -z "$INPUT_CONNECTOR_NAME" ]; then
-            echo "::error::connector_name or connector-name is required."
-            exit 1
-          fi
-
           echo "INPUT_CONNECTOR_NAME=$INPUT_CONNECTOR_NAME" | tee -a "$GITHUB_ENV"
 
           if [ "$INPUT_UNYANK" = "true" ]; then
@@ -134,6 +125,6 @@ jobs:
     needs: yank-version
     uses: ./.github/workflows/generate-connector-registries.yml
     with:
-      connector-name: ${{ inputs.connector_name || inputs.connector-name }}
+      connector-name: ${{ inputs.connector-name }}
       store: ${{ inputs.store }}
     secrets: inherit
