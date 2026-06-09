@@ -3,9 +3,30 @@ name: "Registry: Yank Connector Version"
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: "Repo (passed by slash command dispatcher; ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "Git ref (passed by slash command dispatcher; ignored)"
+        required: false
+        type: string
+      comment-id:
+        description: "The comment-id of the slash command."
+        required: false
+        type: string
+      pr:
+        description: "PR number, if triggered from a PR comment."
+        required: false
+        type: string
       connector_name:
         description: "Connector name (e.g., 'source-faker')."
-        required: true
+        required: false
+        type: string
+      connector-name:
+        description: "Connector name, for slash command usage (e.g., 'source-faker')."
+        required: false
         type: string
       version:
         description: "Version to yank (e.g., '1.2.3')."
@@ -30,12 +51,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: registry-yank-${{ inputs.connector_name }}-${{ inputs.store }}
+  group: version-yank-${{ inputs.connector_name || inputs.connector-name }}-${{ inputs.store }}
   cancel-in-progress: false
 
 jobs:
   yank-version:
-    name: "${{ inputs.unyank && 'Unyank' || 'Yank' }} ${{ inputs.connector_name }}@${{ inputs.version }}"
+    name: "${{ inputs.unyank && 'Unyank' || 'Yank' }} ${{ inputs.connector_name || inputs.connector-name }}@${{ inputs.version }}"
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
@@ -51,8 +72,16 @@ jobs:
 
       - name: Resolve workflow variables
         env:
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name || inputs.connector-name }}
           INPUT_UNYANK: ${{ inputs.unyank }}
         run: |
+          if [ -z "$INPUT_CONNECTOR_NAME" ]; then
+            echo "::error::connector_name or connector-name is required."
+            exit 1
+          fi
+
+          echo "INPUT_CONNECTOR_NAME=$INPUT_CONNECTOR_NAME" | tee -a "$GITHUB_ENV"
+
           if [ "$INPUT_UNYANK" = "true" ]; then
             echo "REGISTRY_ACTION=unyank" | tee -a "$GITHUB_ENV"
           else
@@ -62,7 +91,6 @@ jobs:
       - name: Update connector version yank marker
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          INPUT_CONNECTOR_NAME: ${{ inputs.connector_name }}
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_STORE: ${{ inputs.store }}
           INPUT_REASON: ${{ inputs.reason }}
@@ -82,6 +110,6 @@ jobs:
     needs: yank-version
     uses: ./.github/workflows/generate-connector-registries.yml
     with:
-      connector-name: ${{ inputs.connector_name }}
+      connector-name: ${{ inputs.connector_name || inputs.connector-name }}
       store: ${{ inputs.store }}
     secrets: inherit
