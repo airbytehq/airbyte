@@ -281,7 +281,7 @@ jobs:
         with:
           payload: |
             {
-              "channel": "#connector-publish-failures",
+              "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
               "text": "↗️ Successfully finalized GA rollout for `${{ env.CONNECTOR_NAME }}` — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
