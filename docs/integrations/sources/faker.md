@@ -51,6 +51,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.2.0-rc.1 | 2026-06-09 | [79331](https://github.com/airbytehq/airbyte/pull/79331) | Progressive rollout e2e test |
 | 7.1.1 | 2026-05-13 | [78075](https://github.com/airbytehq/airbyte/pull/78075) | Re-release to verify PyPI README publishing |
 | 7.1.0 | 2026-03-31 | [75941](https://github.com/airbytehq/airbyte/pull/75941) | Promoted release candidate to GA |
 | 7.1.0-rc.2 | 2026-03-31 | [75926](https://github.com/airbytehq/airbyte/pull/75926) | Bump source-faker to RC2 for progressive rollout e2e test |
