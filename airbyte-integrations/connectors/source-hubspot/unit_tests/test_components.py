@@ -2,10 +2,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 import requests
+import yaml
 from requests import Response
 
 from airbyte_cdk.models import FailureType
@@ -428,7 +430,12 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate(components_module
     ],
 )
 def test_calculated_property_filter(properties, expected_names):
-    condition = "{{ not record.get('calculated', false) and record.get('fieldType') != 'calculation_equation' }}"
+    manifest = yaml.safe_load(Path(__file__).parent.parent.joinpath("manifest.yaml").read_text())
+    stream_def = manifest["definitions"]["deals_property_history_stream"]
+    record_filter_config = stream_def["retriever"]["requester"]["request_parameters"]["propertiesWithHistory"]["property_list"][
+        "retriever"
+    ]["record_selector"]["record_filter"]
+    condition = record_filter_config["condition"]
     record_filter = RecordFilter(condition=condition, config={}, parameters={})
     filtered = list(record_filter.filter_records(records=properties, stream_state={}))
     actual_names = [p["name"] for p in filtered]
