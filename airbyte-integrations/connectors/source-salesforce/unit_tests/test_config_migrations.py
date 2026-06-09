@@ -3,15 +3,12 @@
 #
 
 import json
-import pathlib
 from unittest.mock import Mock, patch
 
 import pytest
+from source_salesforce.api import Salesforce
 from source_salesforce.config_migrations import MigrateCredentialsToOAuth
 from source_salesforce.source import SourceSalesforce
-
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.state_builder import StateBuilder
 
 
 @pytest.mark.parametrize(
@@ -117,23 +114,15 @@ def test_get_sf_object_with_nested_credentials():
         "is_sandbox": True,
         "start_date": "2021-01-01",
     }
-    with patch.object(SourceSalesforce, "__init__", return_value=None):
-        source = SourceSalesforce.__new__(SourceSalesforce)
-        with patch("source_salesforce.source.Salesforce") as mock_sf_cls:
-            mock_sf_instance = Mock()
-            mock_sf_cls.return_value = mock_sf_instance
-            SourceSalesforce._get_sf_object(config)
-            call_kwargs = mock_sf_cls.call_args
-            _, kwargs = call_kwargs if call_kwargs.kwargs else (call_kwargs[0], {})
-            passed = call_kwargs.kwargs if call_kwargs.kwargs else dict(zip(mock_sf_cls.call_args[0], []))
-            all_args = {**dict(zip([], call_kwargs[0])), **call_kwargs[1]} if call_kwargs[1] else dict(call_kwargs[0])
-
-    credentials = config.get("credentials", {})
-    flat = {**config, **credentials}
-    assert flat["client_id"] == "manual_id"
-    assert flat["client_secret"] == "manual_secret"
-    assert flat["refresh_token"] == "manual_token"
-    assert flat["is_sandbox"] is True
+    with patch("source_salesforce.source.Salesforce") as mock_sf_cls:
+        mock_sf_cls.return_value = Mock()
+        SourceSalesforce._get_sf_object(config)
+        mock_sf_cls.assert_called_once()
+        call_kwargs = mock_sf_cls.call_args[1]
+        assert call_kwargs["client_id"] == "manual_id"
+        assert call_kwargs["client_secret"] == "manual_secret"
+        assert call_kwargs["refresh_token"] == "manual_token"
+        assert call_kwargs["is_sandbox"] is True
 
 
 def test_get_sf_object_passes_manual_credentials():
@@ -150,8 +139,6 @@ def test_get_sf_object_passes_manual_credentials():
     }
     credentials = config.get("credentials", {})
     flat_config = {**config, **credentials}
-    from source_salesforce.api import Salesforce
-
     sf = Salesforce(**flat_config)
     assert sf.client_id == "user_app_id"
     assert sf.client_secret == "user_app_secret"
@@ -173,8 +160,6 @@ def test_get_sf_object_passes_oauth_credentials():
     }
     credentials = config.get("credentials", {})
     flat_config = {**config, **credentials}
-    from source_salesforce.api import Salesforce
-
     sf = Salesforce(**flat_config)
     assert sf.client_id == "platform_id"
     assert sf.client_secret == "platform_secret"
