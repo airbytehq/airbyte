@@ -19,14 +19,12 @@ import java.nio.file.Path
 /**
  * Full end-to-end acceptance test for the Databricks v2 destination. Runs the connector as a
  * process via the CDK test harness and verifies typed final-table output.
- *
- * Config is read from the `secrets/config.json` secrets file, which must contain valid Databricks
- * cluster credentials (hostname, http_path, database, authentication).
  */
 abstract class DatabricksBaseAcceptanceTest(
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of(CONFIG_PATH)),
@@ -35,16 +33,23 @@ abstract class DatabricksBaseAcceptanceTest(
         destinationCleaner = DatabricksDataCleaner,
         recordMangler = DatabricksExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
+        stringifyUnionObjects = true,
         commitDataIncrementally = false,
+        commitDataIncrementallyOnAppend = false,
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
+        commitDataIncrementallyToEmptyDestinationOnDedupe = false,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
                 numberCanBeLarge = false,
+                nestedFloatLosesPrecision = false,
             ),
         unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = true,
@@ -64,4 +69,5 @@ class DatabricksProtoAcceptanceTest :
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
     )

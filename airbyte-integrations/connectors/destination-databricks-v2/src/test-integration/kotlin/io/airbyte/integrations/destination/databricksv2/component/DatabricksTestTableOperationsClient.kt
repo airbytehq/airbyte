@@ -24,6 +24,11 @@ import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configu
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.math.BigDecimal
+import java.sql.Date
+import java.sql.ResultSet
+import java.sql.Timestamp
+import java.sql.Types
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
@@ -37,6 +42,9 @@ class DatabricksTestTableOperationsClient(
     private val dataSource: DataSource,
     private val config: DatabricksV2Configuration,
 ) : TestTableOperationsClient {
+
+    private fun fqn(table: TableName): String =
+        "`${config.database}`.`${table.namespace}`.`${table.name}`"
 
     override suspend fun ping() {
         dataSource.connection.use { conn -> conn.createStatement().use { it.execute("SELECT 1") } }
@@ -60,50 +68,46 @@ class DatabricksTestTableOperationsClient(
         val columns = records.flatMap { it.keys }.distinct().toList()
         val columnNames = columns.joinToString(", ") { "`$it`" }
         val placeholders = columns.indices.joinToString(", ") { "?" }
-        val fqn = "`${config.database}`.`${table.namespace}`.`${table.name}`"
 
         dataSource.connection.use { conn ->
-            conn.prepareStatement("INSERT INTO $fqn ($columnNames) VALUES ($placeholders)").use { ps
-                ->
-                for (record in records) {
-                    columns.forEachIndexed { index, column ->
-                        setParameterValue(ps, index + 1, record[column], columnTypes[column])
+            conn
+                .prepareStatement("INSERT INTO ${fqn(table)} ($columnNames) VALUES ($placeholders)")
+                .use { ps ->
+                    for (record in records) {
+                        columns.forEachIndexed { index, column ->
+                            setParameterValue(ps, index + 1, record[column], columnTypes[column])
+                        }
+                        ps.addBatch()
                     }
-                    ps.addBatch()
+                    ps.executeBatch()
                 }
-                ps.executeBatch()
-            }
         }
     }
 
     override suspend fun readTable(table: TableName): List<Map<String, Any>> {
-        val fqn = "`${config.database}`.`${table.namespace}`.`${table.name}`"
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
-                stmt.executeQuery("SELECT * FROM $fqn").use { rs ->
+                stmt.executeQuery("SELECT * FROM ${fqn(table)}").use { rs ->
                     val meta = rs.metaData
-                    val result = mutableListOf<Map<String, Any>>()
-                    while (rs.next()) {
-                        val row = mutableMapOf<String, Any>()
-                        for (i in 1..meta.columnCount) {
-                            val name = meta.getColumnName(i)
-                            val typeName = meta.getColumnTypeName(i).uppercase()
-                            val value = readColumn(rs, i, typeName)
-                            if (value != null) {
-                                row[name] = value
-                            }
+                    return buildList {
+                        while (rs.next()) {
+                            add(
+                                buildMap {
+                                    for (i in 1..meta.columnCount) {
+                                        val value =
+                                            readColumn(rs, i, meta.getColumnTypeName(i).uppercase())
+                                        if (value != null) put(meta.getColumnName(i), value)
+                                    }
+                                }
+                            )
                         }
-                        result.add(row)
                     }
-                    return result
                 }
             }
         }
     }
 
     private fun getColumnTypes(table: TableName): Map<String, String> {
-        val types = mutableMapOf<String, String>()
-        val fqn = "`${config.database}`.`${table.namespace}`.`${table.name}`"
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
                 stmt
@@ -117,13 +121,14 @@ class DatabricksTestTableOperationsClient(
                         """.trimIndent(),
                     )
                     .use { rs ->
-                        while (rs.next()) {
-                            types[rs.getString("column_name")] = rs.getString("data_type")
+                        return buildMap {
+                            while (rs.next()) {
+                                put(rs.getString("column_name"), rs.getString("data_type"))
+                            }
                         }
                     }
             }
         }
-        return types
     }
 
     private fun setParameterValue(
@@ -133,11 +138,11 @@ class DatabricksTestTableOperationsClient(
         columnType: String?,
     ) {
         if (value == null || value is NullValue) {
-            ps.setNull(index, java.sql.Types.VARCHAR)
+            ps.setNull(index, Types.VARCHAR)
             return
         }
 
-        // STRING columns: serialize everything as string (handles JSON objects/arrays/unions)
+        // STRING columns: serialize everything as string (handles JSON objects/arrays/unions/times)
         if (columnType?.uppercase() == "STRING") {
             ps.setString(index, serializeValue(value))
             return
@@ -149,15 +154,17 @@ class DatabricksTestTableOperationsClient(
             is NumberValue -> ps.setBigDecimal(index, value.value)
             is BooleanValue -> ps.setBoolean(index, value.value)
             is TimestampWithTimezoneValue ->
-                ps.setTimestamp(index, java.sql.Timestamp.from(value.value.toInstant()))
+                ps.setTimestamp(index, Timestamp.from(value.value.toInstant()))
             is TimestampWithoutTimezoneValue ->
-                ps.setTimestamp(index, java.sql.Timestamp.valueOf(value.value))
-            is DateValue -> ps.setDate(index, java.sql.Date.valueOf(value.value))
+                ps.setTimestamp(
+                    index,
+                    Timestamp.from(value.value.toInstant(ZoneOffset.UTC)),
+                )
+            is DateValue -> ps.setDate(index, Date.valueOf(value.value))
             is TimeWithTimezoneValue -> ps.setString(index, value.value.toString())
             is TimeWithoutTimezoneValue -> ps.setString(index, value.value.toString())
             is ObjectValue -> ps.setString(index, Jsons.writeValueAsString(value.values))
             is ArrayValue -> ps.setString(index, Jsons.writeValueAsString(value.values))
-            is NullValue -> {} // handled above
             else -> throw IllegalArgumentException("Unsupported AirbyteValue: $value")
         }
     }
@@ -172,46 +179,29 @@ class DatabricksTestTableOperationsClient(
             is ObjectValue -> Jsons.writeValueAsString(value.values)
             is ArrayValue -> Jsons.writeValueAsString(value.values)
             is DateValue -> value.value.toString()
-            is TimestampWithTimezoneValue ->
-                value.value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            is TimestampWithoutTimezoneValue ->
-                value.value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            is TimeWithTimezoneValue -> value.value.format(DateTimeFormatter.ISO_OFFSET_TIME)
-            is TimeWithoutTimezoneValue -> value.value.format(DateTimeFormatter.ISO_LOCAL_TIME)
+            is TimestampWithTimezoneValue -> value.value.toString()
+            is TimestampWithoutTimezoneValue -> value.value.toString()
+            is TimeWithTimezoneValue -> value.value.toString()
+            is TimeWithoutTimezoneValue -> value.value.toString()
         }
 
-    private fun readColumn(rs: java.sql.ResultSet, index: Int, typeName: String): Any? {
+    private fun readColumn(rs: ResultSet, index: Int, typeName: String): Any? {
         rs.getObject(index) ?: return null
         return when (typeName) {
-            "TIMESTAMP",
-            "TIMESTAMP_NTZ" -> {
-                val ts = rs.getTimestamp(index) ?: return null
-                ts.toInstant()
-                    .atOffset(java.time.ZoneOffset.UTC)
-                    .format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            }
+            "TIMESTAMP" ->
+                rs.getTimestamp(index)
+                    ?.toInstant()
+                    ?.atOffset(ZoneOffset.UTC)
+                    ?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            "TIMESTAMP_NTZ" -> rs.getTimestamp(index)?.toLocalDateTime()?.toString()
             "DATE" -> rs.getDate(index)?.toString()
             "LONG",
             "BIGINT",
             "INT" -> rs.getLong(index)
             "DECIMAL" -> rs.getBigDecimal(index) ?: BigDecimal.ZERO
             "BOOLEAN" -> rs.getBoolean(index)
-            "STRING" -> {
-                val str = rs.getString(index)
-                tryParseJson(str) ?: str
-            }
+            "STRING" -> rs.getString(index)
             else -> rs.getObject(index)
-        }
-    }
-
-    private fun tryParseJson(str: String): Any? {
-        if (str.isBlank()) return str
-        val trimmed = str.trim()
-        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null
-        return try {
-            Jsons.readValue(trimmed, Any::class.java)
-        } catch (_: Exception) {
-            null
         }
     }
 }

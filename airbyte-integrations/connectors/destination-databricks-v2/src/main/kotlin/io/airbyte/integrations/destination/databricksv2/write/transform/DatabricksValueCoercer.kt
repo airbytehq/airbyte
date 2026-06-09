@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
@@ -28,7 +29,7 @@ import java.math.BigInteger
 class DatabricksValueCoercer : ValueCoercer {
 
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        if (value.type is UnionType && value.abValue !is NullValue) {
+        if ((value.type is UnionType || value.type is UnknownType) && value.abValue !is NullValue) {
             value.abValue = StringValue(value.abValue.serializeToString())
         }
         return value

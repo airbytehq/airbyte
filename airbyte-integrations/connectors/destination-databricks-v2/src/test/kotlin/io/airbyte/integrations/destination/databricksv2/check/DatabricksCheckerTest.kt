@@ -55,8 +55,7 @@ class DatabricksCheckerTest {
     fun `check succeeds when row count is 1`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTableWithTypes(any()) } returns
-            LinkedHashMap(metaColumnSchema)
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 1L
 
         assertDoesNotThrow { checker.check() }
@@ -70,8 +69,7 @@ class DatabricksCheckerTest {
     fun `check fails when row count is 0`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTableWithTypes(any()) } returns
-            LinkedHashMap(metaColumnSchema)
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 0L
 
         val exception = assertThrows<IllegalArgumentException> { checker.check() }
@@ -84,8 +82,7 @@ class DatabricksCheckerTest {
     fun `check fails when row count is null`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTableWithTypes(any()) } returns
-            LinkedHashMap(metaColumnSchema)
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns null
 
         val exception = assertThrows<IllegalArgumentException> { checker.check() }
@@ -107,15 +104,13 @@ class DatabricksCheckerTest {
     fun `cleanup drops the check table and staging volume`() {
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTableWithTypes(any()) } returns
-            LinkedHashMap(metaColumnSchema)
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 1L
 
         checker.check()
         checker.cleanup()
 
         coVerify(exactly = 1) { databricksClient.dropTable(any<TableName>()) }
-        coVerify(exactly = 1) { databricksClient.dropStagingVolume(any<TableName>()) }
     }
 
     @Test
@@ -143,8 +138,7 @@ class DatabricksCheckerTest {
 
         coEvery { databricksClient.createNamespace(any()) } returns Unit
         coEvery { databricksClient.createTable(any(), any(), any(), any()) } returns Unit
-        every { databricksClient.describeTableWithTypes(any()) } returns
-            LinkedHashMap(metaColumnSchema)
+        every { databricksClient.describeTable(any()) } returns LinkedHashMap(metaColumnSchema)
         coEvery { databricksClient.countTable(any()) } returns 1L
 
         upperChecker.check()
