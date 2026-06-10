@@ -47,7 +47,7 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     source = get_source(config=config)
     connection_status = source.check(logging.getLogger(), config)
     assert connection_status.status == Status.FAILED
-    assert "Unable to refresh the `access_token`" in connection_status.message
+    assert "OAuth access token is expired or revoked" in connection_status.message
 
 
 def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_mock):
@@ -64,7 +64,7 @@ def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_m
     source = get_source(config=oauth_config)
     connection_status = source.check(logging.getLogger(), oauth_config)
     assert connection_status.status == Status.FAILED
-    assert "Unable to refresh the `access_token`" in connection_status.message
+    assert "OAuth access token is expired or revoked" in connection_status.message
 
 
 @pytest.mark.parametrize(
