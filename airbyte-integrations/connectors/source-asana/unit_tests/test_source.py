@@ -3,6 +3,7 @@
 #
 
 import requests_mock as req_mock
+from source_asana.source import SourceAsana
 
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -12,8 +13,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
-from source_asana.source import SourceAsana
 
 
 def test_oauth_connector_input_specification_includes_default_scope():
