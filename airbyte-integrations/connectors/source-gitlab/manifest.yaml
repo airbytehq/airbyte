@@ -250,7 +250,8 @@ definitions:
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [401]
-          error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
+          failure_type: config_error
+          error_message: OAuth access token is expired or revoked. Re-authenticate the connection in your source settings.
         - type: HttpResponseFilter
           action: RETRY
           http_codes: [500]
