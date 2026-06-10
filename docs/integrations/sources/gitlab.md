@@ -143,7 +143,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.4.29 | 2026-06-10 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Improve 401 error message: replace misleading "Unable to refresh the access_token" with actionable "OAuth access token is expired or revoked" and explicit failure_type classification. |
+| 4.4.29 | 2026-06-10 | [79651](https://github.com/airbytehq/airbyte/pull/79651) | Improve 401 error message: replace misleading "Unable to refresh the access_token" with actionable "OAuth access token is expired or revoked" and explicit failure_type classification. |
 | 4.4.28 | 2026-06-09 | [79295](https://github.com/airbytehq/airbyte/pull/79295) | Update dependencies |
 | 4.4.27 | 2026-06-02 | [78724](https://github.com/airbytehq/airbyte/pull/78724) | Update dependencies |
 | 4.4.26 | 2026-04-28 | [77265](https://github.com/airbytehq/airbyte/pull/77265) | Update dependencies |
