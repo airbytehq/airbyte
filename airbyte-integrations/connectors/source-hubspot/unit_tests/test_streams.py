@@ -1111,6 +1111,6 @@ def test_property_history_streams_have_lookback_window(requests_mock, config, st
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     stream = find_stream(stream_name, config)
     cursor = stream._cursor
-    assert cursor._lookback_window == datetime.timedelta(days=30), (
-        f"{stream_name} should have a 30-day lookback_window, got {cursor._lookback_window}"
-    )
+    assert cursor._lookback_window == datetime.timedelta(
+        days=30
+    ), f"{stream_name} should have a 30-day lookback_window, got {cursor._lookback_window}"
