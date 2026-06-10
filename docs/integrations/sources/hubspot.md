@@ -114,9 +114,13 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 </FieldAnchor>
 
+<!-- markdownlint-disable MD029 -->
+
 7. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
 8. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
 9. Click **Set up source** and wait for the tests to complete.
+
+<!-- markdownlint-enable MD029 -->
 <!-- /env:cloud -->
 
 <!-- env:oss -->
