@@ -19,7 +19,7 @@ data:
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-anthropic-usage
   githubIssueLabel: source-anthropic-usage
-  icon: icon.svg
+  icon: icon.png
   license: ELv2
   name: Anthropic Usage
   releaseDate: 2026-06-10
