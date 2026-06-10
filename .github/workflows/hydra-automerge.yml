@@ -558,6 +558,25 @@ jobs:
           echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
           exit 1
 
+      - name: Post automerge notification to Slack
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C0A30PKB8HK
+            text: "Hydra auto-merged PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>"
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow run> | <${{ steps.devin.outputs.session-url }}|Devin session>"
+
       - name: Dry-run notice (variable)
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
         run: echo "::notice::DRY RUN (ENABLE_CONNECTOR_AUTO_MERGE not set) -- would merge PR #${PR_NUMBER}"

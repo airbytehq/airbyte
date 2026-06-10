@@ -453,6 +453,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -543,6 +544,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms"
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -665,6 +667,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -2596,14 +2599,29 @@ spec:
       lookback_window:
         default: 0
         description: >-
-          How far back (in minutes) to re-fetch records during incremental syncs. 
-          Set this if you notice missing records in CRMSearch streams to recover data 
-          that may be delayed by the HubSpot API.
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for CRM Search streams (e.g. contacts, companies, deals, tickets).
+          Set this if you notice missing records in CRM Search streams to recover
+          data that may be delayed by the HubSpot API. Does not affect property
+          history streams.
         examples:
           - 60
         maximum: 576000
         minimum: 0
-        title: Lookback window
+        title: CRM Search Lookback Window (minutes)
+        type: integer
+      property_history_lookback_window:
+        default: 0
+        description: >-
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for property history streams (deals, contacts, companies property
+          history). Set this if you notice missing records in property history
+          streams caused by cursor drift from HubSpot calculated properties.
+        examples:
+          - 43200
+        maximum: 576000
+        minimum: 0
+        title: Property History Lookback Window (minutes)
         type: integer
       credentials:
         title: Authentication

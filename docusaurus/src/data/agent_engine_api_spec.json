@@ -3911,6 +3911,19 @@
             "title": "Skip Truncation",
             "description": "Disable automatic truncation of long text fields in list/search responses.",
             "default": true
+          },
+          "intent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent",
+            "description": "Optional short natural-language reason or intended result for this action."
           }
         },
         "type": "object",
