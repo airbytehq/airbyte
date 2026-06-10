@@ -1,0 +1,36 @@
+name: Build and Push destination-iceberg
+
+# Builds the customized destination-iceberg connector image and pushes it to the
+# HudHud Aliyun ACR via the shared cicd-reusable-workflows (Kaniko). The image is
+# tagged with the short commit SHA:
+#   hudhud-registry-vpc.me-central-1.cr.aliyuncs.com/data/airbyte-destination-iceberg:<sha8>
+#
+# The reusable template only pushes on PRODUCTION_BRANCH / STAGING_BRANCH, so builds
+# happen on master (production) and dev (staging), plus manual dispatch.
+
+on:
+  push:
+    branches: [master, dev]
+    paths:
+      - "airbyte-integrations/connectors/destination-iceberg/**"
+      - "buildSrc/**"
+      - "settings.gradle"
+      - "build.gradle"
+      - "gradle.properties"
+      - ".github/workflows/build-push-destination-iceberg.yml"
+  workflow_dispatch:
+
+jobs:
+  build-push:
+    uses: HudHud-Maps/cicd-reusable-workflows/.github/workflows/build-push-template.yaml@v1.5.1
+    secrets: inherit
+    with:
+      NAMESPACE: data
+      DEPLOYMENT_NAME: data/airbyte-destination-iceberg
+      DOCKER_FILE_PATH: airbyte-integrations/connectors/destination-iceberg/Dockerfile
+      # DOCKER_CONTEXT intentionally unset => Kaniko context = repo root, so the
+      # builder stage's `COPY . .` sees buildSrc/, settings.gradle, the connector, etc.
+      PRODUCTION_BRANCH: master
+      STAGING_BRANCH: dev
+      # Triggers are already scoped by the `paths:` filter above.
+      CHECK_CHANGED_PATH: false

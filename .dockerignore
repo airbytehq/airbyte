@@ -2,7 +2,9 @@
 .git
 .idea
 .gradle
+.metals
 **/build
 **/node_modules
+**/secrets
 Dockerfile.*
 docker-compose*.yaml
