@@ -54,9 +54,7 @@ class TestSideConversationsStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"])
-            .with_per_page(100)
-            .build(),
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
             SideConversationsResponseBuilder.side_conversations_response().with_record(side_conv_record).build(),
         )
 
@@ -84,9 +82,7 @@ class TestSideConversationsStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"])
-            .with_per_page(100)
-            .build(),
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
             SideConversationsResponseBuilder.side_conversations_response()
             .with_record(side_conv_record_1)
             .with_record(side_conv_record_2)
@@ -126,21 +122,20 @@ class TestSideConversationsStreamIncremental(TestCase):
         tickets_record_builder = given_tickets(http_mocker, start_date, api_token_authenticator)
         ticket = tickets_record_builder.build()
 
-        old_record = SideConversationsRecordBuilder.side_conversations_record().with_id("old-record").with_field(
-            FieldPath("updated_at"), datetime_to_string(start_date.subtract(timedelta(days=10)))
+        old_record = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("old-record")
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.subtract(timedelta(days=10))))
         )
-        new_record = SideConversationsRecordBuilder.side_conversations_record().with_id("new-record").with_field(
-            FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(days=1)))
+        new_record = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("new-record")
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(days=1))))
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"])
-            .with_per_page(100)
-            .build(),
-            SideConversationsResponseBuilder.side_conversations_response()
-            .with_record(old_record)
-            .with_record(new_record)
-            .build(),
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
+            SideConversationsResponseBuilder.side_conversations_response().with_record(old_record).with_record(new_record).build(),
         )
 
         output = read_stream("side_conversations", SyncMode.incremental, self._config)
