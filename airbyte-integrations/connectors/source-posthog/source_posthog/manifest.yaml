@@ -173,4 +173,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["projects"]
+  stream_names: ["projects", "events"]
