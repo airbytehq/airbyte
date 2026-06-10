@@ -461,8 +461,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `campaign.bidding_strategy_type` | `string` | Bidding strategy type |
 | `campaign.campaign_budget` | `string` | Campaign budget resource name |
 | `campaign_budget.amount_micros` | `integer` | Campaign budget amount in micros |
-| `campaign.start_date` | `string` | Campaign start date |
-| `campaign.end_date` | `string` | Campaign end date |
 | `campaign.serving_status` | `string` | Campaign serving status |
 | `campaign.resource_name` | `string` | Resource name of the campaign |
 | `campaign.labels` | `array` | Labels applied to the campaign |
@@ -502,8 +500,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].campaign.bidding_strategy_type` | `string` | Bidding strategy type |
 | `data[].campaign.campaign_budget` | `string` | Campaign budget resource name |
 | `data[].campaign_budget.amount_micros` | `integer` | Campaign budget amount in micros |
-| `data[].campaign.start_date` | `string` | Campaign start date |
-| `data[].campaign.end_date` | `string` | Campaign end date |
 | `data[].campaign.serving_status` | `string` | Campaign serving status |
 | `data[].campaign.resource_name` | `string` | Resource name of the campaign |
 | `data[].campaign.labels` | `array` | Labels applied to the campaign |

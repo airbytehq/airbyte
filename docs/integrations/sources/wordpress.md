@@ -87,6 +87,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.0.53 | 2026-06-09 | [79563](https://github.com/airbytehq/airbyte/pull/79563) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [79064](https://github.com/airbytehq/airbyte/pull/79064) | Update dependencies |
 | 0.0.51 | 2026-04-28 | [77478](https://github.com/airbytehq/airbyte/pull/77478) | Update dependencies |
 | 0.0.49 | 2026-04-09 | [76063](https://github.com/airbytehq/airbyte/pull/76063) | Add configurable lookback window to incremental streams to prevent data loss; fix tab character in pages stream request parameter |
 | Version | Date       | Pull Request | Subject                                                                               |
