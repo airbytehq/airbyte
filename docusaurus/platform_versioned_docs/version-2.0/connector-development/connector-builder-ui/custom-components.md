@@ -53,10 +53,6 @@ Custom Components are currently considered **UNSAFE** and **EXPERIMENTAL**. Airb
 
 Airbyte disables Custom Components by default due to their experimental nature and security implications. Administrators can enable this feature in Core and Self-Managed Enterprise deployments using one of the following methods:
 
-:::note
-In Helm chart V2 the previous `connector-builder-server` deployment was renamed to `manifest-server`, so the Helm chart V2 examples below use `manifestServer.extraEnv`. Older docs or examples that reference `connectorBuilderServer.extraEnv` apply only to Helm chart V1.
-:::
-
 ### Using abctl
 
 If you deploy Airbyte with abctl, follow the steps below to update your values and redeploy Airbyte.
