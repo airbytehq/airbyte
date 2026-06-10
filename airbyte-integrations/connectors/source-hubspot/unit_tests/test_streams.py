@@ -1117,7 +1117,6 @@ def test_property_history_streams_lookback_window(
     config["property_history_lookback_window"] = lookback_minutes
     stream = find_stream(stream_name, config)
     cursor = stream._cursor
-    assert cursor._lookback_window == expected_timedelta, (
-        f"{stream_name} with {lookback_minutes}min config: "
-        f"expected {expected_timedelta}, got {cursor._lookback_window}"
-    )
+    assert (
+        cursor._lookback_window == expected_timedelta
+    ), f"{stream_name} with {lookback_minutes}min config: expected {expected_timedelta}, got {cursor._lookback_window}"
