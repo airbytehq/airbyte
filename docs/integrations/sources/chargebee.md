@@ -111,7 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.37 | 2026-06-10 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix pagination skipping records by sorting on immutable `created_at` instead of mutable `updated_at` |
+| 0.10.37 | 2026-06-10 | [79639](https://github.com/airbytehq/airbyte/pull/79639) | Fix pagination skipping records by sorting on immutable `created_at` instead of mutable `updated_at` |
 | 0.10.36 | 2026-06-09 | [79604](https://github.com/airbytehq/airbyte/pull/79604) | Clean up cancelled RC; revert source to previous stable |
 | 0.10.36-rc.5 | 2026-05-27 | [78469](https://github.com/airbytehq/airbyte/pull/78469) | Remove the local API budget limiter while keeping the default worker count at 5. |
 | 0.10.36-rc.4 | 2026-05-26 | [78435](https://github.com/airbytehq/airbyte/pull/78435) | Reduce default concurrent threads to 3 after rollout duration regressions at 5. |
