@@ -365,7 +365,6 @@ class GzipJsonDecoder(Decoder):
             yield from body_json
 
 
-
 @dataclass
 class StreamingGzipJsonDecoder(Decoder):
     """
@@ -462,7 +461,7 @@ class StreamingGzipJsonDecoder(Decoder):
 
                 # Look for the colon after our target key
                 if awaiting_colon:
-                    if char == ':':
+                    if char == ":":
                         awaiting_colon = False
                         found_target = True
                     elif not char.isspace():
@@ -471,7 +470,7 @@ class StreamingGzipJsonDecoder(Decoder):
 
                 # Once we've found the target key, look for the array start
                 if found_target and array_depth == 0:
-                    if char == '[':
+                    if char == "[":
                         array_depth = 1
                     elif not char.isspace():
                         # Target value is not an array; abort streaming
@@ -483,14 +482,14 @@ class StreamingGzipJsonDecoder(Decoder):
                     if inside_record:
                         record_buffer.append(char)
 
-                    if char == '{':
+                    if char == "{":
                         if not inside_record:
                             inside_record = True
-                            record_buffer = ['{']
+                            record_buffer = ["{"]
                             record_depth = 1
                         else:
                             record_depth += 1
-                    elif char == '}':
+                    elif char == "}":
                         if inside_record:
                             record_depth -= 1
                             if record_depth == 0:
@@ -502,12 +501,12 @@ class StreamingGzipJsonDecoder(Decoder):
                                     records_yielded += 1
                                 except json.JSONDecodeError:
                                     logger.warning("Failed to parse record in streaming decode")
-                    elif char == '[':
+                    elif char == "[":
                         if inside_record:
                             record_depth += 1
                         else:
                             array_depth += 1
-                    elif char == ']':
+                    elif char == "]":
                         if inside_record:
                             record_depth -= 1
                         else:

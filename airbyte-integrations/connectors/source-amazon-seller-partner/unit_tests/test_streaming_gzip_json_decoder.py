@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
 """Tests for StreamingGzipJsonDecoder — verifies streaming JSON array extraction from gzip responses."""
 
 import gzip
