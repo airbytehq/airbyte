@@ -540,7 +540,7 @@ streams:
             type: string
           amount:
             type:
-              - string
+              - number
               - "null"
           product:
             type: string
@@ -559,7 +559,7 @@ streams:
             type: string
           list_amount:
             type:
-              - string
+              - number
               - "null"
           starting_at:
             type: string
