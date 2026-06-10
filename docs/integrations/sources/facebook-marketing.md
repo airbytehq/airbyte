@@ -297,7 +297,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 | ad_creatives_from_ads | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)               | ✅                    | ❌                   |
 | ad_sets            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                  | ✅                    | ✅                   |
 | ads                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                      | ✅                    | ✅                   |
-| ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)                  | ✅                    | ✅                   |
+| ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/insights/)                  | ✅                    | ✅                   |
 | campaigns          | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)            | ✅                    | ✅                   |
 | custom_conversions | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)                  | ✅                    | ❌                   |
 | custom_audiences   | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)                    | ✅                    | ❌                   |
@@ -346,7 +346,7 @@ You can segment the Ad Insights table into parts based on the following informat
 - Platform & Device
 - Region
 
-For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
+For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/insights/)
 
 <!-- Christo: the note below was commented out as its accuracy could not be verified. If it can be verified and clarified for users, it should be added back in.
 
