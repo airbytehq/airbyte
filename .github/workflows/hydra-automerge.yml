@@ -323,7 +323,7 @@ jobs:
                     required: [pass, reasoning]
                   dependency_version_bump:
                     type: object
-                    description: "Set pass to true ONLY if the PR exclusively bumps dependency versions (e.g. changes to pyproject.toml, setup.py, build.gradle, package.json version pins, or lockfiles) without any other functional code changes. The version bump must be a patch or minor version increment, NOT a major version bump. If the PR includes any other changes beyond the version bump and its lockfile updates, set pass to false."
+                    description: "Set pass to true if the PR is a dependency version bump with no functional code changes. Allowed files: dependency manifests (pyproject.toml, setup.py, build.gradle, package.json), lockfiles (poetry.lock, package-lock.json, yarn.lock), connector version metadata (metadata.yaml version/dockerImageTag fields), and changelog entries (docs/integrations/**/*.md). Set pass to false ONLY if the PR also modifies source code, test files, or other functional files beyond the categories listed above."
                     properties:
                       pass:
                         type: boolean
