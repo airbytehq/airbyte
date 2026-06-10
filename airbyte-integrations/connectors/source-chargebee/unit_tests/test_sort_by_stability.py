@@ -21,12 +21,15 @@ _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 # Streams that use offset-based CursorPagination with an
 # updated_at[between] filter. These MUST sort by an immutable field
 # (created_at) to avoid pagination skips.
+#
+# NOTE: invoice and transaction are excluded because their Chargebee
+# API endpoints only accept sort_by values of "date" or "updated_at";
+# "created_at" is not a valid value for those endpoints.
 _STREAMS_REQUIRING_STABLE_SORT = [
     "addon",
     "customer",
     "differential_price",
     "hosted_page",
-    "invoice",
     "item",
     "item_family",
     "item_price",
@@ -34,7 +37,6 @@ _STREAMS_REQUIRING_STABLE_SORT = [
     "payment_source",
     "plan",
     "subscription",
-    "transaction",
     "virtual_bank_account",
 ]
 

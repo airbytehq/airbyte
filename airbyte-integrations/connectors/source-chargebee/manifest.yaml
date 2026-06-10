@@ -753,7 +753,7 @@ definitions:
           path: /invoices
           http_method: GET
           request_parameters:
-            sort_by[asc]: created_at
+            sort_by[asc]: updated_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -1349,7 +1349,7 @@ definitions:
           path: /transactions
           http_method: GET
           request_parameters:
-            sort_by[asc]: created_at
+            sort_by[asc]: updated_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
