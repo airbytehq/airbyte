@@ -3911,6 +3911,19 @@
             "title": "Skip Truncation",
             "description": "Disable automatic truncation of long text fields in list/search responses.",
             "default": true
+          },
+          "intent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent",
+            "description": "Optional short natural-language reason or intended result for this action."
           }
         },
         "type": "object",
@@ -6815,6 +6828,22 @@
             "title": "Tombstone",
             "description": "Whether this workspace has been deleted"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/WorkspaceVisibility",
+            "description": "Workspace visibility (shared or private)"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Optional display color"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -6836,6 +6865,8 @@
           "status",
           "cache_enabled",
           "tombstone",
+          "visibility",
+          "color",
           "created_at",
           "updated_at"
         ],
@@ -6881,6 +6912,22 @@
             "title": "Tombstone",
             "description": "Whether this workspace has been deleted"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/WorkspaceVisibility",
+            "description": "Workspace visibility (shared or private)"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Optional display color"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -6902,6 +6949,8 @@
           "status",
           "cache_enabled",
           "tombstone",
+          "visibility",
+          "color",
           "created_at",
           "updated_at"
         ],
@@ -7042,6 +7091,22 @@
             "title": "Tombstone",
             "description": "Whether this workspace has been deleted"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/WorkspaceVisibility",
+            "description": "Workspace visibility (shared or private)"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Optional display color"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -7063,10 +7128,17 @@
           "status",
           "cache_enabled",
           "tombstone",
+          "visibility",
+          "color",
           "created_at",
           "updated_at"
         ],
         "title": "WorkspaceUpdateResponse"
+      },
+      "WorkspaceVisibility": {
+        "type": "string",
+        "enum": ["shared", "private"],
+        "title": "WorkspaceVisibility"
       },
       "app__api__account__applications__schemas__ScopedTokenCreateRequest": {
         "properties": {
