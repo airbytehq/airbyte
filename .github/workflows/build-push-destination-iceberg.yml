@@ -25,7 +25,9 @@ jobs:
     uses: HudHud-Maps/cicd-reusable-workflows/.github/workflows/build-push-template.yaml@v1.5.1
     secrets: inherit
     with:
-      NAMESPACE: data
+      # NAMESPACE defaults to "private" in the template, matching the cluster's
+      # registry layout (e.g. private/data/pings-vector). Final image ref:
+      #   hudhud-registry-vpc.me-central-1.cr.aliyuncs.com/private/data/airbyte-destination-iceberg:<sha8>
       DEPLOYMENT_NAME: data/airbyte-destination-iceberg
       DOCKER_FILE_PATH: airbyte-integrations/connectors/destination-iceberg/Dockerfile
       # DOCKER_CONTEXT intentionally unset => Kaniko context = repo root, so the

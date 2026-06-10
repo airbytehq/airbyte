@@ -37,6 +37,11 @@ RUN ./gradlew :airbyte-integrations:connectors:destination-iceberg:distTar --no-
 # ---------------------------------------------------------------------------
 FROM docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
 
+# The base image defaults to the non-root `airbyte` user. Switch to root for the
+# privileged setup below (chmod/chown, extracting + removing root-owned COPY'd files);
+# we drop back to `airbyte` at the end.
+USER root
+
 # Set permissions for files provided by the base image
 RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
     chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh /airbyte/dd-java-agent.jar
