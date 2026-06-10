@@ -113,26 +113,37 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       schema = schema.add(COLUMN_NAME_AB_ID, StringType$.MODULE$)
           .add(COLUMN_NAME_EMITTED_AT, TimestampType$.MODULE$);
 
-      // Dedup configuration: APPEND_DEDUP streams auto-enable merge using the stream's primary key
-      // (falling back to the connector-level configured merge_keys). Other streams keep the existing
-      // manual merge behavior driven by the format config.
+      // Dedup configuration: APPEND_DEDUP (Incremental | Append + Dedup) streams auto-enable merge.
+      // 'merge_keys' MUST be defined in the connector configuration for these streams; if absent the
+      // stream fails fast. The source primary key wins for the actual key resolution when present,
+      // with the mandatory connector-config 'merge_keys' as the required fallback. Other streams keep
+      // the existing manual merge behavior driven by the format config.
       boolean mergeMode;
       List<String> mergeKeys;
       if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
-        mergeKeys = resolveMergeKeys(stream);
+        // Resolve dedup keys with precedence: source primary key > per-stream config keys >
+        // global merge_keys. This lets streams with no source-defined primary key still dedup by
+        // declaring their key columns in the connector config.
+        mergeKeys = resolveMergeKeys(stream, streamName);
         if (mergeKeys.isEmpty()) {
           throw new ConfigErrorException(
-              "Stream '" + streamName + "' uses Append + Dedup but has no primary key and no configured "
-                  + "merge_keys. A primary key or merge_keys is required to deduplicate records.");
+              "Stream '" + streamName + "' uses Incremental | Append + Dedup (merge) but has no source "
+                  + "primary key and no key columns are defined in the connector config. Add the key "
+                  + "columns for this stream under 'stream_merge_keys' (or set a global 'merge_keys') to "
+                  + "enable deduplication.");
         }
         mergeMode = true;
-        log.info("=> Stream {} is Append+Dedup; enabling merge with keys {}", streamName, mergeKeys);
+        log.info("=> Stream {} is Incremental | Append + Dedup; enabling merge with keys {}", streamName, mergeKeys);
       } else {
         mergeMode = catalogConfig.getFormatConfig().isMergeMode();
         mergeKeys = catalogConfig.getFormatConfig().getMergeKeys();
       }
       boolean partitionMode = catalogConfig.getFormatConfig().isPartitionMode();
       List<String> partitionKeys = catalogConfig.getFormatConfig().getPartitionKeys();
+
+      // Per-table opt-in: add identity partition keys to the merge ON clause for partition pruning.
+      Set<String> partitionAwareStreams = catalogConfig.getFormatConfig().getPartitionAwareMergeStreams();
+      boolean partitionAwareMerge = partitionAwareStreams != null && partitionAwareStreams.contains(streamName);
 
       // Capture the cursor column (if any) independent of partitioning; it drives latest-wins
       // ordering during dedup/merge.
@@ -155,7 +166,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
 
       WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize, schema,
           mergeMode, mergeKeys, partitionMode, partitionKeys, datePartitionMode, datePartitionSourceColumn,
-          cursorColumnName);
+          cursorColumnName, partitionAwareMerge);
       configs.put(nameNamespacePair, writeConfig);
       try {
         spark.sql("DROP TABLE IF EXISTS " + writeConfig.getFullTempTableName());
@@ -363,13 +374,20 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
   }
 
   /**
-   * Resolve the columns used to deduplicate/merge a stream: prefer the stream's primary key,
-   * falling back to the connector-level configured merge keys.
+   * Resolve the columns used to deduplicate/merge a stream. Precedence:
+   * <ol>
+   * <li>the stream's source-defined primary key (wins when present);</li>
+   * <li>per-stream key columns configured under {@code stream_merge_keys} for this table;</li>
+   * <li>the connector-level global {@code merge_keys}.</li>
+   * </ol>
+   * This allows streams whose source exposes no primary key to still deduplicate by declaring
+   * their key columns in the connector configuration.
    *
-   * @param stream the configured stream
+   * @param stream     the configured stream
+   * @param streamName the normalized (lowercased) stream/table name used for config lookup
    * @return the flattened column names to dedup on (may be empty if none defined)
    */
-  private List<String> resolveMergeKeys(ConfiguredAirbyteStream stream) {
+  private List<String> resolveMergeKeys(ConfiguredAirbyteStream stream, String streamName) {
     List<List<String>> primaryKey = stream.getPrimaryKey();
     if (primaryKey != null && !primaryKey.isEmpty()) {
       List<String> keys = new ArrayList<>();
@@ -381,6 +399,14 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       }
       if (!keys.isEmpty()) {
         return keys;
+      }
+    }
+    // No source primary key: look up per-stream configured keys, then the global merge_keys.
+    Map<String, List<String>> streamMergeKeys = catalogConfig.getFormatConfig().getStreamMergeKeys();
+    if (streamMergeKeys != null && streamName != null) {
+      List<String> perStream = streamMergeKeys.get(streamName.toLowerCase());
+      if (perStream != null && !perStream.isEmpty()) {
+        return new ArrayList<>(perStream);
       }
     }
     return new ArrayList<>(catalogConfig.getFormatConfig().getMergeKeys());
@@ -470,6 +496,27 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       // Null-safe equality so rows whose key contains NULLs still match instead of duplicating.
       condition.append("increment.%s <=> %s.%s".formatted(col, finalTableName, col));
       first = false;
+    }
+
+    // Per-table opt-in: AND identity partition keys into the match so Iceberg can prune partitions.
+    // Only safe when the partition column is immutable for a given merge key (the operator's
+    // responsibility). Date-hierarchy columns (year/month/day) are intentionally never added here
+    // because they derive from the mutable cursor and would reintroduce duplicates on update.
+    if (writeConfig.shouldPartitionAwareMerge()) {
+      List<String> dateHierarchy = List.of("year", "month", "day");
+      for (String col : writeConfig.getPartitionKeys()) {
+        if (dateHierarchy.contains(col)) {
+          continue;
+        }
+        if (!first) {
+          condition.append(" and ");
+        }
+        // Plain equality (not null-safe) keeps the predicate prunable by Iceberg.
+        condition.append("increment.%s = %s.%s".formatted(col, finalTableName, col));
+        first = false;
+      }
+      log.info("=> Partition-aware merge enabled; identity partition keys added to match: {}",
+          writeConfig.getPartitionKeys());
     }
 
     log.info("=> Merge condition: {}", condition.toString());

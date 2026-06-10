@@ -10,6 +10,10 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FLUSH
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE_KEYS_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE_MODE_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_KEYS_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_PARTITION_AWARE_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_STREAM_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_KEYS_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_MODE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.AUTO_DATE_PARTITION_CONFIG_KEY;
@@ -17,7 +21,11 @@ import static io.airbyte.integrations.destination.iceberg.config.catalog.Iceberg
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.Data;
 
 /**
@@ -39,6 +47,10 @@ public class FormatConfig {
   private Integer compactTargetFileSizeInMb;
   private boolean mergeMode;
   private List<String> mergeKeys;
+  private Map<String, List<String>> streamMergeKeys;
+  // Lowercased stream names that opted into partition-aware merge (identity partition keys added to
+  // the merge ON clause). Opt-in per table; defaults to off.
+  private Set<String> partitionAwareMergeStreams;
   private boolean partitionMode;
   private List<String> partitionKeys;
   private boolean autoDatePartition;
@@ -89,6 +101,47 @@ public class FormatConfig {
       if (mergeKeysNode.isArray()) {
         for (JsonNode keyNode : mergeKeysNode) {
           this.mergeKeys.add(keyNode.asText());
+        }
+      }
+    }
+
+    // streamMergeKeys: per-stream (table) primary/merge key columns, used to supply the dedup key
+    // for Append + Dedup streams whose source provides no primary key. Keyed by lowercased stream
+    // name so it matches the stream-name normalization used when writing.
+    this.streamMergeKeys = new HashMap<>();
+    this.partitionAwareMergeStreams = new HashSet<>();
+    if (formatConfigJson.has(STREAM_MERGE_KEYS_CONFIG_KEY)) {
+      JsonNode streamMergeKeysNode = formatConfigJson.get(STREAM_MERGE_KEYS_CONFIG_KEY);
+      if (streamMergeKeysNode.isArray()) {
+        for (JsonNode entry : streamMergeKeysNode) {
+          if (entry == null || !entry.has(STREAM_MERGE_KEYS_STREAM_KEY)) {
+            continue;
+          }
+          String streamName = entry.get(STREAM_MERGE_KEYS_STREAM_KEY).asText();
+          if (streamName == null || streamName.isBlank()) {
+            continue;
+          }
+          final String normalizedStream = streamName.toLowerCase();
+          if (entry.has(STREAM_MERGE_KEYS_KEYS_KEY)) {
+            List<String> keys = new ArrayList<>();
+            JsonNode keysNode = entry.get(STREAM_MERGE_KEYS_KEYS_KEY);
+            if (keysNode.isArray()) {
+              for (JsonNode keyNode : keysNode) {
+                String key = keyNode.asText();
+                if (key != null && !key.isBlank()) {
+                  keys.add(key);
+                }
+              }
+            }
+            if (!keys.isEmpty()) {
+              this.streamMergeKeys.put(normalizedStream, keys);
+            }
+          }
+          // Per-table opt-in for partition-aware merge (identity partition keys in the ON clause).
+          if (entry.has(STREAM_MERGE_KEYS_PARTITION_AWARE_KEY)
+              && entry.get(STREAM_MERGE_KEYS_PARTITION_AWARE_KEY).asBoolean(false)) {
+            this.partitionAwareMergeStreams.add(normalizedStream);
+          }
         }
       }
     }

@@ -52,6 +52,10 @@ public class IcebergConstants {
   public static final String COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY = "compact_target_file_size_in_mb";
   public static final String MERGE_MODE_CONFIG_KEY = "merge_mode";
   public static final String MERGE_KEYS_CONFIG_KEY = "merge_keys";
+  public static final String STREAM_MERGE_KEYS_CONFIG_KEY = "stream_merge_keys";
+  public static final String STREAM_MERGE_KEYS_STREAM_KEY = "stream";
+  public static final String STREAM_MERGE_KEYS_KEYS_KEY = "keys";
+  public static final String STREAM_MERGE_KEYS_PARTITION_AWARE_KEY = "partition_aware_merge";
   public static final String PARTITION_MODE_CONFIG_KEY = "partition_mode";
   public static final String PARTITION_KEYS_CONFIG_KEY = "partition_keys";
   public static final String AUTO_DATE_PARTITION_CONFIG_KEY = "auto_date_partition";

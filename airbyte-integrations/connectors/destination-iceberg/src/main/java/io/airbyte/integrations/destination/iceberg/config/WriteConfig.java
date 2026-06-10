@@ -43,6 +43,9 @@ public class WriteConfig implements Serializable {
   private final String datePartitionSourceColumn;
   // Cursor field (for incremental syncs); drives latest-wins ordering during dedup/merge.
   private final String cursorField;
+  // Per-table opt-in: when true, identity partition keys are AND-ed into the merge ON clause to
+  // enable partition pruning. Date-hierarchy columns are always excluded. Defaults to false.
+  private final boolean partitionAwareMerge;
 
   // TODO perf: use stageFile to do cache, see
   // io.airbyte.integrations.destination.bigquery.BigQueryWriteConfig.addStagedFile
@@ -73,9 +76,17 @@ public class WriteConfig implements Serializable {
         partitionKeys, datePartitionMode, datePartitionSourceColumn, null);
   }
 
+  // Constructor without partition-aware merge flag (for backward compatibility)
   public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
       StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys,
       boolean datePartitionMode, String datePartitionSourceColumn, String cursorField) {
+    this(namespace, streamName, isAppendMode, flushBatchSize, schema, mergeMode, mergeKeys, partitionMode,
+        partitionKeys, datePartitionMode, datePartitionSourceColumn, cursorField, false);
+  }
+
+  public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
+      StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys,
+      boolean datePartitionMode, String datePartitionSourceColumn, String cursorField, boolean partitionAwareMerge) {
     this.namespace = namingResolver.convertStreamName(namespace);
     this.tableName = namingResolver.convertStreamName(AIRBYTE_RAW_TABLE_PREFIX + streamName);
     this.tempTableName = namingResolver.convertStreamName(AIRBYTE_TMP_TABLE_PREFIX + streamName);
@@ -92,6 +103,7 @@ public class WriteConfig implements Serializable {
     this.datePartitionMode = datePartitionMode;
     this.datePartitionSourceColumn = datePartitionSourceColumn;
     this.cursorField = cursorField;
+    this.partitionAwareMerge = partitionAwareMerge;
     this.schema = schema;
     this.dataCache = new ArrayList<>(flushBatchSize);
   }
@@ -115,6 +127,15 @@ public class WriteConfig implements Serializable {
    */
   public boolean shouldDatePartition() {
     return datePartitionMode && datePartitionSourceColumn != null && !datePartitionSourceColumn.isEmpty();
+  }
+
+  /**
+   * Whether identity partition keys should be added to the merge ON clause for partition pruning.
+   * Requires the per-table opt-in plus identity partition keys to exist; date-hierarchy columns are
+   * never included (they derive from the mutable cursor).
+   */
+  public boolean shouldPartitionAwareMerge() {
+    return partitionAwareMerge && shouldPartition();
   }
 
   /**

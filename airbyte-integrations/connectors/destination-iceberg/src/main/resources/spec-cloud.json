@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/iceberg",
   "supportsNormalization": false,
-  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Iceberg Destination Spec",
@@ -189,20 +189,51 @@
             "order": 4
           },
           "merge_keys": {
-            "title": "Merge keys",
-            "description": "List of column names to use as merge keys for deduplication. Only used when merge mode is enabled.",
+            "title": "Global merge keys",
+            "description": "Global fallback list of column names used as merge/primary keys for deduplication. Used for Incremental | Append + Dedup streams (and when 'Enable merge mode' is on) only if a stream has no source primary key and no per-stream entry in 'Per-stream merge keys'. The source primary key always takes precedence when present.",
             "type": "array",
             "items": {
               "type": "string"
             },
             "order": 5
           },
+          "stream_merge_keys": {
+            "title": "Per-stream merge keys",
+            "description": "Define the primary/merge key columns per stream (table). This lets Incremental | Append + Dedup work for tables that have no source-defined primary key: the listed columns are used as the dedup key. Resolution precedence per stream: source primary key first, then this per-stream list, then the global 'Merge keys'. Stream names are matched case-insensitively.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["stream", "keys"],
+              "properties": {
+                "stream": {
+                  "title": "Stream (table) name",
+                  "description": "The stream/table name exactly as it appears in the source (matched case-insensitively).",
+                  "type": "string"
+                },
+                "keys": {
+                  "title": "Key columns",
+                  "description": "Column names that uniquely identify a record in this stream.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "partition_aware_merge": {
+                  "title": "Partition-aware merge",
+                  "description": "Opt-in (default off). When on, the table's identity partition keys are added to the merge ON clause so Iceberg can prune partitions and speed up merges. ONLY enable this if the partition column never changes for a given key — otherwise updates can produce duplicates. The cursor-derived year/month/day partitions are never included.",
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "order": 6
+          },
           "partition_mode": {
             "title": "Enable partition mode",
             "description": "Enable partition mode to partition table based on partition keys. When enabled, table will be partitioned based on the partition keys.",
             "type": "boolean",
             "default": false,
-            "order": 6
+            "order": 7
           },
           "partition_keys": {
             "title": "Partition keys",
@@ -211,14 +242,14 @@
             "items": {
               "type": "string"
             },
-            "order": 7
+            "order": 8
           },
           "auto_date_partition": {
             "title": "Auto date partition for incremental syncs",
             "description": "When enabled (default), automatically creates year/month/day partitions using the cursor field for incremental/append syncs. This creates a hierarchical folder structure: year=YYYY/month=MM/day=DD/. The cursor field selected for incremental sync is automatically used as the partition source.",
             "type": "boolean",
             "default": true,
-            "order": 8
+            "order": 9
           }
         },
         "order": 2
