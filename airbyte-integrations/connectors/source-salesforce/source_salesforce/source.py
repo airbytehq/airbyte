@@ -8,7 +8,6 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import isodate
 import pendulum
-from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
 from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
@@ -59,7 +58,7 @@ class AirbyteStopSync(AirbyteTracedException):
 
 class SourceSalesforce(ConcurrentSourceAdapter):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-    START_DATE_OFFSET_IN_YEARS = 2
+    DEFAULT_START_DATE = "2006-01-01T00:00:00Z"
     stop_sync_on_stream_failure = True
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
@@ -252,7 +251,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
-            config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
+            config["start_date"] = self.DEFAULT_START_DATE
         sf = self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
