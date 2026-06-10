@@ -212,8 +212,8 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
         def load_quota_then_success_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
             """Return 403 load quota error on first request, then succeed."""
             request_count["count"] += 1
-            if request_count["count"] <= 4:
-                # First few requests hit load quota
+            if request_count["count"] <= 1:
+                # First request hits load quota
                 context.status_code = 403
                 return json.dumps(
                     {
@@ -267,7 +267,7 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
         def qps_quota_then_success_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
             """Return 403 QPS quota error on first request, then succeed."""
             request_count["count"] += 1
-            if request_count["count"] <= 4:
+            if request_count["count"] <= 1:
                 context.status_code = 403
                 return json.dumps(
                     {
