@@ -38,9 +38,9 @@ def test_brands_schema_contains_field(manifest, field_name, expected_types):
     properties = schema["properties"]
 
     assert field_name in properties, f"brands schema is missing the '{field_name}' property"
-    assert properties[field_name]["type"] == expected_types, (
-        f"brands.{field_name} should be {expected_types}, got {properties[field_name]['type']}"
-    )
+    assert (
+        properties[field_name]["type"] == expected_types
+    ), f"brands.{field_name} should be {expected_types}, got {properties[field_name]['type']}"
 
 
 def test_brands_schema_existing_fields_unchanged(manifest):
@@ -57,6 +57,6 @@ def test_brands_schema_existing_fields_unchanged(manifest):
     }
     for field, expected_type in expected_existing.items():
         assert field in properties, f"brands schema is missing existing field '{field}'"
-        assert properties[field]["type"] == expected_type, (
-            f"brands.{field} type changed: expected {expected_type}, got {properties[field]['type']}"
-        )
+        assert (
+            properties[field]["type"] == expected_type
+        ), f"brands.{field} type changed: expected {expected_type}, got {properties[field]['type']}"
