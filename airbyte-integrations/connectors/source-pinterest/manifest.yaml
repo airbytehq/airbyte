@@ -54,6 +54,16 @@ definitions:
       - type: HttpResponseFilter
         action: RETRY
         http_codes: [400]
+        predicate: "{{ response.get('message', '') is string and 'Retry after' in response.get('message', '') }}"
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [400]
+        failure_type: transient_error
+        predicate: >-
+          {{ response.get('code') == 12 or
+          (response.get('message', '') is string and
+          'something went wrong' in response.get('message', '') | lower) }}
+        error_message: "Pinterest API request failed due to a temporary error."
 
   # Requester
   requester:
@@ -553,6 +563,42 @@ definitions:
               attribution_types,
             ]
           value: "{{ components_values['attribution_types'] or ['INDIVIDUAL', 'HOUSEHOLD'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              campaign_statuses,
+            ]
+          value: "{{ components_values['campaign_statuses'] }}"
+          condition: "{{ components_values.get('campaign_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              ad_group_statuses,
+            ]
+          value: "{{ components_values['ad_group_statuses'] }}"
+          condition: "{{ components_values.get('ad_group_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              ad_statuses,
+            ]
+          value: "{{ components_values['ad_statuses'] }}"
+          condition: "{{ components_values.get('ad_statuses') is not none }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -4950,6 +4996,60 @@ spec:
                 description: "An enumeration."
                 enum: ["INDIVIDUAL", "HOUSEHOLD"]
               order: 8
+            campaign_statuses:
+              title: "Campaign statuses (max 6 values)"
+              description: "Select at most 6 campaign status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "RUNNING"
+                  - "PAUSED"
+                  - "NOT_STARTED"
+                  - "COMPLETED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 9
+            ad_group_statuses:
+              title: "Ad group statuses (max 6 values)"
+              description: "Select at most 6 ad group status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "RUNNING"
+                  - "PAUSED"
+                  - "NOT_STARTED"
+                  - "COMPLETED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 10
+            ad_statuses:
+              title: "Ad statuses (max 6 values)"
+              description: "Select at most 6 ad status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "APPROVED"
+                  - "PAUSED"
+                  - "PENDING"
+                  - "REJECTED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 11
             start_date:
               type: string
               title: "Start Date"
@@ -4958,7 +5058,7 @@ spec:
               pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
               pattern_descriptor: "YYYY-MM-DD"
               examples: ["2022-07-28"]
-              order: 9
+              order: 12
       account_id:
         type: string
         title: "Account ID"
@@ -5035,7 +5135,6 @@ spec:
                   {%- endfor -%}
                   {{- migrated_reports -}}
             condition: "{{ config.get('custom_reports', False) }}"
-
 streams:
   # Full refresh streams
   - "#/definitions/boards_stream"

@@ -42,7 +42,7 @@ Classes
 
 <a id="ExecutionConfig"></a>
 
-`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True)`
+`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None)`
 :   Configuration for connector execution.
     
     Used by both LocalExecutor and HostedExecutor to specify the operation to execute.
@@ -59,6 +59,7 @@ Classes
         select_fields: Optional allowlist of dot-notation fields to include
         exclude_fields: Optional blocklist of dot-notation fields to remove
         skip_truncation: Disable long-text truncation for collection actions
+        intent: Optional short description of why this execution is being performed (max 512 chars)
     
     Example:
         config = ExecutionConfig(
@@ -76,6 +77,9 @@ Classes
     :   The type of the None singleton.
 
     `exclude_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `intent: str | None`
     :   The type of the None singleton.
 
     `params: dict[str, typing.Any] | None`
@@ -330,7 +334,7 @@ Classes
             finally:
                 await executor.close()
 
-    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
+    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
     :   Execute connector via cloud API (ExecutorProtocol implementation).
         
         Accepts either an :class:`ExecutionConfig` or positional ``(entity, action)``
@@ -351,6 +355,8 @@ Classes
                 (only with string form)
             skip_truncation: Disable long-text truncation for collection actions
                 (only with string form)
+            intent: Optional short description of why this execution is being
+                performed, max 512 chars (only with string form)
         
         Returns:
             ExecutionResult with success/failure status

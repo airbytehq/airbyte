@@ -345,8 +345,10 @@ jobs:
       - name: Check for structured output
         if: steps.devin.outputs.session-id
         id: check-output
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
         run: |
-          if [[ -n '${{ steps.devin.outputs.structured-output }}' ]]; then
+          if [[ -n "$STRUCTURED_OUTPUT" ]]; then
             echo "success=true" >> "$GITHUB_OUTPUT"
           else
             echo "::error::Devin session completed but did not produce structured output."
@@ -489,7 +491,7 @@ jobs:
           gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "$EVAL_COMMENT"
 
       - name: Update command comment on Devin error
-        if: steps.check-output.outputs.success == 'false' && inputs.comment-id
+        if: always() && steps.check-output.outcome != 'skipped' && steps.check-output.outputs.success != 'true' && inputs.comment-id
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
@@ -502,7 +504,7 @@ jobs:
             > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Post new comment on Devin error (no command comment)
-        if: steps.check-output.outputs.success == 'false' && !inputs.comment-id
+        if: always() && steps.check-output.outcome != 'skipped' && steps.check-output.outputs.success != 'true' && !inputs.comment-id
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
@@ -555,6 +557,25 @@ jobs:
           done
           echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
           exit 1
+
+      - name: Post automerge notification to Slack
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C0A30PKB8HK
+            text: "Hydra auto-merged PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>"
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow run> | <${{ steps.devin.outputs.session-url }}|Devin session>"
 
       - name: Dry-run notice (variable)
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
