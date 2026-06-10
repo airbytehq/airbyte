@@ -23,6 +23,20 @@ The Google-Analytics-Data-Api connector supports the following entities and acti
 
 Returns website overview metrics including total users, new users, sessions, bounce rate, page views, and average session duration by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -88,6 +102,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Website Overview Context Store Search
 
 Search and filter website overview records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -171,6 +205,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns daily active user counts (1-day active users) by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "daily_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -236,6 +284,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Daily Active Users Context Store Search
 
 Search and filter daily active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "daily_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active1DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -305,6 +373,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns weekly active user counts (7-day active users) by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "weekly_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -370,6 +452,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Weekly Active Users Context Store Search
 
 Search and filter weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "weekly_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active7DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -439,6 +541,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns 28-day active user counts by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "four_weekly_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -504,6 +620,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Four Weekly Active Users Context Store Search
 
 Search and filter four weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "four_weekly_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active28DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -573,6 +709,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns traffic source metrics broken down by session source, session medium, and date, including users, sessions, bounce rate, and page views.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "traffic_sources",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -638,6 +788,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Traffic Sources Context Store Search
 
 Search and filter traffic sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "traffic_sources",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -725,6 +895,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns page-level metrics including page views and bounce rate, broken down by host name, page path, and date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "pages",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -790,6 +974,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pages Context Store Search
 
 Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "pages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "bounceRate": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -865,6 +1069,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns device-related metrics broken down by device category, operating system, browser, and date, including users, sessions, and page views.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "devices",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -930,6 +1148,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Devices Context Store Search
 
 Search and filter devices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "devices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1019,6 +1257,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns geographic metrics broken down by region, country, city, and date, including users, sessions, bounce rate, and page views.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "locations",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1084,6 +1336,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Locations Context Store Search
 
 Search and filter locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "locations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

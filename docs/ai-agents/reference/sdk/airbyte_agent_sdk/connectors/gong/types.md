@@ -95,6 +95,210 @@ Classes
     `callIds: list[str]`
     :   The type of the None singleton.
 
+<a id="CallTranscriptsAndCondition"></a>
+
+`CallTranscriptsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsAnyCondition"></a>
+
+`CallTranscriptsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsAnyValueFilter"></a>
+
+`CallTranscriptsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: Any`
+    :   Unique identifier for the call.
+
+    `started: Any`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: Any`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsContainsCondition"></a>
+
+`CallTranscriptsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsEqCondition"></a>
+
+`CallTranscriptsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsFuzzyCondition"></a>
+
+`CallTranscriptsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStringFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsGtCondition"></a>
+
+`CallTranscriptsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsGteCondition"></a>
+
+`CallTranscriptsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsInCondition"></a>
+
+`CallTranscriptsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsInFilter"></a>
+
+`CallTranscriptsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: list[str]`
+    :   Unique identifier for the call.
+
+    `started: list[str]`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: list[list[typing.Any]]`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsKeywordCondition"></a>
+
+`CallTranscriptsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStringFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsLikeCondition"></a>
+
+`CallTranscriptsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CallTranscriptsListParams"></a>
 
 `CallTranscriptsListParams(*args, **kwargs)`
@@ -131,6 +335,169 @@ Classes
 
     `toDateTime: str`
     :   The type of the None singleton.
+
+<a id="CallTranscriptsLtCondition"></a>
+
+`CallTranscriptsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsLteCondition"></a>
+
+`CallTranscriptsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsNeqCondition"></a>
+
+`CallTranscriptsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsNotCondition"></a>
+
+`CallTranscriptsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsOrCondition"></a>
+
+`CallTranscriptsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsSearchFilter"></a>
+
+`CallTranscriptsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering call_transcripts search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: str | None`
+    :   Unique identifier for the call.
+
+    `started: str | None`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: list[typing.Any] | None`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsSearchQuery"></a>
+
+`CallTranscriptsSearchQuery(*args, **kwargs)`
+:   Search query for call_transcripts entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsSortFilter"></a>
+
+`CallTranscriptsSortFilter(*args, **kwargs)`
+:   Available fields for sorting call_transcripts search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: Literal['asc', 'desc']`
+    :   Unique identifier for the call.
+
+    `started: Literal['asc', 'desc']`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: Literal['asc', 'desc']`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsStringFilter"></a>
+
+`CallTranscriptsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: str`
+    :   Unique identifier for the call.
+
+    `started: str`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: str`
+    :   Gong transcript speaker turns.
 
 <a id="CallVideoDownloadParams"></a>
 

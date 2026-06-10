@@ -61,7 +61,7 @@ If you authenticate with a personal access token, generate one in **Settings > A
 5. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 6. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 7. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-8. **Number of Concurrent Workers** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
 9. Click **Set up source**.
 
 **Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
@@ -132,6 +132,10 @@ You can adjust the **Number of Concurrent Threads** setting to control how many 
 
 The connector silently skips any group, project, or resource that returns an HTTP 403 (Forbidden) response. If you notice missing data, verify that your access token has the required permissions for the groups and projects you want to sync.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -139,6 +143,8 @@ The connector silently skips any group, project, or resource that returns an HTT
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.28 | 2026-06-09 | [79295](https://github.com/airbytehq/airbyte/pull/79295) | Update dependencies |
+| 4.4.27 | 2026-06-02 | [78724](https://github.com/airbytehq/airbyte/pull/78724) | Update dependencies |
 | 4.4.26 | 2026-04-28 | [77265](https://github.com/airbytehq/airbyte/pull/77265) | Update dependencies |
 | 4.4.25 | 2026-04-21 | [76608](https://github.com/airbytehq/airbyte/pull/76608) | Update dependencies |
 | 4.4.24 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |

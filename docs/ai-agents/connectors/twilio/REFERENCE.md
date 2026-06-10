@@ -26,6 +26,17 @@ The Twilio connector supports the following entities and actions.
 
 Returns a list of accounts associated with the authenticated account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "accounts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -86,6 +97,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single account by SID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "accounts",
+  "action": "get",
+  "params": {
+    "sid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -141,6 +166,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts Context Store Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -215,6 +260,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Calls List
 
 Returns a list of calls made to and from an account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "calls",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -300,6 +359,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Initiate an outbound phone call. Requires a recipient (To), a caller ID (From), and call instructions via a TwiML URL, TwiML content, or ApplicationSid. The call will be queued and placed at the account's CPS rate.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "calls",
+  "action": "create",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -372,6 +445,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Calls Get
 
 Get a single call by SID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "calls",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -448,6 +536,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Calls Context Store Search
 
 Search and filter calls records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "calls",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -533,6 +641,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of messages associated with an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "messages",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -610,6 +732,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Send an outbound SMS, MMS, or WhatsApp message. Requires a recipient (To), a sender (From or MessagingServiceSid), and content (Body, MediaUrl, or ContentSid). Twilio uses application/x-www-form-urlencoded encoding for request bodies.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "messages",
+  "action": "create",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -675,6 +811,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages Get
 
 Get a single message by SID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "messages",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -744,6 +895,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages Context Store Search
 
 Search and filter messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "messages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -832,6 +1003,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incoming Phone Numbers List
 
 Returns a list of incoming phone numbers for an account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "incoming_phone_numbers",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -926,6 +1111,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Purchase and provision a new Twilio phone number. You must provide either a specific PhoneNumber in E.164 format or an AreaCode (US/Canada only). The number will be added to your account and can be configured for voice and SMS.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "incoming_phone_numbers",
+  "action": "create",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1007,6 +1206,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incoming Phone Numbers Get
 
 Get a single incoming phone number by SID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "incoming_phone_numbers",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1093,6 +1307,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter incoming phone numbers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "incoming_phone_numbers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1166,6 +1400,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Recordings List
 
 Returns a list of recordings for an account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "recordings",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1242,6 +1490,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single recording by SID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "recordings",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1309,6 +1572,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Recordings Context Store Search
 
 Search and filter recordings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "recordings",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1388,6 +1671,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of conferences for an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "conferences",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1456,6 +1753,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single conference by SID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "conferences",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1516,6 +1828,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Conferences Context Store Search
 
 Search and filter conferences records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "conferences",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1589,6 +1921,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of usage records for an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "usage_records",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1659,6 +2005,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Usage Records Context Store Search
 
 Search and filter usage records records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "usage_records",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account_sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1740,6 +2106,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of addresses for an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "addresses",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1812,6 +2192,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single address by SID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "addresses",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1876,6 +2271,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Addresses Context Store Search
 
 Search and filter addresses records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "addresses",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1957,6 +2372,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of queues for an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "queues",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2023,6 +2452,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single queue by SID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "queues",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2081,6 +2525,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Queues Context Store Search
 
 Search and filter queues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "queues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2156,6 +2620,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of transcriptions for an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "transcriptions",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2225,6 +2703,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single transcription by SID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "transcriptions",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2286,6 +2779,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Transcriptions Context Store Search
 
 Search and filter transcriptions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "transcriptions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2363,6 +2876,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of outgoing caller IDs for an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "outgoing_caller_ids",
+  "action": "list",
+  "params": {
+    "AccountSid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2426,6 +2953,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single outgoing caller ID by SID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "outgoing_caller_ids",
+  "action": "get",
+  "params": {
+    "AccountSid": "<str>",
+    "sid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2481,6 +3023,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Outgoing Caller Ids Context Store Search
 
 Search and filter outgoing caller ids records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "outgoing_caller_ids",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sid": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

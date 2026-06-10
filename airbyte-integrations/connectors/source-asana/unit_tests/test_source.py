@@ -21,13 +21,13 @@ def _response(*records: dict) -> HttpResponse:
     return HttpResponse(json.dumps({"data": list(records), "next_page": None}))
 
 
-def test_oauth_connector_input_specification_omits_scopes():
+def test_oauth_connector_input_specification_includes_default_scope():
     source = SourceAsana(catalog=None, config=None, state=None)
 
     spec = source.spec(None)
     oauth_spec = spec.advanced_auth.oauth_config_specification.oauth_connector_input_specification
 
-    assert oauth_spec.scopes is None
+    assert oauth_spec.scopes == [{"scope": "default"}]
 
 
 def test_tasks_stream_reads_tasks_by_section():

@@ -284,6 +284,89 @@ class TestTwilioNestedStream:
         assert media_matcher.called, "Media endpoint for SM1 was not called"
         assert len(records) == 1, f"Expected 1 media record (only from SM1), got {len(records)}"
 
+    def test_services_stream_reads_from_conversations_api(self, requests_mock):
+        """`services` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        Twilio's Programmable Chat REST API (`chat.twilio.com/v2`) reaches end of life on
+        June 1, 2026, so the connector routes `services` to `conversations.twilio.com/v1/Services`.
+        """
+        chat_matcher = requests_mock.get("https://chat.twilio.com/v2/Services", status_code=410)
+        conversations_matcher = requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": "IS11111111111111111111111111111111",
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": "https://conversations.twilio.com/v1/Services/IS11111111111111111111111111111111",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "services", SyncMode.full_refresh).records
+
+        assert conversations_matcher.called, "`services` should call the Conversations API endpoint"
+        assert not chat_matcher.called, "`services` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+
+    def test_roles_stream_reads_from_conversations_api(self, requests_mock):
+        """`roles` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        The Conversations API preserves Service and Role SIDs, so existing primary keys are
+        unchanged, but the request base URL must be `conversations.twilio.com/v1`.
+        """
+        service_sid = "IS11111111111111111111111111111111"
+        requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": service_sid,
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+        chat_roles_matcher = requests_mock.get(f"https://chat.twilio.com/v2/Services/{service_sid}/Roles", status_code=410)
+        conversations_roles_matcher = requests_mock.get(
+            f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles",
+            json={
+                "roles": [
+                    {
+                        "sid": "RL22222222222222222222222222222222",
+                        "account_sid": "AC123",
+                        "chat_service_sid": service_sid,
+                        "friendly_name": "service admin",
+                        "type": "service",
+                        "permissions": ["editAnyMessage"],
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles/RL22222222222222222222222222222222",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "roles", SyncMode.full_refresh).records
+
+        assert conversations_roles_matcher.called, "`roles` should call the Conversations API endpoint"
+        assert not chat_roles_matcher.called, "`roles` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+        assert records[0].record.data["chat_service_sid"] == service_sid
+
     @pytest.mark.parametrize(
         "stream_name, expected_count",
         [

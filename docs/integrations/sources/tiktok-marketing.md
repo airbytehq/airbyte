@@ -152,6 +152,10 @@ The connector automatically retries transient TikTok API errors, including servi
 
 For information on breaking changes and migration steps, see the [TikTok Marketing Migration Guide](./tiktok-marketing-migrations.md).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -159,6 +163,8 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.10 | 2026-06-09 | [79549](https://github.com/airbytehq/airbyte/pull/79549) | Update dependencies |
+| 5.0.9 | 2026-06-02 | [78999](https://github.com/airbytehq/airbyte/pull/78999) | Update dependencies |
 | 5.0.8 | 2026-04-29 | [76062](https://github.com/airbytehq/airbyte/pull/76062) | Add support for TopView and Reach & Frequency campaigns by including all buying types in campaigns stream |
 | 5.0.7 | 2026-04-28 | [77465](https://github.com/airbytehq/airbyte/pull/77465) | Update dependencies |
 | 5.0.6 | 2026-04-21 | [76807](https://github.com/airbytehq/airbyte/pull/76807) | Update dependencies |
