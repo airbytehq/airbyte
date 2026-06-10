@@ -105,7 +105,7 @@ The Pinterest source connector supports the following
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Account analytics](https://developers.pinterest.com/docs/api/v5/#operation/user_account/analytics)
   \(Incremental\)
@@ -195,7 +195,16 @@ properties:
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
 9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as
    INDIVIDUAL or HOUSEHOLD.
-10. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
+10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT. Include ARCHIVED to report on archived campaigns.
+11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT.
+12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select up to six values
+    from: APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. This filter is not supported for Product Item level reports.
+13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
 For more detailed information and guidelines on creating custom reports, please refer to the
@@ -209,6 +218,10 @@ enforces rate limits per endpoint category. For example, analytics endpoints all
 minute with standard access, while general read endpoints allow 1,000 requests per minute. For
 details, see the [Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -216,6 +229,13 @@ details, see the [Pinterest rate limits documentation](https://developers.pinter
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.0-rc.1 | 2026-06-09 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added optional custom report status filters so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |
+| 2.1.30 | 2026-06-09 | [79465](https://github.com/airbytehq/airbyte/pull/79465) | Update dependencies |
+| 2.1.29 | 2026-06-02 | [75841](https://github.com/airbytehq/airbyte/pull/75841) | Update dependencies |
+| 2.1.28 | 2026-06-01 | [78538](https://github.com/airbytehq/airbyte/pull/78538) | Promoted release candidate to GA |
+| 2.1.28-rc.4 | 2026-05-27 | [78466](https://github.com/airbytehq/airbyte/pull/78466) | Remove the HTTP API budget while keeping default concurrency at 4 for continued tuning. |
+| 2.1.28-rc.3 | 2026-05-26 | [78432](https://github.com/airbytehq/airbyte/pull/78432) | Set default concurrency to 4 and use the standard num_workers override while preserving the Pinterest API budget. |
+| 2.1.28-rc.2 | 2026-05-21 | [78345](https://github.com/airbytehq/airbyte/pull/78345) | Increase default concurrency to 5 for the source-pinterest Phase 1 tuning cohort. |
 | 2.1.28-rc.1 | 2026-05-18 | [76952](https://github.com/airbytehq/airbyte/pull/76952) | Concurrency tuning (Path A): bump `default_concurrency` default to 4 via the `num_threads` fallback. No user-visible spec changes. |
 | 2.1.27 | 2026-04-07 | [75485](https://github.com/airbytehq/airbyte/pull/75485) | Add maxLength validation to account_id field to reject values longer than 18 characters at config time |
 | 2.1.26 | 2026-03-17 | [74453](https://github.com/airbytehq/airbyte/pull/74453) | Update dependencies |

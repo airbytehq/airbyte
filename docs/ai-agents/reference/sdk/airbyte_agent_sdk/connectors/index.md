@@ -51,6 +51,7 @@ Sub-modules
 * airbyte_agent_sdk.connectors.shopify
 * airbyte_agent_sdk.connectors.slack
 * airbyte_agent_sdk.connectors.snapchat_marketing
+* airbyte_agent_sdk.connectors.snowflake
 * airbyte_agent_sdk.connectors.stripe
 * airbyte_agent_sdk.connectors.tiktok_marketing
 * airbyte_agent_sdk.connectors.twilio

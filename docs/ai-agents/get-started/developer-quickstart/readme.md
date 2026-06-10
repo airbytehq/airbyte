@@ -30,7 +30,7 @@ Pick the framework you use:
 
 - [**Pydantic AI**](tutorial-pydantic): Build an agent with Pydantic AI and the Agent SDK.
 
-- [**LangChain**](tutorial-langchain): Build an agent with LangChain, LangGraph, and the Agent SDK.
+- [**LangChain**](tutorial-langchain): Build an agent with LangChain and the Agent SDK.
 
 - [**FastMCP**](tutorial-fastmcp): Build an MCP server with FastMCP and the Agent SDK.
 

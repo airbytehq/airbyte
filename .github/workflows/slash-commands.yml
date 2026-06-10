@@ -62,6 +62,7 @@ jobs:
             ai-dev
             ai-docs-review
             ai-prove-fix
+            ai-ready
             ai-release-watch
             ai-review
             approve-regression-tests
@@ -78,6 +79,7 @@ jobs:
             run-regression-tests
             test-performance
             update-connector-cdk-version
+            version-yank
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.

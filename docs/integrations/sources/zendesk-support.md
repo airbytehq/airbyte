@@ -213,6 +213,10 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -220,6 +224,8 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.9 | 2026-06-09 | [79583](https://github.com/airbytehq/airbyte/pull/79583) | Update dependencies |
+| 5.2.8 | 2026-06-02 | [77507](https://github.com/airbytehq/airbyte/pull/77507) | Update dependencies |
 | 5.2.7 | 2026-05-15 | [78120](https://github.com/airbytehq/airbyte/pull/78120) | Promoted release candidate to GA |
 | 5.2.7-rc.4 | 2026-05-07 | [77857](https://github.com/airbytehq/airbyte/pull/77857) | Step default concurrency back from 5 to 4 while keeping the endpoint-specific HTTP API budget LIVE (incremental 10/min, search/export 100/min, deleted_tickets 10/min) |
 | 5.2.7-rc.3 | 2026-05-05 | [77784](https://github.com/airbytehq/airbyte/pull/77784) | Restore the endpoint-specific HTTP API budget from 5.2.6 (incremental 10/min, search/export 100/min, deleted_tickets 10/min) and remove the `subscription_tier` config field; keep default concurrency at 5 |
