@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## June 10, 2026
+
+MCP
+
+- You can now pass an optional `intent` parameter when executing connector actions via the MCP, SDK, or CLI. Use it to describe why you're making the call (e.g., "answer a refund dispute") — the value is recorded with the execution for traceability.
+
+Web app
+
+- If you're on the Free plan, your Context Store data now refreshes hourly for the first two weeks after setup, then daily. Previously, the hourly window lasted one month.
+
 ## June 8, 2026
 
 Connectors
