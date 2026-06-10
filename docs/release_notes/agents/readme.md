@@ -4,7 +4,7 @@
 
 Web app
 
-- To prevent runaway billing, agent operations are now blocked if your organization's usage significantly exceeds the included limit for the billing period. A banner in the app notifies you when this threshold is reached.
+- To prevent runaway billing, agent operations are now blocked when your organization's usage exceeds three times (3x) the Agent Operations included in your plan. A banner in the app notifies you when this threshold is reached.
 
 Connectors
 
