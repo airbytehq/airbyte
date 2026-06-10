@@ -128,7 +128,7 @@ class DatabricksAirbyteClient(
                 val result = LinkedHashMap<String, ColumnType>()
                 while (rs.next()) {
                     val name = rs.getString("column_name")
-                    val type = rs.getString("data_type")
+                    val type = normalizeDatabricksType(rs.getString("data_type"))
                     val nullable = rs.getString("is_nullable") == "YES"
                     result[name] = ColumnType(type, nullable)
                 }
@@ -226,6 +226,17 @@ class DatabricksAirbyteClient(
             execute(sql)
         }
     }
+
+    /**
+     * Normalizes Databricks `information_schema.columns.data_type` values to match the DDL type
+     * strings used during table creation. This ensures `discoverSchema()` and `computeSchema()`
+     * produce identical type strings, preventing spurious schema evolution diffs.
+     */
+    private fun normalizeDatabricksType(dataType: String): String =
+        when (dataType) {
+            "DECIMAL" -> "DECIMAL(38, 10)" // information_schema omits precision/scale
+            else -> dataType
+        }
 
     private fun <T> executeQuery(sql: String, handler: (ResultSet) -> T): T {
         log.info { "Executing query: $sql" }

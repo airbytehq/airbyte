@@ -19,7 +19,7 @@ import io.airbyte.integrations.destination.databricksv2.spec.PersonalAccessToken
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Replaces
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.Properties
 import javax.sql.DataSource
 
 private const val SOCKET_TIMEOUT_SECONDS = 3600

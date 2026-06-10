@@ -305,7 +305,7 @@ class DatabricksSqlGenerator(
     }
 
     /** Returns the three-part table name for Unity Catalog: `catalog`.`schema`.`table` */
-    internal fun fullyQualifiedName(tableName: TableName): String =
+    fun fullyQualifiedName(tableName: TableName): String =
         "${config.database.quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
 
     /** Returns the fully qualified two-part namespace for Unity Catalog: `catalog`.`schema` */

@@ -20,7 +20,7 @@ import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configu
 import io.airbyte.integrations.destination.databricksv2.write.load.DatabricksInsertBuffer
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 
 /**

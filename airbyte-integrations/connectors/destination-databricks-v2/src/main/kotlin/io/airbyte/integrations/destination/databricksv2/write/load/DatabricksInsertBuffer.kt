@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.util.*
+import java.util.UUID
 import org.apache.avro.Schema
 import org.apache.avro.file.CodecFactory
 import org.apache.avro.file.DataFileWriter

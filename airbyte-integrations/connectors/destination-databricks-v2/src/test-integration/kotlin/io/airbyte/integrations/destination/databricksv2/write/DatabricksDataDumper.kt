@@ -20,12 +20,15 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
+import io.airbyte.integrations.destination.databricksv2.sql.DatabricksSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.sql.ResultSet
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.*
+import java.util.Calendar
+import java.util.TimeZone
+import java.util.UUID
 
 /**
  * Reads typed final tables from Databricks and converts rows to [OutputRecord] for test
@@ -42,8 +45,8 @@ class DatabricksDataDumper(
         val config = configProvider(spec)
         val dataSource = DatabricksTestDataSourceProvider.get(config)
 
-        // Resolve the final table name using the same mapper as the connector.
         val schemaMapper = DatabricksTableSchemaMapper(config, DefaultTempTableNameGenerator())
+        val sqlGenerator = DatabricksSqlGenerator(config)
         val tableName = schemaMapper.toFinalTableName(stream.mappedDescriptor)
 
         // Return empty list if the table doesn't exist (e.g., incomplete truncate sync
@@ -51,19 +54,14 @@ class DatabricksDataDumper(
         val tableExists =
             dataSource.connection.use { conn ->
                 conn.createStatement().use { stmt ->
-                    stmt
-                        .executeQuery(
-                            "SELECT COUNT(*) > 0 FROM ${config.database}.information_schema.tables " +
-                                "WHERE table_catalog = '${config.database}' " +
-                                "AND table_schema = '${tableName.namespace}' " +
-                                "AND table_name = '${tableName.name}'"
-                        )
-                        .use { rs -> rs.next() && rs.getBoolean(1) }
+                    stmt.executeQuery(sqlGenerator.tableExists(tableName)).use { rs ->
+                        rs.next() && rs.getBoolean("table_exists")
+                    }
                 }
             }
         if (!tableExists) return emptyList()
 
-        val sql = "SELECT * FROM `${config.database}`.`${tableName.namespace}`.`${tableName.name}`"
+        val sql = "SELECT * FROM ${sqlGenerator.fullyQualifiedName(tableName)}"
 
         // Reverse column name mapping: sanitized Databricks name -> original input name.
         val reverseMapping =
@@ -95,7 +93,7 @@ class DatabricksDataDumper(
                                     UUID.fromString(it)
                                 }
                             val extractedAt =
-                                rs.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT, UTC_CALENDAR)
+                                rs.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT, utcCalendar())
                                     ?.toInstant()
                                     ?: Instant.EPOCH
                             val generationId =
@@ -145,7 +143,7 @@ class DatabricksDataDumper(
     }
 
     companion object {
-        private val UTC_CALENDAR = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        private fun utcCalendar(): Calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
         private fun readColumnValue(
             rs: ResultSet,
@@ -156,8 +154,8 @@ class DatabricksDataDumper(
             rs.getObject(index) ?: return null
             return when (typeName.uppercase()) {
                 "TIMESTAMP" ->
-                    rs.getTimestamp(index, UTC_CALENDAR)?.toInstant()?.atOffset(ZoneOffset.UTC)
-                "TIMESTAMP_NTZ" -> rs.getTimestamp(index, UTC_CALENDAR)?.toLocalDateTime()
+                    rs.getTimestamp(index, utcCalendar())?.toInstant()?.atOffset(ZoneOffset.UTC)
+                "TIMESTAMP_NTZ" -> rs.getTimestamp(index, utcCalendar())?.toLocalDateTime()
                 "DATE" -> rs.getDate(index)?.toLocalDate()
                 "LONG",
                 "BIGINT",
