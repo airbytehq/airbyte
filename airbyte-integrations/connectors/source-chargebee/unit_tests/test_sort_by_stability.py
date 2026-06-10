@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
 # Streams that use offset-based CursorPagination with an
