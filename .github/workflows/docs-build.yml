@@ -71,12 +71,6 @@ jobs:
         with:
           version: 10.12.1
 
-      - name: Setup Node.js
-        if: steps.check-skip.outputs.skip-build != 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: "20"
-
       - name: Install uv
         if: steps.check-skip.outputs.skip-build != 'true'
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
