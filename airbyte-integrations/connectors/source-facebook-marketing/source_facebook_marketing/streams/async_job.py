@@ -31,6 +31,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("airbyte")
 
+# Special "incrementality" attribution window (Meta beta). Facebook does not compute incrementality
+# for geographic breakdowns such as `dma`/`region`, and an async report combining it with certain
+# fields (e.g. `conversions`) under those breakdowns cannot be generated at all (oncall #12088).
+# Mirrors `AdsInsights.INCREMENTALITY_WINDOW` in base_insight_streams.py.
+INCREMENTALITY_WINDOW = "incrementality"
+
 # `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
 # It still has http status 200 but the object can not be constructed from what was fetched from API.
 # Also, it does not happen while making a call to the API, but later - when parsing the result,
@@ -563,10 +569,39 @@ class InsightAsyncJob(AsyncJob):
         primary_key_fields = [field for field in self._primary_key if field in all_fields]
         split_candidates = [f for f in all_fields if f not in primary_key_fields]
         if len(split_candidates) <= 1:
+            # Terminal, unsplittable leaf: Facebook keeps failing to generate this report even for a
+            # single field at single-ad/single-day granularity, so there is nothing left to split.
+            # This is a deterministic Facebook-side limitation, not a connector bug, and the user has a
+            # concrete fix (unselect the offending field; or, when the `incrementality` window is in
+            # play, disable "Include Incrementality" for the affected breakdown stream). Surface it as a
+            # config_error with actionable guidance instead of a cryptic system_error (oncall #12088).
+            breakdowns = self._params.get("breakdowns", [])
+            has_incrementality = INCREMENTALITY_WINDOW in self._params.get("action_attribution_windows", [])
+
+            scope = f"breakdown(s) {breakdowns} with the field(s) {split_candidates}" if breakdowns else f"the field(s) {split_candidates}"
+            fixes = []
+            if has_incrementality:
+                fixes.append(
+                    'disable the "Include Incrementality" option for the affected stream(s) '
+                    "(Facebook does not compute incrementality for geographic breakdowns such as "
+                    "'dma'/'region', so no data is lost; ideally sync those stream(s) in a separate "
+                    'connection with "Include Incrementality" off, keeping it on elsewhere)'
+                )
+            fixes.append(f"unselect the field(s) {split_candidates} from this stream's schema")
+            fix_text = "; or ".join(f"({i + 1}) {fix}" for i, fix in enumerate(fixes)) if len(fixes) > 1 else fixes[0]
+
             raise AirbyteTracedException(
-                message="Unable to split the Facebook Insights request because there are not enough non-primary-key fields.",
-                internal_message=f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, pk={self._primary_key})",
-                failure_type=FailureType.system_error,
+                message=(
+                    f"Facebook could not generate the Insights report for {scope}"
+                    + (' when the "incrementality" attribution window is enabled' if has_incrementality else "")
+                    + f", even at the smallest request size. This is a Facebook-side limitation. To resolve it, {fix_text}."
+                ),
+                internal_message=(
+                    f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, "
+                    f"pk={self._primary_key}); breakdowns={breakdowns}, level={self._params.get('level')}, "
+                    f"incrementality={has_incrementality}"
+                ),
+                failure_type=FailureType.config_error,
             )
 
         mid = len(split_candidates) // 2
