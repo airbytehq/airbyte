@@ -1,6 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-anthropic-usage:dev
+connector_image: airbyte/source-claude-enterprise-analytics:dev
 acceptance_tests:
   spec:
     tests:

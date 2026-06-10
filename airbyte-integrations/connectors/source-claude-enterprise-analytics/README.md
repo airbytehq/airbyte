@@ -1,5 +1,5 @@
 # Anthropic Usage
-This directory contains the manifest-only connector for `source-anthropic-usage`.
+This directory contains the manifest-only connector for `source-claude-enterprise-analytics`.
 
 Usage &amp; Cost API endpoint integration
 
@@ -20,14 +20,14 @@ But, if you want to develop this connector locally, you can use the following st
 You will need `airbyte-ci` installed. You can find the documentation [here](airbyte-ci).
 
 ### Build
-This will create a dev image (`source-anthropic-usage:dev`) that you can use to test the connector locally.
+This will create a dev image (`source-claude-enterprise-analytics:dev`) that you can use to test the connector locally.
 ```bash
-airbyte-ci connectors --name=source-anthropic-usage build
+airbyte-ci connectors --name=source-claude-enterprise-analytics build
 ```
 
 ### Test
 This will run the acceptance tests for the connector.
 ```bash
-airbyte-ci connectors --name=source-anthropic-usage test
+airbyte-ci connectors --name=source-claude-enterprise-analytics test
 ```
 

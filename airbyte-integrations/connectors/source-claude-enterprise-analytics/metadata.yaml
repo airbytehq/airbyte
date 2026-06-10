@@ -10,7 +10,7 @@ data:
   remoteRegistries:
     pypi:
       enabled: false
-      packageName: airbyte-source-anthropic-usage
+      packageName: airbyte-source-claude-enterprise-analytics
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.21.2@sha256:135645ae522b3ac2c48ecce9545a1e305533608ac83985dbb8f3f737a737f295
   connectorSubtype: api
