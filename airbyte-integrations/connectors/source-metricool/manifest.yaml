@@ -1951,6 +1951,14 @@ schemas:
         type:
           - string
           - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
       userId:
         type:
           - number
