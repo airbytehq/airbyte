@@ -10,7 +10,6 @@ from io import BytesIO
 from unittest.mock import MagicMock
 
 import pytest
-
 from components import GzipJsonDecoder, StreamingGzipJsonDecoder
 
 
