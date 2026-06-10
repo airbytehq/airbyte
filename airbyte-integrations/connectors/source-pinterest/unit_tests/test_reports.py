@@ -106,6 +106,57 @@ def test_streams(test_config):
     assert len(streams) == expected_streams_number
 
 
+@freeze_time("2022-11-16 12:03:11+00:00")
+def test_read_records_refreshes_download_url_before_fetch(requests_mock, test_config):
+    expired_report_download_url = "https://expired-download.report"
+    fresh_report_download_url = "https://fresh-download.report"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    final_response = {"campaign_id": [{"metric": 1}]}
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        status_code=200,
+    )
+    requests_mock.get(
+        report_request_url,
+        [
+            {
+                "json": {"report_status": "FINISHED", "url": expired_report_download_url},
+                "status_code": 200,
+            },
+            {
+                "json": {"report_status": "FINISHED", "url": fresh_report_download_url},
+                "status_code": 200,
+            },
+        ],
+    )
+    requests_mock.get(expired_report_download_url, status_code=403)
+    requests_mock.get(fresh_report_download_url, json=final_response, status_code=200)
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "campaign_analytics_report",
+            {
+                "DATE": "2022-11-15",
+            },
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data
+        for record in read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, state=state).records
+    ]
+
+    assert records == [{"metric": 1}]
+    assert not requests_mock.called_once
+    assert requests_mock.request_history[-1].url.rstrip("/") == fresh_report_download_url
+    assert not any(request.url.rstrip("/") == expired_report_download_url for request in requests_mock.request_history)
+
+
 def test_custom_streams(test_config):
     config = copy.deepcopy(test_config)
     config["custom_reports"] = [
