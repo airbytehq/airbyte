@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## June 9, 2026
+
+Web app
+
+- To prevent runaway billing, agent operations are now blocked when your organization's usage exceeds three times (3x) the Agent Operations included in your plan. A banner in the app notifies you when this threshold is reached.
+
+Connectors
+
+- Agents can now search Gong call transcripts at the speaker-turn level, making it easier to find what a specific person said during a call.
+
 ## June 8, 2026
 
 Connectors
