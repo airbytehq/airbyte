@@ -95,10 +95,12 @@ jobs:
               prerelease_version:
                 type: string
                 description: Connector pre-release version or image tested. Empty string if no pre-release was used.
-              validation_status:
-                type: string
-                enum: [passed, failed, inconclusive, blocked]
-                description: Overall prove-fix outcome.
+              fix_proven:
+                type: boolean
+                description: >-
+                  Single final answer for whether the fix was proven. Set true only when after
+                  evidence satisfies the proving criteria without unresolved disproving evidence.
+                  Set false for failed, blocked, or inconclusive validations.
               validation_summary:
                 type: string
                 description: One-paragraph factual summary of what was tested and observed.
@@ -314,6 +316,60 @@ jobs:
                   Evidence collected after applying the fix/pre-release or from post-fix validation.
                   Use exact excerpts only: successful sync status, changed log lines, passing tests,
                   version checks, or API fields that establish the new behavior.
+              validation_attempts:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    attempt_number:
+                      type: integer
+                      minimum: 1
+                      description: Validation attempt number, matching the playbook retry path where applicable.
+                    validation_type:
+                      type: string
+                      enum: [regression_test, live_connection_test, ci_check, manual_review, other]
+                      description: Kind of validation performed in this attempt.
+                    credential_source:
+                      type: string
+                      enum: [gsm, customer_connection, different_customer_connection, none, unknown]
+                      description: Credential/config source used for this attempt.
+                    stream_scope:
+                      type: string
+                      enum: [all_streams, affected_streams_only, not_applicable, unknown]
+                      description: Stream scope used for the attempt.
+                    signal:
+                      type: string
+                      enum:
+                        - expected_difference_observed
+                        - no_behavioral_difference
+                        - both_versions_failed
+                        - target_failed
+                        - control_failed
+                        - timeout
+                        - live_sync_succeeded
+                        - live_sync_failed
+                        - blocked
+                        - other
+                      description: Observed signal that drives the retry/escalation decision.
+                    outcome:
+                      type: string
+                      enum: [supports_fix, disproves_fix, inconclusive, blocked]
+                      description: What this attempt says about the fix.
+                    next_action:
+                      type: string
+                      description: Playbook retry/escalation action to take next. Empty string for the final attempt.
+                  required:
+                    - attempt_number
+                    - validation_type
+                    - credential_source
+                    - stream_scope
+                    - signal
+                    - outcome
+                    - next_action
+                description: >-
+                  Ordered validation attempts, including retry/escalation decisions from the playbook
+                  such as GSM to customer connection, stream narrowing, artifact inspection, or stop.
               comparison_summary:
                 type: string
                 description: >-
@@ -357,12 +413,13 @@ jobs:
               - originating_issue_url
               - connector_name
               - prerelease_version
-              - validation_status
+              - fix_proven
               - validation_summary
               - proving_criteria
               - disproving_criteria
               - before_evidence
               - after_evidence
+              - validation_attempts
               - comparison_summary
               - tested_cases
               - cleanup_status
