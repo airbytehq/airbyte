@@ -8,7 +8,6 @@ from unittest.mock import MagicMock
 import pytest
 from freezegun import freeze_time
 from requests_oauthlib import OAuth1
-
 from source_netsuite.constraints import INCREMENTAL_CURSOR, NETSUITE_OUTPUT_DATETIME_FORMAT
 from source_netsuite.streams import IncrementalNetsuiteStream
 
