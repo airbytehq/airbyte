@@ -16,6 +16,7 @@ from source_marketo.source import Activities, IncrementalMarketoStream, Leads, M
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 from .conftest import START_DATE, get_stream_by_name
 
@@ -201,7 +202,14 @@ def test_export_request_kwargs_streams_response(send_email_stream):
     assert send_email_stream.request_kwargs(stream_state={}) == {"stream": True}
 
 
-@pytest.mark.parametrize("job_statuses", ((("Created",), ("Completed",)), (("Created",), ("Cancelled",))))
+@pytest.mark.parametrize(
+    "job_statuses",
+    [
+        pytest.param((("Created",), ("Completed",)), id="completed"),
+        pytest.param((("Created",), ("Cancelled",)), id="cancelled"),
+        pytest.param((("Created",), ("Failed",)), id="failed"),
+    ],
+)
 def test_export_sleep(send_email_stream, job_statuses):
     def tuple_to_generator(tuple_):
         yield from tuple_
@@ -211,9 +219,13 @@ def test_export_sleep(send_email_stream, job_statuses):
     with patch("source_marketo.source.MarketoExportStart.read_records", return_value=iter([Mock()])) as export_start:
         with patch("source_marketo.source.MarketoExportStatus.read_records", side_effect=job_statuses_side_effect) as export_status:
             with patch("source_marketo.source.sleep") as sleep:
-                if job_statuses[-1] == ("Cancelled",):
-                    with pytest.raises(Exception):
+                terminal_status = job_statuses[-1][0]
+                if terminal_status in ("Cancelled", "Failed"):
+                    with pytest.raises(AirbyteTracedException) as exc_info:
                         send_email_stream.sleep_till_export_completed(stream_slice)
+                    assert exc_info.value.failure_type == FailureType.system_error
+                    assert terminal_status.lower() in exc_info.value.message
+                    assert "1" in exc_info.value.internal_message
                 else:
                     assert send_email_stream.sleep_till_export_completed(stream_slice) is True
                 export_start.assert_called()
