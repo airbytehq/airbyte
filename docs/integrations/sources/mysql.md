@@ -104,6 +104,20 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ## MySQL Replication Modes
 
+### Incremental Syncs
+
+MSSQL `datetime2(7)` type stores timestamps with up to 7 decimal places, but since most destinations don't support the 
+extra precision, Airbyte truncates them to 6 (microseconds). Because of that, the saved cursor can land just behind the 
+newest rows in your table. To make sure none of them get skipped, each incremental sync reads everything _above_ the 
+saved cursor, then saves the new max value as the cursor for the next sync.
+
+:::note
+
+Because each sync picks up everything newer than the last saved point, you may see some duplicate rows. If possible, we do recommend
+using `Incremental - Append + Deduped` for supported syncs. For more information, please visit our [Sync Mode](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/) page.
+
+:::
+
 ### Change Data Capture \(CDC\)
 
 Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
