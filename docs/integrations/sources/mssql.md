@@ -86,7 +86,23 @@ When both fields are provided, the connector authenticates with `ActiveDirectory
 Entra ID authentication requires an encrypted connection. Set **Encryption** to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`. The connector fails the configuration check if encryption is disabled while Entra ID fields are set.
 :::
 
-## Change Data Capture \(CDC\)
+## MSSQL Replication Modes
+
+### Incremental Syncs
+
+MSSQL `datetime2(7)` type stores timestamps with up to 7 decimal places, but since most destinations don't support the
+extra precision, Airbyte truncates them to 6 (microseconds). Because of that, the saved cursor can land just behind the
+newest rows in your table. To make sure none of them get skipped, each incremental sync reads everything _above_ the
+saved cursor, then saves the new max value as the cursor for the next sync.
+
+:::note
+
+Because each sync picks up everything newer than the last saved point, you may see some duplicate rows. If possible, we do recommend
+using `Incremental - Append + Deduped` for supported syncs. For more information, please visit our [Sync Mode](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/) page.
+
+:::
+
+### Change Data Capture \(CDC\)
 
 We use
 [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017)
@@ -99,7 +115,7 @@ from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 Please read the [CDC docs](../../platform/understanding-airbyte/cdc) for an overview of how Airbyte
 approaches CDC.
 
-### Should I use CDC for MSSQL?
+#### Should I use CDC for MSSQL?
 
 - If you need a record of deletions and can accept the limitations posted below, CDC is the way to
   go!
@@ -135,9 +151,9 @@ approaches CDC.
 - Read more on CDC limitations in the
   [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
 
-### Setting up CDC for MSSQL
+#### Setting up CDC for MSSQL
 
-#### 1. Enable CDC on database and tables
+##### 1. Enable CDC on database and tables
 
 MS SQL Server provides some built-in stored procedures to enable CDC.
 
@@ -188,7 +204,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 For further detail, see the
 [Microsoft docs on enabling and disabling CDC](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/enable-and-disable-change-data-capture-sql-server?view=sql-server-ver15).
 
-#### 2. Enable snapshot isolation
+##### 2. Enable snapshot isolation
 
 - When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of
   your database. To avoid acquiring table locks, Airbyte uses _snapshot isolation_, allowing
@@ -199,7 +215,7 @@ For further detail, see the
     SET ALLOW_SNAPSHOT_ISOLATION ON;
   ```
 
-#### 3. Create a user and grant appropriate permissions
+##### 3. Create a user and grant appropriate permissions
 
 - Rather than use _sysadmin_ or _db_owner_ credentials, we recommend creating a new user with the
   relevant CDC access for use with Airbyte. First let's create the login and user and add to the
@@ -239,7 +255,7 @@ For further detail, see the
     GRANT VIEW SERVER STATE TO {user name};
     ```
 
-#### 4. Extend the retention period of CDC data
+##### 4. Extend the retention period of CDC data
 
 - In SQL Server, by default, only three days of data are retained in the change tables. Unless you
   are running very frequent syncs, we suggest increasing this retention so that in case of a failure
@@ -284,7 +300,7 @@ GO
 
 ```
 
-#### 5. Ensure the SQL Server Agent is running
+##### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs) for CDC. It is therefore vital that the Agent is operational in order for CDC to work effectively. You can check the status of the SQL Server Agent as follows:
 
