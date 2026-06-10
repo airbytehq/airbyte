@@ -37,7 +37,9 @@ class TestOAuthTokenRefresh(BaseTest):
         output = read_helper(config=self._config, catalog=catalog)
 
         control_messages = output.get_message_by_types([Type.CONTROL])
-        assert len(control_messages) > 0, "Expected at least one CONTROL message with updated connector config (refresh_token_updater should persist rotated tokens)"
+        assert (
+            len(control_messages) > 0
+        ), "Expected at least one CONTROL message with updated connector config (refresh_token_updater should persist rotated tokens)"
         ctrl = control_messages[0].control
         assert ctrl.type.value == "CONNECTOR_CONFIG"
         updated_config = ctrl.connectorConfig.config
