@@ -71,6 +71,5 @@ jobs:
     uses: ./.github/workflows/hydra-automerge.yml
     with:
       pr: ${{ inputs.pr }}
-      comment-id: ${{ inputs.comment-id }}
       dry-run: ${{ inputs.dry-run }}
     secrets: inherit

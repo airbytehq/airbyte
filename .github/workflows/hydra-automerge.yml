@@ -20,9 +20,6 @@ on:
       pr:
         description: "PR number"
         required: true
-      comment-id:
-        description: "Comment ID (from slash command dispatcher)"
-        required: false
       dry-run:
         description: "If 'true', evaluate only -- do not approve or merge"
         required: false
@@ -32,10 +29,6 @@ on:
       pr:
         description: "PR number"
         required: true
-        type: string
-      comment-id:
-        description: "Comment ID"
-        required: false
         type: string
       dry-run:
         description: "If 'true', evaluate only -- do not approve or merge"
