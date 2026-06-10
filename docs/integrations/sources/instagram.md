@@ -119,6 +119,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.30 | 2026-06-09 | [78774](https://github.com/airbytehq/airbyte/pull/78774) | Update dependencies |
 | 4.2.29 | 2026-06-02 | [79099](https://github.com/airbytehq/airbyte/pull/79099) | Promoted release candidate to GA |
 | 4.2.29-rc.2 | 2026-05-26 | [78440](https://github.com/airbytehq/airbyte/pull/78440) | Add HTTPAPIBudget for rate limit protection |
 | 4.2.29-rc.1 | 2026-05-26 | [78440](https://github.com/airbytehq/airbyte/pull/78440) | Enable progressive rollout for concurrency tuning |
