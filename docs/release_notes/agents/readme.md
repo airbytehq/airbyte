@@ -4,11 +4,7 @@
 
 Web app
 
-- Agent operations are now blocked if your organization's usage reaches three times the included limit for the billing period. A banner in the app notifies you when this threshold is reached.
-
-MCP
-
-- The `describe_connector` tool has been replaced by `inspect_connector` and `read_skill_docs`. Use `inspect_connector` to check a connector's status and get its documentation reference, then `read_skill_docs` for detailed guidance on available entities, actions, and query parameters before executing.
+- To prevent runaway billing, agent operations are now blocked if your organization's usage significantly exceeds the included limit for the billing period. A banner in the app notifies you when this threshold is reached.
 
 Connectors
 
