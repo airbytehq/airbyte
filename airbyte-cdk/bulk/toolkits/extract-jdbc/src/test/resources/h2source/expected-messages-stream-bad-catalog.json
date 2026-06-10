@@ -16,7 +16,7 @@
           "name": "FOO",
           "namespace": "PUBLIC"
         },
-        "message": "Stream 'PUBLIC.FOO' not found or not accessible in source.",
+        "message": "Stream 'PUBLIC.FOO' not found or not accessible in source. To continue syncing this stream, restore access to it, or refresh the source schema to remove it.",
         "failure_type": "config_error"
       }
     }

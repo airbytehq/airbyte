@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import json
 
 import freezegun
@@ -1094,3 +1095,28 @@ def test_list_memberships_fails_on_unrelated_400(requests_mock, config, mock_dyn
         run_read(stream)
 
     assert unrelated_400_mock.call_count >= 1
+
+
+@pytest.mark.parametrize(
+    "stream_name,lookback_minutes,expected_timedelta",
+    [
+        pytest.param("companies_property_history", 0, datetime.timedelta(0), id="companies-default-no-lookback"),
+        pytest.param("contacts_property_history", 0, datetime.timedelta(0), id="contacts-default-no-lookback"),
+        pytest.param("deals_property_history", 0, datetime.timedelta(0), id="deals-default-no-lookback"),
+        pytest.param("companies_property_history", 60, datetime.timedelta(minutes=60), id="companies-60min-lookback"),
+        pytest.param("contacts_property_history", 1440, datetime.timedelta(minutes=1440), id="contacts-1day-lookback"),
+        pytest.param("deals_property_history", 43200, datetime.timedelta(minutes=43200), id="deals-30day-lookback"),
+    ],
+)
+def test_property_history_streams_lookback_window(
+    requests_mock, config, stream_name, lookback_minutes, expected_timedelta, mock_dynamic_schema_requests
+):
+    """Property history streams use the `property_history_lookback_window` config
+    to set lookback and prevent cursor drift from HubSpot calculated properties."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    config["property_history_lookback_window"] = lookback_minutes
+    stream = find_stream(stream_name, config)
+    cursor = stream._cursor
+    assert (
+        cursor._lookback_window == expected_timedelta
+    ), f"{stream_name} with {lookback_minutes}min config: expected {expected_timedelta}, got {cursor._lookback_window}"

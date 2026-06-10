@@ -20,6 +20,7 @@ import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.MODE_PROPERTY
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
@@ -43,6 +44,19 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+
+    /**
+     * Querying for a table's filenode makes it necessary to acquire a DB connection allowance
+     * resource. The acquired handle is returned to the caller rather than stored on this singleton,
+     * so concurrent feeds do not overwrite one another's handles.
+     */
+    override fun tryAcquireResources(): PartitionsCreatorFactory.TryAcquireResourcesResult {
+        val acquired: AcquiredResources =
+            partitionFactory.sharedState.tryAcquireResourcesForCreatorFactory()
+                ?: return PartitionsCreatorFactory.TryAcquireResourcesResult.RetryLater
+        return PartitionsCreatorFactory.TryAcquireResourcesResult.ReadyToRun(acquired)
+    }
+
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         PostgresSourceJdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }

@@ -8,10 +8,10 @@ The Hubspot connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Search](#companies-search) |
-| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Search](#deals-search) |
-| Tickets | [List](#tickets-list), [Get](#tickets-get), [API Search](#tickets-api-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
+| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Context Store Search](#companies-context-store-search) |
+| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Context Store Search](#deals-context-store-search) |
+| Tickets | [List](#tickets-list), [Get](#tickets-get), [API Search](#tickets-api-search), [Context Store Search](#tickets-context-store-search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
 
@@ -20,6 +20,17 @@ The Hubspot connector supports the following entities and actions.
 ### Contacts List
 
 Returns a paginated list of contacts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -84,6 +95,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single contact by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "contactId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -144,6 +169,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts API Search
 
 Search for contacts by filtering on properties, searching through associations, and sorting results.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -212,14 +248,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await hubspot.contacts.search(
+await hubspot.contacts.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -232,7 +288,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -254,12 +310,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `archived` | `boolean` | Boolean flag indicating whether the contact has been archived or deleted. |
-| `companies` | `array` | Associated company records linked to this contact. |
-| `createdAt` | `string` | Timestamp indicating when the contact was first created in the system. |
-| `id` | `string` | Unique identifier for the contact record. |
+| `archived` | `boolean` | Boolean flag indicating whether the contact has been archived or deleted |
+| `companies` | `array` | Associated company records linked to this contact |
+| `createdAt` | `string` | Timestamp indicating when the contact was first created in the system |
+| `id` | `string` | Unique identifier for the contact record |
 | `properties` | `object` | Key-value object storing all contact properties and their values. |
-| `updatedAt` | `string` | Timestamp indicating when the contact record was last modified. |
+| `properties.associatedcompanyid` | `string` | ID of the associated company |
+| `properties.createdate` | `string` | Date the contact was created |
+| `properties.email` | `string` | Contact email address |
+| `properties.firstname` | `string` | Contact first name |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hubspot_owner_id` | `string` | ID of the HubSpot owner assigned to this contact |
+| `properties.lastmodifieddate` | `string` | Last modified date of the contact |
+| `properties.lastname` | `string` | Contact last name |
+| `updatedAt` | `string` | Timestamp indicating when the contact record was last modified |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -271,12 +335,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.has_more` | `boolean` | Whether additional pages are available |
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].archived` | `boolean` | Boolean flag indicating whether the contact has been archived or deleted. |
-| `data[].companies` | `array` | Associated company records linked to this contact. |
-| `data[].createdAt` | `string` | Timestamp indicating when the contact was first created in the system. |
-| `data[].id` | `string` | Unique identifier for the contact record. |
+| `data[].archived` | `boolean` | Boolean flag indicating whether the contact has been archived or deleted |
+| `data[].companies` | `array` | Associated company records linked to this contact |
+| `data[].createdAt` | `string` | Timestamp indicating when the contact was first created in the system |
+| `data[].id` | `string` | Unique identifier for the contact record |
 | `data[].properties` | `object` | Key-value object storing all contact properties and their values. |
-| `data[].updatedAt` | `string` | Timestamp indicating when the contact record was last modified. |
+| `data[].properties.associatedcompanyid` | `string` | ID of the associated company |
+| `data[].properties.createdate` | `string` | Date the contact was created |
+| `data[].properties.email` | `string` | Contact email address |
+| `data[].properties.firstname` | `string` | Contact first name |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the HubSpot owner assigned to this contact |
+| `data[].properties.lastmodifieddate` | `string` | Last modified date of the contact |
+| `data[].properties.lastname` | `string` | Contact last name |
+| `data[].updatedAt` | `string` | Timestamp indicating when the contact record was last modified |
 
 </details>
 
@@ -285,6 +357,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Companies List
 
 Retrieve all companies, using query parameters to control the information that gets returned.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -349,6 +432,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single company by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "get",
+  "params": {
+    "companyId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -409,6 +506,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Companies API Search
 
 Search for companies by filtering on properties, searching through associations, and sorting results.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -477,14 +585,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Companies Search
+### Companies Context Store Search
 
 Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await hubspot.companies.search(
+await hubspot.companies.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -497,7 +625,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "companies",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -524,6 +652,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `createdAt` | `string` | Timestamp when the company record was created |
 | `id` | `string` | Unique identifier for the company record |
 | `properties` | `object` | Object containing all property values for the company |
+| `properties.createdate` | `string` | Date the company was created |
+| `properties.domain` | `string` | Company domain name |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the company |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hubspot_owner_id` | `string` | ID of the HubSpot owner assigned to this company |
+| `properties.name` | `string` | Company name |
 | `updatedAt` | `string` | Timestamp when the company record was last modified |
 
 <details>
@@ -541,6 +675,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].createdAt` | `string` | Timestamp when the company record was created |
 | `data[].id` | `string` | Unique identifier for the company record |
 | `data[].properties` | `object` | Object containing all property values for the company |
+| `data[].properties.createdate` | `string` | Date the company was created |
+| `data[].properties.domain` | `string` | Company domain name |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the company |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the HubSpot owner assigned to this company |
+| `data[].properties.name` | `string` | Company name |
 | `data[].updatedAt` | `string` | Timestamp when the company record was last modified |
 
 </details>
@@ -550,6 +690,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Deals List
 
 Returns a paginated list of deals
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -614,6 +765,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single deal by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "get",
+  "params": {
+    "dealId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -674,6 +839,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Deals API Search
 
 Search deals with filters and sorting
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -742,14 +918,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Deals Search
+### Deals Context Store Search
 
 Search and filter deals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await hubspot.deals.search(
+await hubspot.deals.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -762,7 +958,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "deals",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -791,6 +987,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Unique identifier for the deal record |
 | `line_items` | `array` | Collection of product line items associated with the deal |
 | `properties` | `object` | Key-value object containing all deal properties and custom fields |
+| `properties.amount` | `string` | Deal amount |
+| `properties.closedate` | `string` | Expected close date of the deal |
+| `properties.createdate` | `string` | Date the deal was created |
+| `properties.dealname` | `string` | Deal name |
+| `properties.dealstage` | `string` | Current deal stage |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the deal |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hubspot_owner_id` | `string` | ID of the HubSpot owner assigned to this deal |
+| `properties.pipeline` | `string` | Deal pipeline |
 | `updatedAt` | `string` | Timestamp when the deal record was last modified |
 
 <details>
@@ -810,6 +1015,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].id` | `string` | Unique identifier for the deal record |
 | `data[].line_items` | `array` | Collection of product line items associated with the deal |
 | `data[].properties` | `object` | Key-value object containing all deal properties and custom fields |
+| `data[].properties.amount` | `string` | Deal amount |
+| `data[].properties.closedate` | `string` | Expected close date of the deal |
+| `data[].properties.createdate` | `string` | Date the deal was created |
+| `data[].properties.dealname` | `string` | Deal name |
+| `data[].properties.dealstage` | `string` | Current deal stage |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the deal |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the HubSpot owner assigned to this deal |
+| `data[].properties.pipeline` | `string` | Deal pipeline |
 | `data[].updatedAt` | `string` | Timestamp when the deal record was last modified |
 
 </details>
@@ -819,6 +1033,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tickets List
 
 Returns a paginated list of tickets
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -883,6 +1108,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single ticket by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "get",
+  "params": {
+    "ticketId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -943,6 +1182,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tickets API Search
 
 Search for tickets by filtering on properties, searching through associations, and sorting results.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -1011,11 +1261,130 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tickets Context Store Search
+
+Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tickets.context_store_search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tickets",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the ticket has been deleted and moved to the recycling bin |
+| `companies` | `array` | Collection of company records associated with the ticket |
+| `contacts` | `array` | Collection of contact records associated with the ticket |
+| `createdAt` | `string` | Timestamp when the ticket record was originally created |
+| `id` | `string` | Unique identifier for the ticket record |
+| `properties` | `object` | Object containing all property values for the ticket |
+| `properties.content` | `string` | Ticket content/description |
+| `properties.createdate` | `string` | Date the ticket was created |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the ticket |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hs_pipeline` | `string` | Ticket pipeline |
+| `properties.hs_pipeline_stage` | `string` | Current pipeline stage of the ticket |
+| `properties.hs_ticket_category` | `string` | Ticket category |
+| `properties.hs_ticket_priority` | `string` | Ticket priority level |
+| `properties.subject` | `string` | Ticket subject line |
+| `updatedAt` | `string` | Timestamp when the ticket record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Indicates whether the ticket has been deleted and moved to the recycling bin |
+| `data[].companies` | `array` | Collection of company records associated with the ticket |
+| `data[].contacts` | `array` | Collection of contact records associated with the ticket |
+| `data[].createdAt` | `string` | Timestamp when the ticket record was originally created |
+| `data[].id` | `string` | Unique identifier for the ticket record |
+| `data[].properties` | `object` | Object containing all property values for the ticket |
+| `data[].properties.content` | `string` | Ticket content/description |
+| `data[].properties.createdate` | `string` | Date the ticket was created |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the ticket |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hs_pipeline` | `string` | Ticket pipeline |
+| `data[].properties.hs_pipeline_stage` | `string` | Current pipeline stage of the ticket |
+| `data[].properties.hs_ticket_category` | `string` | Ticket category |
+| `data[].properties.hs_ticket_priority` | `string` | Ticket priority level |
+| `data[].properties.subject` | `string` | Ticket subject line |
+| `data[].updatedAt` | `string` | Timestamp when the ticket record was last modified |
+
+</details>
+
 ## Schemas
 
 ### Schemas List
 
 Returns all custom object schemas to discover available custom objects
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "schemas",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1077,6 +1446,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Schemas Get
 
 Get the schema for a specific custom object type
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "schemas",
+  "action": "get",
+  "params": {
+    "objectType": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1146,6 +1529,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Read a page of objects. Control what is returned via the properties query param.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "objects",
+  "action": "list",
+  "params": {
+    "objectType": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1214,6 +1611,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Objects Get
 
 Read an Object identified by \{objectId\}. \{objectId\} refers to the internal object ID by default, or optionally any unique property value as specified by the idProperty query param. Control what is returned via the properties query param.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "objects",
+  "action": "get",
+  "params": {
+    "objectType": "<str>",
+    "objectId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

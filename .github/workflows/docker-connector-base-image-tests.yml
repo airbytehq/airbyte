@@ -226,11 +226,15 @@ jobs:
         run: |
           uv tool install 'airbyte-cdk[dev]'
 
+      - name: Install Ops CLI
+        run: |
+          uv tool install --upgrade airbyte-internal-ops
+
       - name: Fetch connector secrets
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }}
+          airbyte-ops secrets fetch ${{ matrix.connector }}
 
       - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -310,11 +314,15 @@ jobs:
         run: |
           uv tool install 'airbyte-cdk[dev]'
 
+      - name: Install Ops CLI
+        run: |
+          uv tool install --upgrade airbyte-internal-ops
+
       - name: Fetch connector secrets
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }}
+          airbyte-ops secrets fetch ${{ matrix.connector }}
 
       - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -391,11 +399,15 @@ jobs:
         run: |
           uv tool install 'airbyte-cdk[dev]'
 
+      - name: Install Ops CLI
+        run: |
+          uv tool install --upgrade airbyte-internal-ops
+
       - name: Fetch connector secrets
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }}
+          airbyte-ops secrets fetch ${{ matrix.connector }}
 
       - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}

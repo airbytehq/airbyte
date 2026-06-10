@@ -8,30 +8,41 @@ The Harvest connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
-| Clients | [List](#clients-list), [Get](#clients-get), [Search](#clients-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Company | [Get](#company-get), [Search](#company-search) |
-| Projects | [List](#projects-list), [Get](#projects-get), [Search](#projects-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search) |
-| Time Entries | [List](#time-entries-list), [Get](#time-entries-get), [Search](#time-entries-search) |
-| Invoices | [List](#invoices-list), [Get](#invoices-get), [Search](#invoices-search) |
-| Invoice Item Categories | [List](#invoice-item-categories-list), [Get](#invoice-item-categories-get), [Search](#invoice-item-categories-search) |
-| Estimates | [List](#estimates-list), [Get](#estimates-get), [Search](#estimates-search) |
-| Estimate Item Categories | [List](#estimate-item-categories-list), [Get](#estimate-item-categories-get), [Search](#estimate-item-categories-search) |
-| Expenses | [List](#expenses-list), [Get](#expenses-get), [Search](#expenses-search) |
-| Expense Categories | [List](#expense-categories-list), [Get](#expense-categories-get), [Search](#expense-categories-search) |
-| Roles | [List](#roles-list), [Get](#roles-get), [Search](#roles-search) |
-| User Assignments | [List](#user-assignments-list), [Search](#user-assignments-search) |
-| Task Assignments | [List](#task-assignments-list), [Search](#task-assignments-search) |
-| Time Projects | [List](#time-projects-list), [Search](#time-projects-search) |
-| Time Tasks | [List](#time-tasks-list), [Search](#time-tasks-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Clients | [List](#clients-list), [Get](#clients-get), [Context Store Search](#clients-context-store-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [Context Store Search](#contacts-context-store-search) |
+| Company | [Get](#company-get), [Context Store Search](#company-context-store-search) |
+| Projects | [List](#projects-list), [Get](#projects-get), [Context Store Search](#projects-context-store-search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [Context Store Search](#tasks-context-store-search) |
+| Time Entries | [List](#time-entries-list), [Get](#time-entries-get), [Context Store Search](#time-entries-context-store-search) |
+| Invoices | [List](#invoices-list), [Get](#invoices-get), [Context Store Search](#invoices-context-store-search) |
+| Invoice Item Categories | [List](#invoice-item-categories-list), [Get](#invoice-item-categories-get), [Context Store Search](#invoice-item-categories-context-store-search) |
+| Estimates | [List](#estimates-list), [Get](#estimates-get), [Context Store Search](#estimates-context-store-search) |
+| Estimate Item Categories | [List](#estimate-item-categories-list), [Get](#estimate-item-categories-get), [Context Store Search](#estimate-item-categories-context-store-search) |
+| Expenses | [List](#expenses-list), [Get](#expenses-get), [Context Store Search](#expenses-context-store-search) |
+| Expense Categories | [List](#expense-categories-list), [Get](#expense-categories-get), [Context Store Search](#expense-categories-context-store-search) |
+| Roles | [List](#roles-list), [Get](#roles-get), [Context Store Search](#roles-context-store-search) |
+| User Assignments | [List](#user-assignments-list), [Context Store Search](#user-assignments-context-store-search) |
+| Task Assignments | [List](#task-assignments-list), [Context Store Search](#task-assignments-context-store-search) |
+| Time Projects | [List](#time-projects-list), [Context Store Search](#time-projects-context-store-search) |
+| Time Tasks | [List](#time-tasks-list), [Context Store Search](#time-tasks-context-store-search) |
 
 ## Users
 
 ### Users List
 
 Returns a paginated list of users in the Harvest account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "users",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -102,6 +113,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -166,14 +191,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Users Search
+### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "avatar_url": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.users.search(
+await harvest.users.context_store_search(
     query={"filter": {"eq": {"avatar_url": "<str>"}}}
 )
 ```
@@ -186,7 +231,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"avatar_url": "<str>"}}}
     }
@@ -258,6 +303,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of clients
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "clients",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -313,6 +369,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single client by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "clients",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -363,14 +433,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Clients Search
+### Clients Context Store Search
 
 Search and filter clients records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "clients",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "address": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.clients.search(
+await harvest.clients.context_store_search(
     query={"filter": {"eq": {"address": "<str>"}}}
 )
 ```
@@ -383,7 +473,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "clients",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"address": "<str>"}}}
     }
@@ -438,6 +528,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts List
 
 Returns a paginated list of contacts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -497,6 +598,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single contact by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -550,14 +665,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "client": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.contacts.search(
+await harvest.contacts.context_store_search(
     query={"filter": {"eq": {"client": {}}}}
 )
 ```
@@ -570,7 +705,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"client": {}}}}
     }
@@ -628,6 +763,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns the company information for the authenticated account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "company",
+  "action": "get"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -683,14 +829,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Company Search
+### Company Context Store Search
 
 Search and filter company records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "company",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "base_uri": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.company.search(
+await harvest.company.context_store_search(
     query={"filter": {"eq": {"base_uri": "<str>"}}}
 )
 ```
@@ -703,7 +869,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "company",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"base_uri": "<str>"}}}
     }
@@ -758,6 +924,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects List
 
 Returns a paginated list of projects
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "projects",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -830,6 +1007,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single project by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -896,14 +1087,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Projects Search
+### Projects Context Store Search
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "budget": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.projects.search(
+await harvest.projects.context_store_search(
     query={"filter": {"eq": {"budget": 0.0}}}
 )
 ```
@@ -916,7 +1127,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "projects",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"budget": 0.0}}}
     }
@@ -980,6 +1191,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of tasks
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "tasks",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1035,6 +1257,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single task by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "tasks",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1085,14 +1321,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Tasks Search
+### Tasks Context Store Search
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "billable_by_default": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.tasks.search(
+await harvest.tasks.context_store_search(
     query={"filter": {"eq": {"billable_by_default": True}}}
 )
 ```
@@ -1105,7 +1361,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"billable_by_default": True}}}
     }
@@ -1160,6 +1416,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Time Entries List
 
 Returns a paginated list of time entries
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "time_entries",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1238,6 +1505,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single time entry by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "time_entries",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1310,14 +1591,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Time Entries Search
+### Time Entries Context Store Search
 
 Search and filter time entries records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "time_entries",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "billable": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.time_entries.search(
+await harvest.time_entries.context_store_search(
     query={"filter": {"eq": {"billable": True}}}
 )
 ```
@@ -1330,7 +1631,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "time_entries",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"billable": True}}}
     }
@@ -1395,6 +1696,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoices List
 
 Returns a paginated list of invoices
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "invoices",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1477,6 +1789,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single invoice by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "invoices",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1553,14 +1879,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Invoices Search
+### Invoices Context Store Search
 
 Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "invoices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "amount": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.invoices.search(
+await harvest.invoices.context_store_search(
     query={"filter": {"eq": {"amount": 0.0}}}
 )
 ```
@@ -1573,7 +1919,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount": 0.0}}}
     }
@@ -1639,6 +1985,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of invoice item categories
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "invoice_item_categories",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1692,6 +2049,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single invoice item category by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "invoice_item_categories",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1740,14 +2111,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Invoice Item Categories Search
+### Invoice Item Categories Context Store Search
 
 Search and filter invoice item categories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "invoice_item_categories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.invoice_item_categories.search(
+await harvest.invoice_item_categories.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -1760,7 +2151,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoice_item_categories",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -1813,6 +2204,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Estimates List
 
 Returns a paginated list of estimates
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "estimates",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1885,6 +2287,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single estimate by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "estimates",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1951,14 +2367,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Estimates Search
+### Estimates Context Store Search
 
 Search and filter estimates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "estimates",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "amount": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.estimates.search(
+await harvest.estimates.context_store_search(
     query={"filter": {"eq": {"amount": 0.0}}}
 )
 ```
@@ -1971,7 +2407,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "estimates",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount": 0.0}}}
     }
@@ -2033,6 +2469,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of estimate item categories
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "estimate_item_categories",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2084,6 +2531,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single estimate item category by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "estimate_item_categories",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2130,14 +2591,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Estimate Item Categories Search
+### Estimate Item Categories Context Store Search
 
 Search and filter estimate item categories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "estimate_item_categories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.estimate_item_categories.search(
+await harvest.estimate_item_categories.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -2150,7 +2631,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "estimate_item_categories",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -2199,6 +2680,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Expenses List
 
 Returns a paginated list of expenses
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "expenses",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -2268,6 +2760,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single expense by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "expenses",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2331,14 +2837,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Expenses Search
+### Expenses Context Store Search
 
 Search and filter expenses records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "expenses",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "billable": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.expenses.search(
+await harvest.expenses.context_store_search(
     query={"filter": {"eq": {"billable": True}}}
 )
 ```
@@ -2351,7 +2877,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "expenses",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"billable": True}}}
     }
@@ -2417,6 +2943,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of expense categories
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "expense_categories",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2471,6 +3008,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single expense category by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "expense_categories",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2520,14 +3071,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Expense Categories Search
+### Expense Categories Context Store Search
 
 Search and filter expense categories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "expense_categories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.expense_categories.search(
+await harvest.expense_categories.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -2540,7 +3111,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "expense_categories",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -2596,6 +3167,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of roles
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "roles",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2648,6 +3230,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single role by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "roles",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2695,14 +3291,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Roles Search
+### Roles Context Store Search
 
 Search and filter roles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "roles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.roles.search(
+await harvest.roles.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -2715,7 +3331,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "roles",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -2766,6 +3382,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### User Assignments List
 
 Returns a paginated list of user assignments across all projects
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "user_assignments",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -2820,14 +3447,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### User Assignments Search
+### User Assignments Context Store Search
 
 Search and filter user assignments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "user_assignments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "budget": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.user_assignments.search(
+await harvest.user_assignments.context_store_search(
     query={"filter": {"eq": {"budget": 0.0}}}
 )
 ```
@@ -2840,7 +3487,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "user_assignments",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"budget": 0.0}}}
     }
@@ -2900,6 +3547,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of task assignments across all projects
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "task_assignments",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2952,14 +3610,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Task Assignments Search
+### Task Assignments Context Store Search
 
 Search and filter task assignments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "task_assignments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "billable": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.task_assignments.search(
+await harvest.task_assignments.context_store_search(
     query={"filter": {"eq": {"billable": True}}}
 )
 ```
@@ -2972,7 +3650,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "task_assignments",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"billable": True}}}
     }
@@ -3029,6 +3707,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Time Projects List
 
 Returns time report data grouped by project for a given date range
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "time_projects",
+  "action": "list",
+  "params": {
+    "from": "<str>",
+    "to": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3090,14 +3783,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Time Projects Search
+### Time Projects Context Store Search
 
 Search and filter time projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "time_projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "billable_amount": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.time_projects.search(
+await harvest.time_projects.context_store_search(
     query={"filter": {"eq": {"billable_amount": 0.0}}}
 )
 ```
@@ -3110,7 +3823,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "time_projects",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"billable_amount": 0.0}}}
     }
@@ -3167,6 +3880,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Time Tasks List
 
 Returns time report data grouped by task for a given date range
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "time_tasks",
+  "action": "list",
+  "params": {
+    "from": "<str>",
+    "to": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3226,14 +3954,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Time Tasks Search
+### Time Tasks Context Store Search
 
 Search and filter time tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "harvest",
+  "entity": "time_tasks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "billable_amount": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await harvest.time_tasks.search(
+await harvest.time_tasks.context_store_search(
     query={"filter": {"eq": {"billable_amount": 0.0}}}
 )
 ```
@@ -3246,7 +3994,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "time_tasks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"billable_amount": 0.0}}}
     }

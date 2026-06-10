@@ -524,6 +524,86 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
         assert len(output.records) == 2
 
+    # --- HTTP 403 "not authorized to use Amazon Attribution" must be ignored ---
+
+    @HttpMocker()
+    def test_given_attribution_not_authorized_403_when_read_performance_adgroup_then_stream_is_ignored(self, http_mocker):
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
+        not_authorized_error = ErrorRecordBuilder.breaking_error().with_error_message(
+            "This profileID is not authorized to use Amazon Attribution"
+        )
+
+        http_mocker.post(
+            AttributionReportRequestBuilder.performance_adgroup_endpoint(
+                self._config["client_id"],
+                self._config["access_token"],
+                self._config["profiles"][0],
+                start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            ).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(not_authorized_error).with_status_code(403).build(),
+        )
+
+        output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
+        assert len(output.records) == 0
+
+        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
+        assert not any(["not authorized" in error for error in error_logs])
+
+    @HttpMocker()
+    def test_given_attribution_not_authorized_403_when_read_performance_campaign_then_stream_is_ignored(self, http_mocker):
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
+        not_authorized_error = ErrorRecordBuilder.breaking_error().with_error_message(
+            "This profileID is not authorized to use Amazon Attribution"
+        )
+
+        http_mocker.post(
+            AttributionReportRequestBuilder.performance_campaign_endpoint(
+                self._config["client_id"],
+                self._config["access_token"],
+                self._config["profiles"][0],
+                start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            ).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(not_authorized_error).with_status_code(403).build(),
+        )
+
+        output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
+        assert len(output.records) == 0
+
+        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
+        assert not any(["not authorized" in error for error in error_logs])
+
+    @HttpMocker()
+    def test_given_attribution_not_authorized_403_when_read_performance_creative_then_stream_is_ignored(self, http_mocker):
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
+        not_authorized_error = ErrorRecordBuilder.breaking_error().with_error_message(
+            "This profileID is not authorized to use Amazon Attribution"
+        )
+
+        http_mocker.post(
+            AttributionReportRequestBuilder.performance_creative_endpoint(
+                self._config["client_id"],
+                self._config["access_token"],
+                self._config["profiles"][0],
+                start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            ).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(not_authorized_error).with_status_code(403).build(),
+        )
+
+        output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
+        assert len(output.records) == 0
+
+        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
+        assert not any(["not authorized" in error for error in error_logs])
+
     # --- cursorId as JSON-shaped string: must remain a string through pagination ---
 
     @HttpMocker()

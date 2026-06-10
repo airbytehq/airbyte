@@ -8,28 +8,39 @@ The Gong connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
-| Calls | [List](#calls-list), [Get](#calls-get), [Search](#calls-search) |
-| Calls Extensive | [List](#calls-extensive-list), [Search](#calls-extensive-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Calls | [List](#calls-list), [Get](#calls-get), [Context Store Search](#calls-context-store-search) |
+| Calls Extensive | [List](#calls-extensive-list), [Context Store Search](#calls-extensive-context-store-search) |
 | Call Audio | [Download](#call-audio-download) |
 | Call Video | [Download](#call-video-download) |
 | Workspaces | [List](#workspaces-list) |
-| Call Transcripts | [List](#call-transcripts-list) |
+| Call Transcripts | [List](#call-transcripts-list), [Context Store Search](#call-transcripts-context-store-search) |
 | Stats Activity Aggregate | [List](#stats-activity-aggregate-list) |
 | Stats Activity Day By Day | [List](#stats-activity-day-by-day-list) |
 | Stats Interaction | [List](#stats-interaction-list) |
-| Settings Scorecards | [List](#settings-scorecards-list), [Search](#settings-scorecards-search) |
+| Settings Scorecards | [List](#settings-scorecards-list), [Context Store Search](#settings-scorecards-context-store-search) |
 | Settings Trackers | [List](#settings-trackers-list) |
 | Library Folders | [List](#library-folders-list) |
 | Library Folder Content | [List](#library-folder-content-list) |
 | Coaching | [List](#coaching-list) |
-| Stats Activity Scorecards | [List](#stats-activity-scorecards-list), [Search](#stats-activity-scorecards-search) |
+| Stats Activity Scorecards | [List](#stats-activity-scorecards-list), [Context Store Search](#stats-activity-scorecards-context-store-search) |
 
 ## Users
 
 ### Users List
 
 Returns a list of all users in the Gong account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "users",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -86,17 +97,29 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
 ### Users Get
 
 Get a single user by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -156,14 +179,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Users Search
+### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await gong.users.search(
+await gong.users.context_store_search(
     query={"filter": {"eq": {"active": True}}}
 )
 ```
@@ -176,7 +219,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"active": True}}}
     }
@@ -250,6 +293,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve calls data by date range
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "calls",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -311,17 +365,29 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
 ### Calls Get
 
 Get specific call data by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "calls",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -385,14 +451,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Calls Search
+### Calls Context Store Search
 
 Search and filter calls records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "calls",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "calendarEventId": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await gong.calls.search(
+await gong.calls.context_store_search(
     query={"filter": {"eq": {"calendarEventId": "<str>"}}}
 )
 ```
@@ -405,7 +491,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "calls",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"calendarEventId": "<str>"}}}
     }
@@ -487,6 +573,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve detailed call data including participants, interaction stats, and content
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "calls_extensive",
+  "action": "list",
+  "params": {
+    "filter": {}
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -516,9 +616,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `object` | Yes |  |
-| `filter.fromDateTime` | `string` | No | Start date in ISO 8601 format |
-| `filter.toDateTime` | `string` | No | End date in ISO 8601 format |
-| `filter.callIds` | `array<string>` | No | List of specific call IDs to retrieve |
+| `filter.fromDateTime` | `string` | No | Start date in ISO 8601 format. Recommended for scoping results to a manageable date range. |
+| `filter.toDateTime` | `string` | No | End date in ISO 8601 format. Recommended for scoping results to a manageable date range. |
+| `filter.callIds` | `array<string>` | No | List of specific call IDs to retrieve. Alternative to date range filtering. |
 | `filter.workspaceId` | `string` | No | Filter by workspace ID |
 | `contentSelector` | `object` | No | Select which content to include in the response |
 | `contentSelector.context` | `"Extended"` | No | Context level for the data |
@@ -566,22 +666,40 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
-### Calls Extensive Search
+### Calls Extensive Context Store Search
 
 Search and filter calls extensive records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "calls_extensive",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await gong.calls_extensive.search(
+await gong.calls_extensive.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -594,7 +712,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "calls_extensive",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -657,6 +775,17 @@ Downloads the audio media file for a call. Temporarily, the request body must be
 \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "call_audio",
+  "action": "download"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -700,6 +829,17 @@ Downloads the video media file for a call. Temporarily, the request body must be
 \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "call_video",
+  "action": "download"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -739,6 +879,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Workspaces List
 
 List all company workspaces
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "workspaces",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -781,10 +932,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns transcripts for calls in a specified date range or specific call IDs
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "call_transcripts",
+  "action": "list",
+  "params": {
+    "filter": {}
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await gong.call_transcripts.list()
+await gong.call_transcripts.list(
+    filter={}
+)
 ```
 
 #### API
@@ -795,7 +962,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "call_transcripts",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "filter": {}
+    }
 }'
 ```
 
@@ -804,10 +974,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `filter` | `object` | No |  |
-| `filter.fromDateTime` | `string` | No | Start date in ISO 8601 format (optional if callIds provided) |
-| `filter.toDateTime` | `string` | No | End date in ISO 8601 format (optional if callIds provided) |
-| `filter.callIds` | `array<string>` | No | List of specific call IDs to retrieve transcripts for |
+| `filter` | `object` | Yes |  |
+| `filter.fromDateTime` | `string` | No | Start date in ISO 8601 format. Recommended for scoping results to a manageable date range. |
+| `filter.toDateTime` | `string` | No | End date in ISO 8601 format. Recommended for scoping results to a manageable date range. |
+| `filter.callIds` | `array<string>` | No | List of specific call IDs to retrieve transcripts for. Alternative to date range filtering. |
 | `cursor` | `string` | No | Cursor for pagination |
 
 
@@ -826,11 +996,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
+
+</details>
+
+### Call Transcripts Context Store Search
+
+Search and filter call transcripts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "call_transcripts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "callId": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gong.call_transcripts.context_store_search(
+    query={"filter": {"eq": {"callId": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "call_transcripts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"callId": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `callId` | `string` | Unique identifier for the call. |
+| `started` | `string` | Timestamp the call started. Filterable for narrowing transcript search by call time. |
+| `transcript` | `array` | Gong transcript speaker turns. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].callId` | `string` | Unique identifier for the call. |
+| `data[].started` | `string` | Timestamp the call started. Filterable for narrowing transcript search by call time. |
+| `data[].transcript` | `array` | Gong transcript speaker turns. |
 
 </details>
 
@@ -840,10 +1090,32 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Provides aggregated user activity metrics across a specified period
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "stats_activity_aggregate",
+  "action": "list",
+  "params": {
+    "filter": {
+      "fromDate": "<str>",
+      "toDate": "<str>"
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await gong.stats_activity_aggregate.list()
+await gong.stats_activity_aggregate.list(
+    filter={
+        "fromDate": "<str>",
+        "toDate": "<str>"
+    }
+)
 ```
 
 #### API
@@ -854,7 +1126,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "stats_activity_aggregate",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "filter": {
+            "fromDate": "<str>",
+            "toDate": "<str>"
+        }
+    }
 }'
 ```
 
@@ -863,9 +1141,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `filter` | `object` | No |  |
-| `filter.fromDate` | `string` | No | Start date (YYYY-MM-DD) |
-| `filter.toDate` | `string` | No | End date (YYYY-MM-DD) |
+| `filter` | `object` | Yes |  |
+| `filter.fromDate` | `string` | Yes | Start date (YYYY-MM-DD). Required by the Gong API for activity stats. |
+| `filter.toDate` | `string` | Yes | End date (YYYY-MM-DD). Required by the Gong API for activity stats. |
 | `filter.userIds` | `array<string>` | No | List of user IDs to retrieve stats for |
 
 
@@ -900,11 +1178,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
@@ -914,10 +1190,32 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delivers daily user activity metrics across a specified date range
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "stats_activity_day_by_day",
+  "action": "list",
+  "params": {
+    "filter": {
+      "fromDate": "<str>",
+      "toDate": "<str>"
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await gong.stats_activity_day_by_day.list()
+await gong.stats_activity_day_by_day.list(
+    filter={
+        "fromDate": "<str>",
+        "toDate": "<str>"
+    }
+)
 ```
 
 #### API
@@ -928,7 +1226,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "stats_activity_day_by_day",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "filter": {
+            "fromDate": "<str>",
+            "toDate": "<str>"
+        }
+    }
 }'
 ```
 
@@ -937,9 +1241,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `filter` | `object` | No |  |
-| `filter.fromDate` | `string` | No | Start date (YYYY-MM-DD) |
-| `filter.toDate` | `string` | No | End date (YYYY-MM-DD) |
+| `filter` | `object` | Yes |  |
+| `filter.fromDate` | `string` | Yes | Start date (YYYY-MM-DD). Required by the Gong API for activity stats. |
+| `filter.toDate` | `string` | Yes | End date (YYYY-MM-DD). Required by the Gong API for activity stats. |
 | `filter.userIds` | `array<string>` | No | List of user IDs to retrieve stats for |
 
 
@@ -976,11 +1280,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
@@ -990,10 +1292,32 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns interaction stats for users based on calls that have Whisper turned on
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "stats_interaction",
+  "action": "list",
+  "params": {
+    "filter": {
+      "fromDate": "<str>",
+      "toDate": "<str>"
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await gong.stats_interaction.list()
+await gong.stats_interaction.list(
+    filter={
+        "fromDate": "<str>",
+        "toDate": "<str>"
+    }
+)
 ```
 
 #### API
@@ -1004,7 +1328,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "stats_interaction",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "filter": {
+            "fromDate": "<str>",
+            "toDate": "<str>"
+        }
+    }
 }'
 ```
 
@@ -1013,9 +1343,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `filter` | `object` | No |  |
-| `filter.fromDate` | `string` | No | Start date (YYYY-MM-DD) |
-| `filter.toDate` | `string` | No | End date (YYYY-MM-DD) |
+| `filter` | `object` | Yes |  |
+| `filter.fromDate` | `string` | Yes | Start date (YYYY-MM-DD). Required by the Gong API for interaction stats. |
+| `filter.toDate` | `string` | Yes | End date (YYYY-MM-DD). Required by the Gong API for interaction stats. |
 | `filter.userIds` | `array<string>` | No | List of user IDs to retrieve stats for |
 
 
@@ -1037,11 +1367,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
@@ -1050,6 +1378,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Settings Scorecards List
 
 Retrieve all scorecard configurations in the company
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "settings_scorecards",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1110,14 +1449,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Settings Scorecards Search
+### Settings Scorecards Context Store Search
 
 Search and filter settings scorecards records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "settings_scorecards",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await gong.settings_scorecards.search(
+await gong.settings_scorecards.context_store_search(
     query={"filter": {"eq": {"created": "<str>"}}}
 )
 ```
@@ -1130,7 +1489,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "settings_scorecards",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created": "<str>"}}}
     }
@@ -1187,6 +1546,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Settings Trackers List
 
 Retrieve all keyword tracker configurations in the company
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "settings_trackers",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1246,6 +1616,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve the folder structure of the call library
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "library_folders",
+  "action": "list",
+  "params": {
+    "workspaceId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1299,6 +1683,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve calls in a specific library folder
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "library_folder_content",
+  "action": "list",
+  "params": {
+    "folderId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1350,11 +1748,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
@@ -1363,6 +1759,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Coaching List
 
 Retrieve coaching metrics for a manager and their direct reports
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "coaching",
+  "action": "list",
+  "params": {
+    "workspace-id": "<str>",
+    "manager-id": "<str>",
+    "from": "2025-01-01T00:00:00Z",
+    "to": "2025-01-01T00:00:00Z"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1431,10 +1844,32 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve answered scorecards for applicable reviewed users or scorecards for a date range
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "stats_activity_scorecards",
+  "action": "list",
+  "params": {
+    "filter": {
+      "fromDateTime": "2025-01-01T00:00:00Z",
+      "toDateTime": "2025-01-01T00:00:00Z"
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await gong.stats_activity_scorecards.list()
+await gong.stats_activity_scorecards.list(
+    filter={
+        "fromDateTime": "2025-01-01T00:00:00Z",
+        "toDateTime": "2025-01-01T00:00:00Z"
+    }
+)
 ```
 
 #### API
@@ -1445,7 +1880,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "stats_activity_scorecards",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "filter": {
+            "fromDateTime": "2025-01-01T00:00:00Z",
+            "toDateTime": "2025-01-01T00:00:00Z"
+        }
+    }
 }'
 ```
 
@@ -1454,9 +1895,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `filter` | `object` | No |  |
-| `filter.fromDateTime` | `string` | No | Start date in ISO 8601 format |
-| `filter.toDateTime` | `string` | No | End date in ISO 8601 format |
+| `filter` | `object` | Yes |  |
+| `filter.fromDateTime` | `string` | Yes | Start date in ISO 8601 format. Required by the Gong API for scorecard stats. |
+| `filter.toDateTime` | `string` | Yes | End date in ISO 8601 format. Required by the Gong API for scorecard stats. |
 | `filter.scorecardIds` | `array<string>` | No | List of scorecard IDs to filter by |
 | `filter.reviewedUserIds` | `array<string>` | No | List of reviewed user IDs to filter by |
 | `filter.reviewerUserIds` | `array<string>` | No | List of reviewer user IDs to filter by |
@@ -1500,22 +1941,40 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.totalRecords` | `integer` |  |
-| `pagination.currentPageSize` | `integer` |  |
-| `pagination.currentPageNumber` | `integer` |  |
-| `pagination.cursor` | `string` |  |
+| `cursor` | `string \| null` |  |
+| `total_records` | `integer` |  |
+| `current_page_number` | `integer` |  |
 
 </details>
 
-### Stats Activity Scorecards Search
+### Stats Activity Scorecards Context Store Search
 
 Search and filter stats activity scorecards records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gong",
+  "entity": "stats_activity_scorecards",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "answeredScorecardId": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await gong.stats_activity_scorecards.search(
+await gong.stats_activity_scorecards.context_store_search(
     query={"filter": {"eq": {"answeredScorecardId": "<str>"}}}
 )
 ```
@@ -1528,7 +1987,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "stats_activity_scorecards",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"answeredScorecardId": "<str>"}}}
     }

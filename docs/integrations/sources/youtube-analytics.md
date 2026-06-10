@@ -79,6 +79,14 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
 
+## YouTube API Services usage disclosure
+
+This connector uses [YouTube API Services](https://developers.google.com/youtube/analytics) to retrieve data from YouTube. By using this connector, you agree to be bound by the [YouTube Terms of Service](https://www.youtube.com/t/terms).
+
+YouTube API Services are provided by Google. For information about how Google handles data, review the [Google Privacy Policy](https://www.google.com/policies/privacy).
+
+When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
+
 ## Performance considerations
 
 The YouTube Reporting API has the following quota limits:
@@ -89,6 +97,10 @@ The YouTube Reporting API has the following quota limits:
 
 The connector retrieves bulk report data from YouTube's reporting jobs, which minimizes API quota usage compared to making individual queries for each metric.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -96,6 +108,9 @@ The connector retrieves bulk report data from YouTube's reporting jobs, which mi
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.2.7 | 2026-06-09 | [79579](https://github.com/airbytehq/airbyte/pull/79579) | Update dependencies |
+| 1.2.6 | 2026-06-02 | [79073](https://github.com/airbytehq/airbyte/pull/79073) | Update dependencies |
+| 1.2.5 | 2026-04-28 | [77489](https://github.com/airbytehq/airbyte/pull/77489) | Update dependencies |
 | 1.2.4 | 2026-04-21 | [74693](https://github.com/airbytehq/airbyte/pull/74693) | Update dependencies |
 | 1.2.3 | 2026-02-24 | [73149](https://github.com/airbytehq/airbyte/pull/73149) | Update dependencies |
 | 1.2.2 | 2026-02-03 | [72635](https://github.com/airbytehq/airbyte/pull/72635) | Update dependencies |

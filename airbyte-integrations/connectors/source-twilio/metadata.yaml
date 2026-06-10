@@ -6,14 +6,15 @@ data:
     hosts:
       - api.twilio.com
       - monitor.twilio.com
-      - chat.twilio.com
+      - conversations.twilio.com
+      - studio.twilio.com
       - trunking.twilio.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.2@sha256:1bfcca53335b2669b02414180fe9ad96b0abd9c95d6cbf50089c1d881fc07801
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.21.1@sha256:0e55d8593249f5b9d84272cd5786884bffa46eeac691162de1217807930c5e70
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.17.6
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/source-twilio
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   githubIssueLabel: source-twilio
@@ -32,6 +33,23 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          The `services` and `roles` streams have been migrated from Twilio's deprecated
+          Programmable Chat API (`chat.twilio.com/v2`) to the Twilio Conversations API
+          (`conversations.twilio.com/v1`). Twilio is retiring Programmable Chat on June 1, 2026.
+          Existing Service and Role SIDs carry over automatically, but the record schema for
+          these two streams has been simplified to match the Conversations API response and
+          the `service_sid` field on `roles` records is renamed to `chat_service_sid`.
+          Users of the `services` and `roles` streams should refresh the source schema and
+          clear data for those streams after upgrading.
+        upgradeDeadline: "2026-05-30"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - services
+              - roles
     rolloutConfiguration:
       enableProgressiveRollout: false
   suggestedStreams:

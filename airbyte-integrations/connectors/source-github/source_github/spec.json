@@ -135,11 +135,11 @@
       "max_waiting_time": {
         "type": "integer",
         "title": "Max Waiting Time (in minutes)",
-        "examples": [10, 30, 60],
-        "default": 10,
+        "examples": [10, 60, 120],
+        "default": 120,
         "minimum": 1,
-        "maximum": 60,
-        "description": "Max Waiting Time for rate limit. Set higher value to wait till rate limits will be resetted to continue sync",
+        "maximum": 240,
+        "description": "Max time (in minutes) the connector will wait when all API tokens are rate-limited before failing. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.",
         "order": 5
       }
     }

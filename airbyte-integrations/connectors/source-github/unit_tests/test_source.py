@@ -275,7 +275,7 @@ def test_streams_config_start_date(config, expected, rate_limit_mock_response, r
         ),
         (
             "401 Client Error: Unauthorized for url",
-            "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token.",
+            "GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth credentials are valid and not expired.",
         ),
     ],
 )

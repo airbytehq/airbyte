@@ -8,18 +8,29 @@ The Typeform connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Forms | [List](#forms-list), [Get](#forms-get), [Search](#forms-search) |
-| Responses | [List](#responses-list), [Search](#responses-search) |
-| Webhooks | [List](#webhooks-list), [Search](#webhooks-search) |
-| Workspaces | [List](#workspaces-list), [Search](#workspaces-search) |
-| Images | [List](#images-list), [Search](#images-search) |
-| Themes | [List](#themes-list), [Search](#themes-search) |
+| Forms | [List](#forms-list), [Get](#forms-get), [Context Store Search](#forms-context-store-search) |
+| Responses | [List](#responses-list), [Context Store Search](#responses-context-store-search) |
+| Webhooks | [List](#webhooks-list), [Context Store Search](#webhooks-context-store-search) |
+| Workspaces | [List](#workspaces-list), [Context Store Search](#workspaces-context-store-search) |
+| Images | [List](#images-list), [Context Store Search](#images-context-store-search) |
+| Themes | [List](#themes-list), [Context Store Search](#themes-context-store-search) |
 
 ## Forms
 
 ### Forms List
 
 Returns a paginated list of forms in the account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "forms",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -85,6 +96,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single form by its ID, including fields, settings, and logic
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "forms",
+  "action": "get",
+  "params": {
+    "form_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -142,14 +167,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Forms Search
+### Forms Context Store Search
 
 Search and filter forms records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "forms",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "_links": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await typeform.forms.search(
+await typeform.forms.context_store_search(
     query={"filter": {"eq": {"_links": {}}}}
 )
 ```
@@ -162,7 +207,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "forms",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"_links": {}}}}
     }
@@ -231,6 +276,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Responses List
 
 Returns a paginated list of responses for a given form
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "responses",
+  "action": "list",
+  "params": {
+    "form_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -301,14 +360,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Responses Search
+### Responses Context Store Search
 
 Search and filter responses records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "responses",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "answers": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await typeform.responses.search(
+await typeform.responses.context_store_search(
     query={"filter": {"eq": {"answers": []}}}
 )
 ```
@@ -321,7 +400,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "responses",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"answers": []}}}
     }
@@ -387,6 +466,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns webhooks configured for a given form
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "webhooks",
+  "action": "list",
+  "params": {
+    "form_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -437,14 +530,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Webhooks Search
+### Webhooks Context Store Search
 
 Search and filter webhooks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "webhooks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await typeform.webhooks.search(
+await typeform.webhooks.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -457,7 +570,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "webhooks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -515,6 +628,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of workspaces in the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "workspaces",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -567,14 +691,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Workspaces Search
+### Workspaces Context Store Search
 
 Search and filter workspaces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "workspaces",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await typeform.workspaces.search(
+await typeform.workspaces.context_store_search(
     query={"filter": {"eq": {"account_id": "<str>"}}}
 )
 ```
@@ -587,7 +731,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "workspaces",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"account_id": "<str>"}}}
     }
@@ -643,6 +787,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of images in the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "images",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -683,14 +838,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Images Search
+### Images Context Store Search
 
 Search and filter images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "images",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "avg_color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await typeform.images.search(
+await typeform.images.context_store_search(
     query={"filter": {"eq": {"avg_color": "<str>"}}}
 )
 ```
@@ -703,7 +878,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "images",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"avg_color": "<str>"}}}
     }
@@ -760,6 +935,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Themes List
 
 Returns a paginated list of themes in the account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "themes",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -818,14 +1004,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Themes Search
+### Themes Context Store Search
 
 Search and filter themes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "typeform",
+  "entity": "themes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "background": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await typeform.themes.search(
+await typeform.themes.context_store_search(
     query={"filter": {"eq": {"background": {}}}}
 )
 ```
@@ -838,7 +1044,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "themes",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"background": {}}}}
     }

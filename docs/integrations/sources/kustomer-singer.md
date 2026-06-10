@@ -52,6 +52,10 @@ Kustomer has some [rate limit restrictions](https://developer.kustomer.com/kusto
 
 - **Kustomer API token**. See the [Kustomer docs](https://help.kustomer.com/api-keys-SJs5YTIWX) for information on how to obtain an API token.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

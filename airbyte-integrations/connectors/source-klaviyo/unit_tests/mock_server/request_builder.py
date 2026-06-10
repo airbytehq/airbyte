@@ -62,6 +62,11 @@ class KlaviyoRequestBuilder:
         return cls("lists", api_key)
 
     @classmethod
+    def segments_endpoint(cls, api_key: str) -> "KlaviyoRequestBuilder":
+        """Create a request builder for the /segments endpoint."""
+        return cls("segments", api_key)
+
+    @classmethod
     def lists_detailed_endpoint(cls, api_key: str, list_id: str) -> "KlaviyoRequestBuilder":
         """Create a request builder for the /lists/{list_id} endpoint."""
         return cls(f"lists/{list_id}", api_key)

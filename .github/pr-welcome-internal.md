@@ -21,6 +21,9 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - `/ai-prove-fix` - Runs prerelease readiness checks, including testing against customer connections.
   - `/ai-canary-prerelease` - Rolls out prerelease to 5-10 connections for canary testing.
   - `/ai-review` - AI-powered PR review for connector safety and quality gates.
+- 📝 AI Documentation:
+  - `/ai-docs-review` - AI-powered documentation review for PRs with connector changes.
+  - `/ai-create-docs-pr` - Creates a documentation PR for connector changes, stacked on the current PR.
 - 🚀 Connector Releases:
   - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
 - ☕️ JVM connectors:

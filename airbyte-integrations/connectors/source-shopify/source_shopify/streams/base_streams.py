@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -14,6 +14,7 @@ import pendulum as pdm
 import requests
 from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
+from source_shopify.shopify_graphql.bulk.external_sort import DEFAULT_SORT_CHUNK_SIZE, external_stable_sort
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
@@ -209,6 +210,24 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         current_state_value = current_stream_state.get(self.cursor_field) or self.default_state_comparison_value
         return {self.cursor_field: max(last_record_value, current_state_value)}
 
+    def _apply_lookback_window(self, state_value: str) -> str:
+        """
+        Apply the lookback window to the state value by subtracting the configured number of days.
+        This helps capture records that may have been missed due to race conditions or late-arriving data.
+        """
+        lookback_days = self.config.get("lookback_window_in_days", 0)
+        if lookback_days > 0:
+            state_datetime = pdm.parse(state_value)
+            adjusted_datetime = state_datetime.subtract(days=lookback_days)
+            # Ensure we don't go before the configured start_date
+            start_date = self.config.get("start_date")
+            if start_date:
+                start_datetime = pdm.parse(start_date)
+                if adjusted_datetime < start_datetime:
+                    adjusted_datetime = start_datetime
+            return adjusted_datetime.to_iso8601_string()
+        return state_value
+
     @stream_state_cache.cache_stream_state
     def request_params(
         self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs
@@ -218,7 +237,11 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         if not next_page_token:
             params["order"] = f"{self.order_field} asc"
             if stream_state:
-                params[self.filter_field] = stream_state.get(self.cursor_field)
+                state_value = stream_state.get(self.cursor_field)
+                # Apply lookback window only for datetime-based filter fields (not since_id)
+                if self.filter_field != "since_id" and isinstance(state_value, str):
+                    state_value = self._apply_lookback_window(state_value)
+                params[self.filter_field] = state_value
         return params
 
     def track_checkpoint_cursor(self, record_value: Union[str, int], filter_record_value: Optional[str] = None) -> None:
@@ -816,12 +839,36 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def emit_checkpoint_message(self) -> None:
         if self.job_manager._job_adjust_slice_from_checkpoint:
-            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._checkpoint_cursor}`.")
+            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._effective_checkpoint_cursor()}`.")
+
+    def _effective_checkpoint_cursor(self) -> Optional[Union[str, int]]:
+        """Return the cursor value to use when advancing the next slice after
+        a bulk job checkpointed mid-output.
+
+        For streams with a `parent_stream_class`, the bulk query filters on
+        the parent's cursor (e.g., `customers.updated_at`) while emitted
+        records carry the child's cursor (e.g., `metafield.updated_at`).
+        Using `self._checkpoint_cursor` here — which tracks the child's
+        cursor — lets the next slice skip arbitrarily far ahead whenever an
+        emitted child has a timestamp later than the slice window. Prefer
+        the parent cursor tracked by the bulk record producer, which is
+        bounded by the current slice's upper bound.
+        """
+        if self.parent_stream_class:
+            parent_state = self.job_manager.record_producer.get_parent_stream_state()
+            if parent_state:
+                parent_cursor = parent_state.get(self.parent_stream_cursor)
+                if parent_cursor:
+                    return parent_cursor
+        return self._checkpoint_cursor
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
             state = self._get_state_value(stream_state)
+            # Apply lookback window to the start of the sync window for GraphQL BULK streams
+            if stream_state:
+                state = self._apply_lookback_window(state)
             start = pdm.parse(state)
             end = pdm.now()
             while start < end:
@@ -830,27 +877,45 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.emit_slice_message(start, slice_end)
                 yield {"start": start.to_rfc3339_string(), "end": slice_end.to_rfc3339_string()}
                 # increment the end of the slice or reduce the next slice
-                start = self.job_manager.get_adjusted_job_end(start, slice_end, self._checkpoint_cursor, self._filter_checkpointed_cursor)
+                start = self.job_manager.get_adjusted_job_end(
+                    start, slice_end, self._effective_checkpoint_cursor(), self._filter_checkpointed_cursor
+                )
         else:
             # for the streams that don't support filtering
             yield {}
 
+    # Chunk size used by the disk-backed external sort in `sort_output_asc`.
+    # Exposed as a class attribute so tests and subclasses can tune it.
+    sort_chunk_size: int = DEFAULT_SORT_CHUNK_SIZE
+
     def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        """Emit `non_sorted_records` in ascending `cursor_field` order.
+
+        The previous implementation relied on `sorted(...)` which fully
+        materialized the input iterable in memory. For large bulk GraphQL
+        slices (notably the metafield streams, where sorting is applied at the
+        parent-entity level but records are emitted at the child level) that
+        materialization triggered out-of-memory failures in production syncs.
+
+        This implementation preserves the prior ascending, stable ordering and
+        downstream checkpoint/state semantics while bounding peak memory via a
+        disk-backed external merge sort. Inputs that fit in a single in-memory
+        chunk take the fast path with no disk spill.
         """
-        Apply sorting for collected records, to guarantee the `ASC` output.
-        This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
-        """
-        if non_sorted_records:
-            if not self.cursor_field:
-                yield from non_sorted_records
-            else:
-                yield from sorted(
-                    non_sorted_records,
-                    key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_state_comparison_value,
-                )
-        else:
+        if not non_sorted_records:
             # always return an empty iterable, if no records
             return []
+        if not self.cursor_field:
+            return non_sorted_records
+        return external_stable_sort(
+            non_sorted_records,
+            key_fn=self._sort_key_for_record,
+            chunk_size=self.sort_chunk_size,
+        )
+
+    def _sort_key_for_record(self, record: Mapping[str, Any]) -> Any:
+        value = record.get(self.cursor_field)
+        return value if value else self.default_state_comparison_value
 
     def read_records(
         self,

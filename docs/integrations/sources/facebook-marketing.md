@@ -172,6 +172,12 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 6. (Optional) Multiselect the **Ad Statuses** to include data from Ads for particular statuses.
 </FieldAnchor>
 
+   :::caution Status filtering and missing records
+   When no statuses are selected for Campaign Statuses, AdSet Statuses, or Ad Statuses, the connector relies on the Facebook Marketing API's default behavior, which **excludes records in ARCHIVED and DELETED states**. This means archived campaigns, ad sets, and ads will not appear in your synced data.
+
+   To ensure a complete dataset, explicitly select all statuses you want to include. This is especially important when using Full Refresh sync mode, because previously synced records that have since been archived will not be re-fetched unless you include the ARCHIVED status.
+   :::
+
 <FieldAnchor field="fetch_thumbnail_images">
 7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 </FieldAnchor>
@@ -375,6 +381,14 @@ If you sync multiple ad accounts in different timezones within a single connecti
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
+</HideInUI>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+<HideInUI>
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -405,6 +419,20 @@ This response indicates that the Facebook Graph API is refusing a synchronous re
 If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation. The output schema is identical to `ad_creatives`.
 
 Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
+
+### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
+
+If you notice that some campaigns, ad sets, or ads are missing from your synced data, the most common cause is the status filtering configuration.
+
+The Facebook Marketing API excludes records in `ARCHIVED` and `DELETED` states by default. When the **Campaign Statuses**, **AdSet Statuses**, or **Ad Statuses** fields are left empty in the connector configuration, the connector does not override this default, and archived or deleted records are silently omitted.
+
+This is particularly noticeable after a Full Refresh sync: records that were previously synced when they were active will not reappear if they have since been archived. You can verify this by looking up the missing record IDs directly in the Facebook API. Individual record lookups by ID return data regardless of status, but the listing endpoints the connector uses do not.
+
+To resolve this:
+
+1. Go to **Settings > Source > Facebook Marketing**.
+2. For each of **Campaign Statuses**, **AdSet Statuses**, and **Ad Statuses**, select all statuses you want to include. At minimum, add `ARCHIVED` alongside the active statuses.
+3. Trigger a Full Refresh sync to re-fetch the complete dataset.
 
 ### Missing data for 7-day and 28-day view-through attribution windows
 
@@ -456,11 +484,19 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.13 | 2026-05-31 | [78060](https://github.com/airbytehq/airbyte/pull/78060) | Fixed sync failures on Ads Insights breakdown streams caused by invalid field requests; cap async-job status-poll batches at Meta's 50-per-batch limit when a parent job has many children; tolerate malformed responses on the throttle-refresh ping instead of failing the whole sync. |
+| 5.2.12 | 2026-05-27 | [78451](https://github.com/airbytehq/airbyte/pull/78451) | Promoted release candidate to GA |
+| 5.2.12-rc.1 | 2026-05-20 | [75457](https://github.com/airbytehq/airbyte/pull/75457) | Bump facebook-business SDK from v23 to v25 to support Marketing API v25.0 before v23.0 sunset on June 9, 2026 |
+| 5.2.11 | 2026-04-28 | [76977](https://github.com/airbytehq/airbyte/pull/76977) | Bump airbyte-cdk to ^7.17.4; facebook-business updated to 23.0.3 via lockfile refresh |
+| 5.2.10 | 2026-04-27 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
+| 5.2.9 | 2026-04-24 | [76995](https://github.com/airbytehq/airbyte/pull/76995) | Fix TypeError crash when Facebook API returns error response with no message body |
+| 5.2.8 | 2026-04-24 | [76996](https://github.com/airbytehq/airbyte/pull/76996) | Cast API throttle and rate-limit header values to float to prevent TypeError when Facebook returns string-typed numbers |
+| 5.2.7 | 2026-04-23 | [76951](https://github.com/airbytehq/airbyte/pull/76951) | Promoted release candidate to GA |
 | 5.2.7-rc.1 | 2026-04-16 | [74127](https://github.com/airbytehq/airbyte/pull/74127) | Allow connection setup to succeed for custom insights with high-cardinality breakdowns (for example, `product_id`) |
-| 5.2.6 | 2026-04-09 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
-| 5.2.5 | 2026-04-07 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
-| 5.2.4 | 2026-04-01 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |
-| 5.2.3 | 2026-03-24 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
+| 5.2.6 | 2026-04-13 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
+| 5.2.5 | 2026-04-08 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
+| 5.2.4 | 2026-04-02 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |
+| 5.2.3 | 2026-04-02 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
 | 5.2.2 | 2026-03-17 | [75130](https://github.com/airbytehq/airbyte/pull/75130) | Extend upgrade deadline for version 5.0.0 breaking changes to 2026-04-10 |
 | 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
 | 5.2.0 | 2026-03-09 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |

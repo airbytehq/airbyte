@@ -29,7 +29,9 @@ See [here](../../platform/understanding-airbyte/airbyte-metadata-fields) for mor
 
 #### Network Access
 
-Make sure your SQL Server database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+Make sure your SQL Server database can be accessed by Airbyte. If your database is within a VPC, you
+may need to allow access from the IP you're using to expose Airbyte. If you're using Airbyte Cloud,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 #### **Permissions**
 
@@ -163,31 +165,33 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.2.17 | 2026-06-05 | [79154](https://github.com/airbytehq/airbyte/pull/79154) | fix(destination-mssql): validate timestamp values against DATETIME lower bound |
+| 2.2.16 | 2026-04-23 | [76946](https://github.com/airbytehq/airbyte/pull/76946) | Upgrade Bulk CDK to 1.0.11 and fix `_ab_cdc_deleted_at` column type so the secondary index on CDC streams can be created. |
 | 2.2.15 | 2026-01-26 | [72297](https://github.com/airbytehq/airbyte/pull/72297) | Upgrade CDK to 0.2.0 |
 | 2.2.14 | 2025-11-05 | [69130](https://github.com/airbytehq/airbyte/pull/69130) | Upgrade to Bulk CDK 0.1.61. |
-| 2.2.13     | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)   | Pin to CDK artifact                                                                                 |
-| 2.2.12     | 2025-06-26 | [62078](https://github.com/airbytehq/airbyte/pull/62078)   | Add SSH tunnel support                                                                              |
-| 2.2.11     | 2025-05-30 | [61017](https://github.com/airbytehq/airbyte/pull/61017)   | Integration test fixes                                                                              |
-| 2.2.10     | 2025-05-29 | [60897](https://github.com/airbytehq/airbyte/pull/60897)   | Internal fixes                                                                                      |
-| 2.2.9      | 2025-05-19 | [60791](https://github.com/airbytehq/airbyte/pull/60791)   | Fix bug in detecting schema change when stream has no columns                                       |
-| 2.2.8      | 2025-05-08 | [59735](https://github.com/airbytehq/airbyte/pull/59735)   | Cleanup: Remove unused code                                                                         |
-| 2.2.7      | 2025-05-07 | [56444](https://github.com/airbytehq/airbyte/pull/56444)   | CDK: Internal refactor; perf improvements                                                           |
-| 2.2.6      | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Fix numeric bounds-handling                                                                         |
-| 2.2.5      | 2025-04-18 | [58140](https://github.com/airbytehq/airbyte/pull/58140)   | Upgrade to latest CDK                                                                               |
-| 2.2.4      | 2025-04-11 | [57563](https://github.com/airbytehq/airbyte/pull/57563)   | Improve BULK INSERT documentation.                                                                  |
-| 2.2.3      | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085)   | Internal refactoring                                                                                |
-| 2.2.2      | 2025-04-07 | [56391](https://github.com/airbytehq/airbyte/pull/56391)   | Add support for Azure blob storage auth via storage account key.                                    |
-| 2.2.1      | 2025-03-27 | [56402](https://github.com/airbytehq/airbyte/pull/56402)   | Improve Azure blob storage load logic.                                                              |
-| 2.2.0      | 2025-03-23 | [56353](https://github.com/airbytehq/airbyte/pull/56353)   | Bulk Load performance improvements                                                                  |
-| 2.1.2      | 2025-03-25 | [56346](https://github.com/airbytehq/airbyte/pull/56346)   | Internal refactor                                                                                   |
-| 2.1.1      | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                   |
-| 2.1.0      | 2025-03-24 | [55849](https://github.com/airbytehq/airbyte/pull/55849)   | Misc. bugfixes in type-handling (esp. in complex types)                                             |
-| 2.0.5      | 2025-03-24 | [55904](https://github.com/airbytehq/airbyte/pull/55904)   | Fix handling of invalid schemas (correctly JSON-serialize values)                                   |
-| 2.0.4      | 2025-03-20 | [55886](https://github.com/airbytehq/airbyte/pull/55886)   | Internal refactor                                                                                   |
-| 2.0.3      | 2025-03-18 | [55811](https://github.com/airbytehq/airbyte/pull/55811)   | CDK: Pass DestinationStream around vs Descriptor                                                    |
-| 2.0.2      | 2025-03-12 | [55720](https://github.com/airbytehq/airbyte/pull/55720)   | Restore definition ID                                                                               |
-| 2.0.1      | 2025-03-12 | [55718](https://github.com/airbytehq/airbyte/pull/55718)   | Fix breaking change information in metadata.yaml                                                    |
-| 2.0.0      | 2025-03-11 | [55684](https://github.com/airbytehq/airbyte/pull/55684)   | Release 2.0.0                                                                                       |
+| 2.2.13 | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684) | Pin to CDK artifact |
+| 2.2.12 | 2025-06-26 | [62078](https://github.com/airbytehq/airbyte/pull/62078) | Add SSH tunnel support |
+| 2.2.11 | 2025-05-30 | [61017](https://github.com/airbytehq/airbyte/pull/61017) | Integration test fixes |
+| 2.2.10 | 2025-05-29 | [60897](https://github.com/airbytehq/airbyte/pull/60897) | Internal fixes |
+| 2.2.9 | 2025-05-19 | [60791](https://github.com/airbytehq/airbyte/pull/60791) | Fix bug in detecting schema change when stream has no columns |
+| 2.2.8 | 2025-05-08 | [59735](https://github.com/airbytehq/airbyte/pull/59735) | Cleanup: Remove unused code |
+| 2.2.7 | 2025-05-07 | [56444](https://github.com/airbytehq/airbyte/pull/56444) | CDK: Internal refactor; perf improvements |
+| 2.2.6 | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146) | Fix numeric bounds-handling |
+| 2.2.5 | 2025-04-18 | [58140](https://github.com/airbytehq/airbyte/pull/58140) | Upgrade to latest CDK |
+| 2.2.4 | 2025-04-11 | [57563](https://github.com/airbytehq/airbyte/pull/57563) | Improve BULK INSERT documentation. |
+| 2.2.3 | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085) | Internal refactoring |
+| 2.2.2 | 2025-04-07 | [56391](https://github.com/airbytehq/airbyte/pull/56391) | Add support for Azure blob storage auth via storage account key. |
+| 2.2.1 | 2025-03-27 | [56402](https://github.com/airbytehq/airbyte/pull/56402) | Improve Azure blob storage load logic. |
+| 2.2.0 | 2025-03-23 | [56353](https://github.com/airbytehq/airbyte/pull/56353) | Bulk Load performance improvements |
+| 2.1.2 | 2025-03-25 | [56346](https://github.com/airbytehq/airbyte/pull/56346) | Internal refactor |
+| 2.1.1 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+| 2.1.0 | 2025-03-24 | [55849](https://github.com/airbytehq/airbyte/pull/55849) | Misc. bugfixes in type-handling (esp. in complex types) |
+| 2.0.5 | 2025-03-24 | [55904](https://github.com/airbytehq/airbyte/pull/55904) | Fix handling of invalid schemas (correctly JSON-serialize values) |
+| 2.0.4 | 2025-03-20 | [55886](https://github.com/airbytehq/airbyte/pull/55886) | Internal refactor |
+| 2.0.3 | 2025-03-18 | [55811](https://github.com/airbytehq/airbyte/pull/55811) | CDK: Pass DestinationStream around vs Descriptor |
+| 2.0.2 | 2025-03-12 | [55720](https://github.com/airbytehq/airbyte/pull/55720) | Restore definition ID |
+| 2.0.1 | 2025-03-12 | [55718](https://github.com/airbytehq/airbyte/pull/55718) | Fix breaking change information in metadata.yaml |
+| 2.0.0 | 2025-03-11 | [55684](https://github.com/airbytehq/airbyte/pull/55684) | Release 2.0.0 |
 | 2.0.0.rc13 | 2025-03-07 | [55252](https://github.com/airbytehq/airbyte/pull/55252)   | RC13: Bugfix for OOM on Bulk Load                                                                   |
 | 2.0.0.rc12 | 2025-03-05 | [54159](https://github.com/airbytehq/airbyte/pull/54159)   | RC12: Support For Bulk Insert Using Azure Blob Storage                                              |
 | 2.0.0.rc11 | 2025-03-04 | [55193](https://github.com/airbytehq/airbyte/pull/55193)   | RC11: Increase decimal precision                                                                    |
