@@ -15,6 +15,11 @@
 # ---------------------------------------------------------------------------
 FROM eclipse-temurin:21-jdk AS builder
 
+# Airbyte's root settings.gradle includes every connector project and the full local
+# CDK, and build.gradle's `allprojects {}` block configures all of them. Configuring
+# the whole monorepo needs more heap than Gradle's default, so bump it to avoid OOM.
+ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.welcome=never"
+
 WORKDIR /build
 
 # Copy the whole repo. Kaniko already fetches the full repo as context, and copying
