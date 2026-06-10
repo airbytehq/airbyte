@@ -239,9 +239,9 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             elif status in ["Cancelled", "Failed"]:
                 raise AirbyteTracedException(
-                    message=f"Marketo bulk export job for stream \"{self.name}\" {status.lower()}.",
+                    message=f'Marketo bulk export job for stream "{self.name}" {status.lower()}.',
                     internal_message=(
-                        f"Export job {stream_slice.get('id')} for stream \"{self.name}\" "
+                        f'Export job {stream_slice.get("id")} for stream "{self.name}" '
                         f"(date range {stream_slice.get('startAt')} to {stream_slice.get('endAt')}) "
                         f"entered terminal status: {status}."
                     ),
