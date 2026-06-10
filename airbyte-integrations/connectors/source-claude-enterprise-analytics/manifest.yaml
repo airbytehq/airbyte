@@ -2,7 +2,7 @@ version: 7.0.4
 
 type: DeclarativeSource
 
-description: Usage & Cost API endpoint integration
+description: Claude Enterprise Analytics API endpoints
 
 check:
   type: CheckStream
@@ -20,6 +20,17 @@ definitions:
         anthropic-version: "2023-06-01"
       request_parameters:
         bucket_width: 1d
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: retry-after
+            max_waiting_time_in_seconds: 60
+        response_filters:
+          - type: HttpResponseFilter
+            http_codes:
+              - 429
     SimpleRetriever:
       paginator:
         type: DefaultPaginator
@@ -38,27 +49,19 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.next_page }}"
-          stop_condition: "{{ response.has_more == False }}"
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
         url: https://api.anthropic.com/v1/organizations/analytics/users
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          header: x-api-key
-          api_token: "{{ config['admin_api_key'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         request_headers:
-          anthropic-version: "2023-06-01"
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -458,30 +461,22 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.next_page }}"
-          stop_condition: "{{ response.has_more == False }}"
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
         url: https://api.anthropic.com/v1/organizations/analytics/user_cost_report
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          header: x-api-key
-          api_token: "{{ config['admin_api_key'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         request_headers:
-          anthropic-version: "2023-06-01"
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
           group_by[]: >-
             {{ ['product', 'model', 'context_window', 'inference_geo', 'speed',
             'cost_type', 'token_type'] }}
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -617,30 +612,22 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.next_page }}"
-          stop_condition: "{{ response.has_more == False }}"
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
         url: https://api.anthropic.com/v1/organizations/analytics/user_usage_report
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          header: x-api-key
-          api_token: "{{ config['admin_api_key'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         request_headers:
-          anthropic-version: "2023-06-01"
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
           group_by[]: >-
             {{ ['product', 'model', 'context_window', 'inference_geo', 'speed']
             }}
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -659,21 +646,29 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - starting_at
-          - product
-          - model
-          - context_window
-          - speed
-          - user_id
-          - ending_at
         properties:
+          product:
+            type: string
+          model:
+            type: string
+          context_window:
+            type: string
+          speed:
+            type: string
+          starting_at:
+            type: string
+          ending_at:
+            type: string
           actor:
             type:
               - object
               - "null"
             properties:
               type:
+                type:
+                  - string
+                  - "null"
+              user_id:
                 type:
                   - string
                   - "null"
@@ -689,31 +684,7 @@ streams:
                 type:
                   - boolean
                   - "null"
-              user_id:
-                type:
-                  - string
-                  - "null"
-          model:
-            type: string
-          speed:
-            type: string
-          product:
-            type: string
-          user_id:
-            type: string
-          requests:
-            type:
-              - number
-              - "null"
-          ending_at:
-            type: string
-          starting_at:
-            type: string
-          total_tokens:
-            type:
-              - number
-              - "null"
-          output_tokens:
+          uncached_input_tokens:
             type:
               - number
               - "null"
@@ -730,8 +701,18 @@ streams:
                 type:
                   - number
                   - "null"
-          context_window:
-            type: string
+          cache_read_input_tokens:
+            type:
+              - number
+              - "null"
+          output_tokens:
+            type:
+              - number
+              - "null"
+          total_tokens:
+            type:
+              - number
+              - "null"
           server_tool_use:
             type:
               - object
@@ -741,14 +722,20 @@ streams:
                 type:
                   - number
                   - "null"
-          uncached_input_tokens:
+          requests:
             type:
               - number
               - "null"
-          cache_read_input_tokens:
-            type:
-              - number
-              - "null"
+          user_id:
+            type: string
+        required:
+          - starting_at
+          - product
+          - model
+          - context_window
+          - speed
+          - user_id
+          - ending_at
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -798,27 +785,19 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.next_page }}"
-          stop_condition: "{{ response.has_more == False }}"
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
         url: https://api.anthropic.com/v1/organizations/analytics/summaries
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          header: x-api-key
-          api_token: "{{ config['admin_api_key'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         request_headers:
-          anthropic-version: "2023-06-01"
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -915,28 +894,20 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.next_page }}"
-          stop_condition: "{{ response.has_more == False }}"
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
         url: >-
           https://api.anthropic.com/v1/organizations/analytics/apps/chat/projects
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          header: x-api-key
-          api_token: "{{ config['admin_api_key'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         request_headers:
-          anthropic-version: "2023-06-01"
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1027,27 +998,19 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.next_page }}"
-          stop_condition: "{{ response.has_more == False }}"
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
         url: https://api.anthropic.com/v1/organizations/analytics/skills
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          header: x-api-key
-          api_token: "{{ config['admin_api_key'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         request_headers:
-          anthropic-version: "2023-06-01"
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1177,27 +1140,19 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.next_page }}"
-          stop_condition: "{{ response.has_more == False }}"
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
         url: https://api.anthropic.com/v1/organizations/analytics/connectors
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          header: x-api-key
-          api_token: "{{ config['admin_api_key'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         request_headers:
-          anthropic-version: "2023-06-01"
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1402,7 +1357,7 @@ metadata:
     user_usage_report:
       isStale: false
       hasRecords: true
-      streamHash: 6517098379f0dd873787a063e6aa27254e94a642
+      streamHash: 5ba8ad7577351ab50e6577b193d005d9ff4c1d68
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1418,7 +1373,7 @@ metadata:
     connector_activity:
       isStale: false
       hasRecords: false
-      streamHash: e14deaaca2a08fe1a0a6f3d45b5df499569f5cf1
+      streamHash: a363ebd303952a9bde84782b7473888dd958cf56
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
