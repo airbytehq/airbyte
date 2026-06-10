@@ -401,7 +401,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - Check out common troubleshooting issues for the HubSpot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
-- **Missing records** in CRM Search streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`): 
+- **Missing records** in CRM Search streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`):
   - If you notice missing records during incremental syncs, it may be due to irregularities in HubSpot's API behavior.
   - To mitigate this, configure the **CRM Search Lookback Window** in the source settings. This re-fetches data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
 
