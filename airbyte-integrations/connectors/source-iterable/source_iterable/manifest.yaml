@@ -315,7 +315,7 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
+          class_name: source_iterable.components.UsersRecordExtractor
           field_path: []
       partition_router: []
     primary_key: []
