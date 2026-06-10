@@ -63,12 +63,4 @@ class UnpartitionedAppendWriter(
     outputFileFactory: OutputFileFactory,
     io: FileIO,
     targetFileSize: Long,
-) :
-    UnpartitionedWriter<Record>(
-        spec,
-        format,
-        writerFactory,
-        outputFileFactory,
-        io,
-        targetFileSize
-    )
+) : UnpartitionedWriter<Record>(spec, format, writerFactory, outputFileFactory, io, targetFileSize)

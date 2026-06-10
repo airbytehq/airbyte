@@ -88,15 +88,7 @@ class PartitionedAppendWriter(
     io: FileIO,
     targetFileSize: Long,
     schema: Schema,
-) :
-    PartitionedWriter<Record>(
-        spec,
-        format,
-        writerFactory,
-        outputFileFactory,
-        io,
-        targetFileSize
-    ) {
+) : PartitionedWriter<Record>(spec, format, writerFactory, outputFileFactory, io, targetFileSize) {
     private val partitionKey = PartitionKey(spec, schema)
     private val wrapper = InternalRecordWrapper(schema.asStruct())
 

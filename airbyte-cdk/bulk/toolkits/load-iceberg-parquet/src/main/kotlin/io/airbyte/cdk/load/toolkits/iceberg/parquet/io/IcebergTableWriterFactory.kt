@@ -110,9 +110,10 @@ class IcebergTableWriterFactory {
         schema: Schema,
         identifierFieldIds: Set<Int>?
     ): GenericFileWriterFactory {
-        val builder = GenericFileWriterFactory.Builder(table)
-            .dataSchema(schema)
-            .writerProperties(table.properties())
+        val builder =
+            GenericFileWriterFactory.Builder(table)
+                .dataSchema(schema)
+                .writerProperties(table.properties())
         if (identifierFieldIds != null) {
             builder
                 .equalityFieldIds(identifierFieldIds.toIntArray())
