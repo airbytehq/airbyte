@@ -9,8 +9,8 @@ The Shopify connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search) |
-| Orders | [List](#orders-list), [Get](#orders-get) |
-| Products | [List](#products-list), [Get](#products-get) |
+| Orders | [List](#orders-list), [Get](#orders-get), [Context Store Search](#orders-context-store-search) |
+| Products | [List](#products-list), [Get](#products-get), [Context Store Search](#products-context-store-search) |
 | Product Variants | [List](#product-variants-list), [Get](#product-variants-get), [Context Store Search](#product-variants-context-store-search) |
 | Product Images | [List](#product-images-list), [Get](#product-images-get), [Context Store Search](#product-images-context-store-search) |
 | Abandoned Checkouts | [List](#abandoned-checkouts-list), [Context Store Search](#abandoned-checkouts-context-store-search) |
@@ -896,6 +896,124 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Orders Context Store Search
+
+Search and filter orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "orders",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.orders.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "orders",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the order |
+| `name` | `string` | Shopify-assigned display name for the order (e.g. `#1001`) |
+| `email` | `string` | Email address associated with the order |
+| `phone` | `string` | Phone number associated with the order |
+| `order_number` | `integer` | Sequential order number displayed in the Shopify admin |
+| `financial_status` | `string` | Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`) |
+| `fulfillment_status` | `string` | Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled) |
+| `currency` | `string` | ISO 4217 currency code for the order totals |
+| `total_price` | `string` | Total price of the order including taxes and discounts |
+| `subtotal_price` | `string` | Subtotal of the order before shipping and taxes |
+| `total_tax` | `string` | Total tax amount applied to the order |
+| `total_discounts` | `string` | Total discount amount applied to the order |
+| `total_weight` | `integer` | Total weight of all items in the order, in grams |
+| `cancel_reason` | `string` | Reason the order was cancelled, if applicable |
+| `cancelled_at` | `string` | ISO 8601 timestamp when the order was cancelled, if applicable |
+| `closed_at` | `string` | ISO 8601 timestamp when the order was closed, if applicable |
+| `tags` | `string` | Comma-separated tags attached to the order |
+| `note` | `string` | Merchant-provided note on the order |
+| `processed_at` | `string` | ISO 8601 timestamp when the order was processed |
+| `created_at` | `string` | ISO 8601 timestamp when the order was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the order was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the order |
+| `data[].name` | `string` | Shopify-assigned display name for the order (e.g. `#1001`) |
+| `data[].email` | `string` | Email address associated with the order |
+| `data[].phone` | `string` | Phone number associated with the order |
+| `data[].order_number` | `integer` | Sequential order number displayed in the Shopify admin |
+| `data[].financial_status` | `string` | Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`) |
+| `data[].fulfillment_status` | `string` | Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled) |
+| `data[].currency` | `string` | ISO 4217 currency code for the order totals |
+| `data[].total_price` | `string` | Total price of the order including taxes and discounts |
+| `data[].subtotal_price` | `string` | Subtotal of the order before shipping and taxes |
+| `data[].total_tax` | `string` | Total tax amount applied to the order |
+| `data[].total_discounts` | `string` | Total discount amount applied to the order |
+| `data[].total_weight` | `integer` | Total weight of all items in the order, in grams |
+| `data[].cancel_reason` | `string` | Reason the order was cancelled, if applicable |
+| `data[].cancelled_at` | `string` | ISO 8601 timestamp when the order was cancelled, if applicable |
+| `data[].closed_at` | `string` | ISO 8601 timestamp when the order was closed, if applicable |
+| `data[].tags` | `string` | Comma-separated tags attached to the order |
+| `data[].note` | `string` | Merchant-provided note on the order |
+| `data[].processed_at` | `string` | ISO 8601 timestamp when the order was processed |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the order was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the order was last updated |
+
+</details>
+
 ## Products
 
 ### Products List
@@ -1132,6 +1250,106 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `images[].admin_graphql_api_id` | `string \| null` |  |
 | `image` | `object \| any` |  |
 
+
+</details>
+
+### Products Context Store Search
+
+Search and filter products records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "products",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.products.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "products",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the product |
+| `title` | `string` | Product title |
+| `body_html` | `string` | Product description in HTML |
+| `vendor` | `string` | Product vendor or manufacturer |
+| `product_type` | `string` | Product type used for categorization |
+| `handle` | `string` | URL-friendly handle for the product |
+| `status` | `string` | Product status (`active`, `archived`, or `draft`) |
+| `tags` | `string` | Comma-separated tags attached to the product |
+| `published_scope` | `string` | Publishing scope (`web` or `global`) |
+| `published_at` | `string` | ISO 8601 timestamp when the product was published |
+| `created_at` | `string` | ISO 8601 timestamp when the product was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the product was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the product |
+| `data[].title` | `string` | Product title |
+| `data[].body_html` | `string` | Product description in HTML |
+| `data[].vendor` | `string` | Product vendor or manufacturer |
+| `data[].product_type` | `string` | Product type used for categorization |
+| `data[].handle` | `string` | URL-friendly handle for the product |
+| `data[].status` | `string` | Product status (`active`, `archived`, or `draft`) |
+| `data[].tags` | `string` | Comma-separated tags attached to the product |
+| `data[].published_scope` | `string` | Publishing scope (`web` or `global`) |
+| `data[].published_at` | `string` | ISO 8601 timestamp when the product was published |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the product was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the product was last updated |
 
 </details>
 
