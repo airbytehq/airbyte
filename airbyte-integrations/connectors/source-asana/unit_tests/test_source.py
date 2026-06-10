@@ -63,23 +63,29 @@ def test_tasks_stream_reads_by_section():
         # Mock sections for project
         m.get(
             f"{base_url}/projects/proj1/sections",
-            json={"data": [
-                {"gid": "sec1", "resource_type": "section", "name": "Section 1"},
-                {"gid": "sec2", "resource_type": "section", "name": "Section 2"},
-            ]},
+            json={
+                "data": [
+                    {"gid": "sec1", "resource_type": "section", "name": "Section 1"},
+                    {"gid": "sec2", "resource_type": "section", "name": "Section 2"},
+                ]
+            },
         )
         # Mock tasks for each section
         m.get(
             f"{base_url}/sections/sec1/tasks",
-            json={"data": [
-                {"gid": "task1", "resource_type": "task", "name": "Task in Section 1"},
-            ]},
+            json={
+                "data": [
+                    {"gid": "task1", "resource_type": "task", "name": "Task in Section 1"},
+                ]
+            },
         )
         m.get(
             f"{base_url}/sections/sec2/tasks",
-            json={"data": [
-                {"gid": "task2", "resource_type": "task", "name": "Task in Section 2"},
-            ]},
+            json={
+                "data": [
+                    {"gid": "task2", "resource_type": "task", "name": "Task in Section 2"},
+                ]
+            },
         )
 
         source = SourceAsana(catalog=configured_catalog, config=test_config, state=None)
@@ -97,7 +103,4 @@ def test_tasks_stream_reads_by_section():
         assert any("/sections/sec1/tasks" in p for p in requested_paths)
         assert any("/sections/sec2/tasks" in p for p in requested_paths)
         # No request to /tasks?project=... should have been made
-        assert not any(
-            "project=" in (req.query or "") and req.path == "/api/1.0/tasks"
-            for req in m.request_history
-        )
+        assert not any("project=" in (req.query or "") and req.path == "/api/1.0/tasks" for req in m.request_history)
