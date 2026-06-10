@@ -82,6 +82,7 @@ streams:
         properties:
           date:
             type: string
+            format: date
           user:
             type:
               - object
@@ -553,6 +554,7 @@ streams:
             type: string
           ending_at:
             type: string
+            format: date-time
           token_type:
             type: string
           list_amount:
@@ -561,6 +563,7 @@ streams:
               - "null"
           starting_at:
             type: string
+            format: date-time
           context_window:
             type: string
         additionalProperties: true
@@ -606,7 +609,7 @@ streams:
         inject_into: request_parameter
       cursor_granularity: PT0S
       cursor_datetime_formats:
-        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: user_usage_report
     retriever:
@@ -657,8 +660,10 @@ streams:
             type: string
           starting_at:
             type: string
+            format: date-time
           ending_at:
             type: string
+            format: date-time
           actor:
             type:
               - object
@@ -816,8 +821,10 @@ streams:
         properties:
           ending_at:
             type: string
+            format: date
           starting_at:
             type: string
+            format: date
           assigned_seat_count:
             type:
               - number
@@ -928,10 +935,12 @@ streams:
         properties:
           date:
             type: string
+            format: date
           created_at:
             type:
               - string
               - "null"
+            format: date-time
           created_by:
             type:
               - object
@@ -1031,6 +1040,7 @@ streams:
         properties:
           date:
             type: string
+            format: date
           skill_name:
             type: string
           chat_metrics:
@@ -1173,6 +1183,7 @@ streams:
         properties:
           date:
             type: string
+            format: date
           chat_metrics:
             type:
               - object
