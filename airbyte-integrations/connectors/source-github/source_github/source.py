@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
@@ -186,9 +185,9 @@ class SourceGithub(AbstractSource):
             org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
             user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated. Please validate your repository config.'
         elif "401 Client Error: Unauthorized for url" in message or ("Error: Unauthorized" in message and "401" in message):
-            # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
             user_message = (
-                "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token."
+                "GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth credentials "
+                "are valid and not expired."
             )
         return user_message
 
@@ -204,7 +203,7 @@ class SourceGithub(AbstractSource):
                 )
             return True, None
 
-        except MessageRepresentationAirbyteTracedErrors as e:
+        except AirbyteTracedException as e:
             user_message = self.user_friendly_error_message(e.message)
             return False, user_message or e.message
         except Exception as e:
@@ -242,7 +241,7 @@ class SourceGithub(AbstractSource):
         # This parameter is deprecated and in future will be used sane default, page_size: 10
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
-        max_waiting_time = config.get("max_waiting_time", 10) * 60
+        max_waiting_time = config.get("max_waiting_time", 120) * 60
         organization_args = {
             "authenticator": authenticator,
             "organizations": organizations,

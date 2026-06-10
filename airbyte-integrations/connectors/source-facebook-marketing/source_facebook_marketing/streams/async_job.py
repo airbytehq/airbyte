@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
 
 import backoff
 from facebook_business.adobjects.ad import Ad
@@ -15,11 +15,18 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from facebook_business.exceptions import FacebookRequestError
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
-from source_facebook_marketing.streams.common import retry_pattern
+from source_facebook_marketing.streams.common import retry_pattern, traced_exception
 
-from ..utils import DateInterval, validate_start_date
+from ..utils import DateInterval
+
+
+if TYPE_CHECKING:
+    from source_facebook_marketing.streams.async_job_manager import APILimit
 
 
 logger = logging.getLogger("airbyte")
@@ -33,6 +40,29 @@ backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=1
 
 
 # ----------------------------- batching -------------------------------------
+# Facebook caps batch requests at 50 entries; sending more returns a
+# GraphBatchException ("An error has occurred. No further information is
+# available."), which fails the whole sync.
+_FB_MAX_BATCH_SIZE = 50
+
+
+def _pending_leaves(jobs: List["AsyncJob"]) -> Iterator["AsyncJob"]:
+    """Yield jobs that contribute one batch entry to a status-poll call.
+
+    A ParentAsyncJob does not poll itself — it just delegates to its
+    children — so we recurse into its `_jobs` list. This lets
+    `update_in_batch` enforce the per-batch size cap across nested parents
+    instead of only between top-level entries in the input list.
+    """
+    for job in jobs:
+        if not job.started or job.completed:
+            continue
+        if isinstance(job, ParentAsyncJob):
+            yield from _pending_leaves(job._jobs)
+        else:
+            yield job
+
+
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 
@@ -40,23 +70,26 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     :param jobs:
     """
     batch = api.new_batch()
-    max_batch_size = 50
-    for job in jobs:
-        if not job.started or job.completed:
-            continue
-        # we check it here because job can be already finished
-        if len(batch) == max_batch_size:
+    for leaf in _pending_leaves(jobs):
+        leaf.update_job(batch=batch)
+        if len(batch) >= _FB_MAX_BATCH_SIZE:
             while batch:
                 # If some of the calls from batch have failed, it returns  a new
                 # FacebookAdsApiBatch object with those calls
                 batch = batch.execute()
             batch = api.new_batch()
-        job.update_job(batch=batch)
 
     while batch:
         # If some of the calls from batch have failed, it returns  a new
         # FacebookAdsApiBatch object with those calls
         batch = batch.execute()
+
+    # Polling is done — let each parent consolidate any child-produced
+    # replacement work (mirrors what ParentAsyncJob.update_job used to do
+    # right after its child loop).
+    for job in jobs:
+        if isinstance(job, ParentAsyncJob):
+            job._splice_new_children()
 
 
 # ------------------------------ status --------------------------------------
@@ -184,11 +217,22 @@ class ParentAsyncJob(AsyncJob):
         return all(child.completed for child in self._jobs) and any(child.failed for child in self._jobs)
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
+        # Direct call (outside update_in_batch): keep the original semantics
+        # of polling children inline and then splicing. Inside
+        # update_in_batch, leaves are polled via _pending_leaves() and
+        # _splice_new_children() is invoked separately so the 50-per-batch
+        # cap is respected when a parent has many children.
         for child in self._jobs:
             if child.started and not child.completed:
                 child.update_job(batch=batch)
+        self._splice_new_children()
 
-        # If any child produced replacement work, splice it in-place.
+    def _splice_new_children(self) -> None:
+        """Replace children that produced `new_jobs` with the new work,
+        recursing so nested parents are spliced bottom-up."""
+        for child in self._jobs:
+            if isinstance(child, ParentAsyncJob):
+                child._splice_new_children()
         new_children: List[AsyncJob] = []
         for job in self._jobs:
             if job.new_jobs:
@@ -406,7 +450,11 @@ class InsightAsyncJob(AsyncJob):
 
         ids = self._collect_child_ids(pk_name=pk_name, level=level)
         if not ids:
-            raise ValueError(f"No child IDs at level={level}")
+            raise AirbyteTracedException(
+                message="Facebook Insights API returned no data for the requested breakdown level.",
+                internal_message=f"No child IDs at level={level} for edge_object={self._edge_object}, interval={self._interval}",
+                failure_type=FailureType.system_error,
+            )
 
         return [
             InsightAsyncJob(
@@ -421,42 +469,90 @@ class InsightAsyncJob(AsyncJob):
             for pk in ids
         ]
 
+    MAX_ID_COLLECTION_ATTEMPTS = 3
+
     def _collect_child_ids(self, pk_name: str, level: str) -> List[str]:
         """
         Start a tiny async insights job to collect child IDs, poll until terminal,
-        then return the list of IDs. Separated for unit testing.
+        then return the list of IDs.
+
+        Retries up to MAX_ID_COLLECTION_ATTEMPTS times when Facebook returns a
+        transient ``Job Failed`` or ``Job Skipped`` status, mirroring the
+        retry/split policy used in :meth:`_check_status` for the main insight
+        jobs.
         """
         since = AirbyteDateTime.from_datetime(datetime.combine(self._interval.start - timedelta(days=28 + 1), datetime.min.time()))
-        since = validate_start_date(since)
         params = {
             "fields": [pk_name],
             "level": level,
             "time_range": {"since": since.strftime("%Y-%m-%d"), "until": self._interval.end.strftime("%Y-%m-%d")},
         }
 
-        try:
-            id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
-        except Exception as e:
-            raise ValueError(f"Failed to start ID-collection at level={level}: {e}") from e
+        last_status: Optional[str] = None
+        for attempt in range(1, self.MAX_ID_COLLECTION_ATTEMPTS + 1):
+            try:
+                id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
+            except FacebookRequestError as e:
+                raise traced_exception(e) from e
+            except Exception as e:
+                raise AirbyteTracedException(
+                    message="Facebook Insights API request failed during data retrieval.",
+                    internal_message=f"Failed to start ID-collection job at level={level}: {e}",
+                    failure_type=FailureType.transient_error,
+                ) from e
 
-        start_ts = ab_datetime_now()
-        while True:
-            id_job = id_job.api_get()
-            status = id_job.get("async_status")
-            percent = id_job.get("async_percent_completion")
-            logger.info(f"[Split:{level}] status={status}, {percent}%")
+            start_ts = ab_datetime_now()
+            while True:
+                try:
+                    id_job = id_job.api_get()
+                except FacebookRequestError as e:
+                    raise traced_exception(e) from e
+                except (FacebookBadObjectError, TypeError) as e:
+                    raise AirbyteTracedException(
+                        message="Facebook Insights API returned an invalid response.",
+                        internal_message=f"Failed to poll ID-collection job at level={level}: {e}",
+                        failure_type=FailureType.transient_error,
+                    ) from e
+                status = id_job.get("async_status")
+                percent = id_job.get("async_percent_completion")
+                logger.info(f"[Split:{level}] attempt={attempt}, status={status}, {percent}%")
+                if status == Status.COMPLETED:
+                    break
+                if status in (Status.FAILED, Status.SKIPPED):
+                    last_status = status
+                    logger.warning(
+                        f"[Split:{level}] ID-collection attempt {attempt}/{self.MAX_ID_COLLECTION_ATTEMPTS} "
+                        f"returned {status}; {'retrying' if attempt < self.MAX_ID_COLLECTION_ATTEMPTS else 'giving up'}."
+                    )
+                    break
+                if (ab_datetime_now() - start_ts) > self._job_timeout:
+                    raise AirbyteTracedException(
+                        message="Facebook Insights API request timed out during data retrieval.",
+                        internal_message=f"ID-collection timed out for level={level} after {self._job_timeout}",
+                        failure_type=FailureType.transient_error,
+                    )
+                time.sleep(30)
+
             if status == Status.COMPLETED:
                 break
-            if status in (Status.FAILED, Status.SKIPPED):
-                raise ValueError(f"ID-collection failed for level={level}: {status}")
-            if (ab_datetime_now() - start_ts) > self._job_timeout:
-                raise ValueError(f"ID-collection timed out for level={level}")
-            time.sleep(30)
+
+            if attempt < self.MAX_ID_COLLECTION_ATTEMPTS:
+                time.sleep(30)
+        else:
+            raise AirbyteTracedException(
+                message="Facebook Insights API returned a transient failure during data retrieval.",
+                internal_message=f"ID-collection failed for level={level} after {self.MAX_ID_COLLECTION_ATTEMPTS} attempts: {last_status}",
+                failure_type=FailureType.transient_error,
+            )
 
         try:
             result_cursor = id_job.get_result(params={"limit": self.page_size})
         except FacebookBadObjectError as e:
-            raise ValueError(f"Failed to fetch ID-collection results for level={level}: {e}") from e
+            raise AirbyteTracedException(
+                message="Facebook Insights API returned an invalid response during data retrieval.",
+                internal_message=f"Failed to fetch ID-collection results for level={level}: {e}",
+                failure_type=FailureType.transient_error,
+            ) from e
 
         ids = {row[pk_name] for row in result_cursor if pk_name in row}
         logger.info(f"[Split:{level}] collected {len(ids)} {pk_name}(s)")
@@ -464,17 +560,22 @@ class InsightAsyncJob(AsyncJob):
 
     def _split_by_fields_parent(self) -> ParentAsyncJob:
         all_fields: List[str] = list(self._params.get("fields", []))
-        split_candidates = [f for f in all_fields if f not in self._primary_key]
+        primary_key_fields = [field for field in self._primary_key if field in all_fields]
+        split_candidates = [f for f in all_fields if f not in primary_key_fields]
         if len(split_candidates) <= 1:
-            raise ValueError("Cannot split by fields: not enough non-PK fields")
+            raise AirbyteTracedException(
+                message="Unable to split the Facebook Insights request because there are not enough non-primary-key fields.",
+                internal_message=f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, pk={self._primary_key})",
+                failure_type=FailureType.system_error,
+            )
 
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = primary_key_fields + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = primary_key_fields + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,

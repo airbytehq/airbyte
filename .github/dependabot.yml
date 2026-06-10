@@ -27,3 +27,12 @@ updates:
     commit-message:
       prefix: "chore(deps): "
     open-pull-requests-limit: 10
+
+  # GitHub Actions - keep action versions up to date
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci(deps): "
+    open-pull-requests-limit: 10

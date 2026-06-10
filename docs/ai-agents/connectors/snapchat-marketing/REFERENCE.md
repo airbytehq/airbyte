@@ -8,20 +8,31 @@ The Snapchat-Marketing connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Organizations | [List](#organizations-list), [Get](#organizations-get), [Search](#organizations-search) |
-| Adaccounts | [List](#adaccounts-list), [Get](#adaccounts-get), [Search](#adaccounts-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Adsquads | [List](#adsquads-list), [Get](#adsquads-get), [Search](#adsquads-search) |
-| Ads | [List](#ads-list), [Get](#ads-get), [Search](#ads-search) |
-| Creatives | [List](#creatives-list), [Get](#creatives-get), [Search](#creatives-search) |
-| Media | [List](#media-list), [Get](#media-get), [Search](#media-search) |
-| Segments | [List](#segments-list), [Get](#segments-get), [Search](#segments-search) |
+| Organizations | [List](#organizations-list), [Get](#organizations-get), [Context Store Search](#organizations-context-store-search) |
+| Adaccounts | [List](#adaccounts-list), [Get](#adaccounts-get), [Context Store Search](#adaccounts-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
+| Adsquads | [List](#adsquads-list), [Get](#adsquads-get), [Context Store Search](#adsquads-context-store-search) |
+| Ads | [List](#ads-list), [Get](#ads-get), [Context Store Search](#ads-context-store-search) |
+| Creatives | [List](#creatives-list), [Get](#creatives-get), [Context Store Search](#creatives-context-store-search) |
+| Media | [List](#media-list), [Get](#media-get), [Context Store Search](#media-context-store-search) |
+| Segments | [List](#segments-list), [Get](#segments-get), [Context Store Search](#segments-context-store-search) |
 
 ## Organizations
 
 ### Organizations List
 
 Returns the organizations the authenticated user belongs to
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "organizations",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -89,6 +100,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single organization by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "organizations",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -120,14 +145,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Organization ID |
 
 
-### Organizations Search
+### Organizations Context Store Search
 
 Search and filter organizations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "organizations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "accepted_term_version": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.organizations.search(
+await snapchat_marketing.organizations.context_store_search(
     query={"filter": {"eq": {"accepted_term_version": "<str>"}}}
 )
 ```
@@ -140,7 +185,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "organizations",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"accepted_term_version": "<str>"}}}
     }
@@ -226,6 +271,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns ad accounts belonging to an organization
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "adaccounts",
+  "action": "list",
+  "params": {
+    "organization_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -294,6 +353,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single ad account by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "adaccounts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -325,14 +398,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Ad Account ID |
 
 
-### Adaccounts Search
+### Adaccounts Context Store Search
 
 Search and filter adaccounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "adaccounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "advertiser_organization_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.adaccounts.search(
+await snapchat_marketing.adaccounts.context_store_search(
     query={"filter": {"eq": {"advertiser_organization_id": "<str>"}}}
 )
 ```
@@ -345,7 +438,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "adaccounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"advertiser_organization_id": "<str>"}}}
     }
@@ -419,6 +512,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns campaigns belonging to an ad account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -484,6 +591,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single campaign by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -515,14 +636,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Campaign ID |
 
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.campaigns.search(
+await snapchat_marketing.campaigns.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -535,7 +676,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -598,6 +739,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Adsquads List
 
 Returns ad squads belonging to an ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "adsquads",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -679,6 +834,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single ad squad by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "adsquads",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -710,14 +879,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Ad Squad ID |
 
 
-### Adsquads Search
+### Adsquads Context Store Search
 
 Search and filter adsquads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "adsquads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "auto_bid": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.adsquads.search(
+await snapchat_marketing.adsquads.context_store_search(
     query={"filter": {"eq": {"auto_bid": True}}}
 )
 ```
@@ -730,7 +919,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "adsquads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"auto_bid": True}}}
     }
@@ -828,6 +1017,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns ads belonging to an ad account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "ads",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -892,6 +1095,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single ad by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "ads",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -923,14 +1140,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Ad ID |
 
 
-### Ads Search
+### Ads Context Store Search
 
 Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_squad_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.ads.search(
+await snapchat_marketing.ads.context_store_search(
     query={"filter": {"eq": {"ad_squad_id": "<str>"}}}
 )
 ```
@@ -943,7 +1180,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_squad_id": "<str>"}}}
     }
@@ -1008,6 +1245,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Creatives List
 
 Returns creatives belonging to an ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "creatives",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1081,6 +1332,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single creative by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "creatives",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1112,14 +1377,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Creative ID |
 
 
-### Creatives Search
+### Creatives Context Store Search
 
 Search and filter creatives records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "creatives",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.creatives.search(
+await snapchat_marketing.creatives.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -1132,7 +1417,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "creatives",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -1214,6 +1499,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns media belonging to an ad account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "media",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1283,6 +1582,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single media item by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "media",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1314,14 +1627,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Media ID |
 
 
-### Media Search
+### Media Context Store Search
 
 Search and filter media records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "media",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.media.search(
+await snapchat_marketing.media.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -1334,7 +1667,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "media",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -1410,6 +1743,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns audience segments belonging to an ad account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "segments",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1477,6 +1824,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single audience segment by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "segments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1508,14 +1869,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Segment ID |
 
 
-### Segments Search
+### Segments Context Store Search
 
 Search and filter segments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "snapchat-marketing",
+  "entity": "segments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await snapchat_marketing.segments.search(
+await snapchat_marketing.segments.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -1528,7 +1909,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "segments",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }

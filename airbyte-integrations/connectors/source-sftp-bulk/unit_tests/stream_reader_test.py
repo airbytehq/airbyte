@@ -11,6 +11,7 @@ import pytest
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 from source_sftp_bulk.stream_reader import SFTPBulkUploadableRemoteFile, SourceSFTPBulkStreamReader
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 
 
@@ -72,3 +73,30 @@ def test_upload_file_size_error():
     with pytest.raises(FileSizeLimitError) as err:
         reader.upload(file, "/test", MagicMock())
     assert str(err.value) == "File size exceeds the 1.5 GB limit. File URI: //sample_file_1.csv"
+
+
+def test_get_matching_files_reraises_airbyte_traced_exception():
+    """AirbyteTracedException must propagate and not be swallowed as a warning."""
+    fake_client = MagicMock()
+    fake_client.from_transport = MagicMock(return_value=fake_client)
+    fake_client.listdir_iter = MagicMock(
+        side_effect=AirbyteTracedException(
+            message="Private key format is not recognized. Supported types: RSA, Ed25519, ECDSA, DSS.",
+            internal_message="Failed to parse private key",
+            failure_type=FailureType.config_error,
+        )
+    )
+    with patch.object(paramiko, "Transport", MagicMock()), patch.object(paramiko, "SFTPClient", fake_client):
+        reader = SourceSFTPBulkStreamReader()
+        config = SourceSFTPBulkSpec(
+            host="localhost",
+            username="username",
+            credentials={"auth_type": "password", "password": "password"},
+            port=123,
+            streams=[],
+            start_date="2024-01-01T00:00:00.000000Z",
+        )
+        reader.config = config
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
+        assert "Private key format is not recognized" in exc_info.value.message

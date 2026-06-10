@@ -48,7 +48,7 @@ jobs:
       # forks if the user installs the app into their fork. Until we document this as a clear
       # path, we will have to keep using the PAT.
       - name: Checkout Airbyte
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ steps.job-vars.outputs.repo }}
           ref: ${{ steps.job-vars.outputs.branch }}
@@ -73,12 +73,12 @@ jobs:
 
       # Compare the below to the `format_check.yml` workflow
       - name: Setup Java
-        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: "zulu"
           java-version: "21"
       - name: Setup Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.11"
           cache: "pip"
