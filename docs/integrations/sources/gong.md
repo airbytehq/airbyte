@@ -86,6 +86,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.5 | 2026-06-09 | [78521](https://github.com/airbytehq/airbyte/pull/78521) | Send OAuth refresh `grant_type` and `refresh_token` as URL query parameters to match Gong's documented refresh endpoint shape |
 | 1.2.4 | 2026-06-10 | [78476](https://github.com/airbytehq/airbyte/pull/78476) | Add `context: Extended` and `contextTiming` to `extensiveCalls` request body so Gong returns context fields |
 | 1.2.3 | 2026-06-09 | [79338](https://github.com/airbytehq/airbyte/pull/79338) | Update dependencies |
 | 1.2.2 | 2026-06-02 | [77254](https://github.com/airbytehq/airbyte/pull/77254) | Update dependencies |
