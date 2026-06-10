@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import json
 
 import freezegun
@@ -1094,3 +1095,22 @@ def test_list_memberships_fails_on_unrelated_400(requests_mock, config, mock_dyn
         run_read(stream)
 
     assert unrelated_400_mock.call_count >= 1
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        pytest.param("companies_property_history", id="companies_property_history"),
+        pytest.param("contacts_property_history", id="contacts_property_history"),
+        pytest.param("deals_property_history", id="deals_property_history"),
+    ],
+)
+def test_property_history_streams_have_lookback_window(requests_mock, config, stream_name, mock_dynamic_schema_requests):
+    """Property history streams must have a 30-day lookback window to prevent
+    cursor drift from HubSpot calculated properties silently dropping records."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    stream = find_stream(stream_name, config)
+    cursor = stream._cursor
+    assert cursor._lookback_window == datetime.timedelta(days=30), (
+        f"{stream_name} should have a 30-day lookback_window, got {cursor._lookback_window}"
+    )
