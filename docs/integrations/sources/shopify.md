@@ -146,6 +146,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Customer#field-customer-addresses)
 - [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/events) — Product deletion events
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode)
+- [Discount Codes Paginated (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode) — Synchronous cursor-paginated variant that supports >100 redeem codes per discount
 - [Disputes](https://shopify.dev/docs/api/admin-rest/latest/resources/dispute)
 - [Draft Orders](https://shopify.dev/api/admin-rest/latest/resources/draftorder#top)
 - [Fulfillments](https://shopify.dev/api/admin-rest/latest/resources/fulfillment)
