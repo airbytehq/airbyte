@@ -4,12 +4,13 @@
 
 package io.airbyte.integrations.source.mssql
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.BinaryNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.discover.TableName
@@ -56,15 +57,17 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 every { getOrderedColumnForSync(any()) } answers
                     {
                         val streamId = firstArg<StreamIdentifier>()
-                        // For full_refresh tests without PK/CI, return null
-                        if (
-                            streamId.name == "full_refresh_table" ||
-                                streamId.name == "cdc_full_refresh_table"
-                        ) {
-                            null
-                        } else {
+                        when (streamId.name) {
+                            // For full_refresh tests without PK/CI, return null
+                            "full_refresh_table",
+                            "cdc_full_refresh_table" -> null
+                            // Streams whose ordered column isn't id
+                            "numeric_table" -> "numericId"
+                            "datetime_table" -> "datetime_col"
+                            "binary_table" -> "binary_col"
+                            "timestamp_table" -> "created_at"
                             // For most tests, return "id" (the first PK column or clustered index)
-                            fieldId.id
+                            else -> fieldId.id
                         }
                     }
             }
@@ -88,8 +91,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 metadataQuerierFactory
             )
 
-        val fieldId = Field("id", IntFieldType)
-        val fieldName = Field("name", io.airbyte.cdk.jdbc.StringFieldType)
+        val fieldId = EmittedField("id", IntFieldType)
+        val fieldName = EmittedField("name", io.airbyte.cdk.jdbc.StringFieldType)
         val stream =
             Stream(
                 id =
@@ -101,7 +104,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
             )
-        val timestampFieldId = Field("created_at", OffsetDateTimeFieldType)
+        val timestampFieldId = EmittedField("created_at", OffsetDateTimeFieldType)
 
         val timestampStream =
             Stream(
@@ -115,7 +118,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 configuredCursor = timestampFieldId,
             )
 
-        val binaryFieldId = Field("binary_col", BinaryStreamFieldType)
+        val binaryFieldId = EmittedField("binary_col", BinaryStreamFieldType)
 
         val binaryStream =
             Stream(
@@ -129,7 +132,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 configuredCursor = binaryFieldId,
             )
 
-        val datetimeFieldId = Field("datetime_col", LocalDateTimeFieldType)
+        val datetimeFieldId = EmittedField("datetime_col", LocalDateTimeFieldType)
 
         val datetimeStream =
             Stream(
@@ -265,6 +268,37 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+    }
+
+    @Test
+    fun testColdStartFullRefreshEmptyTable() {
+        val emptyTableStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("empty_table")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldId,
+            )
+
+        val factoryWithEmptyTable =
+            object :
+                MsSqlServerJdbcPartitionFactory(
+                    sharedState,
+                    selectQueryGenerator,
+                    config,
+                    metadataQuerierFactory,
+                ) {
+                // Simulate an empty source table: MAX(orderedColumn) returns NULL.
+                // Overriding here avoids needing a live JDBC connection for the unit test.
+                override fun findPkUpperBound(stream: Stream): JsonNode = Jsons.nullNode()
+            }
+
+        val partition = factoryWithEmptyTable.create(streamFeedBootstrap(emptyTableStream))
+        assertTrue(partition is MsSqlServerJdbcNonResumableSnapshotPartition)
     }
 
     @ParameterizedTest
@@ -510,7 +544,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         // correctly
         // This tests the fix for the infinite loop bug where state had "13" but MAX query returned
         // 13
-        val numericField = Field("numericId", io.airbyte.cdk.jdbc.BigDecimalFieldType)
+        val numericField = EmittedField("numericId", io.airbyte.cdk.jdbc.BigDecimalFieldType)
         val numericStream =
             Stream(
                 id =
@@ -818,6 +852,63 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertTrue(
             partition is MsSqlServerJdbcNonResumableSnapshotPartition,
             "Views in full refresh mode should use non-resumable partitions"
+        )
+    }
+
+    @Test
+    fun testViewInCursorIncrementalPhase() {
+        // Views or table with no ordered column in cursor-incremental phase must route to
+        // MsSqlServerJdbcNonResumableCursorIncrementalPartition.
+        val viewStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("view_test_table")
+                    ),
+                schema = setOf(fieldId, fieldName),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldName,
+            )
+
+        // snapshot phase is done (pk_name == null), we're resuming cursor-incremental
+        val stateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+            {
+              "version": 3,
+              "state_type": "cursor_based",
+              "cursor_field": ["name"],
+              "cursor": "2026-04-19T15:05:22.349252",
+              "cursor_record_count": 1
+            }
+            """
+            )
+
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(viewStream.id) } returns
+            TableName(name = "view_test_table", schema = "dbo", type = "VIEW")
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns fieldId.id
+
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerierFactory
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream, stateValue))
+
+        assertTrue(
+            partition is MsSqlServerJdbcNonResumableCursorIncrementalPartition,
+            "Views in cursor-incremental phase must use the non-resumable cursor partition " +
+                "to avoid TABLESAMPLE on views."
         )
     }
 }

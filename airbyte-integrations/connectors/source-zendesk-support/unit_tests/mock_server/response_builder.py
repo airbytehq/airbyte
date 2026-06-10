@@ -241,7 +241,7 @@ class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
 class TicketsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def tickets_record(cls) -> "TicketsRecordBuilder":
-        record_template = cls.extract_record("tickets", __file__, NestedPath(["tickets", 0]))
+        record_template = cls.extract_record("tickets", __file__, NestedPath(["results", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
     def with_id(self, id: int) -> "TicketsRecordBuilder":
@@ -559,11 +559,11 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
 
 class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketsResponseBuilder":
+    def tickets_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketsResponseBuilder":
         return cls(
             find_template("tickets", __file__),
-            FieldPath("tickets"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+            FieldPath("results"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 
@@ -1199,13 +1199,11 @@ class TicketCommentsResponseBuilder(HttpResponseBuilder):
 
 class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def ticket_metric_events_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "TicketMetricEventsResponseBuilder":
+    def ticket_metric_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketMetricEventsResponseBuilder":
         return cls(
             find_template("ticket_metric_events", __file__),
             FieldPath("ticket_metric_events"),
-            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
         )
 
 

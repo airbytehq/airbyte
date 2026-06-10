@@ -1,20 +1,31 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 import csv
 import gzip
+import io
+import logging
+import tempfile
+import zipfile
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
-from io import StringIO
-from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import requests
+
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
+
+
+logger = logging.getLogger(__name__)
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
@@ -425,45 +436,250 @@ class CustomReportTransformation(RecordTransformation):
             )
 
 
+class _PrefixedStream(io.RawIOBase):
+    """
+    A minimal read-only stream that prepends initial bytes to another stream.
+    Used to peek at the first bytes of a response (for gzip magic number detection)
+    while still allowing the full stream to be read sequentially.
+    """
+
+    def __init__(self, prefix: bytes, stream: Any) -> None:
+        self._prefix = prefix
+        self._prefix_offset = 0
+        self._stream = stream
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, b: bytearray) -> int:
+        data = self.read(len(b))
+        n = len(data)
+        b[:n] = data
+        return n
+
+    def read(self, size: int = -1) -> bytes:
+        prefix_remaining = len(self._prefix) - self._prefix_offset
+        if prefix_remaining > 0:
+            if size < 0:
+                chunk = self._prefix[self._prefix_offset :]
+                self._prefix_offset = len(self._prefix)
+                return chunk + (self._stream.read() or b"")
+            take = min(size, prefix_remaining)
+            chunk = self._prefix[self._prefix_offset : self._prefix_offset + take]
+            self._prefix_offset += take
+            if take < size:
+                more = self._stream.read(size - take)
+                return chunk + (more or b"")
+            return chunk
+        return self._stream.read(size) or b""
+
+
+@dataclass
+class BingAdsReportZipCsvDecoder(Decoder):
+    """
+    Streaming decoder for Bing Ads report ZIP downloads.
+
+    The CDK's built-in ZipfileDecoder loads the entire HTTP response into memory
+    via `response.content`, creating multiple in-memory copies of the data.
+    With high concurrency, this causes OOM when processing large reports.
+
+    This decoder streams the response to a temporary SpooledTemporaryFile
+    (spilling to disk beyond 5 MB), then extracts and parses the CSV content
+    row-by-row, keeping memory usage bounded regardless of report size.
+    """
+
+    encoding: str = "utf-8-sig"
+    set_values_to_none: Optional[List[str]] = None
+
+    def is_stream_response(self) -> bool:
+        return True
+
+    def decode(self, response: Any) -> Generator[MutableMapping[str, Any], None, None]:
+        spool = tempfile.SpooledTemporaryFile(max_size=5 * 1024 * 1024)
+        raw = response.raw
+        try:
+            while True:
+                chunk = raw.read(64 * 1024)
+                if not chunk:
+                    break
+                spool.write(chunk)
+            spool.seek(0)
+
+            try:
+                with zipfile.ZipFile(spool) as zf:
+                    for name in zf.namelist():
+                        with zf.open(name) as member:
+                            text_stream = io.TextIOWrapper(member, encoding=self.encoding)
+                            reader = csv.DictReader(text_stream)
+                            none_values = set(self.set_values_to_none) if self.set_values_to_none else set()
+                            for row in reader:
+                                row.pop(None, None)  # Remove extra columns not in header
+                                if none_values:
+                                    for key, value in row.items():
+                                        if value in none_values:
+                                            row[key] = None
+                                yield row
+            except zipfile.BadZipFile as exc:
+                logger.error("Received an invalid zip file in response: %s", exc)
+                raise
+        finally:
+            spool.close()
+            raw.close()
+
+
 @dataclass
 class BingAdsGzipCsvDecoder(Decoder):
     """
-    Custom decoder that always attempts GZip decompression before parsing CSV data.
-    This is needed because Bing Ads now sends GZip compressed files from Azure Blob Storage
-    without proper compression headers, so the standard GzipDecoder fails to detect compression.
+    Custom decoder that detects GZip compression via magic bytes and parses CSV data
+    using streaming decompression. This prevents OOM on large bulk downloads by avoiding
+    loading the entire file into memory.
+
+    Bing Ads sends GZip compressed files from Azure Blob Storage without proper
+    compression headers, so standard header-based detection does not work. Instead,
+    this decoder checks the first two bytes for the gzip magic number (0x1f 0x8b)
+    and routes to either streaming gzip decompression or plain-text CSV parsing.
     """
 
     def is_stream_response(self) -> bool:
-        return False
+        return True
 
-    def decode(self, response) -> Generator[MutableMapping[str, Any], None, None]:
-        """
-        Always attempt GZip decompression first, then fall back to plain CSV if that fails.
-        """
+    def decode(self, response: Any) -> Generator[MutableMapping[str, Any], None, None]:
+        raw = response.raw
+        raw.auto_close = False
+        try:
+            yield from self._decode_stream(raw)
+        except Exception as e:
+            logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
+            yield {}
+        finally:
+            raw.close()
+
+    def _decode_stream(self, raw: Any) -> Generator[MutableMapping[str, Any], None, None]:
+        header = raw.read(2)
+        if not header:
+            return
+
+        is_gzip = header[:2] == b"\x1f\x8b"
+        byte_stream = _PrefixedStream(header, raw)
+
+        if is_gzip:
+            decompressed = gzip.GzipFile(fileobj=byte_stream, mode="rb")
+            text_stream = io.TextIOWrapper(decompressed, encoding="utf-8-sig")
+        else:
+            text_stream = io.TextIOWrapper(io.BufferedReader(byte_stream), encoding="utf-8-sig")
+
+        csv_reader = csv.DictReader(text_stream)
+        for row in csv_reader:
+            yield row
+
+
+BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+
+
+@dataclass
+class BingAdsReportDownloadRequester(HttpRequester):
+    """Custom download requester that re-polls Bing Ads for a fresh SAS URL before downloading.
+
+    When many streams are synced concurrently, the SAS download URL obtained at
+    poll-completion time may expire (10-minute TTL) before the download begins.
+    This requester makes a lightweight re-poll request to obtain a fresh URL
+    immediately before each download, preventing ``AuthenticationFailed`` errors
+    from Azure Blob Storage.
+    """
+
+    report_poll_authenticator: Optional[DeclarativeAuthenticator] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # When instantiated via create_custom_component, stream_response is not
+        # explicitly passed (unlike create_http_requester which computes it from
+        # the decoder).  Derive it here so streaming decoders that read
+        # response.raw (e.g. BingAdsReportZipCsvDecoder) work correctly.
+        if self.decoder and hasattr(self.decoder, "is_stream_response"):
+            self.stream_response = self.decoder.is_stream_response()
+        super().__post_init__(parameters)
+
+    def send_request(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        if stream_slice:
+            fresh_url = self._get_fresh_download_url(stream_slice)
+            if fresh_url:
+                stream_slice = StreamSlice(
+                    partition=stream_slice.partition,
+                    cursor_slice=stream_slice.cursor_slice,
+                    extra_fields={
+                        **stream_slice.extra_fields,
+                        "download_target": fresh_url,
+                    },
+                )
+
+        return super().send_request(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            path=path,
+            request_headers=request_headers,
+            request_params=request_params,
+            request_body_data=request_body_data,
+            request_body_json=request_body_json,
+            log_formatter=log_formatter,
+        )
+
+    def _get_fresh_download_url(self, stream_slice: StreamSlice) -> Optional[str]:
+        """Re-poll Bing Ads Reporting API to obtain a fresh SAS download URL."""
+        creation_response = stream_slice.extra_fields.get("creation_response", {})
+        report_request_id = creation_response.get("ReportRequestId")
+        if not report_request_id:
+            logger.warning("No ReportRequestId in creation_response; using existing download URL")
+            return None
+
+        account_id = stream_slice.partition.get("account_id", "")
+        parent_customer_id = stream_slice.extra_fields.get("ParentCustomerId", "")
+        developer_token = self.config.get("developer_token", "")
+
+        headers: Dict[str, str] = {
+            "Content-Type": "application/json",
+            "DeveloperToken": str(developer_token),
+            "CustomerId": str(parent_customer_id),
+            "CustomerAccountId": str(account_id),
+        }
 
         try:
-            # First, try to decompress as GZip
-            decompressed_content = gzip.decompress(response.content)
-            # Parse as CSV with utf-8-sig encoding (handles BOM)
-            text_content = decompressed_content.decode("utf-8-sig")
-            csv_reader = csv.DictReader(StringIO(text_content))
+            if self.report_poll_authenticator:
+                auth_header = self.report_poll_authenticator.get_auth_header()
+                headers.update(auth_header)
 
-            for row in csv_reader:
-                yield row
-
-        except (gzip.BadGzipFile, OSError):
-            # If GZip decompression fails, try parsing as plain CSV
-            try:
-                text_content = response.content.decode("utf-8-sig")
-                csv_reader = csv.DictReader(StringIO(text_content))
-
-                for row in csv_reader:
-                    yield row
-
-            except Exception as e:
-                # If both fail, log the error and yield empty
-                import logging
-
-                logger = logging.getLogger(__name__)
-                logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
-                yield {}
+            http_client = HttpClient(
+                name="bing_ads_report_repoll",
+                logger=logger,
+            )
+            _, response = http_client.send_request(
+                http_method="POST",
+                url=BING_ADS_REPORTING_POLL_URL,
+                headers=headers,
+                json={"ReportRequestId": str(report_request_id)},
+                request_kwargs={"timeout": 30},
+            )
+            data = response.json()
+            fresh_url = data.get("ReportRequestStatus", {}).get("ReportDownloadUrl")
+            if fresh_url:
+                logger.info("Obtained fresh download URL via re-poll for report request %s", report_request_id)
+                return fresh_url
+            logger.warning("Re-poll did not return a ReportDownloadUrl for report request %s", report_request_id)
+            return None
+        except Exception:
+            logger.warning(
+                "Re-poll failed for report request %s; falling back to existing download URL",
+                report_request_id,
+                exc_info=True,
+            )
+            return None

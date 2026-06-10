@@ -214,8 +214,9 @@ class TestListsDetailedStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 2
-        assert output.records[0].record.data["id"] == "list_001"
-        assert output.records[1].record.data["id"] == "list_002"
+        # With concurrent processing, record order is not guaranteed
+        record_ids = {record.record.data["id"] for record in output.records}
+        assert record_ids == {"list_001", "list_002"}
 
     @HttpMocker()
     def test_client_side_incremental_first_sync_no_state(self, http_mocker: HttpMocker):

@@ -45,7 +45,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                 try {
                     return@getEnvOrDefault DeploymentMode.valueOf(s)
                 } catch (e: IllegalArgumentException) {
-                    LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS)
+                    LOGGER.info { "$s not recognized, defaulting to ${DeploymentMode.OSS}" }
                     return@getEnvOrDefault DeploymentMode.OSS
                 }
             }
@@ -75,7 +75,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
             // an empty string. Change this logic if this assumption no longer holds.
             val jobSharedEnvMap =
                 JOB_SHARED_ENVS.entries.associate {
-                    it.key to Exceptions.swallowWithDefault({ it.value.apply(this) ?: "" }, "")
+                    it.key to Exceptions.swallowWithDefault({ it.value.apply(this) }, "")
                 }
             return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap)
         }
@@ -95,14 +95,11 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         isSecret: Boolean
     ): T {
         val value = getEnv.apply(key)
-        if (value != null && !value.isEmpty()) {
+        if (value.isNotEmpty()) {
             return parser.apply(value)
         } else {
-            LOGGER.info(
-                "Using default value for environment variable {}: '{}'",
-                key,
-                if (isSecret) "*****" else defaultValue
-            )
+            val displayValue = if (isSecret) "*****" else defaultValue.toString()
+            LOGGER.info { "Using default value for environment variable $key: '$displayValue'" }
             return defaultValue
         }
     }
@@ -113,8 +110,6 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
 
     fun getEnsureEnv(name: String): String {
         val value = getEnv(name)
-        checkNotNull(value != null) { "$name environment variable cannot be null" }
-
         return value
     }
 

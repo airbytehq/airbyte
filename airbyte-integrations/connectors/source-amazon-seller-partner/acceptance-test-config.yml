@@ -79,6 +79,10 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_SALES_AND_TRAFFIC_REPORT
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_SALES_AND_TRAFFIC_REPORT_BY_DATE
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_STRANDED_INVENTORY_UI_DATA
@@ -109,6 +113,10 @@ acceptance_tests:
             bypass_reason: "Data doesn't exist during the test time window. Requesting very large time windows on Amazon is prohibitively slow w/ our plan's rate limits"
           - name: ListFinancialEventGroups
             bypass_reason: "Data doesn't exist during the test time window. Requesting very large time windows on Amazon is prohibitively slow w/ our plan's rate limits"
+          - name: Orders
+            bypass_reason: "Orders API is extremely rate-limited (1 req/60s). Reading from test account hangs CI for hours."
+          - name: OrderItems
+            bypass_reason: "OrderItems API requires per-order calls at 1 req/180s (N+1 pattern). Reading from test account hangs CI for hours."
   incremental:
     tests:
       - config_path: "secrets/config.json"

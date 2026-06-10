@@ -21,6 +21,10 @@ With seamless client scheduling, secure payments, and workflow automation, all y
 | labels | id | No pagination | ✅ |  ❌  |
 | forms | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,7 @@ With seamless client scheduling, secure payments, and workflow automation, all y
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2026-04-21 | [76492](https://github.com/airbytehq/airbyte/pull/76492) | Update dependencies |
 | 0.0.1 | 2025-07-02 | | Initial release by [@chanronson](https://github.com/chanronson) via Connector Builder |
 
 </details>

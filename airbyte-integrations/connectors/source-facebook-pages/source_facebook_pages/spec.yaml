@@ -19,6 +19,14 @@ connectionSpecification:
       title: Page ID
       description: Page ID
       order: 1
+    page_size:
+      type: integer
+      title: Page Size For post and post_insights streams
+      description: The number of records per page for paginated streams (post, post_insights). Decrease if encountering "reduce the amount of data" errors.
+      default: 100
+      minimum: 1
+      maximum: 100
+      order: 2
 advanced_auth:
   auth_flow_type: oauth2.0
   oauth_config_specification:

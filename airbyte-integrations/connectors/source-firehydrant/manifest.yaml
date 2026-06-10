@@ -14,13 +14,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - enviroments
+    - environments
 
 definitions:
   streams:
-    enviroments:
+    environments:
       type: DeclarativeStream
-      name: enviroments
+      name: environments
       primary_key:
         - id
       retriever:
@@ -53,7 +53,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/enviroments"
+          $ref: "#/schemas/environments"
     services:
       type: DeclarativeStream
       name: services
@@ -1344,7 +1344,7 @@ definitions:
       api_token: "{{ config[\"api_token\"] }}"
 
 streams:
-  - $ref: "#/definitions/streams/enviroments"
+  - $ref: "#/definitions/streams/environments"
   - $ref: "#/definitions/streams/services"
   - $ref: "#/definitions/streams/functionalities"
   - $ref: "#/definitions/streams/teams"
@@ -1407,7 +1407,7 @@ spec:
 
 metadata:
   autoImportSchema:
-    enviroments: true
+    environments: true
     services: true
     functionalities: true
     teams: true
@@ -1447,7 +1447,7 @@ metadata:
     task_lists: true
     checklist_templates: true
   testedStreams:
-    enviroments:
+    environments:
       hasRecords: true
       streamHash: 71983108f8df8f1a8b9a2ff3995dfe29414d67fe
       hasResponse: true
@@ -1724,7 +1724,7 @@ metadata:
     docsUrl: https://developers.firehydrant.com/
 
 schemas:
-  enviroments:
+  environments:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true

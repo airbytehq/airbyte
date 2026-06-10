@@ -36,6 +36,8 @@ acceptance_tests:
             bypass_reason: Unable to populate - covered by integration tests
           - name: deals_archived
             bypass_reason: No value in re-create every 90 days
+          - name: list_memberships
+            bypass_reason: Test account may not have populated list memberships
   full_refresh:
     tests:
       - config_path: secrets/config.json

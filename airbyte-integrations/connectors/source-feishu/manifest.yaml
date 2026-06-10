@@ -1,0 +1,170 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  Extracts data from Feishu/Lark Bitable (Base). Supports authentication via App
+  ID and App Secret.
+
+
+  **Prerequisites:**
+
+  1. A Feishu/Lark account.
+
+  2. A custom app created in the Feishu Open Platform with Bitable permissions
+  enabled.
+
+  3. The App ID and App Secret.
+
+check:
+  type: CheckStream
+  stream_names:
+    - records
+  dynamic_streams_check_configs: []
+
+streams:
+  - type: DeclarativeStream
+    name: records
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page_token
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response[\"data\"][\"page_token\"] }}"
+          stop_condition: "{{ response['data']['has_more'] is false }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config['lark_host'] }}/open-apis/bitable/v1/apps/{{
+          config['app_token'] }}/tables/{{ config["table_id"] }}/records
+        http_method: GET
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url: >-
+              {{config['lark_host']}}/open-apis/auth/v3/app_access_token/internal
+            http_method: POST
+            request_body:
+              type: RequestBodyJsonObject
+              value:
+                app_id: "{{ config['app_id'] }}"
+                app_secret: "{{ config['app_secret'] }}"
+          session_token_path:
+            - tenant_access_token
+          request_authentication:
+            type: Bearer
+          expiration_duration: "7200"
+        request_parameters:
+          page_size: "{{ config['page_size'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - items
+    primary_key: record_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - record_id
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          fields:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          record_id:
+            type: string
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - app_id
+      - app_secret
+      - app_token
+      - lark_host
+      - table_id
+    properties:
+      app_id:
+        type: string
+        description: >-
+          The unique identifier for your application. Found in the Feishu/Lark
+          Developer Console under "Credentials & Basic Info".
+        order: 0
+        title: App Id
+        airbyte_secret: true
+      table_id:
+        type: string
+        description: >-
+          The unique identifier of the table. Found in the URL query parameter
+          table={table_id}.
+        order: 4
+        title: Table Id
+      app_token:
+        type: string
+        description: >-
+          The unique identifier of the Bitable (Base). Found in the URL:
+          /base/{app_token}.
+        order: 2
+        title: App Token
+        airbyte_secret: true
+      lark_host:
+        type: string
+        order: 3
+        title: Lark Host
+        description: >-
+          Base URL of the Feishu/Lark Open Platform. Use
+          https://open.feishu.cn for Feishu (China mainland) accounts and
+          https://open.larksuite.com for Lark (international) accounts.
+        default: https://open.feishu.cn
+        examples:
+          - https://open.feishu.cn
+          - https://open.larksuite.com
+      page_size:
+        type: number
+        description: "Number of records per request. Max: 500. Default: 100."
+        order: 5
+        title: Page Size
+        default: 100
+      app_secret:
+        type: string
+        description: >-
+          The secret key used to verify your application's identity. Found
+          alongside the App ID.
+        order: 1
+        title: App Secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    records:
+      isStale: false
+      hasRecords: true
+      streamHash: e5b8851e88ee25e9dbd2312bd0444857ba6cc53d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+  autoImportSchema:
+    records: true

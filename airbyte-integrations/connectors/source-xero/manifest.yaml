@@ -14,1603 +14,403 @@ definitions:
       name: bank_transactions
       primary_key:
         - BankTransactionID
+      $parameters:
+        path: "BankTransactions"
+        records_field: "BankTransactions"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /BankTransactions
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - BankTransactions
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/bank_transactions"
+
     contacts:
       type: DeclarativeStream
       name: contacts
       primary_key:
         - ContactID
+      $parameters:
+        path: "Contacts"
+        records_field: "Contacts"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Contacts
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Contacts
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/contacts"
+
     credit_notes:
       type: DeclarativeStream
       name: credit_notes
       primary_key:
         - CreditNoteID
+      $parameters:
+        path: "CreditNotes"
+        records_field: "CreditNotes"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /CreditNotes
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - CreditNotes
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/credit_notes"
+
     invoices:
       type: DeclarativeStream
       name: invoices
       primary_key:
         - InvoiceID
+      $parameters:
+        path: "Invoices"
+        records_field: "Invoices"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Invoices
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Invoices
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/invoices"
+
     manual_journals:
       type: DeclarativeStream
       name: manual_journals
       primary_key:
         - ManualJournalID
+      $parameters:
+        path: "ManualJournals"
+        records_field: "ManualJournals"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ManualJournals
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - ManualJournals
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/manual_journals"
+
     overpayments:
       type: DeclarativeStream
       name: overpayments
       primary_key:
         - OverpaymentID
+      $parameters:
+        path: "Overpayments"
+        records_field: "Overpayments"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Overpayments
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Overpayments
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/overpayments"
+
     prepayments:
       type: DeclarativeStream
       name: prepayments
       primary_key:
         - PrepaymentID
+      $parameters:
+        path: "Prepayments"
+        records_field: "Prepayments"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Prepayments
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Prepayments
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/prepayments"
+
     purchase_orders:
       type: DeclarativeStream
       name: purchase_orders
       primary_key:
         - PurchaseOrderID
+      $parameters:
+        path: "PurchaseOrders"
+        records_field: "PurchaseOrders"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /PurchaseOrders
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - PurchaseOrders
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/purchase_orders"
+
     accounts:
       type: DeclarativeStream
       name: accounts
       primary_key:
         - AccountID
+      $parameters:
+        path: "Accounts"
+        records_field: "Accounts"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Accounts
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Accounts
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/accounts"
+
     bank_transfers:
       type: DeclarativeStream
       name: bank_transfers
       primary_key:
         - BankTransferID
+      $parameters:
+        path: "BankTransfers"
+        records_field: "BankTransfers"
+        cursor_field: "CreatedDateUTC"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /BankTransfers
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - BankTransfers
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['CreatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: CreatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/bank_transfers"
+
     employees:
       type: DeclarativeStream
       name: employees
       primary_key:
         - EmployeeID
+      $parameters:
+        path: "Employees"
+        records_field: "Employees"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Employees
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Employees
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/employees"
+
     items:
       type: DeclarativeStream
       name: items
       primary_key:
         - ItemID
+      $parameters:
+        path: "Items"
+        records_field: "Items"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Items
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Items
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/items"
+
     payments:
       type: DeclarativeStream
       name: payments
       primary_key:
         - PaymentID
+      $parameters:
+        path: "Payments"
+        records_field: "Payments"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Payments
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Payments
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/payments"
+
     users:
       type: DeclarativeStream
       name: users
       primary_key:
         - UserID
+      $parameters:
+        path: "Users"
+        records_field: "Users"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Users
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Users
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
+        $ref: "#/definitions/base_retriever"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: UpdatedDateUTC
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        $ref: "#/definitions/base_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
+
     branding_themes:
       type: DeclarativeStream
       name: branding_themes
       primary_key:
         - BrandingThemeID
+      $parameters:
+        path: "BrandingThemes"
+        records_field: "BrandingThemes"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /BrandingThemes
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - BrandingThemes
+        $ref: "#/definitions/base_retriever"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/branding_themes"
+
     contact_groups:
       type: DeclarativeStream
       name: contact_groups
       primary_key:
         - ContactGroupID
+      $parameters:
+        path: "ContactGroups"
+        records_field: "ContactGroups"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ContactGroups
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - ContactGroups
+        $ref: "#/definitions/base_retriever"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/contact_groups"
+
     currencies:
       type: DeclarativeStream
       name: currencies
       primary_key:
         - Code
+      $parameters:
+        path: "Currencies"
+        records_field: "Currencies"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Currencies
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Currencies
+        $ref: "#/definitions/base_retriever"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/currencies"
+
     organisations:
       type: DeclarativeStream
       name: organisations
       primary_key:
         - OrganisationID
+      $parameters:
+        path: "Organisation"
+        records_field: "Organisations"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Organisation
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - Organisations
+        $ref: "#/definitions/base_retriever"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/organisations"
+
     repeating_invoices:
       type: DeclarativeStream
       name: repeating_invoices
       primary_key:
         - RepeatingInvoiceID
+      $parameters:
+        path: "RepeatingInvoices"
+        records_field: "RepeatingInvoices"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /RepeatingInvoices
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - RepeatingInvoices
+        $ref: "#/definitions/base_retriever"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/repeating_invoices"
+
     tax_rates:
       type: DeclarativeStream
       name: tax_rates
       primary_key:
         - Name
+      $parameters:
+        path: "TaxRates"
+        records_field: "TaxRates"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /TaxRates
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - TaxRates
+        $ref: "#/definitions/base_retriever"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tax_rates"
+
     tracking_categories:
       type: DeclarativeStream
       name: tracking_categories
       primary_key:
         - TrackingCategoryID
+      $parameters:
+        path: "TrackingCategories"
+        records_field: "TrackingCategories"
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /TrackingCategories
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Xero-Tenant-Id: "{{ config['tenant_id'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      Failed to authorize request. Please update your access
-                      token to continue using the source.
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 30
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
-            field_path:
-              - TrackingCategories
+        $ref: "#/definitions/base_retriever"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tracking_categories"
+
+  base_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "{{ parameters.get('cursor_field', 'UpdatedDateUTC') }}"
+    # Inject Xero server-side filter
+    start_time_option:
+      type: RequestOption
+      inject_into: header
+      field_name: If-Modified-Since
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S%z"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+      path: "{{ parameters.path }}"
+      http_method: GET
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: page
+      page_size_option:
+        type: RequestOption
+        field_name: pageSize
+        inject_into: request_parameter
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 1000
+        start_from_page: 1
+        inject_on_first_request: true
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
+        field_path:
+          - "{{ parameters['records_field'] }}"
+
   base_requester:
     type: HttpRequester
     url_base: https://api.xero.com/api.xro/2.0/
+    request_headers:
+      Accept: application/json
+      Xero-Tenant-Id: "{{ config['tenant_id'] }}"
     authenticator:
       type: SelectiveAuthenticator
       authenticators:
@@ -1629,7 +429,9 @@ definitions:
             - accounting.settings.read
             - accounting.contacts.read
             - accounting.attachments.read
-            - assets.read files.read projects.read
+            - assets.read
+            - files.read
+            - projects.read
             - openid
           client_id: "{{ config['credentials']['client_id'] }}"
           grant_type: client_credentials
@@ -1641,6 +443,39 @@ definitions:
       authenticator_selection_path:
         - credentials
         - auth_type
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 30
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes: [401]
+              error_message: "Failed to authorize request"
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes: [403]
+        # Stop immediately if Daily Limit reached
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes: [429]
+              error_message: "daily limit"
+        # Retry standard rate limits (e.g. 60/min)
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes: [429]
 
 streams:
   - $ref: "#/definitions/streams/bank_transactions"

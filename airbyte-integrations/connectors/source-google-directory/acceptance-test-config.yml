@@ -1,9 +1,10 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-directory:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_google_directory/spec.json"
+    tests:
+      - spec_path: "source_google_directory/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

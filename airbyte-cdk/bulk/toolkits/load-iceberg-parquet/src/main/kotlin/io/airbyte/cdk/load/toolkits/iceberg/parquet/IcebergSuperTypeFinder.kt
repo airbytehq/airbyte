@@ -23,7 +23,7 @@ import org.apache.iceberg.types.Types.*
  */
 @Singleton
 class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesComparator) {
-    private val unsupportedTypeIds = setOf(BINARY, DECIMAL, FIXED, UUID, MAP, TIMESTAMP_NANO)
+    private val unsupportedTypeIds = setOf(BINARY, FIXED, UUID, MAP, DECIMAL, TIMESTAMP_NANO)
 
     /**
      * Returns a supertype for [existingType] and [incomingType] if one exists.
@@ -64,7 +64,7 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
     }
 
     /**
-     * Checks whether either type is unsupported or unmapped (e.g. BINARY, DECIMAL, FIXED, etc.).
+     * Checks whether either type is unsupported or unmapped (e.g. BINARY, FIXED, UUID, etc.).
      *
      * @throws ConfigErrorException if either type is unsupported.
      */

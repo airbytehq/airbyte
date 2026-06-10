@@ -17,6 +17,7 @@ from source_shopify.streams.streams import (
     FulfillmentOrders,
     InventoryItems,
     InventoryLevels,
+    MetafieldCustomers,
     MetafieldOrders,
     OrderRisks,
     ProductImages,
@@ -516,3 +517,45 @@ def test_expand_stream_slices_job_size(
     list(stream.read_records(SyncMode.incremental, stream_slice=first_slice))
     # check the next slice
     assert stream.job_manager._job_size == adjusted_slice_size
+
+
+def test_effective_checkpoint_cursor_uses_parent_cursor_for_parent_backed_stream(auth_config) -> None:
+    """Reproduces the bug behind airbytehq/oncall#12004.
+
+    When a bulk job checkpoints mid-output for a stream whose emitted records'
+    cursor differs from the slice filter field, the next slice must not be
+    advanced using the child record's cursor. For `MetafieldCustomers` the
+    slice is filtered on `customers.updated_at` but emitted records carry
+    `metafield.updated_at`, which can be arbitrarily far outside the slice
+    window. Using the child cursor as the next-slice start silently skips
+    every customer between the current slice's end and the child's timestamp.
+
+    The fix is to source the checkpoint cursor from the bulk record
+    producer's tracked parent cursor, which is bounded by the slice upper
+    bound.
+    """
+    stream = MetafieldCustomers(auth_config)
+
+    # Simulate the pathological state captured in the oncall log:
+    #   - child record cursor advanced to a timestamp way past slice_end
+    #   - parent cursor tracked by the record producer stayed in-window
+    stream._checkpoint_cursor = "2026-02-26T01:31:14+00:00"
+    stream.job_manager.record_producer._parent_stream_cursor_value = "2023-06-28T00:00:00+00:00"
+
+    # Must NOT return the child cursor — that's what skipped 2.67 years of
+    # customers in oncall#12004's production sync.
+    assert stream._effective_checkpoint_cursor() == "2023-06-28T00:00:00+00:00"
+
+
+def test_effective_checkpoint_cursor_falls_back_when_no_parent_state(auth_config) -> None:
+    """Streams without a parent, or with no parent cursor yet tracked, keep
+    the pre-fix behavior of using `self._checkpoint_cursor`."""
+    stream = MetafieldOrders(auth_config)  # no parent_stream_class
+    stream._checkpoint_cursor = "2024-01-15T10:00:00+00:00"
+    assert stream._effective_checkpoint_cursor() == "2024-01-15T10:00:00+00:00"
+
+    # Parent-backed stream but producer hasn't seen any parent yet.
+    stream = MetafieldCustomers(auth_config)
+    stream._checkpoint_cursor = "2024-01-15T10:00:00+00:00"
+    stream.job_manager.record_producer._parent_stream_cursor_value = None
+    assert stream._effective_checkpoint_cursor() == "2024-01-15T10:00:00+00:00"

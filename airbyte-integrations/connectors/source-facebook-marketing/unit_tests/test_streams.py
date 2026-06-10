@@ -3,8 +3,10 @@
 #
 
 from datetime import timedelta
+from unittest.mock import MagicMock, patch
 
 import pytest
+from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
@@ -18,8 +20,10 @@ from source_facebook_marketing.streams import (
     AdsInsightsRegion,
 )
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
-from source_facebook_marketing.streams.streams import fetch_thumbnail_data_url
+from source_facebook_marketing.streams.streams import AdAccount, AdCreativesFromAds, fetch_thumbnail_data_url
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
@@ -172,3 +176,253 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
     streams = source.streams(config)
     ads_insights_stream = [stream for stream in streams if "ads_insights" == stream.name][0]
     assert ads_insights_stream.request_params()["action_breakdowns"] == expected_action_breakdowns
+
+
+@pytest.mark.parametrize(
+    "exception,should_raise",
+    [
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=500,
+                http_headers={},
+                body='{"error": {"message": "An unknown error occurred", "code": 1}}',
+            ),
+            False,
+            id="facebook_request_error_returns_none",
+        ),
+        pytest.param(
+            TypeError("some type error"),
+            False,
+            id="type_error_returns_none",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Error code 1: An unknown error occurred.",
+                failure_type=FailureType.system_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=500,
+                    http_headers={},
+                    body='{"error": {"message": "An unknown error occurred", "code": 1}}',
+                ),
+            ),
+            False,
+            id="airbyte_traced_exception_with_http_500_returns_none",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="The access token for this connection is invalid or corrupted.",
+                internal_message="Invalid OAuth access token",
+                failure_type=FailureType.config_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=400,
+                    http_headers={},
+                    body='{"error": {"message": "Invalid OAuth access token", "code": 190}}',
+                ),
+            ),
+            True,
+            id="airbyte_traced_exception_with_http_400_raises",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Rate limit exceeded for Facebook API.",
+                failure_type=FailureType.transient_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=429,
+                    http_headers={},
+                    body='{"error": {"message": "Rate limit exceeded", "code": 4}}',
+                ),
+            ),
+            True,
+            id="airbyte_traced_exception_with_http_429_raises",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Service temporarily unavailable.",
+                failure_type=FailureType.transient_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=503,
+                    http_headers={},
+                    body='{"error": {"message": "Service temporarily unavailable", "code": 2}}',
+                ),
+            ),
+            True,
+            id="airbyte_traced_exception_with_http_503_raises",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Rate limit exceeded for Facebook API.",
+                failure_type=FailureType.transient_error,
+            ),
+            True,
+            id="airbyte_traced_exception_without_wrapped_fb_error_raises",
+        ),
+    ],
+)
+def test_fetch_creative_details_handles_exceptions(api, some_config, exception, should_raise):
+    """Test that _fetch_creative_details handles exceptions based on HTTP status: 500 returns None, all others raise."""
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+
+    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
+        mock_creative_instance = MagicMock()
+        mock_creative_cls.return_value = mock_creative_instance
+        mock_creative_instance.api_get.side_effect = exception
+
+        if should_raise:
+            with pytest.raises(AirbyteTracedException):
+                stream._fetch_creative_details("12345")
+        else:
+            result = stream._fetch_creative_details("12345")
+            assert result is None
+
+
+def test_fetch_creative_details_returns_data_on_success(api, some_config):
+    """Test that _fetch_creative_details returns creative data on successful API call."""
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+    expected_data = {"id": "12345", "name": "Test Creative", "body": "Test body"}
+
+    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
+        mock_creative_instance = MagicMock()
+        mock_creative_cls.return_value = mock_creative_instance
+        mock_creative_instance.api_get.return_value = mock_creative_instance
+        mock_creative_instance.export_all_data.return_value = expected_data
+
+        result = stream._fetch_creative_details("12345")
+        assert result == expected_data
+
+
+@pytest.mark.parametrize(
+    "exception,expected_behavior,expected_raise_type",
+    [
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "(#200) Requires business_management permission to manage the object", "code": 200}}',
+            ),
+            "remove_owner",
+            None,
+            id="fb_error_owner_permission_removes_owner",
+        ),
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "Unsupported request - method type: get", "code": 100}}',
+            ),
+            "remove_funding_source_details",
+            None,
+            id="fb_error_funding_source_removes_field",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Credentials don't have enough permissions.",
+                failure_type=FailureType.config_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=400,
+                    http_headers={},
+                    body='{"error": {"message": "(#200) Requires business_management permission to manage the object", "code": 200}}',
+                ),
+            ),
+            "remove_owner",
+            None,
+            id="airbyte_traced_wrapping_owner_permission_error_removes_owner",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Error code 100: Unsupported request - method type: get.",
+                failure_type=FailureType.system_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=400,
+                    http_headers={},
+                    body='{"error": {"message": "Unsupported request - method type: get", "code": 100}}',
+                ),
+            ),
+            "remove_funding_source_details",
+            None,
+            id="airbyte_traced_wrapping_funding_source_error_removes_field",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="The access token for this connection is invalid or corrupted.",
+                failure_type=FailureType.config_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=400,
+                    http_headers={},
+                    body='{"error": {"message": "Invalid OAuth access token", "code": 190}}',
+                ),
+            ),
+            "raise",
+            FacebookRequestError,
+            id="airbyte_traced_wrapping_unrelated_fb_error_raises",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Some unrelated error.",
+                failure_type=FailureType.system_error,
+            ),
+            "raise",
+            AirbyteTracedException,
+            id="airbyte_traced_without_wrapped_fb_error_raises",
+        ),
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "Invalid OAuth access token", "code": 190}}',
+            ),
+            "raise",
+            FacebookRequestError,
+            id="fb_error_unrelated_raises",
+        ),
+    ],
+)
+def test_ad_account_list_objects_handles_facebook_and_traced_exceptions(
+    api, some_config, exception, expected_behavior, expected_raise_type
+):
+    """Test that AdAccount.list_objects handles FacebookRequestError and AirbyteTracedException
+    wrapping FacebookRequestError for the owner permission and funding_source_details errors,
+    and re-raises all others."""
+    stream = AdAccount(api=api, account_ids=some_config["account_ids"])
+    account_id = some_config["account_ids"][0]
+
+    with (
+        patch.object(stream, "fields", return_value=["owner", "funding_source_details", "id"]),
+        patch("source_facebook_marketing.streams.streams.FBAdAccount") as mock_fb_account,
+    ):
+        mock_account_instance = MagicMock()
+        mock_fb_account.return_value = mock_account_instance
+        # First call raises the exception; second call (after field removal) succeeds
+        mock_account_instance.api_get.side_effect = [exception, MagicMock()]
+
+        if expected_behavior == "raise":
+            with pytest.raises(expected_raise_type):
+                stream.list_objects(params={}, account_id=account_id)
+        elif expected_behavior == "remove_owner":
+            stream.list_objects(params={}, account_id=account_id)
+            # Verify api_get was called twice (first raises, second succeeds after removing "owner")
+            assert mock_account_instance.api_get.call_count == 2
+        elif expected_behavior == "remove_funding_source_details":
+            stream.list_objects(params={}, account_id=account_id)
+            assert mock_account_instance.api_get.call_count == 2

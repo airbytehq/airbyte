@@ -8,7 +8,8 @@ The Google-Drive connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](#files-list), [Get](#files-get), [Download](#files-download) |
+| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download) |
+| Files Upload | [Create](#files-upload-create) |
 | Files Export | [Download](#files-export-download) |
 | Drives | [List](#drives-list), [Get](#drives-get) |
 | Permissions | [List](#permissions-list), [Get](#permissions-get) |
@@ -24,6 +25,17 @@ The Google-Drive connector supports the following entities and actions.
 ### Files List
 
 Lists the user's files. Returns a paginated list of files.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -146,6 +158,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a file's metadata by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "get",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -254,12 +280,370 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Files Create
+
+Creates a new file or folder in Google Drive (metadata only, no content).
+To create a folder, set mimeType to 'application/vnd.google-apps.folder'.
+To create a Google Doc, use 'application/vnd.google-apps.document'.
+To create a Google Sheet, use 'application/vnd.google-apps.spreadsheet'.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "mimeType": "<str>",
+    "parents": [],
+    "description": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_drive.files.create(
+    name="<str>",
+    mime_type="<str>",
+    parents=[],
+    description="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "create",
+    "params": {
+        "name": "<str>",
+        "mimeType": "<str>",
+        "parents": [],
+        "description": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | The name of the file or folder |
+| `mimeType` | `string` | No | The MIME type of the file. Use 'application/vnd.google-apps.folder' for folders,
+'application/vnd.google-apps.document' for Google Docs,
+'application/vnd.google-apps.spreadsheet' for Google Sheets.
+ |
+| `parents` | `array<string>` | No | The IDs of the parent folders. If not specified, the file is placed in My Drive root. |
+| `description` | `string` | No | A short description of the file |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `mimeType` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `starred` | `boolean \| null` |  |
+| `trashed` | `boolean \| null` |  |
+| `explicitlyTrashed` | `boolean \| null` |  |
+| `parents` | `array \| null` |  |
+| `properties` | `object \| null` |  |
+| `appProperties` | `object \| null` |  |
+| `spaces` | `array \| null` |  |
+| `version` | `string \| null` |  |
+| `webContentLink` | `string \| null` |  |
+| `webViewLink` | `string \| null` |  |
+| `iconLink` | `string \| null` |  |
+| `hasThumbnail` | `boolean \| null` |  |
+| `thumbnailLink` | `string \| null` |  |
+| `thumbnailVersion` | `string \| null` |  |
+| `viewedByMe` | `boolean \| null` |  |
+| `viewedByMeTime` | `string \| null` |  |
+| `createdTime` | `string \| null` |  |
+| `modifiedTime` | `string \| null` |  |
+| `modifiedByMeTime` | `string \| null` |  |
+| `modifiedByMe` | `boolean \| null` |  |
+| `sharedWithMeTime` | `string \| null` |  |
+| `sharingUser` | `object \| any` |  |
+| `owners` | `array \| null` |  |
+| `owners[].kind` | `string \| null` |  |
+| `owners[].displayName` | `string \| null` |  |
+| `owners[].photoLink` | `string \| null` |  |
+| `owners[].me` | `boolean \| null` |  |
+| `owners[].permissionId` | `string \| null` |  |
+| `owners[].emailAddress` | `string \| null` |  |
+| `driveId` | `string \| null` |  |
+| `lastModifyingUser` | `object \| any` |  |
+| `shared` | `boolean \| null` |  |
+| `ownedByMe` | `boolean \| null` |  |
+| `capabilities` | `object \| null` |  |
+| `viewersCanCopyContent` | `boolean \| null` |  |
+| `copyRequiresWriterPermission` | `boolean \| null` |  |
+| `writersCanShare` | `boolean \| null` |  |
+| `permissionIds` | `array \| null` |  |
+| `folderColorRgb` | `string \| null` |  |
+| `originalFilename` | `string \| null` |  |
+| `fullFileExtension` | `string \| null` |  |
+| `fileExtension` | `string \| null` |  |
+| `md5Checksum` | `string \| null` |  |
+| `sha1Checksum` | `string \| null` |  |
+| `sha256Checksum` | `string \| null` |  |
+| `size` | `string \| null` |  |
+| `quotaBytesUsed` | `string \| null` |  |
+| `headRevisionId` | `string \| null` |  |
+| `isAppAuthorized` | `boolean \| null` |  |
+| `exportLinks` | `object \| null` |  |
+| `shortcutDetails` | `object \| null` |  |
+| `contentRestrictions` | `array \| null` |  |
+| `resourceKey` | `string \| null` |  |
+| `linkShareMetadata` | `object \| null` |  |
+| `labelInfo` | `object \| null` |  |
+| `trashedTime` | `string \| null` |  |
+| `trashingUser` | `object \| any` |  |
+| `imageMediaMetadata` | `object \| null` |  |
+| `videoMediaMetadata` | `object \| null` |  |
+
+
+</details>
+
+### Files Update
+
+Updates a file's metadata. Use addParents/removeParents query parameters
+to move a file between folders.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "description": "<str>",
+    "mimeType": "<str>",
+    "fileId": "<str>",
+    "addParents": "<str>",
+    "removeParents": "<str>",
+    "supportsAllDrives": true
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_drive.files.update(
+    name="<str>",
+    description="<str>",
+    mime_type="<str>",
+    file_id="<str>",
+    add_parents="<str>",
+    remove_parents="<str>",
+    supports_all_drives=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "update",
+    "params": {
+        "name": "<str>",
+        "description": "<str>",
+        "mimeType": "<str>",
+        "fileId": "<str>",
+        "addParents": "<str>",
+        "removeParents": "<str>",
+        "supportsAllDrives": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | No | The new name of the file |
+| `description` | `string` | No | A new description for the file |
+| `mimeType` | `string` | No | The new MIME type of the file |
+| `fileId` | `string` | Yes | The ID of the file to update |
+| `addParents` | `string` | No | Comma-separated list of parent IDs to add |
+| `removeParents` | `string` | No | Comma-separated list of parent IDs to remove |
+| `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `mimeType` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `starred` | `boolean \| null` |  |
+| `trashed` | `boolean \| null` |  |
+| `explicitlyTrashed` | `boolean \| null` |  |
+| `parents` | `array \| null` |  |
+| `properties` | `object \| null` |  |
+| `appProperties` | `object \| null` |  |
+| `spaces` | `array \| null` |  |
+| `version` | `string \| null` |  |
+| `webContentLink` | `string \| null` |  |
+| `webViewLink` | `string \| null` |  |
+| `iconLink` | `string \| null` |  |
+| `hasThumbnail` | `boolean \| null` |  |
+| `thumbnailLink` | `string \| null` |  |
+| `thumbnailVersion` | `string \| null` |  |
+| `viewedByMe` | `boolean \| null` |  |
+| `viewedByMeTime` | `string \| null` |  |
+| `createdTime` | `string \| null` |  |
+| `modifiedTime` | `string \| null` |  |
+| `modifiedByMeTime` | `string \| null` |  |
+| `modifiedByMe` | `boolean \| null` |  |
+| `sharedWithMeTime` | `string \| null` |  |
+| `sharingUser` | `object \| any` |  |
+| `owners` | `array \| null` |  |
+| `owners[].kind` | `string \| null` |  |
+| `owners[].displayName` | `string \| null` |  |
+| `owners[].photoLink` | `string \| null` |  |
+| `owners[].me` | `boolean \| null` |  |
+| `owners[].permissionId` | `string \| null` |  |
+| `owners[].emailAddress` | `string \| null` |  |
+| `driveId` | `string \| null` |  |
+| `lastModifyingUser` | `object \| any` |  |
+| `shared` | `boolean \| null` |  |
+| `ownedByMe` | `boolean \| null` |  |
+| `capabilities` | `object \| null` |  |
+| `viewersCanCopyContent` | `boolean \| null` |  |
+| `copyRequiresWriterPermission` | `boolean \| null` |  |
+| `writersCanShare` | `boolean \| null` |  |
+| `permissionIds` | `array \| null` |  |
+| `folderColorRgb` | `string \| null` |  |
+| `originalFilename` | `string \| null` |  |
+| `fullFileExtension` | `string \| null` |  |
+| `fileExtension` | `string \| null` |  |
+| `md5Checksum` | `string \| null` |  |
+| `sha1Checksum` | `string \| null` |  |
+| `sha256Checksum` | `string \| null` |  |
+| `size` | `string \| null` |  |
+| `quotaBytesUsed` | `string \| null` |  |
+| `headRevisionId` | `string \| null` |  |
+| `isAppAuthorized` | `boolean \| null` |  |
+| `exportLinks` | `object \| null` |  |
+| `shortcutDetails` | `object \| null` |  |
+| `contentRestrictions` | `array \| null` |  |
+| `resourceKey` | `string \| null` |  |
+| `linkShareMetadata` | `object \| null` |  |
+| `labelInfo` | `object \| null` |  |
+| `trashedTime` | `string \| null` |  |
+| `trashingUser` | `object \| any` |  |
+| `imageMediaMetadata` | `object \| null` |  |
+| `videoMediaMetadata` | `object \| null` |  |
+
+
+</details>
+
+### Files Delete
+
+Permanently deletes a file owned by the user without moving it to the trash.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "delete",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_drive.files.delete(
+    file_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "delete",
+    "params": {
+        "fileId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `fileId` | `string` | Yes | The ID of the file to delete |
+| `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
+
+
 ### Files Download
 
 Downloads the binary content of a file. This works for non-Google Workspace files
 (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
 use the export action instead.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "download",
+  "params": {
+    "fileId": "<str>",
+    "alt": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -298,6 +682,163 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
+## Files Upload
+
+### Files Upload Create
+
+Uploads a new file to Google Drive with both metadata and file content.
+The file content must be base64-encoded in the file_content parameter.
+Suitable for files up to 5MB. For larger files, use the Drive UI.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files_upload",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "file_content": "<str>",
+    "mimeType": "<str>",
+    "parents": [],
+    "description": "<str>",
+    "file_mime_type": "<str>",
+    "uploadType": "<str>",
+    "supportsAllDrives": true
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_drive.files_upload.create(
+    name="<str>",
+    file_content="<str>",
+    mime_type="<str>",
+    parents=[],
+    description="<str>",
+    file_mime_type="<str>",
+    upload_type="<str>",
+    supports_all_drives=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files_upload",
+    "action": "create",
+    "params": {
+        "name": "<str>",
+        "file_content": "<str>",
+        "mimeType": "<str>",
+        "parents": [],
+        "description": "<str>",
+        "file_mime_type": "<str>",
+        "uploadType": "<str>",
+        "supportsAllDrives": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | The name of the file |
+| `file_content` | `string` | Yes | Base64-encoded file content to upload |
+| `mimeType` | `string` | No | The MIME type for the file metadata in Google Drive |
+| `parents` | `array<string>` | No | The IDs of the parent folders |
+| `description` | `string` | No | A short description of the file |
+| `file_mime_type` | `string` | No | The MIME type of the actual file content (e.g., 'application/pdf', 'image/png'). Defaults to 'application/octet-stream'. |
+| `uploadType` | `"multipart"` | No | The type of upload request (must be 'multipart') |
+| `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `mimeType` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `starred` | `boolean \| null` |  |
+| `trashed` | `boolean \| null` |  |
+| `explicitlyTrashed` | `boolean \| null` |  |
+| `parents` | `array \| null` |  |
+| `properties` | `object \| null` |  |
+| `appProperties` | `object \| null` |  |
+| `spaces` | `array \| null` |  |
+| `version` | `string \| null` |  |
+| `webContentLink` | `string \| null` |  |
+| `webViewLink` | `string \| null` |  |
+| `iconLink` | `string \| null` |  |
+| `hasThumbnail` | `boolean \| null` |  |
+| `thumbnailLink` | `string \| null` |  |
+| `thumbnailVersion` | `string \| null` |  |
+| `viewedByMe` | `boolean \| null` |  |
+| `viewedByMeTime` | `string \| null` |  |
+| `createdTime` | `string \| null` |  |
+| `modifiedTime` | `string \| null` |  |
+| `modifiedByMeTime` | `string \| null` |  |
+| `modifiedByMe` | `boolean \| null` |  |
+| `sharedWithMeTime` | `string \| null` |  |
+| `sharingUser` | `object \| any` |  |
+| `owners` | `array \| null` |  |
+| `owners[].kind` | `string \| null` |  |
+| `owners[].displayName` | `string \| null` |  |
+| `owners[].photoLink` | `string \| null` |  |
+| `owners[].me` | `boolean \| null` |  |
+| `owners[].permissionId` | `string \| null` |  |
+| `owners[].emailAddress` | `string \| null` |  |
+| `driveId` | `string \| null` |  |
+| `lastModifyingUser` | `object \| any` |  |
+| `shared` | `boolean \| null` |  |
+| `ownedByMe` | `boolean \| null` |  |
+| `capabilities` | `object \| null` |  |
+| `viewersCanCopyContent` | `boolean \| null` |  |
+| `copyRequiresWriterPermission` | `boolean \| null` |  |
+| `writersCanShare` | `boolean \| null` |  |
+| `permissionIds` | `array \| null` |  |
+| `folderColorRgb` | `string \| null` |  |
+| `originalFilename` | `string \| null` |  |
+| `fullFileExtension` | `string \| null` |  |
+| `fileExtension` | `string \| null` |  |
+| `md5Checksum` | `string \| null` |  |
+| `sha1Checksum` | `string \| null` |  |
+| `sha256Checksum` | `string \| null` |  |
+| `size` | `string \| null` |  |
+| `quotaBytesUsed` | `string \| null` |  |
+| `headRevisionId` | `string \| null` |  |
+| `isAppAuthorized` | `boolean \| null` |  |
+| `exportLinks` | `object \| null` |  |
+| `shortcutDetails` | `object \| null` |  |
+| `contentRestrictions` | `array \| null` |  |
+| `resourceKey` | `string \| null` |  |
+| `linkShareMetadata` | `object \| null` |  |
+| `labelInfo` | `object \| null` |  |
+| `trashedTime` | `string \| null` |  |
+| `trashingUser` | `object \| any` |  |
+| `imageMediaMetadata` | `object \| null` |  |
+| `videoMediaMetadata` | `object \| null` |  |
+
+
+</details>
+
 ## Files Export
 
 ### Files Export Download
@@ -312,6 +853,21 @@ Common export formats:
 - application/vnd.openxmlformats-officedocument.presentationml.presentation (Slides to .pptx)
 Note: Export has a 10MB limit. For larger files, use the Drive UI.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files_export",
+  "action": "download",
+  "params": {
+    "fileId": "<str>",
+    "mimeType": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -360,6 +916,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Drives List
 
 Lists the user's shared drives
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "drives",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -423,6 +990,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a shared drive's metadata by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "drives",
+  "action": "get",
+  "params": {
+    "driveId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -483,6 +1064,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Permissions List
 
 Lists a file's or shared drive's permissions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "permissions",
+  "action": "list",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -555,6 +1150,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a permission by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "permissions",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "permissionId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -622,6 +1232,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments List
 
 Lists a file's comments
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "comments",
+  "action": "list",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -703,6 +1327,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a comment by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "comments",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "commentId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -779,6 +1418,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists a comment's replies
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "replies",
+  "action": "list",
+  "params": {
+    "fileId": "<str>",
+    "commentId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -847,6 +1501,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a reply by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "replies",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "commentId": "<str>",
+    "replyId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -911,6 +1581,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Revisions List
 
 Lists a file's revisions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "revisions",
+  "action": "list",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -980,6 +1664,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a revision's metadata by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "revisions",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "revisionId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1045,12 +1744,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists the changes for a user or shared drive
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "changes",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
-await google_drive.changes.list(
-    page_token="<str>"
-)
+await google_drive.changes.list()
 ```
 
 #### API
@@ -1061,10 +1769,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "changes",
-    "action": "list",
-    "params": {
-        "pageToken": "<str>"
-    }
+    "action": "list"
 }'
 ```
 
@@ -1073,7 +1778,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `pageToken` | `string` | Yes | Token for the page of changes to retrieve (from changes.getStartPageToken or previous response) |
+| `pageToken` | `string` | No | Token for the page of changes to retrieve (from changes.getStartPageToken or previous response) |
 | `pageSize` | `integer` | No | Maximum number of changes to return (1-1000) |
 | `driveId` | `string` | No | The shared drive from which changes are returned |
 | `includeItemsFromAllDrives` | `boolean` | No | Whether to include changes from all drives |
@@ -1115,6 +1820,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Changes Start Page Token Get
 
 Gets the starting pageToken for listing future changes
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "changes_start_page_token",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 
@@ -1161,6 +1877,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### About Get
 
 Gets information about the user, the user's Drive, and system capabilities
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "about",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 

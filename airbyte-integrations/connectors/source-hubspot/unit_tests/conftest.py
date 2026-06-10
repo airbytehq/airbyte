@@ -2,10 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+import os
 import sys
 from pathlib import Path
 
 import pytest
+import requests_cache
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -17,6 +20,21 @@ from airbyte_cdk.test.state_builder import StateBuilder
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 NUMBER_OF_PROPERTIES = 2000
+
+
+def mock_v3_properties(requests_mock, entity, properties_list):
+    """Register a v3 properties mock for a CRM search entity.
+
+    CRM search streams discover properties via v3 API (/crm/v3/properties/{entity}).
+    Call this alongside any v2 property mock registration for CRM search entities.
+    """
+    requests_mock.register_uri(
+        "GET",
+        f"https://api.hubapi.com/crm/v3/properties/{entity}",
+        [{"json": {"results": properties_list}, "status_code": 200}],
+    )
+
+
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
     "company",
@@ -150,24 +168,70 @@ def patch_time(mocker):
     mocker.patch("time.sleep")
 
 
+@pytest.fixture(autouse=True)
+def clear_http_cache():
+    """Clear all SQLite HTTP caches between tests.
+
+    The CDK's HttpClient uses requests_cache for HTTP response caching:
+    - When REQUEST_CACHE_PATH env var is NOT set: uses 'file::memory:?cache=shared' (in-memory)
+    - When REQUEST_CACHE_PATH IS set (e.g. set by AirbyteEntrypoint.run() via read_from_stream):
+      uses file-based SQLite at {REQUEST_CACHE_PATH}/*.sqlite
+
+    The REQUEST_CACHE_PATH env var, once set by a test calling read_from_stream(), persists
+    for all subsequent tests in the same pytest session. This causes CDK sessions to write to
+    file-based caches that are NOT cleared by just clearing the in-memory cache, leading to
+    stale cached responses contaminating later tests.
+
+    This fixture clears both the in-memory cache AND any file-based caches, and also removes
+    REQUEST_CACHE_PATH from the environment so that CDK sessions created during the test use
+    the in-memory cache (which is properly shared and clearable).
+    """
+    # Remove REQUEST_CACHE_PATH so CDK uses in-memory cache rather than file-based SQLite.
+    # This prevents stale file-based caches from persisting across tests.
+    cache_dir = os.environ.pop("REQUEST_CACHE_PATH", None)
+
+    # Clear the in-memory shared cache.
+    requests_cache.SQLiteCache("file::memory:?cache=shared").clear()
+
+    # Also clear any file-based caches from the previous cache dir, if one was set.
+    if cache_dir:
+        cache_path = Path(cache_dir)
+        for sqlite_file in cache_path.glob("*.sqlite"):
+            try:
+                requests_cache.SQLiteCache(str(sqlite_file.with_suffix(""))).clear()
+            except Exception:
+                # Cache file may already be removed or locked; not fatal for test isolation.
+                logging.debug("Failed to clear file-based cache %s", sqlite_file)
+
+    yield
+
+
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     return read(get_source(cfg, state), cfg, CatalogBuilder().with_stream(stream, sync_mode).build(), state, expecting_exception)
 
 
 @pytest.fixture()
 def mock_dynamic_schema_requests(requests_mock):
+    properties = [
+        {
+            "name": "hs__migration_soft_delete",
+            "label": "migration_soft_delete_deprecated",
+            "description": "Describes if the goal target can be treated as deleted.",
+            "groupName": "goal_target_information",
+            "type": "enumeration",
+        }
+    ]
     for entity in OBJECTS_WITH_DYNAMIC_SCHEMA:
+        # v2 URL (used by dynamic schema loader)
         requests_mock.get(
             f"https://api.hubapi.com/properties/v2/{entity}/properties",
-            json=[
-                {
-                    "name": "hs__migration_soft_delete",
-                    "label": "migration_soft_delete_deprecated",
-                    "description": "Describes if the goal target can be treated as deleted.",
-                    "groupName": "goal_target_information",
-                    "type": "enumeration",
-                }
-            ],
+            json=properties,
+            status_code=200,
+        )
+        # v3 URL (used by CRM search streams for property discovery)
+        requests_mock.get(
+            f"https://api.hubapi.com/crm/v3/properties/{entity}",
+            json={"results": properties},
             status_code=200,
         )
 
@@ -180,12 +244,20 @@ def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
         status_code=200,
     )
 
+    properties = [{"name": "hs__test_field", "type": "enumeration"}]
     for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
         if object_name in object_to_skip:
             continue
+        # v2 URL (used by dynamic schema loader)
         requests_mock.get(
             f"https://api.hubapi.com/properties/v2/{object_name}/properties",
-            json=[{"name": "hs__test_field", "type": "enumeration"}],
+            json=properties,
+            status_code=200,
+        )
+        # v3 URL (used by CRM search streams for property discovery)
+        requests_mock.get(
+            f"https://api.hubapi.com/crm/v3/properties/{object_name}",
+            json={"results": properties},
             status_code=200,
         )
 

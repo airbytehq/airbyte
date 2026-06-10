@@ -41,7 +41,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         super().__init__()
         self._gcs_client = None
         self._config = None
-        self.tmp_dir = tempfile.TemporaryDirectory()
+        self._zip_temp_dirs: list[tempfile.TemporaryDirectory] = []
 
     @property
     def config(self) -> Config:
@@ -102,15 +102,23 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     if not start_date or last_modified >= start_date:
                         if self.config.credentials.auth_type == "Client":
                             uri = f"gs://{blob.bucket.name}/{blob.name}"
+                            displayed_uri = None
                         else:
                             uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
+                            displayed_uri = uri.split("?")[0] if self.config.sanitize_signed_urls else None
 
                         remote_file = GCSUploadableRemoteFile(
-                            uri=uri, blob=blob, last_modified=last_modified, mime_type=".".join(blob.name.split(".")[1:])
+                            uri=uri,
+                            blob=blob,
+                            last_modified=last_modified,
+                            mime_type=".".join(blob.name.split(".")[1:]),
+                            displayed_uri=displayed_uri,
                         )
 
-                        if remote_file.mime_type == "zip" and self.config.delivery_method.delivery_type != DeliverRawFiles.delivery_type:
-                            yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
+                        if blob.name.endswith(".zip") and not isinstance(self.config.delivery_method, DeliverRawFiles):
+                            tmp_dir = tempfile.TemporaryDirectory()
+                            self._zip_temp_dirs.append(tmp_dir)
+                            yield from ZipHelper(blob, remote_file, tmp_dir.name).get_gcs_remote_files()
                         else:
                             yield remote_file
         except Exception as exc:

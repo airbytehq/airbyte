@@ -22,7 +22,6 @@ Each replicated stream from Airbyte will output data into a corresponding event 
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
 
 ## Getting started
 
@@ -70,6 +69,10 @@ Now, you should have all the parameters needed to configure Chargify destination
 Connect your first source and then head to the Chargify application. You can seamlessly run [custom analysis](https://www.chargify.com/business-intelligence/) on your data and build [multi-attribute, usage-based pricing models](http://chargify.com/events-based-billing/).
 
 If you have any questions or want to get started, [please reach out to a billing expert](https://go.chargify.com/contact/).
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

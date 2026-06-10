@@ -7,17 +7,16 @@
     "pnpm": "9.4.0"
   },
   "engines": {
-    "node": ">=20 <22"
+    "node": ">=20"
   },
   "scripts": {
     "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
-    "prepare-agent-connector-manifest": "node src/scripts/prepare-agent-connector-manifest.js",
     "gen-agent-engine-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
     "prepare-agent-engine-api": "node src/scripts/agent-engine-api/prepare-agent-engine-api-spec.js && pnpm prettier --write src/data/agent_engine_api_spec.json && pnpm run gen-agent-engine-api-docs",
     "cleanup-cache": "node src/scripts/cleanup-cache.js",
-    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-agent-connector-manifest && pnpm run prepare-agent-engine-api",
+    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api",
     "postbuild": "pnpm run cleanup-cache",
-    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-agent-connector-manifest && pnpm run prepare-agent-engine-api",
+    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api",
     "docusaurus": "docusaurus",
     "start": "node src/scripts/fetchSchema.js && docusaurus start --port 3005",
     "build": "node src/scripts/fetchSchema.js && docusaurus build",
@@ -94,6 +93,7 @@
     "@docusaurus/cssnano-preset": "^3.9.2",
     "@docusaurus/faster": "^3.9.2",
     "@docusaurus/module-type-aliases": "^3.9.2",
+    "@docusaurus/plugin-content-docs": "^3.9.2",
     "@docusaurus/plugin-debug": "^3.9.2",
     "@docusaurus/plugin-rsdoctor": "^3.9.2",
     "@docusaurus/plugin-sitemap": "^3.9.2",

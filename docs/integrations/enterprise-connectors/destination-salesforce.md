@@ -5,6 +5,14 @@ enterprise-connector: true
 
 # Salesforce destination
 
+<HideInUI>
+
+:::warning
+Airbyte no longer maintains or supports the Salesforce destination connector. It may continue to function but is not actively developed, and no future updates or bug fixes are planned. Use at your own discretion.
+:::
+
+</HideInUI>
+
 The Salesforce destination connector enables [data activation](/platform/move-data/elt-data-activation) by syncing data from your data warehouse to Salesforce objects. This connector is designed for operational workflows where you need to deliver modeled data directly to your CRM for sales, marketing, and customer success teams.
 
 The connector uses the [Salesforce Bulk API v62.0](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) for efficient data loading and supports OAuth 2.0 authentication with comprehensive error handling through [rejected records](/platform/move-data/rejected-records) functionality.
@@ -156,15 +164,14 @@ The connector uses OAuth 2.0 authentication with your Salesforce Connected App c
 
 ## Supported sync modes
 
-The Salesforce destination currently supports:
-
-- **Append**: Insert new records into Salesforce objects
-
-:::info
-
-While the underlying implementation supports additional operations (update, upsert, delete), only append mode is currently exposed through the connector specification. Contact support if you need additional sync modes for your use case.
-
-:::
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 ## Limitations and considerations
 
@@ -240,4 +247,3 @@ The connector is still incubating, this section only exists to satisfy Airbyte's
 - 0.0.6
 
 </details>
-
