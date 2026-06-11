@@ -58,10 +58,10 @@ validates your connection using the `user_account_analytics` stream, which requi
    data on and after this date. If you don't set a date, the connector defaults to the maximum
    lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
    streams can look back up to 913 days.
-7. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
-   and campaigns streams, specifying a status will filter out records that do not match the
-   specified ones. If a status is not specified, the source will default to records with a status of
-   either ACTIVE or PAUSED.
+7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
+   `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
+   status filters out records that do not match. If no status is specified, the source defaults to
+   `ACTIVE` and `PAUSED`.
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
 9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
@@ -85,10 +85,10 @@ validates your connection using the `user_account_analytics` stream, which requi
    data on and after this date. If you don't set a date, the connector defaults to the maximum
    lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
    streams can look back up to 913 days.
-7. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
-   and campaigns streams, specifying a status will filter out records that do not match the
-   specified ones. If a status is not specified, the source will default to records with a status of
-   either ACTIVE or PAUSED.
+7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
+   `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
+   status filters out records that do not match. If no status is specified, the source defaults to
+   `ACTIVE` and `PAUSED`.
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
 9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
@@ -320,7 +320,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.8.0 | 2023-11-16 | [32592](https://github.com/airbytehq/airbyte/pull/32592) | Make start_date optional; add suggested streams; add missing fields |
 | 0.7.2 | 2023-11-08 | [32299](https://github.com/airbytehq/airbyte/pull/32299) | added default `AvailabilityStrategy`, fixed bug which cases duplicated requests, added new streams: Catalogs, CatalogsFeeds, CatalogsProductGroups, Audiences, Keywords, ConversionTags, CustomerLists, CampaignTargetingReport, AdvertizerReport, AdvertizerTargetingReport, AdGroupReport, AdGroupTargetingReport, PinPromotionReport, PinPromotionTargetingReport, ProductGroupReport, ProductGroupTargetingReport, ProductItemReport, KeywordReport |
 | 0.7.1 | 2023-11-01 | [32078](https://github.com/airbytehq/airbyte/pull/32078) | handle non json response |
-| 0.7.0 | 2023-10-25 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | Migrated to base image, removed token based authentication mthod becuase access_token is valid for 1 day only |
+| 0.7.0 | 2023-10-25 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | Migrated to base image, removed token based authentication method because access_token is valid for 1 day only |
 | 0.6.0 | 2023-07-25 | [28672](https://github.com/airbytehq/airbyte/pull/28672) | Add report stream for `CAMPAIGN` level |
 | 0.5.3 | 2023-07-05 | [27964](https://github.com/airbytehq/airbyte/pull/27964) | Add `id` field to `owner` field in `ad_accounts` stream |
 | 0.5.2 | 2023-06-02 | [26949](https://github.com/airbytehq/airbyte/pull/26949) | Update `BoardPins` stream with `note` property |

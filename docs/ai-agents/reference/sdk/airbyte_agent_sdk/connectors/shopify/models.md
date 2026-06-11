@@ -339,9 +339,11 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldShopsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldSmartCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrderRefundsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrdersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[PriceRulesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductImagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductVariantsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ShopSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[SmartCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[TenderTransactionsSearchData]
@@ -1215,6 +1217,45 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`AirbyteSearchResult[OrdersSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="OrdersSearchResult"></a>
+
+`OrdersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `AirbyteSearchResult[PriceRulesSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1317,6 +1358,45 @@ Classes
 <a id="ProductVariantsSearchResult"></a>
 
 `ProductVariantsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[ProductsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ProductsSearchResult"></a>
+
+`ProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -4665,6 +4745,90 @@ Classes
     `next_page_url: str | None`
     :   The type of the None singleton.
 
+<a id="OrdersSearchData"></a>
+
+`OrdersSearchData(**data: Any)`
+:   Search result data for orders entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cancel_reason: str | None`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: str | None`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: str | None`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the order totals
+
+    `email: str | None`
+    :   Email address associated with the order
+
+    `financial_status: str | None`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: str | None`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: int | None`
+    :   Unique identifier for the order
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: str | None`
+    :   Merchant-provided note on the order
+
+    `order_number: int | None`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: str | None`
+    :   Phone number associated with the order
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: str | None`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: str | None`
+    :   Total discount amount applied to the order
+
+    `total_price: str | None`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: str | None`
+    :   Total tax amount applied to the order
+
+    `total_weight: int | None`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the order was last updated
+
 <a id="PriceRule"></a>
 
 `PriceRule(**data: Any)`
@@ -5348,6 +5512,63 @@ Classes
 
     `next_page_url: str | None`
     :   The type of the None singleton.
+
+<a id="ProductsSearchData"></a>
+
+`ProductsSearchData(**data: Any)`
+:   Search result data for products entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body_html: str | None`
+    :   Product description in HTML
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the product
+
+    `id: int | None`
+    :   Unique identifier for the product
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `product_type: str | None`
+    :   Product type used for categorization
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `status: str | None`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the product
+
+    `title: str | None`
+    :   Product title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: str | None`
+    :   Product vendor or manufacturer
 
 <a id="Refund"></a>
 

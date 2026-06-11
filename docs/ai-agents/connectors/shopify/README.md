@@ -43,8 +43,8 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
-| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get) |
+| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Context Store Search](./REFERENCE.md#orders-context-store-search) |
+| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Context Store Search](./REFERENCE.md#products-context-store-search) |
 | Product Variants | [List](./REFERENCE.md#product-variants-list), [Get](./REFERENCE.md#product-variants-get), [Context Store Search](./REFERENCE.md#product-variants-context-store-search) |
 | Product Images | [List](./REFERENCE.md#product-images-list), [Get](./REFERENCE.md#product-images-get), [Context Store Search](./REFERENCE.md#product-images-context-store-search) |
 | Abandoned Checkouts | [List](./REFERENCE.md#abandoned-checkouts-list), [Context Store Search](./REFERENCE.md#abandoned-checkouts-context-store-search) |
