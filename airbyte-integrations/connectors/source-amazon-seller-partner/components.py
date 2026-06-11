@@ -613,23 +613,22 @@ class ReportCreationRequester(HttpRequester):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        # Replace the default HttpClient with our custom one that treats rate limit
-        # exhaustion as a config error with user-friendly troubleshooting guidance
-        if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
-            backoff_strategies = self.error_handler.backoff_strategies
-        else:
-            backoff_strategies = None
-        self._http_client = AmazonSellerPartnerHttpClient(
-            name=self.name,
-            logger=self.logger,
-            error_handler=self.error_handler,
-            api_budget=self.api_budget,
-            authenticator=self._authenticator,
-            use_cache=self.use_cache,
-            backoff_strategy=backoff_strategies,
-            disable_retries=self.disable_retries,
-            message_repository=self.message_repository,
-        )
+        if self.config.get("stop_sync_on_rate_limit", False):
+            if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
+                backoff_strategies = self.error_handler.backoff_strategies
+            else:
+                backoff_strategies = None
+            self._http_client = AmazonSellerPartnerHttpClient(
+                name=self.name,
+                logger=self.logger,
+                error_handler=self.error_handler,
+                api_budget=self.api_budget,
+                authenticator=self._authenticator,
+                use_cache=self.use_cache,
+                backoff_strategy=backoff_strategies,
+                disable_retries=self.disable_retries,
+                message_repository=self.message_repository,
+            )
         if self.request_options_provider is None:
             self._request_options_provider = InterpolatedRequestOptionsProvider(
                 config=self.config, parameters=parameters, request_body_json=self.request_body_json
