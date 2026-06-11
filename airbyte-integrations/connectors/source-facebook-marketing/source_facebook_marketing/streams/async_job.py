@@ -304,6 +304,7 @@ class InsightAsyncJob(AsyncJob):
         job_timeout: timedelta,
         primary_key: Optional[List[str]] = None,
         object_breakdowns: Optional[Mapping[str, str]] = None,
+        stream_name: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -318,6 +319,7 @@ class InsightAsyncJob(AsyncJob):
         self._job: Optional[AdReportRun] = None
         self._primary_key = primary_key or []
         self._object_breakdowns = dict(object_breakdowns or {})
+        self._stream_name = stream_name
         self._start_time = None
         self._finish_time = None
         self._failed = False
@@ -471,6 +473,7 @@ class InsightAsyncJob(AsyncJob):
                 job_timeout=self._job_timeout,
                 primary_key=self._primary_key,
                 object_breakdowns=self._object_breakdowns,
+                stream_name=self._stream_name,
             )
             for pk in ids
         ]
@@ -573,33 +576,29 @@ class InsightAsyncJob(AsyncJob):
             # single field at single-ad/single-day granularity, so there is nothing left to split.
             # This is a deterministic Facebook-side limitation, not a connector bug, and the user has a
             # concrete fix (unselect the offending field; or, when the `incrementality` window is in
-            # play, disable "Include Incrementality" for the affected breakdown stream). Surface it as a
-            # config_error with actionable guidance instead of a cryptic system_error (oncall #12088).
+            # play, disable "Include Incrementality"). Surface it as a config_error with actionable
+            # guidance instead of a cryptic system_error (oncall #12088).
             breakdowns = self._params.get("breakdowns", [])
             has_incrementality = INCREMENTALITY_WINDOW in self._params.get("action_attribution_windows", [])
 
+            stream_part = f" for stream '{self._stream_name}'" if self._stream_name else ""
             scope = f"breakdown(s) {breakdowns} with the field(s) {split_candidates}" if breakdowns else f"the field(s) {split_candidates}"
             fixes = []
             if has_incrementality:
-                fixes.append(
-                    'disable the "Include Incrementality" option for the affected stream(s) '
-                    "(Facebook does not compute incrementality for geographic breakdowns such as "
-                    "'dma'/'region', so no data is lost; ideally sync those stream(s) in a separate "
-                    'connection with "Include Incrementality" off, keeping it on elsewhere)'
-                )
+                fixes.append('disable the "Include Incrementality" option for this stream')
             fixes.append(f"unselect the field(s) {split_candidates} from this stream's schema")
             fix_text = "; or ".join(f"({i + 1}) {fix}" for i, fix in enumerate(fixes)) if len(fixes) > 1 else fixes[0]
 
             raise AirbyteTracedException(
                 message=(
-                    f"Facebook could not generate the Insights report for {scope}"
+                    f"Facebook could not generate the Insights report{stream_part} for {scope}"
                     + (' when the "incrementality" attribution window is enabled' if has_incrementality else "")
                     + f", even at the smallest request size. This is a Facebook-side limitation. To resolve it, {fix_text}."
                 ),
                 internal_message=(
                     f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, "
-                    f"pk={self._primary_key}); breakdowns={breakdowns}, level={self._params.get('level')}, "
-                    f"incrementality={has_incrementality}"
+                    f"pk={self._primary_key}); stream={self._stream_name}, breakdowns={breakdowns}, "
+                    f"level={self._params.get('level')}, incrementality={has_incrementality}"
                 ),
                 failure_type=FailureType.config_error,
             )
@@ -620,6 +619,7 @@ class InsightAsyncJob(AsyncJob):
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
+            stream_name=self._stream_name,
         )
         job_b = InsightAsyncJob(
             api=self._api,
@@ -629,6 +629,7 @@ class InsightAsyncJob(AsyncJob):
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
+            stream_name=self._stream_name,
         )
         logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
         return ParentAsyncJob(

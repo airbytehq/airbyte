@@ -18,14 +18,14 @@ from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.api import MyFacebookAdsApi
-from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
-from source_facebook_marketing.streams.async_job_manager import APILimit
-from source_facebook_marketing.utils import DateInterval
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from source_facebook_marketing.api import MyFacebookAdsApi
+from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
+from source_facebook_marketing.streams.async_job_manager import APILimit
+from source_facebook_marketing.utils import DateInterval
 
 
 class DummyAPILimit:
@@ -617,6 +617,7 @@ class TestInsightAsyncJob:
             params=params,
             job_timeout=timedelta(minutes=60),
             primary_key=pk,
+            stream_name="ads_insights_dma",
         )
 
         with pytest.raises(AirbyteTracedException, match="incrementality") as exc_info:
@@ -626,6 +627,8 @@ class TestInsightAsyncJob:
         assert "Include Incrementality" in exc_info.value.message
         assert "dma" in exc_info.value.message
         assert "conversions" in exc_info.value.message
+        # The stream name is surfaced so the user knows exactly which stream to fix.
+        assert "ads_insights_dma" in exc_info.value.message
 
     def test_split_job_by_fields_parent_does_not_add_missing_breakdown_pk_fields(self, api):
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
