@@ -11,7 +11,10 @@
 # ---------------------------------------------------------------------------
 # Builder stage: compile the connector distribution tar via Gradle.
 # ---------------------------------------------------------------------------
-FROM eclipse-temurin:21-jdk AS builder
+# Use the official Gradle image (matches the wrapper's pinned 8.14) so the ~130 MB Gradle
+# distribution is already present — we invoke `gradle` instead of `./gradlew` to skip the
+# per-build distribution download. Runs as root, so `COPY . .` below needs no chown.
+FROM gradle:8.14-jdk21 AS builder
 
 # Airbyte's root settings.gradle includes every connector project and the full local
 # CDK, and build.gradle's `allprojects {}` block configures all of them. Configuring
@@ -26,7 +29,7 @@ WORKDIR /build
 # compiles against the local airbyte-cdk/bulk source (which COPY . . brings in).
 COPY . .
 
-RUN ./gradlew :airbyte-integrations:connectors:destination-s3-data-lake:distTar --no-daemon
+RUN gradle :airbyte-integrations:connectors:destination-s3-data-lake:distTar --no-daemon
 
 # ---------------------------------------------------------------------------
 # Runtime stage: package the dist on top of the Airbyte java connector base.
