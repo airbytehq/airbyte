@@ -322,6 +322,18 @@ definitions:
       schema_pointer:
         - properties
       types_mapping:
+        # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+        # `number` and `bool` properties to `string` so destinations do not reject
+        # non-numeric / non-boolean values returned by HubSpot (for example,
+        # semicolon-separated IDs in a `number` field).
+        - type: TypesMap
+          target_type: string
+          current_type: number
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+        - type: TypesMap
+          target_type: string
+          current_type: bool
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
         - type: TypesMap
           target_type: boolean
           current_type: bool
@@ -1953,6 +1965,18 @@ definitions:
         type_pointer: ["type"]
         schema_pointer: ["properties"]
         types_mapping:
+          # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+          # `number` and `bool` properties to `string` so destinations do not reject
+          # non-numeric / non-boolean values returned by HubSpot (for example,
+          # semicolon-separated IDs in a `number` field).
+          - type: TypesMap
+            target_type: string
+            current_type: number
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+          - type: TypesMap
+            target_type: string
+            current_type: bool
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
           - type: TypesMap
             target_type: string
             current_type: enumeration
@@ -2684,6 +2708,17 @@ spec:
       enable_experimental_streams:
         title: Enable experimental streams
         description: If enabled then experimental streams become available for sync.
+        type: boolean
+        default: false
+      treat_numbers_and_booleans_as_strings:
+        title: Treat dynamic number and boolean properties as strings
+        description: >-
+          If enabled, HubSpot dynamic `number` and `boolean` properties are
+          exposed as `string`. Useful when HubSpot returns values that do not
+          match the declared type and the destination rejects the records.
+          After changing this setting, refresh the source schema and refresh
+          the affected stream data. See the connector documentation for
+          details.
         type: boolean
         default: false
       num_worker:
