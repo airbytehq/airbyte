@@ -16,7 +16,6 @@ CLI
 
 Connectors
 
-- The Shopify connector now supports searchable orders and products in the context store, so your agent can look up order details and product information.
 - Semantic search now correctly returns only the fields your agent requests, improving the precision of data retrieval from your connected sources.
 
 ## June 9, 2026
