@@ -77,9 +77,30 @@ class ReplicationSlotManager(
             } catch (e: SQLException) {
                 throw TransientErrorException("Failed to commit LSN to replication slot", e)
             }
+            // Poll to confirm the server processed the status update before closing the
+            // stream. forceUpdateStatus() only flushes to the TCP socket; the server needs
+            // time to apply it. Closing immediately can discard the in-flight update.
+            val maxAttempts = 30
+            val pollIntervalMs = 100L
+            for (attempt in 1..maxAttempts) {
+                val slotInfo = getSlotInfo()
+                if (slotInfo.confirmedFlushLsn != null && slotInfo.confirmedFlushLsn >= lsn) {
+                    log.info {
+                        "Confirmed flush LSN advanced to ${slotInfo.confirmedFlushLsn} " +
+                            "after $attempt poll(s)"
+                    }
+                    log.info { getSlotInfo() }
+                    return
+                }
+                Thread.sleep(pollIntervalMs)
+            }
+            log.warn {
+                "Could not confirm flush LSN advancement to $lsn " +
+                    "after $maxAttempts attempts (${maxAttempts * pollIntervalMs}ms)"
+            }
         }
         log.info {
-            "Successfully committed $lsn (${lsn.asLong()}) to replication slot ${cdcConfig.replicationSlot}"
+            "Committed $lsn (${lsn.asLong()}) to replication slot ${cdcConfig.replicationSlot}"
         }
         log.info { getSlotInfo() }
     }
