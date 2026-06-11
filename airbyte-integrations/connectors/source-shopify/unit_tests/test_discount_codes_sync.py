@@ -467,12 +467,19 @@ def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
             list(stream.read_records(sync_mode=None))
 
 
-def test_graphql_throttled_retries_then_succeeds(auth_config, time_sleep_mock):
+@pytest.mark.parametrize(
+    "error_code",
+    [
+        pytest.param("THROTTLED", id="THROTTLED"),
+        pytest.param("MAX_COST_EXCEEDED", id="MAX_COST_EXCEEDED"),
+    ],
+)
+def test_graphql_throttled_retries_then_succeeds(auth_config, time_sleep_mock, error_code):
     stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     throttle_response = {
-        "errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}],
+        "errors": [{"message": "Rate limited", "extensions": {"code": error_code}}],
         "data": None,
         "extensions": _EXTENSIONS,
     }
@@ -509,3 +516,78 @@ def test_graphql_throttled_exhausts_retries(auth_config, time_sleep_mock):
         m.post(url, [{"json": throttle_response}] * 10)
         with pytest.raises(AirbyteTracedException, match="exceeded max retries"):
             list(stream.read_records(sync_mode=None))
+
+
+def test_none_optional_fields(auth_config, time_sleep_mock):
+    """Verify None-valued optional fields (ends_at, usage_limit) are emitted correctly."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    parent_node = _make_parent_node(100, endsAt=None, usageLimit=None)
+    code_node = _make_code_node(200, "OPT-NONE")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([parent_node])},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        records = list(stream.read_records(sync_mode=None))
+
+    assert len(records) == 1
+    assert records[0]["ends_at"] is None
+    assert records[0]["usage_limit"] is None
+
+
+def test_string_total_sales_amount(auth_config, time_sleep_mock):
+    """Shopify returns totalSales.amount as a string; verify it passes through."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    parent_node = _make_parent_node(100, totalSales={"amount": "250.00", "currencyCode": "USD"})
+    code_node = _make_code_node(200, "STR-AMT")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([parent_node])},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        records = list(stream.read_records(sync_mode=None))
+
+    assert len(records) == 1
+    assert records[0]["total_sales"]["amount"] == 250.0
+    assert records[0]["total_sales"]["currency_code"] == "USD"
+
+
+def test_missing_end_cursor_breaks_child_loop(auth_config, time_sleep_mock):
+    """hasNextPage=true with no endCursor should break the child loop instead of looping forever."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    parent_node = _make_parent_node(100)
+    # Child response claims more pages but provides no endCursor
+    bad_child = {
+        "data": {
+            "codeDiscountNode": {
+                "codeDiscount": {
+                    "codes": {
+                        "pageInfo": {"hasNextPage": True, "endCursor": None},
+                        "nodes": [_make_code_node(200, "ONLY")],
+                    }
+                }
+            }
+        },
+        "extensions": _EXTENSIONS,
+    }
+
+    with rmock.Mocker() as m:
+        m.post(url, [{"json": _parent_response([parent_node])}, {"json": bad_child}])
+        records = list(stream.read_records(sync_mode=None))
+
+    assert len(records) == 1
+    assert records[0]["code"] == "ONLY"
