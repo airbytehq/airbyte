@@ -11,16 +11,6 @@ from source_shopify.streams.streams import DiscountCodesSync
 from airbyte_cdk.utils import AirbyteTracedException
 
 
-@pytest.fixture
-def auth_config():
-    return {
-        "shop": "test_shop",
-        "start_date": "2023-01-01",
-        "credentials": {"auth_method": "api_password", "api_password": "api_password"},
-        "authenticator": None,
-    }
-
-
 def _graphql_url(shop: str = "test_shop") -> str:
     return f"https://{shop}.myshopify.com/admin/api/2025-10/graphql.json"
 
