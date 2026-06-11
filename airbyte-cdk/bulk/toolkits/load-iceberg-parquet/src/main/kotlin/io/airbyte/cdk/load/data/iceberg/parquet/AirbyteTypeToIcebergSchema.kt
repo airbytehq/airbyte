@@ -103,7 +103,13 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
     this.properties.entries.forEach { (name, field) ->
         val id = generatedSchemaFieldId()
         val isPrimaryKey = identifierFieldNames.contains(name)
-        val isOptional = !isPrimaryKey && field.nullable
+        // HudHud: treat every non-PK column as optional. Airbyte JDBC sources (e.g. Postgres)
+        // declare columns as bare {"type":"string"} with no null union, so the CDK marks them
+        // nullable=false; real nulls in those (legitimately nullable) columns then crash Iceberg's
+        // required-field Parquet writer ("CharSequence.toString() because value is null"). The
+        // legacy destination-iceberg connector makes all columns nullable, so this mirrors it.
+        // Primary keys stay required, since Iceberg identifier fields must be non-null.
+        val isOptional = !isPrimaryKey
         // There's no _airbyte_data field, because we flatten the fields.
         // But we should leave the _airbyte_meta field as an actual object.
         val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
