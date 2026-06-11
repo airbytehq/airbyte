@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.util.UUID
+import java.util.*
 import org.apache.avro.Schema
 import org.apache.avro.file.CodecFactory
 import org.apache.avro.file.DataFileWriter
@@ -26,6 +26,9 @@ private val logger = KotlinLogging.logger {}
 
 private const val STAGING_FILE_EXTENSION = ".avro"
 private const val VOLUMES_BASE_PATH = "/Volumes"
+
+/** Initial buffer size (4 MB) to reduce array-doubling GC churn for large batches. */
+private const val INITIAL_BUFFER_SIZE = 4 * 1024 * 1024
 
 /**
  * Buffers records into an in-memory Avro file and flushes them to Databricks via Unity Catalog
@@ -45,12 +48,12 @@ class DatabricksInsertBuffer(
     private val config: DatabricksV2Configuration,
 ) {
 
-    /** Avro schema derived from the Databricks column types. */
-    private val avroSchema: Schema = DatabricksAvroSchemaBuilder.buildAvroSchema(columnSchema)
-
     /** In-memory byte buffer backing the Avro output. */
-    private var byteBuffer: ByteArrayOutputStream? = null
+    private var byteBuffer: NoAllocByteArrayOutputStream? = null
     private var avroWriter: DataFileWriter<GenericRecord>? = null
+
+    private var reusableRecord: GenericData.Record? = null
+    private val avroSchema: Schema = DatabricksAvroSchemaBuilder.buildAvroSchema(columnSchema)
     internal var recordCount = 0
 
     /**
@@ -64,9 +67,9 @@ class DatabricksInsertBuffer(
             initializeBuffer()
         }
 
-        val record = GenericData.Record(avroSchema)
-        for (col in columns) {
-            record.put(col, DatabricksAvroValueConverter.convert(recordFields[col]))
+        val record = reusableRecord!!
+        for (i in columns.indices) {
+            record.put(i, DatabricksAvroValueConverter.convert(recordFields[columns[i]]))
         }
         avroWriter!!.append(record)
         recordCount++
@@ -84,25 +87,16 @@ class DatabricksInsertBuffer(
             // Finalize the Avro file
             avroWriter?.close()
 
-            val avroBytes = buffer.toByteArray()
             val stagingDir = stagingDirectory(tableName, config.database)
             val stagedFilePath = "$stagingDir/${UUID.randomUUID()}$STAGING_FILE_EXTENSION"
 
             logger.info {
-                "Uploading $recordCount record(s) (${avroBytes.size} bytes) " +
+                "Uploading $recordCount record(s) (${buffer.size()} bytes) " +
                     "for ${tableName.namespace}.${tableName.name} to $stagedFilePath"
             }
 
-            // Ensure staging volume and directory exist
             databricksClient.createStagingVolume(tableName, stagingDir)
-
-            // Upload to Unity Catalog Volume
-            databricksClient.uploadToVolume(
-                stagedFilePath,
-                ByteArrayInputStream(avroBytes),
-            )
-
-            // Execute COPY INTO
+            databricksClient.uploadToVolume(stagedFilePath, buffer.toInputStream())
             databricksClient.copyFromVolume(tableName, stagedFilePath)
 
             logger.info {
@@ -127,32 +121,36 @@ class DatabricksInsertBuffer(
 
     /** Initializes the in-memory Avro writer with Snappy compression. */
     private fun initializeBuffer() {
-        byteBuffer = ByteArrayOutputStream()
+        byteBuffer = NoAllocByteArrayOutputStream(INITIAL_BUFFER_SIZE)
         val datumWriter = GenericDatumWriter<GenericRecord>(avroSchema)
         avroWriter =
             DataFileWriter(datumWriter).apply {
                 setCodec(CodecFactory.snappyCodec())
                 create(avroSchema, byteBuffer!!)
             }
+        reusableRecord = GenericData.Record(avroSchema)
     }
 
     /** Resets all internal state for the next batch. */
     private fun resetState() {
         avroWriter = null
         byteBuffer = null
+        reusableRecord = null
         recordCount = 0
     }
 
     companion object {
         private val executionDate = LocalDate.now(ZoneOffset.UTC)
 
-        /**
-         * Constructs the staging directory path within a Unity Catalog Volume. Format:
-         * `/Volumes/<database>/<namespace>/<table>_staging/<date>`
-         */
+        /** Format: `/Volumes/<database>/<namespace>/<table>_staging/<date>` */
         fun stagingDirectory(tableName: TableName, database: String): String {
             return "$VOLUMES_BASE_PATH/$database/${tableName.namespace}/" +
                 "${tableName.name}_staging/$executionDate"
         }
     }
+}
+
+/** Returns an [java.io.InputStream] that reads directly from the internal buffer. No copy. */
+private class NoAllocByteArrayOutputStream(size: Int) : ByteArrayOutputStream(size) {
+    fun toInputStream(): ByteArrayInputStream = ByteArrayInputStream(buf, 0, count)
 }

@@ -68,17 +68,19 @@ class DatabricksTableSchemaMapper(
                 DateType -> DATE
                 TimestampTypeWithTimezone -> TIMESTAMP
                 TimestampTypeWithoutTimezone -> TIMESTAMP_NTZ
-                // Time types are supported only in Databricks Runtime 18.3+ (released in May 2026)
-                // and has several index related limitations
+
+                // Not implemented: Time type is supported in DBR 18.3+ (05/2026) with limitations
                 TimeTypeWithTimezone,
                 TimeTypeWithoutTimezone -> STRING
 
-                // VARIANT(Semi-structured) type is still in Public Preview
+                // Not implemented: VARIANT(Semi-structured) type is still in Public Preview
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is ObjectType,
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
+
+                // Other types
                 is UnionType,
                 is UnknownType -> STRING
             }

@@ -19,13 +19,14 @@ import io.airbyte.integrations.destination.databricksv2.client.DatabricksAirbyte
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
 import io.airbyte.integrations.destination.databricksv2.write.load.DatabricksInsertBuffer
 import jakarta.inject.Singleton
+import java.time.Instant
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 import kotlinx.coroutines.runBlocking
 
 /**
  * Validates Databricks connectivity by running a full end-to-end mini-sync: namespace creation,
- * table DDL, Unity Catalog Volume staging (CSV upload + COPY INTO), and row verification.
+ * table DDL, Unity Catalog Volume staging (file upload + COPY INTO), and row verification.
  */
 @Singleton
 class DatabricksChecker(
@@ -42,24 +43,23 @@ class DatabricksChecker(
         }
 
         val namespace = config.schema.lowercase()
-        val tableName =
-            "_airbyte_check_${UUID.randomUUID().toString().replace("-", "")}".lowercase()
-        val qualifiedTableName = TableName(namespace = namespace, name = tableName)
-        checkTableName = qualifiedTableName
+        val tableName = "_airbyte_check_${Instant.now().epochSecond}"
+        val table = TableName(namespace = namespace, name = tableName)
+        checkTableName = table
 
         runBlocking {
             databricksClient.createNamespace(namespace)
             databricksClient.createTable(
-                stream = buildCheckStream(namespace, tableName, qualifiedTableName),
-                tableName = qualifiedTableName,
+                stream = buildCheckStream(namespace, tableName, table),
+                tableName = table,
                 columnNameMapping = ColumnNameMapping(emptyMap()),
                 replace = true,
             )
 
-            val columnSchema = databricksClient.describeTable(qualifiedTableName)
+            val columnSchema = databricksClient.describeTable(table)
             val buffer =
                 DatabricksInsertBuffer(
-                    tableName = qualifiedTableName,
+                    tableName = table,
                     columns = columnSchema.keys.toList(),
                     columnSchema = columnSchema,
                     databricksClient = databricksClient,
@@ -69,9 +69,9 @@ class DatabricksChecker(
             buffer.accumulate(buildCheckRecord())
             buffer.flush()
 
-            val count = databricksClient.countTable(qualifiedTableName)
+            val count = databricksClient.countTable(table)
             require(count == 1L) {
-                "Check failed: expected 1 row in ${qualifiedTableName.namespace}.${qualifiedTableName.name}, got $count"
+                "Check failed: expected 1 row in ${table.namespace}.${table.name}, got $count"
             }
         }
     }
@@ -85,7 +85,7 @@ class DatabricksChecker(
         internal fun buildCheckStream(
             namespace: String,
             tableName: String,
-            qualifiedTableName: TableName,
+            table: TableName,
         ): DestinationStream =
             DestinationStream(
                 unmappedNamespace = namespace,
@@ -98,8 +98,8 @@ class DatabricksChecker(
                     StreamTableSchema(
                         tableNames =
                             TableNames(
-                                finalTableName = qualifiedTableName,
-                                tempTableName = qualifiedTableName,
+                                finalTableName = table,
+                                tempTableName = table,
                             ),
                         columnSchema =
                             ColumnSchema(

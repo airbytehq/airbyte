@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.databricksv2.write.load
 
+import com.fasterxml.jackson.databind.ObjectWriter
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
@@ -17,8 +18,8 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.json.toJson
-import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.databricksv2.write.load.DatabricksAvroValueConverter.objectWriter
 import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.time.ZoneOffset
@@ -32,6 +33,9 @@ object DatabricksAvroValueConverter {
     /** Scale used for DECIMAL(38, 10) columns -- must match [DatabricksAvroSchemaBuilder]. */
     private const val DECIMAL_SCALE = 10
 
+    /** Reusable, thread-safe Jackson writer — avoids re-creating serialization context per call. */
+    private val objectWriter: ObjectWriter = Jsons.writer()
+
     /** Converts an [AirbyteValue] to an Avro-compatible value. */
     fun convert(value: AirbyteValue?): Any? {
         if (value == null || value is NullValue) return null
@@ -41,9 +45,11 @@ object DatabricksAvroValueConverter {
             is BooleanValue -> value.value
             is IntegerValue -> value.value.toLong()
             is NumberValue -> {
-                // Rescale to match the Avro DECIMAL(38, 10) schema so the reader interprets the
-                // bytes correctly.
-                val scaled = value.value.setScale(DECIMAL_SCALE, RoundingMode.HALF_UP)
+                // Rescale to match the Avro DECIMAL(38, 10) schema
+                val bd = value.value
+                val scaled =
+                    if (bd.scale() == DECIMAL_SCALE) bd
+                    else bd.setScale(DECIMAL_SCALE, RoundingMode.HALF_UP)
                 ByteBuffer.wrap(scaled.unscaledValue().toByteArray())
             }
             is DateValue -> value.value.toEpochDay().toInt()
@@ -53,8 +59,8 @@ object DatabricksAvroValueConverter {
                 toMicros(value.value.toEpochSecond(ZoneOffset.UTC), value.value.nano.toLong())
             is TimeWithTimezoneValue -> value.value.toString()
             is TimeWithoutTimezoneValue -> value.value.toString()
-            is ObjectValue -> value.toJson().serializeToString()
-            is ArrayValue -> value.toJson().serializeToString()
+            is ObjectValue -> objectWriter.writeValueAsString(value)
+            is ArrayValue -> objectWriter.writeValueAsString(value)
             is NullValue -> null
         }
     }

@@ -47,7 +47,6 @@ class DatabricksValueCoercer : ValueCoercer {
             if (inRange) ValidationResult.Valid else nullify()
 
         // Databricks DECIMAL(38, 10): 38 total digits, 10 fractional → 28 integer digits max
-        // Databricks takes care of truncation the larger scaled values
         private const val DECIMAL_38_10_INTEGER_DIGITS = 28
     }
 }
