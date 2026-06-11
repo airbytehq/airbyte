@@ -35,9 +35,7 @@ class TestProfilesStream(TestCase):
         self._given_oauth(http_mocker, config)
 
         http_mocker.get(
-            ProfilesRequestBuilder.profiles_endpoint(
-                client_id=config["client_id"], client_access_token=config["access_token"]
-            ).build(),
+            ProfilesRequestBuilder.profiles_endpoint(client_id=config["client_id"], client_access_token=config["access_token"]).build(),
             ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build(),
         )
 
@@ -55,9 +53,7 @@ class TestProfilesStream(TestCase):
         self._given_oauth(http_mocker, config)
 
         http_mocker.get(
-            ProfilesRequestBuilder.profiles_endpoint(
-                client_id=config["client_id"], client_access_token=config["access_token"]
-            ).build(),
+            ProfilesRequestBuilder.profiles_endpoint(client_id=config["client_id"], client_access_token=config["access_token"]).build(),
             ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build(),
         )
 
