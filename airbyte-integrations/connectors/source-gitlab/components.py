@@ -60,7 +60,9 @@ class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
         group_project_ids: list[str] = []
         for partition in parent_stream.generate_partitions():
             for record in partition.read():
-                group_project_ids.append(record["path_with_namespace"])
+                path = record["path_with_namespace"]
+                if path not in group_project_ids:
+                    group_project_ids.append(path)
 
         if group_project_ids:
             for project_id in group_project_ids:
