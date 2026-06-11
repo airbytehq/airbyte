@@ -97,3 +97,22 @@ class TestProjectStreamsPartitionRouter:
         assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == [
             StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
         ]
+
+    def test_projects_stream_slices_deduplicates_across_groups(self, requests_mock):
+        config = BASE_CONFIG | {"projects_list": []}
+        source = get_source(config=config)
+        shared_project = "org/shared-lib"
+        requests_mock.get(url=GROUPS_LIST_URL, json=[{"id": "g1"}, {"id": "g2"}])
+        for gid in ("g1", "g2"):
+            requests_mock.get(
+                url=f"https://gitlab.com/api/v4/groups/{gid}?per_page=50",
+                json=[{"id": gid, "projects": []}],
+            )
+            requests_mock.get(
+                url=f"https://gitlab.com/api/v4/groups/{gid}/projects?per_page=50&include_subgroups=false&with_shared=false",
+                json=[{"id": shared_project, "path_with_namespace": shared_project}],
+            )
+
+        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=config)
+        slices = list(map(lambda p: p.to_slice(), projects_stream.generate_partitions()))
+        assert slices == [StreamSlice(partition={"id": shared_project.replace("/", "%2F")}, cursor_slice={})]
