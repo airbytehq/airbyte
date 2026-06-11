@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import yaml
+
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
@@ -171,16 +172,10 @@ def test_manifest_transaction_id_has_value_type_string(manifest):
     scientific-notation IDs (e.g. 35E87645934406417) from being parsed as floats."""
     transactions = manifest["definitions"]["streams"]["transactions"]
     add_fields_transforms = [t for t in transactions["transformations"] if t["type"] == "AddFields"]
-    tid_fields = [
-        field
-        for t in add_fields_transforms
-        for field in t["fields"]
-        if field["path"] == ["transaction_id"]
-    ]
+    tid_fields = [field for t in add_fields_transforms for field in t["fields"] if field["path"] == ["transaction_id"]]
     assert len(tid_fields) == 1, "Expected exactly one transaction_id AddFields entry"
     assert tid_fields[0].get("value_type") == "string", (
-        "transaction_id AddFields must set value_type: string to prevent "
-        "scientific-notation IDs from being coerced to float('inf')"
+        "transaction_id AddFields must set value_type: string to prevent " "scientific-notation IDs from being coerced to float('inf')"
     )
 
 
