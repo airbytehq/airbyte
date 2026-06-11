@@ -61,7 +61,7 @@ jobs:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage
           payload: |
-            channel: C08BHPUMEPJ
+            channel: C032Y32T065
             text: "Daily Sonar Release Notes workflow failed after 2 attempts"
             blocks:
               - type: section
