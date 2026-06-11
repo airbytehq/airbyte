@@ -21,10 +21,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
-import io.airbyte.integrations.destination.databricksv2.write.transform.DatabricksValueCoercer.Companion.DECIMAL_38_10_MAX
-import io.airbyte.integrations.destination.databricksv2.write.transform.DatabricksValueCoercer.Companion.DECIMAL_38_10_MIN
-import io.airbyte.integrations.destination.databricksv2.write.transform.DatabricksValueCoercer.Companion.INT64_MAX
-import io.airbyte.integrations.destination.databricksv2.write.transform.DatabricksValueCoercer.Companion.INT64_MIN
 import io.airbyte.integrations.destination.databricksv2.write.transform.DatabricksValueCoercerTest.Fixtures.mockCoercedUnionValue
 import io.airbyte.integrations.destination.databricksv2.write.transform.DatabricksValueCoercerTest.Fixtures.mockCoercedValue
 import io.airbyte.integrations.destination.databricksv2.write.transform.DatabricksValueCoercerTest.Fixtures.toAirbyteIntegerValue
@@ -170,8 +166,9 @@ class DatabricksValueCoercerTest {
         @JvmStatic
         fun validIntegers() =
             listOf(
-                Arguments.of(INT64_MAX.toString()),
-                Arguments.of(INT64_MIN.toString()),
+                // Long.MAX_VALUE and Long.MIN_VALUE (63-bit magnitude)
+                Arguments.of("9223372036854775807"),
+                Arguments.of("-9223372036854775808"),
                 Arguments.of("0"),
                 Arguments.of("1"),
                 Arguments.of("-1"),
@@ -183,8 +180,9 @@ class DatabricksValueCoercerTest {
         @JvmStatic
         fun invalidIntegers() =
             listOf(
-                Arguments.of(INT64_MAX.add(BigInteger.ONE).toString()),
-                Arguments.of(INT64_MIN.subtract(BigInteger.ONE).toString()),
+                // Long.MAX_VALUE + 1 and Long.MIN_VALUE - 1 (64-bit magnitude)
+                Arguments.of("9223372036854775808"),
+                Arguments.of("-9223372036854775809"),
                 Arguments.of("1000000000000000000000000000"),
                 Arguments.of("-1000000000000000000000000000"),
                 Arguments.of("12345678901234567890"),
@@ -202,17 +200,19 @@ class DatabricksValueCoercerTest {
                 Arguments.of("-10000000000000000.33"),
                 Arguments.of("80327031.865312"),
                 Arguments.of("-80327031.8954"),
-                Arguments.of(DECIMAL_38_10_MIN.add(BigDecimal.ONE).toString()),
-                Arguments.of(DECIMAL_38_10_MAX.subtract(BigDecimal.ONE).toString()),
+                // Max valid: 28 integer digits (DECIMAL(38,10) allows up to 28)
+                Arguments.of("9999999999999999999999999999.9999999999"),
+                Arguments.of("-9999999999999999999999999999.9999999999"),
             )
 
         @JvmStatic
         fun invalidNumbers() =
             listOf(
-                Arguments.of(DECIMAL_38_10_MIN.toString()),
-                Arguments.of(DECIMAL_38_10_MAX.toString()),
-                Arguments.of(DECIMAL_38_10_MIN.subtract(BigDecimal.valueOf(124)).toString()),
-                Arguments.of(DECIMAL_38_10_MAX.add(BigDecimal.valueOf(81)).toString()),
+                // 29+ integer digits exceed DECIMAL(38,10)'s 28 integer digit limit
+                Arguments.of("10000000000000000000000000000"),
+                Arguments.of("-10000000000000000000000000000"),
+                Arguments.of("-10000000000000000000000000124"),
+                Arguments.of("10000000000000000000000000081"),
                 Arguments.of("100000000000000000000000000000000000001"),
                 Arguments.of("999999999999999999999999999999999999999.9"),
                 Arguments.of("-999999999999999999999999999999999999999.12"),

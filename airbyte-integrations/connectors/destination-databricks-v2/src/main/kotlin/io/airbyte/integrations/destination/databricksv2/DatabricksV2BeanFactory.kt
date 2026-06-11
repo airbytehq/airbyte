@@ -19,7 +19,7 @@ import io.airbyte.integrations.destination.databricksv2.spec.PersonalAccessToken
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Replaces
 import jakarta.inject.Singleton
-import java.util.Properties
+import java.util.*
 import javax.sql.DataSource
 
 private const val SOCKET_TIMEOUT_SECONDS = 3600
@@ -76,6 +76,7 @@ class DatabricksV2BeanFactory {
         // Helps the driver retries connecting to a paused/resuming warehouse
         props["TemporarilyUnavailableRetryTimeout"] =
             TEMPORARILY_UNAVAILABLE_RETRY_TIMEOUT_SECONDS.toString()
+        props["query_tags"] = "partner:airbyte"
 
         when (config.authType) {
             is PersonalAccessTokenConfiguration -> {

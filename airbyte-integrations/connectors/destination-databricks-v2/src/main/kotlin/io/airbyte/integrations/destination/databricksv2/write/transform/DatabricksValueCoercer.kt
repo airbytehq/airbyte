@@ -16,15 +16,7 @@ import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import jakarta.inject.Singleton
-import java.math.BigDecimal
-import java.math.BigInteger
 
-/**
- * Databricks-specific value coercer that replicates v1's `try_cast()` safety net: out-of-range
- * values are nullified with a
- * [AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION] reason recorded in
- * metadata.
- */
 @Singleton
 class DatabricksValueCoercer : ValueCoercer {
 
@@ -37,9 +29,11 @@ class DatabricksValueCoercer : ValueCoercer {
 
     override fun validate(value: EnrichedAirbyteValue): ValidationResult =
         when (val abValue = value.abValue) {
-            is IntegerValue -> validIf(abValue.value in INT64_MIN..INT64_MAX)
-            is NumberValue ->
-                validIf(abValue.value > DECIMAL_38_10_MIN && abValue.value < DECIMAL_38_10_MAX)
+            is IntegerValue -> validIf(abValue.value.bitLength() <= 63)
+            is NumberValue -> {
+                val integerDigits = abValue.value.precision() - abValue.value.scale()
+                validIf(integerDigits <= DECIMAL_38_10_INTEGER_DIGITS)
+            }
             else -> ValidationResult.Valid
         }
 
@@ -52,12 +46,8 @@ class DatabricksValueCoercer : ValueCoercer {
         private fun validIf(inRange: Boolean): ValidationResult =
             if (inRange) ValidationResult.Valid else nullify()
 
-        // Databricks LONG is INT64
-        val INT64_MAX = BigInteger(Long.MAX_VALUE.toString())
-        val INT64_MIN = BigInteger(Long.MIN_VALUE.toString())
-
-        // Databricks DECIMAL(38, 10): 28 integer digits + 10 fractional digits.
-        val DECIMAL_38_10_MAX = BigDecimal("10000000000000000000000000000")
-        val DECIMAL_38_10_MIN = BigDecimal("-10000000000000000000000000000")
+        // Databricks DECIMAL(38, 10): 38 total digits, 10 fractional → 28 integer digits max
+        // Databricks takes care of truncation the larger scaled values
+        private const val DECIMAL_38_10_INTEGER_DIGITS = 28
     }
 }

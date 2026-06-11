@@ -19,10 +19,13 @@ import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.integrations.destination.databricksv2.component.DatabricksDataCoercionTest.Companion.timestampTz
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.math.BigDecimal
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -31,6 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource
  * and read back through the component test framework.
  */
 @MicronautTest(environments = ["component"], resolveParameters = false)
+@Execution(ExecutionMode.CONCURRENT)
 class DatabricksDataCoercionTest(
     override val coercer: ValueCoercer,
     override val opsClient: TableOperationsClient,
@@ -84,10 +88,6 @@ class DatabricksDataCoercionTest(
         super.`handle timestampntz values`(inputValue, expectedValue, expectedChangeReason)
     }
 
-    @ParameterizedTest
-    @MethodSource(
-        "io.airbyte.integrations.destination.databricksv2.component.DatabricksDataCoercionTest#timetz"
-    )
     override fun `handle timetz values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,

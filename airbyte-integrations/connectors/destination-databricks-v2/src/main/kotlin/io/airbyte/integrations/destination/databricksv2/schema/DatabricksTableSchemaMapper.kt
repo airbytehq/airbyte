@@ -72,6 +72,8 @@ class DatabricksTableSchemaMapper(
                 // and has several index related limitations
                 TimeTypeWithTimezone,
                 TimeTypeWithoutTimezone -> STRING
+
+                // VARIANT(Semi-structured) type is still in Public Preview
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is ObjectType,
