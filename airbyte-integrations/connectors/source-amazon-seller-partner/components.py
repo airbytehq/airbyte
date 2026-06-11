@@ -28,6 +28,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
+from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
@@ -558,6 +559,36 @@ class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
         return transform_function
 
 
+class AmazonSellerPartnerHttpClient(HttpClient):
+    """Custom HttpClient that surfaces rate limit exhaustion as a config error with troubleshooting guidance."""
+
+    _TROUBLESHOOTING_DOCS_URL = "https://docs.airbyte.com/integrations/sources/amazon-seller-partner#rate-limit-issue-for-report-streams"
+
+    def _send_with_retry(
+        self,
+        request: requests.PreparedRequest,
+        request_kwargs: Mapping[str, Any],
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
+    ) -> requests.Response:
+        try:
+            return super()._send_with_retry(request, request_kwargs, log_formatter, exit_on_rate_limit)
+        except AirbyteTracedException as e:
+            if e.failure_type == FailureType.transient_error and "Rate limit retry budget exhausted" in (e.internal_message or ""):
+                raise AirbyteTracedException(
+                    internal_message=e.internal_message,
+                    message=(
+                        f"Rate limit retry budget exhausted. "
+                        f"Adjust your connector configuration to reduce API request volume. "
+                        f"See troubleshooting steps at {self._TROUBLESHOOTING_DOCS_URL}"
+                    ),
+                    failure_type=FailureType.config_error,
+                    exception=e._exception,
+                    stream_descriptor=e._stream_descriptor,
+                ) from e
+            raise
+
+
 @dataclass
 class ReportCreationRequester(HttpRequester):
     """
@@ -582,6 +613,23 @@ class ReportCreationRequester(HttpRequester):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
+        # Replace the default HttpClient with our custom one that treats rate limit
+        # exhaustion as a config error with user-friendly troubleshooting guidance
+        if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
+            backoff_strategies = self.error_handler.backoff_strategies
+        else:
+            backoff_strategies = None
+        self._http_client = AmazonSellerPartnerHttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=self.error_handler,
+            api_budget=self.api_budget,
+            authenticator=self._authenticator,
+            use_cache=self.use_cache,
+            backoff_strategy=backoff_strategies,
+            disable_retries=self.disable_retries,
+            message_repository=self.message_repository,
+        )
         if self.request_options_provider is None:
             self._request_options_provider = InterpolatedRequestOptionsProvider(
                 config=self.config, parameters=parameters, request_body_json=self.request_body_json
