@@ -651,6 +651,8 @@ class DiscountCodesSync(IncrementalShopifyStream):
             page_info = codes_conn.get("pageInfo", {})
             has_more = page_info.get("hasNextPage", False)
             child_cursor = page_info.get("endCursor")
+            if has_more and not child_cursor:
+                break
 
     def read_records(
         self,
@@ -687,6 +689,8 @@ class DiscountCodesSync(IncrementalShopifyStream):
 
             has_more_parents = page_info.get("hasNextPage", False)
             parent_cursor = page_info.get("endCursor")
+            if has_more_parents and not parent_cursor:
+                break
 
 
 class Locations(ShopifyStream):
