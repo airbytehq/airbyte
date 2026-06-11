@@ -614,10 +614,6 @@ class ReportCreationRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         if self.config.get("stop_sync_on_rate_limit", False):
-            if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
-                backoff_strategies = self.error_handler.backoff_strategies
-            else:
-                backoff_strategies = None
             self._http_client = AmazonSellerPartnerHttpClient(
                 name=self.name,
                 logger=self.logger,
@@ -625,7 +621,7 @@ class ReportCreationRequester(HttpRequester):
                 api_budget=self.api_budget,
                 authenticator=self._authenticator,
                 use_cache=self.use_cache,
-                backoff_strategy=backoff_strategies,
+                backoff_strategy=getattr(self.error_handler, "backoff_strategies", None),
                 disable_retries=self.disable_retries,
                 message_repository=self.message_repository,
             )
