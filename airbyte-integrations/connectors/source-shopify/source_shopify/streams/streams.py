@@ -4,11 +4,9 @@
 
 
 import logging
-import re
 import sys
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-import pendulum as pdm
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
@@ -36,6 +34,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
+from source_shopify.shopify_graphql.bulk.tools import BulkTools
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter
 
 from airbyte_cdk import HttpSubStream
@@ -602,19 +601,6 @@ class DiscountCodesSync(IncrementalShopifyStream):
         return False
 
     @staticmethod
-    def _resolve_str_id(gid: str | None) -> int | None:
-        if gid:
-            match = re.search(r"\d+", gid)
-            return int(match.group()) if match else None
-        return None
-
-    @staticmethod
-    def _to_rfc3339(value: str | None) -> str | None:
-        if value:
-            return pdm.parse(value).to_rfc3339_string()
-        return value
-
-    @staticmethod
     def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
         for key, val in code_discount.items():
             if isinstance(val, dict) and "codes" in val:
@@ -627,12 +613,12 @@ class DiscountCodesSync(IncrementalShopifyStream):
         total_sales = code_discount.get("totalSales") or {}
         return {
             "typename": code_discount.get("__typename"),
-            "updated_at": self._to_rfc3339(code_discount.get("updatedAt")),
-            "created_at": self._to_rfc3339(code_discount.get("createdAt")),
+            "updated_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "updatedAt"),
+            "created_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "createdAt"),
             "discount_type": code_discount.get("discountClass"),
             "summary": code_discount.get("summary"),
-            "starts_at": self._to_rfc3339(code_discount.get("startsAt")),
-            "ends_at": self._to_rfc3339(code_discount.get("endsAt")),
+            "starts_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "startsAt"),
+            "ends_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "endsAt"),
             "status": code_discount.get("status"),
             "title": code_discount.get("title"),
             "usage_limit": code_discount.get("usageLimit"),
@@ -644,9 +630,9 @@ class DiscountCodesSync(IncrementalShopifyStream):
 
     def _build_child_record(self, code_node: Mapping[str, Any], parent_gid: str, parent_meta: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
-            "id": self._resolve_str_id(code_node.get("id")),
+            "id": BulkTools.resolve_str_id(code_node.get("id")),
             "admin_graphql_api_id": code_node.get("id"),
-            "price_rule_id": self._resolve_str_id(parent_gid),
+            "price_rule_id": BulkTools.resolve_str_id(parent_gid),
             "code": code_node.get("code"),
             "usage_count": code_node.get("asyncUsageCount"),
             "createdBy": code_node.get("createdBy"),
