@@ -8,12 +8,7 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.AUTO_
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FLUSH_BATCH_SIZE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE_KEYS_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE_MODE_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_KEYS_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_PARTITION_AWARE_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.STREAM_MERGE_KEYS_STREAM_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_AWARE_MERGE_STREAMS_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_KEYS_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_MODE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.AUTO_DATE_PARTITION_CONFIG_KEY;
@@ -21,10 +16,8 @@ import static io.airbyte.integrations.destination.iceberg.config.catalog.Iceberg
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import lombok.Data;
 
@@ -37,7 +30,6 @@ public class FormatConfig {
   public static final int DEFAULT_FLUSH_BATCH_SIZE = 10000;
   public static final boolean DEFAULT_AUTO_COMPACT = false;
   public static final int DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB = 100;
-  public static final boolean DEFAULT_MERGE_MODE = false;
   public static final boolean DEFAULT_PARTITION_MODE = false;
   public static final boolean DEFAULT_AUTO_DATE_PARTITION = true;
 
@@ -45,9 +37,6 @@ public class FormatConfig {
   private Integer flushBatchSize;
   private boolean autoCompact;
   private Integer compactTargetFileSizeInMb;
-  private boolean mergeMode;
-  private List<String> mergeKeys;
-  private Map<String, List<String>> streamMergeKeys;
   // Lowercased stream names that opted into partition-aware merge (identity partition keys added to
   // the merge ON clause). Opt-in per table; defaults to off.
   private Set<String> partitionAwareMergeStreams;
@@ -87,60 +76,17 @@ public class FormatConfig {
       this.compactTargetFileSizeInMb = DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB;
     }
 
-    // mergeMode
-    if (formatConfigJson.has(MERGE_MODE_CONFIG_KEY)) {
-      this.mergeMode = formatConfigJson.get(MERGE_MODE_CONFIG_KEY).asBoolean(DEFAULT_MERGE_MODE);
-    } else {
-      this.mergeMode = DEFAULT_MERGE_MODE;
-    }
-
-    // mergeKeys
-    this.mergeKeys = new ArrayList<>();
-    if (formatConfigJson.has(MERGE_KEYS_CONFIG_KEY)) {
-      JsonNode mergeKeysNode = formatConfigJson.get(MERGE_KEYS_CONFIG_KEY);
-      if (mergeKeysNode.isArray()) {
-        for (JsonNode keyNode : mergeKeysNode) {
-          this.mergeKeys.add(keyNode.asText());
-        }
-      }
-    }
-
-    // streamMergeKeys: per-stream (table) primary/merge key columns, used to supply the dedup key
-    // for Append + Dedup streams whose source provides no primary key. Keyed by lowercased stream
-    // name so it matches the stream-name normalization used when writing.
-    this.streamMergeKeys = new HashMap<>();
+    // partitionAwareMergeStreams: per-table opt-in (list of stream/table names) to add identity
+    // partition keys into the merge ON clause for partition pruning. Stored lowercased to match the
+    // stream-name normalization used when writing.
     this.partitionAwareMergeStreams = new HashSet<>();
-    if (formatConfigJson.has(STREAM_MERGE_KEYS_CONFIG_KEY)) {
-      JsonNode streamMergeKeysNode = formatConfigJson.get(STREAM_MERGE_KEYS_CONFIG_KEY);
-      if (streamMergeKeysNode.isArray()) {
-        for (JsonNode entry : streamMergeKeysNode) {
-          if (entry == null || !entry.has(STREAM_MERGE_KEYS_STREAM_KEY)) {
-            continue;
-          }
-          String streamName = entry.get(STREAM_MERGE_KEYS_STREAM_KEY).asText();
-          if (streamName == null || streamName.isBlank()) {
-            continue;
-          }
-          final String normalizedStream = streamName.toLowerCase();
-          if (entry.has(STREAM_MERGE_KEYS_KEYS_KEY)) {
-            List<String> keys = new ArrayList<>();
-            JsonNode keysNode = entry.get(STREAM_MERGE_KEYS_KEYS_KEY);
-            if (keysNode.isArray()) {
-              for (JsonNode keyNode : keysNode) {
-                String key = keyNode.asText();
-                if (key != null && !key.isBlank()) {
-                  keys.add(key);
-                }
-              }
-            }
-            if (!keys.isEmpty()) {
-              this.streamMergeKeys.put(normalizedStream, keys);
-            }
-          }
-          // Per-table opt-in for partition-aware merge (identity partition keys in the ON clause).
-          if (entry.has(STREAM_MERGE_KEYS_PARTITION_AWARE_KEY)
-              && entry.get(STREAM_MERGE_KEYS_PARTITION_AWARE_KEY).asBoolean(false)) {
-            this.partitionAwareMergeStreams.add(normalizedStream);
+    if (formatConfigJson.has(PARTITION_AWARE_MERGE_STREAMS_CONFIG_KEY)) {
+      JsonNode node = formatConfigJson.get(PARTITION_AWARE_MERGE_STREAMS_CONFIG_KEY);
+      if (node.isArray()) {
+        for (JsonNode streamNode : node) {
+          String streamName = streamNode.asText();
+          if (streamName != null && !streamName.isBlank()) {
+            this.partitionAwareMergeStreams.add(streamName.toLowerCase());
           }
         }
       }

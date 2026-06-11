@@ -113,30 +113,21 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       schema = schema.add(COLUMN_NAME_AB_ID, StringType$.MODULE$)
           .add(COLUMN_NAME_EMITTED_AT, TimestampType$.MODULE$);
 
-      // Dedup configuration: APPEND_DEDUP (Incremental | Append + Dedup) streams auto-enable merge.
-      // 'merge_keys' MUST be defined in the connector configuration for these streams; if absent the
-      // stream fails fast. The source primary key wins for the actual key resolution when present,
-      // with the mandatory connector-config 'merge_keys' as the required fallback. Other streams keep
-      // the existing manual merge behavior driven by the format config.
-      boolean mergeMode;
-      List<String> mergeKeys;
+      // Dedup configuration: only APPEND_DEDUP (Incremental | Append + Dedup) streams merge. The
+      // dedup key is the stream's primary key, which Airbyte requires (and supplies) for dedup
+      // streams. Non-dedup streams never merge.
+      boolean mergeMode = false;
+      List<String> mergeKeys = new ArrayList<>();
       if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
-        // Resolve dedup keys with precedence: source primary key > per-stream config keys >
-        // global merge_keys. This lets streams with no source-defined primary key still dedup by
-        // declaring their key columns in the connector config.
-        mergeKeys = resolveMergeKeys(stream, streamName);
+        mergeKeys = resolvePrimaryKey(stream);
         if (mergeKeys.isEmpty()) {
           throw new ConfigErrorException(
-              "Stream '" + streamName + "' uses Incremental | Append + Dedup (merge) but has no source "
-                  + "primary key and no key columns are defined in the connector config. Add the key "
-                  + "columns for this stream under 'stream_merge_keys' (or set a global 'merge_keys') to "
+              "Stream '" + streamName + "' uses Incremental | Append + Dedup (merge) but no primary key "
+                  + "is defined. Select a primary key for this stream in the connection settings to "
                   + "enable deduplication.");
         }
         mergeMode = true;
         log.info("=> Stream {} is Incremental | Append + Dedup; enabling merge with keys {}", streamName, mergeKeys);
-      } else {
-        mergeMode = catalogConfig.getFormatConfig().isMergeMode();
-        mergeKeys = catalogConfig.getFormatConfig().getMergeKeys();
       }
       boolean partitionMode = catalogConfig.getFormatConfig().isPartitionMode();
       List<String> partitionKeys = catalogConfig.getFormatConfig().getPartitionKeys();
@@ -374,42 +365,25 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
   }
 
   /**
-   * Resolve the columns used to deduplicate/merge a stream. Precedence:
-   * <ol>
-   * <li>the stream's source-defined primary key (wins when present);</li>
-   * <li>per-stream key columns configured under {@code stream_merge_keys} for this table;</li>
-   * <li>the connector-level global {@code merge_keys}.</li>
-   * </ol>
-   * This allows streams whose source exposes no primary key to still deduplicate by declaring
-   * their key columns in the connector configuration.
+   * Resolve the columns used to deduplicate/merge a stream from the stream's primary key. Airbyte
+   * requires a primary key for Append + Dedup streams (source-defined or selected in the UI), so
+   * this is the single source of truth for dedup keys.
    *
-   * @param stream     the configured stream
-   * @param streamName the normalized (lowercased) stream/table name used for config lookup
-   * @return the flattened column names to dedup on (may be empty if none defined)
+   * @param stream the configured stream
+   * @return the flattened primary-key column names (empty if none defined)
    */
-  private List<String> resolveMergeKeys(ConfiguredAirbyteStream stream, String streamName) {
+  private List<String> resolvePrimaryKey(ConfiguredAirbyteStream stream) {
     List<List<String>> primaryKey = stream.getPrimaryKey();
-    if (primaryKey != null && !primaryKey.isEmpty()) {
-      List<String> keys = new ArrayList<>();
+    List<String> keys = new ArrayList<>();
+    if (primaryKey != null) {
       for (List<String> keyPath : primaryKey) {
         if (keyPath != null && !keyPath.isEmpty()) {
           // Use the last path element as the flattened top-level column name
           keys.add(keyPath.get(keyPath.size() - 1));
         }
       }
-      if (!keys.isEmpty()) {
-        return keys;
-      }
     }
-    // No source primary key: look up per-stream configured keys, then the global merge_keys.
-    Map<String, List<String>> streamMergeKeys = catalogConfig.getFormatConfig().getStreamMergeKeys();
-    if (streamMergeKeys != null && streamName != null) {
-      List<String> perStream = streamMergeKeys.get(streamName.toLowerCase());
-      if (perStream != null && !perStream.isEmpty()) {
-        return new ArrayList<>(perStream);
-      }
-    }
-    return new ArrayList<>(catalogConfig.getFormatConfig().getMergeKeys());
+    return keys;
   }
 
   /**
