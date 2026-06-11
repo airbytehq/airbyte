@@ -79,7 +79,9 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
-| `property_history`          | `crm.objects.contacts.read`                                                                                  |
+| `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
+| `companies_property_history` | `crm.objects.companies.read`                                                                                |
+| `deals_property_history`    | `crm.objects.deals.read`                                                                                     |
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
 | `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
@@ -281,7 +283,11 @@ The HubSpot source connector supports the following streams:
 
 ### Notes on the `property_history` streams
 
-`Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timestamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
+The property history streams (`contacts_property_history`, `companies_property_history`, `deals_property_history`) use Client-Side Incremental sync with a cursor timestamp to determine which records have changed since the previous sync.
+
+HubSpot calculated properties — formula fields, rollup summaries, and analytics properties such as `hs_analytics_*` — always have a timestamp that mirrors the time of the latest sync, not the time of the last user-initiated change. This causes the sync cursor to advance past records that have not yet been synced, which can result in missing records.
+
+To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is a reasonable starting point. Because these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
 
 ### Notes on the `engagements` stream
 
@@ -441,7 +447,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 6.7.0 | 2026-06-11 | [76396](https://github.com/airbytehq/airbyte/pull/76396) | Add `treat_numbers_and_booleans_as_strings` config toggle to coerce dynamic `number`/`boolean` properties to `string` |
 | 6.6.1 | 2026-06-10 | [79636](https://github.com/airbytehq/airbyte/pull/79636) | Add configurable `property_history_lookback_window` (minutes) to property history streams (deals, contacts, companies) to prevent silent record loss caused by cursor drift from HubSpot calculated properties. Clarify existing `lookback_window` field as CRM Search-specific. |
 | 6.6.0 | 2026-06-08 | [71259](https://github.com/airbytehq/airbyte/pull/71259) | Add association streams for standard and custom objects, including optional OAuth scopes needed to support them |
-| 6.5.5 | 2026-04-22 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
+| 6.5.5 | 2026-04-28 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
 | 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
 | 6.5.3 | 2026-04-21 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
 | 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |
