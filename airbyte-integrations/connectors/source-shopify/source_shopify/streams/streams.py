@@ -588,7 +588,7 @@ class DiscountCodesSync(IncrementalShopifyStream):
                     )
                 error_messages = "; ".join(e.get("message", str(e)) for e in errors)
                 raise AirbyteTracedException(message=f"GraphQL query failed for stream `discount_codes_sync`: {error_messages}")
-            self._apply_graphql_rate_limit(result)
+            ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(response, threshold=0.9))
             return result
         raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling.")
 
@@ -600,20 +600,6 @@ class DiscountCodesSync(IncrementalShopifyStream):
             if extensions.get("code") in throttle_codes:
                 return True
         return False
-
-    @staticmethod
-    def _apply_graphql_rate_limit(response_json: Mapping[str, Any]) -> None:
-        try:
-            throttle = response_json["extensions"]["cost"]["throttleStatus"]
-            max_available = float(throttle["maximumAvailable"])
-            currently_available = float(throttle["currentlyAvailable"])
-            if max_available > 0:
-                load = (max_available - currently_available) / max_available
-                wait = ShopifyRateLimiter._convert_load_to_time(load, threshold=0.9)
-                if wait > 0:
-                    ShopifyRateLimiter.wait_time(wait)
-        except (KeyError, TypeError, ValueError):
-            ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
 
     @staticmethod
     def _resolve_str_id(gid: str | None) -> int | None:
