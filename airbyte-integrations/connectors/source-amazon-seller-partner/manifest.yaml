@@ -249,10 +249,10 @@ spec:
           matching the same date range and marketplace, it can reuse that report
           instead of creating a new one. This setting controls how old (in hours)
           a completed report can be and still be reused. Set to 0 to always create
-          new reports. Maximum is 24 hours."
+          new reports. Maximum is 72 hours."
         default: 0
         minimum: 0
-        maximum: 24
+        maximum: 72
         order: 14
       financial_events_step:
         title: Financial Events Step Size
