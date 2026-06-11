@@ -359,7 +359,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.7.8 | 2026-06-11 | []() | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
+| 5.7.8 | 2026-06-11 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
 | 5.7.7 | 2026-05-21 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
 | 5.7.6 | 2026-05-20 | [78285](https://github.com/airbytehq/airbyte/pull/78285) | Promoted release candidate to GA |
 | 5.7.6-rc.4 | 2026-05-13 | [78037](https://github.com/airbytehq/airbyte/pull/78037) | Make failed report retry wait time and report creation 429 max retries visible in the source configuration |
