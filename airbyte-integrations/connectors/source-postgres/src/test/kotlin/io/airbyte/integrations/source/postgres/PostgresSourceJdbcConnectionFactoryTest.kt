@@ -97,7 +97,8 @@ class PostgresSourceJdbcConnectionFactoryTest {
 
     @Test
     fun `validateReplicationConnection throws ConfigErrorException on PSQLException from IDENTIFY_SYSTEM`() {
-        val psqlException = PSQLException("syntax error at or near \"IDENTIFY_SYSTEM\"", PSQLState.SYNTAX_ERROR)
+        val psqlException =
+            PSQLException("syntax error at or near \"IDENTIFY_SYSTEM\"", PSQLState.SYNTAX_ERROR)
         val statement =
             mockk<Statement> {
                 every { executeQuery("IDENTIFY_SYSTEM") } throws psqlException
