@@ -810,7 +810,7 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
         # start a new search query with the latest id that has been collected.
         if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size >= self.RECORDS_LIMIT:
-            return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
+            return {"after": 0, "id": last_record[self.primary_key]}
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
         if (last_page_size < self.page_size) or last_page_size == 0 or not response.json().get("paging"):

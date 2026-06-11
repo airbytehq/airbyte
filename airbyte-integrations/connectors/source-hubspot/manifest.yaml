@@ -1615,7 +1615,7 @@ definitions:
               operator: LTE
               value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
             - propertyName: hs_object_id
-              operator: GTE
+              operator: GT
               value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
           properties: "{{ stream_slice.extra_fields['query_properties'] }}"
           after: "{{ next_page_token['next_page_token']['after'] }}"
@@ -1673,7 +1673,7 @@ definitions:
               operator: LTE
               value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
             - propertyName: hs_object_id
-              operator: GTE
+              operator: GT
               value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
           properties:
             - hs_object_id
@@ -2388,7 +2388,7 @@ dynamic_streams:
                   operator: LTE
                   value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
                 - propertyName: hs_object_id
-                  operator: GTE
+                  operator: GT
                   value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
               properties: "properties_placeholder" # will be set by components_resolver
               after: "{{ next_page_token['next_page_token']['after'] }}"
