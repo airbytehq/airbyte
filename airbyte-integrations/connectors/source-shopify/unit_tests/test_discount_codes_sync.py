@@ -351,6 +351,86 @@ def test_schema_parity_with_json_schema(auth_config, time_sleep_mock):
     assert record_keys.issubset(schema_keys), f"Extra keys not in schema: {record_keys - schema_keys}"
 
 
+def test_null_code_discount_skipped(auth_config, time_sleep_mock):
+    """Parent node with codeDiscount=null should be silently skipped."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    null_parent = {
+        "id": "gid://shopify/DiscountCodeNode/999",
+        "codeDiscount": None,
+    }
+    valid_parent = _make_parent_node(100)
+    code_node = _make_code_node(200, "VALID")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([null_parent, valid_parent])},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        records = list(stream.read_records(sync_mode=None))
+
+    assert len(records) == 1
+    assert records[0]["code"] == "VALID"
+
+
+def test_extract_codes_connection_fallback(auth_config, time_sleep_mock):
+    """When the codeDiscount union fragment has no nested `codes` key,
+    _extract_codes_connection should fall back to the top-level `codes` key
+    or return an empty connection."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    parent_node = _make_parent_node(100)
+
+    # Child response where codeDiscount has no codes key at all
+    no_codes_response = {
+        "data": {
+            "codeDiscountNode": {
+                "codeDiscount": {"__typename": "DiscountCodeBasic"},
+            }
+        },
+        "extensions": _EXTENSIONS,
+    }
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([parent_node])},
+                {"json": no_codes_response},
+            ],
+        )
+        records = list(stream.read_records(sync_mode=None))
+
+    assert records == []
+
+
+def test_null_total_sales(auth_config, time_sleep_mock):
+    """Parent with totalSales=null should emit total_sales=None."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    parent_node = _make_parent_node(100, totalSales=None)
+    code_node = _make_code_node(200, "NO-SALES")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([parent_node])},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        records = list(stream.read_records(sync_mode=None))
+
+    assert len(records) == 1
+    assert records[0]["total_sales"] is None
+
+
 def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
     stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
