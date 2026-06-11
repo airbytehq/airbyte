@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # check=skip=InvalidDefaultArgInFrom
 
-# Self-contained multi-stage build for the destination-s3-data-lake connector.
+# Self-contained multi-stage build for the destination-s3-data-lake connector image.
 #
 # Built by Kaniko via the HudHud cicd-reusable-workflows. Kaniko builds only from a
 # Dockerfile + git context, so the Gradle build must happen INSIDE the build (builder
