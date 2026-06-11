@@ -602,12 +602,7 @@ class DiscountCodesSync(IncrementalShopifyStream):
 
     @staticmethod
     def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
-        for key, val in code_discount.items():
-            if isinstance(val, dict) and "codes" in val:
-                return val["codes"]
-        if "codes" in code_discount:
-            return code_discount["codes"]
-        return {"nodes": [], "pageInfo": {"hasNextPage": False}}
+        return code_discount.get("codes", {"nodes": [], "pageInfo": {"hasNextPage": False}})
 
     def _build_parent_metadata(self, code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
         total_sales = code_discount.get("totalSales") or {}
