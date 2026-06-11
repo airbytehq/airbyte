@@ -24,7 +24,7 @@
       "format": "date-time"
     },
     "createdBy": {
-      "description": "The application that created the discount reedem code.",
+      "description": "The application that created the discount redeem code.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
