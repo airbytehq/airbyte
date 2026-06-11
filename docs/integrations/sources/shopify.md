@@ -181,6 +181,21 @@ For deleted products, use the dedicated `Deleted Products` stream, which queries
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/latest/resources/event).
 
+## Syncing discount codes
+
+The connector provides two streams for discount codes:
+
+| Stream | Method | Best for |
+|---|---|---|
+| **Discount Codes** | Bulk Operations (async) | Stores where every discount has fewer than ~100 redeem codes. High throughput, low API cost. |
+| **Discount Codes Sync** | Synchronous cursor-paginated GraphQL | Stores that have one or more discounts with **more than ~100 redeem codes**. Guarantees every code is returned. |
+
+Shopify's Bulk Operations API silently truncates the nested `codes` connection at approximately 100 records per parent discount, even with `groupObjects: true`. If a discount has 500 codes, the bulk stream will only return ~100 of them without any error or warning.
+
+**Discount Codes Sync** avoids this limitation by querying parent discounts with cursor pagination, then explicitly paging through each parent's child codes (up to 250 per page). The trade-off is higher per-record API cost and lower throughput compared to the bulk stream.
+
+**Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
+
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
