@@ -1330,6 +1330,49 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: OrdersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrdersSearchData]`
+    :   Search orders records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (OrdersSearchFilter):
+        - id: Unique identifier for the order
+        - name: Shopify-assigned display name for the order (e.g. `#1001`)
+        - email: Email address associated with the order
+        - phone: Phone number associated with the order
+        - order_number: Sequential order number displayed in the Shopify admin
+        - financial_status: Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+        - fulfillment_status: Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+        - currency: ISO 4217 currency code for the order totals
+        - total_price: Total price of the order including taxes and discounts
+        - subtotal_price: Subtotal of the order before shipping and taxes
+        - total_tax: Total tax amount applied to the order
+        - total_discounts: Total discount amount applied to the order
+        - total_weight: Total weight of all items in the order, in grams
+        - cancel_reason: Reason the order was cancelled, if applicable
+        - cancelled_at: ISO 8601 timestamp when the order was cancelled, if applicable
+        - closed_at: ISO 8601 timestamp when the order was closed, if applicable
+        - tags: Comma-separated tags attached to the order
+        - note: Merchant-provided note on the order
+        - processed_at: ISO 8601 timestamp when the order was processed
+        - created_at: ISO 8601 timestamp when the order was created
+        - updated_at: ISO 8601 timestamp when the order was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            OrdersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, order_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Order`
     :   Retrieves a single order by ID
         
@@ -1558,6 +1601,40 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ProductsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductsSearchData]`
+    :   Search products records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ProductsSearchFilter):
+        - id: Unique identifier for the product
+        - title: Product title
+        - body_html: Product description in HTML
+        - vendor: Product vendor or manufacturer
+        - product_type: Product type used for categorization
+        - handle: URL-friendly handle for the product
+        - status: Product status (`active`, `archived`, or `draft`)
+        - tags: Comma-separated tags attached to the product
+        - published_scope: Publishing scope (`web` or `global`)
+        - published_at: ISO 8601 timestamp when the product was published
+        - created_at: ISO 8601 timestamp when the product was created
+        - updated_at: ISO 8601 timestamp when the product was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ProductsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, product_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Product`
     :   Retrieves a single product by ID
