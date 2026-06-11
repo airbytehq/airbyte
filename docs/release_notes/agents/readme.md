@@ -1,5 +1,23 @@
 # Airbyte Agents release notes
 
+## June 11, 2026
+
+Web app
+
+- Organizations on the Team or Custom plan now see connectors and credentials scoped to your active workspace, so you only see what belongs to the workspace you're working in.
+
+API
+
+- New endpoints let you inspect connector metadata and readiness, and discover available connector skill documentation programmatically.
+
+CLI
+
+- New `connectors inspect` command shows connector metadata, readiness status, and available documentation. New `skills` commands let you list, search, and read connector documentation directly from the CLI.
+
+Connectors
+
+- Semantic search now correctly returns only the fields your agent requests, improving the precision of data retrieval from your connected sources.
+
 ## June 9, 2026
 
 Web app
