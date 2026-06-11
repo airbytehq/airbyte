@@ -2758,12 +2758,22 @@ definitions:
             dataEndTime: "{{ (now_utc() - duration('P' ~ ((now_utc().weekday() + 1) % 7 + 1) ~ 'D')).strftime('%Y-%m-%dT23:59:59Z') }}"
             reportOptions:
               reportPeriod: "WEEK"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            # Amazon serves the report document gzip-compressed but labels it
+            # "Content-Encoding: identity" by default. Requesting this makes Amazon set an
+            # honest Content-Encoding (gzip when compressed, identity when not), so the
+            # header-based GzipDecoder decompresses correctly.
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2784,12 +2794,22 @@ definitions:
             dataEndTime: "{{ (now_utc() - duration('P' ~ ((now_utc().weekday() + 1) % 7 + 1) ~ 'D')).strftime('%Y-%m-%dT23:59:59Z') }}"
             reportOptions:
               reportPeriod: "WEEK"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            # Amazon serves the report document gzip-compressed but labels it
+            # "Content-Encoding: identity" by default. Requesting this makes Amazon set an
+            # honest Content-Encoding (gzip when compressed, identity when not), so the
+            # header-based GzipDecoder decompresses correctly.
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByDepartmentAndSearchTerm
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByDepartmentAndSearchTerm"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2810,12 +2830,22 @@ definitions:
             dataEndTime: "{{ (now_utc() - duration('P' ~ ((now_utc().weekday() + 1) % 7 + 1) ~ 'D')).strftime('%Y-%m-%dT23:59:59Z') }}"
             reportOptions:
               reportPeriod: "WEEK"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            # Amazon serves the report document gzip-compressed but labels it
+            # "Content-Encoding: identity" by default. Requesting this makes Amazon set an
+            # honest Content-Encoding (gzip when compressed, identity when not), so the
+            # header-based GzipDecoder decompresses correctly.
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2836,12 +2866,22 @@ definitions:
             dataEndTime: "{{ (now_utc() - duration('P' ~ ((now_utc().weekday() + 1) % 7 + 1) ~ 'D')).strftime('%Y-%m-%dT23:59:59Z') }}"
             reportOptions:
               reportPeriod: "WEEK"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            # Amazon serves the report document gzip-compressed but labels it
+            # "Content-Encoding: identity" by default. Requesting this makes Amazon set an
+            # honest Content-Encoding (gzip when compressed, identity when not), so the
+            # header-based GzipDecoder decompresses correctly.
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2862,12 +2902,22 @@ definitions:
             dataEndTime: "{{ (now_utc() - duration('P' ~ ((now_utc().weekday() + 1) % 7 + 1) ~ 'D')).strftime('%Y-%m-%dT23:59:59Z') }}"
             reportOptions:
               reportPeriod: "WEEK"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            # Amazon serves the report document gzip-compressed but labels it
+            # "Content-Encoding: identity" by default. Requesting this makes Amazon set an
+            # honest Content-Encoding (gzip when compressed, identity when not), so the
+            # header-based GzipDecoder decompresses correctly.
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: dataByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["dataByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
