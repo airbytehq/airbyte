@@ -61,10 +61,7 @@ class PostgresSourceJdbcConnectionFactoryTest {
                 every { executeQuery("IDENTIFY_SYSTEM") } returns resultSet
                 every { close() } returns Unit
             }
-        val connection =
-            mockk<Connection> {
-                every { createStatement() } returns statement
-            }
+        val connection = mockk<Connection> { every { createStatement() } returns statement }
 
         val factory = buildFactory()
         invokeValidateReplicationConnection(factory, connection)
@@ -82,10 +79,7 @@ class PostgresSourceJdbcConnectionFactoryTest {
                 every { executeQuery("IDENTIFY_SYSTEM") } returns resultSet
                 every { close() } returns Unit
             }
-        val connection =
-            mockk<Connection> {
-                every { createStatement() } returns statement
-            }
+        val connection = mockk<Connection> { every { createStatement() } returns statement }
 
         val factory = buildFactory()
         val ex =
@@ -104,10 +98,7 @@ class PostgresSourceJdbcConnectionFactoryTest {
                 every { executeQuery("IDENTIFY_SYSTEM") } throws psqlException
                 every { close() } returns Unit
             }
-        val connection =
-            mockk<Connection> {
-                every { createStatement() } returns statement
-            }
+        val connection = mockk<Connection> { every { createStatement() } returns statement }
 
         val factory = buildFactory()
         val ex =
