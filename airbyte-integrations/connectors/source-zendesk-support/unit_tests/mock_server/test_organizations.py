@@ -162,7 +162,9 @@ class TestOrganizationsStreamIncremental(TestCase):
             .with_any_query_params()
             .build(),
             ErrorResponseBuilder.response_with_status(403)
-            .with_error_message("You do not have access to this page. You do not have permission to access this page. Please contact the account owner of this help desk for further help.")
+            .with_error_message(
+                "You do not have access to this page. You do not have permission to access this page. Please contact the account owner of this help desk for further help."
+            )
             .build(),
         )
 
@@ -181,9 +183,7 @@ class TestOrganizationsStreamIncremental(TestCase):
             .with_start_time(self._config["start_date"])
             .with_any_query_params()
             .build(),
-            ErrorResponseBuilder.response_with_status(403)
-            .with_error_message("Forbidden")
-            .build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message("Forbidden").build(),
         )
 
         output = read_stream("organizations", SyncMode.incremental, self._config, expecting_exception=True)
