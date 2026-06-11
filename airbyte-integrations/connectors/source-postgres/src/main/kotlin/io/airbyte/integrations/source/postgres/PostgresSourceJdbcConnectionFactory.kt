@@ -80,14 +80,23 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
     }
 
     private fun validateReplicationConnection(connection: Connection) {
-        connection.createStatement().use { statement ->
-            statement.executeQuery("IDENTIFY_SYSTEM").use { resultSet ->
-                if (!resultSet!!.next()) {
-                    throw ConfigErrorException(
-                        "The DB connection is not a valid replication connection"
-                    )
+        try {
+            connection.createStatement().use { statement ->
+                statement.executeQuery("IDENTIFY_SYSTEM").use { resultSet ->
+                    if (!resultSet!!.next()) {
+                        throw ConfigErrorException(
+                            "The DB connection is not a valid replication connection"
+                        )
+                    }
                 }
             }
+        } catch (e: PSQLException) {
+            throw ConfigErrorException(
+                "Database connection does not support the replication protocol. " +
+                    "Connect directly to the database host, not through a connection pooler, " +
+                    "and verify the user has REPLICATION privilege.",
+                e,
+            )
         }
     }
 }
