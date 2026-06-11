@@ -57,7 +57,7 @@ class TestProfilesStream(TestCase):
             ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build(),
         )
 
-        output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, config)
+        read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, config)
         # The profiles request was matched with accessLevel=view — if it hadn't been
         # included, the HttpMocker would raise an error for an unexpected request.
         # We don't assert on records here because the downstream sponsored_brands_campaigns
