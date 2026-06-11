@@ -24,6 +24,7 @@ def test_streams(config):
 def test_connection_success(config, requests_mock):
     requests_mock.get(url="/api/v4/groups", json=[{"id": "g1"}])
     requests_mock.get(url="/api/v4/groups/g1", json=[{"id": "g1", "projects": [{"id": "p1", "path_with_namespace": "p1"}]}])
+    requests_mock.get(url="/api/v4/groups/g1/projects", json=[{"id": "p1", "path_with_namespace": "p1"}])
     requests_mock.get(url="/api/v4/projects/p1", json={"id": "p1"})
     source = get_source(config=config)
     connection_status = source.check(logging.getLogger(), config)
