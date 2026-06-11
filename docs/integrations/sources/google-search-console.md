@@ -248,6 +248,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.4 | 2026-06-09 | [79344](https://github.com/airbytehq/airbyte/pull/79344) | Update dependencies |
 | 2.0.3 | 2026-06-01 | [78545](https://github.com/airbytehq/airbyte/pull/78545) | Adds jitter to backoff strategy |
 | 2.0.2 | 2026-05-21 | [78289](https://github.com/airbytehq/airbyte/pull/78289) | Reduce `search_analytics_*` paginator `page_size` from `25000` to `5000` to lower peak worker memory on high-volume tenants. See airbytehq/oncall#12246 for context. |
 | 2.0.1 | 2026-05-18 | [78157](https://github.com/airbytehq/airbyte/pull/78157) | Restore `default_concurrency` to `num_workers`-driven configuration (`{{ config.get('num_workers', 3) }}`) and keep `max_concurrency` at `100`; cancels the Phase 1 concurrency tuning rollout introduced in 2.0.1-rc.1 |

@@ -13,12 +13,17 @@ on:
         required: false
         type: string
       comment-id:
-        description: "The comment-id of the slash command. Used to resolve the issue or PR."
-        required: true
+        description: "The comment-id of the slash command. Used to update the comment with status. Optional for programmatic triggers."
+        required: false
         type: string
       pr:
         description: "PR number, if triggered from a PR"
         required: false
+        type: string
+      dry-run:
+        description: "If 'true', evaluate only -- do not approve or merge"
+        required: false
+        default: ""
         type: string
 
 run-name: "AI Ready for #${{ inputs.pr || inputs.comment-id }}"
@@ -29,7 +34,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  ai-ready:
+  validate:
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as GitHub App
@@ -42,7 +47,7 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Require PR context
-        if: inputs.pr == ''
+        if: inputs.pr == '' && inputs.comment-id
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
@@ -60,3 +65,11 @@ jobs:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ inputs.pr }}
         run: gh issue edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hyd-ready
+
+  hydra-automerge:
+    needs: validate
+    uses: ./.github/workflows/hydra-automerge.yml
+    with:
+      pr: ${{ inputs.pr }}
+      dry-run: ${{ inputs.dry-run }}
+    secrets: inherit
