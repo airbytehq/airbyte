@@ -45,8 +45,10 @@ class S3DataLakeSpecification :
     @get:JsonSchemaInject(json = """{"always_show": true,"order":2}""")
     override val s3BucketName: String = ""
 
-    @get:JsonSchemaInject(json = """{"always_show": true,"examples":["us-east-1"], "order":3}""")
-    override val s3BucketRegion: S3BucketRegion = S3BucketRegion.NO_REGION
+    @get:JsonSchemaInject(
+        json = """{"always_show": true,"examples":["me-central-1"], "default": "me-central-1", "order":3}"""
+    )
+    override val s3BucketRegion: S3BucketRegion = S3BucketRegion.`me-central-1`
 
     @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
 
