@@ -7,7 +7,6 @@ from typing import Any, Iterable, Mapping
 
 import pytest
 from facebook_business.adobjects.abstractobject import AbstractObject
-
 from source_facebook_marketing.streams.common import sanitize_circular_references
 
 
