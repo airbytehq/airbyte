@@ -28,7 +28,6 @@ class PostgresSourceJdbcConnectionFactoryTest {
                 every { jdbcUrlFmt } returns "jdbc:postgresql://%s:%d/testdb"
                 every { realHost } returns "localhost"
                 every { realPort } returns 5432
-                every { schema } returns "public"
             }
         return PostgresSourceJdbcConnectionFactory(config)
     }
