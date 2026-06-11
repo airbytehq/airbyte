@@ -559,7 +559,7 @@ class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
         return transform_function
 
 
-class AmazonSellerPartnerHttpClient(HttpClient):
+class RateLimitConfigErrorHttpClient(HttpClient):
     """Custom HttpClient that surfaces rate limit exhaustion as a config error with troubleshooting guidance."""
 
     _TROUBLESHOOTING_DOCS_URL = "https://docs.airbyte.com/integrations/sources/amazon-seller-partner#rate-limit-issue-for-report-streams"
@@ -614,7 +614,7 @@ class ReportCreationRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         if self.config.get("stop_sync_on_rate_limit", False):
-            self._http_client = AmazonSellerPartnerHttpClient(
+            self._http_client = RateLimitConfigErrorHttpClient(
                 name=self.name,
                 logger=self.logger,
                 error_handler=self.error_handler,
