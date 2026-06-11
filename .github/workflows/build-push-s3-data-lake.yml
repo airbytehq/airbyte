@@ -1,0 +1,38 @@
+name: Build and Push destination-s3-data-lake
+
+# Builds the destination-s3-data-lake connector image and pushes it to the HudHud
+# Aliyun ACR via the shared cicd-reusable-workflows (Kaniko). Tagged with the short
+# commit SHA:
+#   hudhud-registry-vpc.me-central-1.cr.aliyuncs.com/private/data/airbyte-destination-s3-data-lake:<sha8>
+#
+# Builds only when the connector's own directory changes (push to master/dev), plus
+# manual dispatch.
+
+on:
+  push:
+    branches: [master, dev]
+    paths:
+      - "airbyte-integrations/connectors/destination-s3-data-lake/**"
+      - "buildSrc/**"
+      - "settings.gradle"
+      - "build.gradle"
+      - "gradle.properties"
+      - ".github/workflows/build-push-s3-data-lake.yml"
+  workflow_dispatch:
+
+jobs:
+  build-push:
+    uses: HudHud-Maps/cicd-reusable-workflows/.github/workflows/build-push-template.yaml@v1.5.1
+    secrets: inherit
+    with:
+      # NAMESPACE defaults to "private", matching the cluster's registry layout
+      # (private/<team>/<service>). Final image ref:
+      #   hudhud-registry-vpc.me-central-1.cr.aliyuncs.com/private/data/airbyte-destination-s3-data-lake:<sha8>
+      DEPLOYMENT_NAME: data/airbyte-destination-s3-data-lake
+      DOCKER_FILE_PATH: airbyte-integrations/connectors/destination-s3-data-lake/Dockerfile
+      # DOCKER_CONTEXT intentionally unset => Kaniko context = repo root, so the
+      # builder stage's `COPY . .` sees buildSrc/, settings.gradle, the local CDK, etc.
+      PRODUCTION_BRANCH: master
+      STAGING_BRANCH: dev
+      # Triggers are already scoped by the `paths:` filter above.
+      CHECK_CHANGED_PATH: false
