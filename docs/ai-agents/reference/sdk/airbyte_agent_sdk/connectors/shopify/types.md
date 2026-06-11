@@ -10676,6 +10676,166 @@ Classes
     `user_id: str`
     :   Identifier of the staff user who processed the refund
 
+<a id="OrdersAndCondition"></a>
+
+`OrdersAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="OrdersAnyCondition"></a>
+
+`OrdersAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersAnyValueFilter"></a>
+
+`OrdersAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: Any`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: Any`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: Any`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: Any`
+    :   ISO 4217 currency code for the order totals
+
+    `email: Any`
+    :   Email address associated with the order
+
+    `financial_status: Any`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: Any`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: Any`
+    :   Unique identifier for the order
+
+    `name: Any`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: Any`
+    :   Merchant-provided note on the order
+
+    `order_number: Any`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: Any`
+    :   Phone number associated with the order
+
+    `processed_at: Any`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: Any`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: Any`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: Any`
+    :   Total discount amount applied to the order
+
+    `total_price: Any`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: Any`
+    :   Total tax amount applied to the order
+
+    `total_weight: Any`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersContainsCondition"></a>
+
+`OrdersContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersEqCondition"></a>
+
+`OrdersEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersFuzzyCondition"></a>
+
+`OrdersFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrdersGetParams"></a>
 
 `OrdersGetParams(*args, **kwargs)`
@@ -10688,6 +10848,158 @@ Classes
     ### Class variables
 
     `order_id: str`
+    :   The type of the None singleton.
+
+<a id="OrdersGtCondition"></a>
+
+`OrdersGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersGteCondition"></a>
+
+`OrdersGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersInCondition"></a>
+
+`OrdersInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.OrdersInFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersInFilter"></a>
+
+`OrdersInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: list[str]`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: list[str]`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: list[str]`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: list[str]`
+    :   ISO 4217 currency code for the order totals
+
+    `email: list[str]`
+    :   Email address associated with the order
+
+    `financial_status: list[str]`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: list[str]`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: list[int]`
+    :   Unique identifier for the order
+
+    `name: list[str]`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: list[str]`
+    :   Merchant-provided note on the order
+
+    `order_number: list[int]`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: list[str]`
+    :   Phone number associated with the order
+
+    `processed_at: list[str]`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: list[str]`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: list[str]`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: list[str]`
+    :   Total discount amount applied to the order
+
+    `total_price: list[str]`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: list[str]`
+    :   Total tax amount applied to the order
+
+    `total_weight: list[int]`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersKeywordCondition"></a>
+
+`OrdersKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersLikeCondition"></a>
+
+`OrdersLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="OrdersListParams"></a>
@@ -10727,6 +11039,331 @@ Classes
 
     `updated_at_min: str`
     :   The type of the None singleton.
+
+<a id="OrdersLtCondition"></a>
+
+`OrdersLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersLteCondition"></a>
+
+`OrdersLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersNeqCondition"></a>
+
+`OrdersNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersNotCondition"></a>
+
+`OrdersNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
+    :   The type of the None singleton.
+
+<a id="OrdersOrCondition"></a>
+
+`OrdersOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="OrdersSearchFilter"></a>
+
+`OrdersSearchFilter(*args, **kwargs)`
+:   Available fields for filtering orders search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: str | None`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: str | None`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: str | None`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the order totals
+
+    `email: str | None`
+    :   Email address associated with the order
+
+    `financial_status: str | None`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: str | None`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: int | None`
+    :   Unique identifier for the order
+
+    `name: str | None`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: str | None`
+    :   Merchant-provided note on the order
+
+    `order_number: int | None`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: str | None`
+    :   Phone number associated with the order
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: str | None`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: str | None`
+    :   Total discount amount applied to the order
+
+    `total_price: str | None`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: str | None`
+    :   Total tax amount applied to the order
+
+    `total_weight: int | None`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersSearchQuery"></a>
+
+`OrdersSearchQuery(*args, **kwargs)`
+:   Search query for orders entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.OrdersSortFilter]`
+    :   The type of the None singleton.
+
+<a id="OrdersSortFilter"></a>
+
+`OrdersSortFilter(*args, **kwargs)`
+:   Available fields for sorting orders search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: Literal['asc', 'desc']`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code for the order totals
+
+    `email: Literal['asc', 'desc']`
+    :   Email address associated with the order
+
+    `financial_status: Literal['asc', 'desc']`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: Literal['asc', 'desc']`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the order
+
+    `name: Literal['asc', 'desc']`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: Literal['asc', 'desc']`
+    :   Merchant-provided note on the order
+
+    `order_number: Literal['asc', 'desc']`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: Literal['asc', 'desc']`
+    :   Phone number associated with the order
+
+    `processed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: Literal['asc', 'desc']`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: Literal['asc', 'desc']`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: Literal['asc', 'desc']`
+    :   Total discount amount applied to the order
+
+    `total_price: Literal['asc', 'desc']`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: Literal['asc', 'desc']`
+    :   Total tax amount applied to the order
+
+    `total_weight: Literal['asc', 'desc']`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersStringFilter"></a>
+
+`OrdersStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: str`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: str`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: str`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: str`
+    :   ISO 4217 currency code for the order totals
+
+    `email: str`
+    :   Email address associated with the order
+
+    `financial_status: str`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: str`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: str`
+    :   Unique identifier for the order
+
+    `name: str`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: str`
+    :   Merchant-provided note on the order
+
+    `order_number: str`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: str`
+    :   Phone number associated with the order
+
+    `processed_at: str`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: str`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: str`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: str`
+    :   Total discount amount applied to the order
+
+    `total_price: str`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: str`
+    :   Total tax amount applied to the order
+
+    `total_weight: str`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the order was last updated
 
 <a id="PriceRulesAndCondition"></a>
 
@@ -12255,6 +12892,139 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the variant was last updated
 
+<a id="ProductsAndCondition"></a>
+
+`ProductsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ProductsAnyCondition"></a>
+
+`ProductsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsAnyValueFilter"></a>
+
+`ProductsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: Any`
+    :   Product description in HTML
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: Any`
+    :   URL-friendly handle for the product
+
+    `id: Any`
+    :   Unique identifier for the product
+
+    `product_type: Any`
+    :   Product type used for categorization
+
+    `published_at: Any`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: Any`
+    :   Publishing scope (`web` or `global`)
+
+    `status: Any`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: Any`
+    :   Comma-separated tags attached to the product
+
+    `title: Any`
+    :   Product title
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: Any`
+    :   Product vendor or manufacturer
+
+<a id="ProductsContainsCondition"></a>
+
+`ProductsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsEqCondition"></a>
+
+`ProductsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsFuzzyCondition"></a>
+
+`ProductsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductsGetParams"></a>
 
 `ProductsGetParams(*args, **kwargs)`
@@ -12267,6 +13037,131 @@ Classes
     ### Class variables
 
     `product_id: str`
+    :   The type of the None singleton.
+
+<a id="ProductsGtCondition"></a>
+
+`ProductsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsGteCondition"></a>
+
+`ProductsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsInCondition"></a>
+
+`ProductsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.ProductsInFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsInFilter"></a>
+
+`ProductsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: list[str]`
+    :   Product description in HTML
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: list[str]`
+    :   URL-friendly handle for the product
+
+    `id: list[int]`
+    :   Unique identifier for the product
+
+    `product_type: list[str]`
+    :   Product type used for categorization
+
+    `published_at: list[str]`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: list[str]`
+    :   Publishing scope (`web` or `global`)
+
+    `status: list[str]`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: list[str]`
+    :   Comma-separated tags attached to the product
+
+    `title: list[str]`
+    :   Product title
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: list[str]`
+    :   Product vendor or manufacturer
+
+<a id="ProductsKeywordCondition"></a>
+
+`ProductsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsLikeCondition"></a>
+
+`ProductsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductsListParams"></a>
@@ -12309,6 +13204,250 @@ Classes
 
     `vendor: str`
     :   The type of the None singleton.
+
+<a id="ProductsLtCondition"></a>
+
+`ProductsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsLteCondition"></a>
+
+`ProductsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsNeqCondition"></a>
+
+`ProductsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsNotCondition"></a>
+
+`ProductsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="ProductsOrCondition"></a>
+
+`ProductsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ProductsSearchFilter"></a>
+
+`ProductsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering products search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: str | None`
+    :   Product description in HTML
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the product
+
+    `id: int | None`
+    :   Unique identifier for the product
+
+    `product_type: str | None`
+    :   Product type used for categorization
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `status: str | None`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the product
+
+    `title: str | None`
+    :   Product title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: str | None`
+    :   Product vendor or manufacturer
+
+<a id="ProductsSearchQuery"></a>
+
+`ProductsSearchQuery(*args, **kwargs)`
+:   Search query for products entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.ProductsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="ProductsSortFilter"></a>
+
+`ProductsSortFilter(*args, **kwargs)`
+:   Available fields for sorting products search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: Literal['asc', 'desc']`
+    :   Product description in HTML
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: Literal['asc', 'desc']`
+    :   URL-friendly handle for the product
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the product
+
+    `product_type: Literal['asc', 'desc']`
+    :   Product type used for categorization
+
+    `published_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: Literal['asc', 'desc']`
+    :   Publishing scope (`web` or `global`)
+
+    `status: Literal['asc', 'desc']`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: Literal['asc', 'desc']`
+    :   Comma-separated tags attached to the product
+
+    `title: Literal['asc', 'desc']`
+    :   Product title
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: Literal['asc', 'desc']`
+    :   Product vendor or manufacturer
+
+<a id="ProductsStringFilter"></a>
+
+`ProductsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: str`
+    :   Product description in HTML
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: str`
+    :   URL-friendly handle for the product
+
+    `id: str`
+    :   Unique identifier for the product
+
+    `product_type: str`
+    :   Product type used for categorization
+
+    `published_at: str`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: str`
+    :   Publishing scope (`web` or `global`)
+
+    `status: str`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: str`
+    :   Comma-separated tags attached to the product
+
+    `title: str`
+    :   Product title
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: str`
+    :   Product vendor or manufacturer
 
 <a id="ShopAndCondition"></a>
 
