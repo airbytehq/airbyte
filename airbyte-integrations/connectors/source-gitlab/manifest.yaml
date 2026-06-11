@@ -221,10 +221,13 @@ definitions:
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     token_refresh_endpoint: "https://{{ config.get('api_url', 'gitlab.com') }}/oauth/token"
+    refresh_token_error_status_codes: [400, 401]
+    refresh_token_error_key: "error"
+    refresh_token_error_values: ["invalid_grant"]
     refresh_token_updater:
-      refresh_token_error_status_codes: [400, 401]
-      refresh_token_error_key: "error"
-      refresh_token_error_values: ["invalid_grant"]
+      access_token_config_path: ["credentials", "access_token"]
+      refresh_token_config_path: ["credentials", "refresh_token"]
+      token_expiry_date_config_path: ["credentials", "token_expiry_date"]
   authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
@@ -248,9 +251,11 @@ definitions:
           action: IGNORE
           http_codes: [403]
         - type: HttpResponseFilter
-          action: FAIL
+          action: REFRESH_TOKEN_THEN_RETRY
           http_codes: [401]
-          error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
+          error_message: >-
+            Authentication to GitLab has expired. Authentication will be retried,
+            but if this issue persists, re-authenticate to restore access to GitLab.
         - type: HttpResponseFilter
           action: RETRY
           http_codes: [500]

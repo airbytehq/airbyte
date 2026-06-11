@@ -47,7 +47,7 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     source = get_source(config=config)
     connection_status = source.check(logging.getLogger(), config)
     assert connection_status.status == Status.FAILED
-    assert "Unable to refresh the `access_token`" in connection_status.message
+    assert "Authentication to GitLab has expired" in connection_status.message
 
 
 def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_mock):
@@ -56,7 +56,6 @@ def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_m
         "access_token": "new_access_token",
         "expires_in": 7200,
         "created_at": 1735689600,
-        # (7200 + 1735689600).timestamp().to_rfc3339_string() = "2025-01-01T02:00:00+00:00"
         "refresh_token": "new_refresh_token",
     }
     requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
@@ -64,7 +63,35 @@ def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_m
     source = get_source(config=oauth_config)
     connection_status = source.check(logging.getLogger(), oauth_config)
     assert connection_status.status == Status.FAILED
-    assert "Unable to refresh the `access_token`" in connection_status.message
+    assert "Authentication to GitLab has expired" in connection_status.message
+
+
+def test_oauth_401_retries_after_token_refresh(oauth_config, mocker, requests_mock):
+    """A mid-sync 401 with OAuth triggers token refresh and retries successfully."""
+    mocker.patch("time.sleep")
+    token_response = {
+        "access_token": "refreshed_access_token",
+        "expires_in": 7200,
+        "created_at": 1735689600,
+        "refresh_token": "refreshed_refresh_token",
+    }
+    requests_mock.post("https://gitlab.com/oauth/token", json=token_response)
+    requests_mock.register_uri(
+        "GET",
+        "/api/v4/groups",
+        [
+            {"status_code": 401},
+            {"json": [{"id": "g1"}], "status_code": 200},
+        ],
+    )
+    requests_mock.get(
+        url="/api/v4/groups/g1",
+        json=[{"id": "g1", "projects": [{"id": "p1", "path_with_namespace": "p1"}]}],
+    )
+    requests_mock.get(url="/api/v4/projects/p1", json={"id": "p1"})
+    source = get_source(config=oauth_config)
+    connection_status = source.check(logging.getLogger(), oauth_config)
+    assert connection_status.status == Status.SUCCEEDED
 
 
 @pytest.mark.parametrize(
