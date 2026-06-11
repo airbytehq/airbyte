@@ -2,8 +2,8 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import yaml
 import pytest
+import yaml
 
 
 @pytest.fixture(scope="module")
@@ -38,9 +38,7 @@ def _get_cards_definition_schema_properties(manifest: dict) -> dict:
 def test_cards_stream_schema_has_location_fields(manifest, field_name):
     properties = _get_cards_schema_properties(manifest)
     assert field_name in properties, f"Field '{field_name}' missing from cards stream schema"
-    assert properties[field_name]["type"] == ["null", "string"], (
-        f"Field '{field_name}' should be a nullable string"
-    )
+    assert properties[field_name]["type"] == ["null", "string"], f"Field '{field_name}' should be a nullable string"
 
 
 @pytest.mark.parametrize(
@@ -53,6 +51,4 @@ def test_cards_stream_schema_has_location_fields(manifest, field_name):
 def test_cards_definition_schema_has_location_fields(manifest, field_name):
     properties = _get_cards_definition_schema_properties(manifest)
     assert field_name in properties, f"Field '{field_name}' missing from cards_stream definition schema"
-    assert properties[field_name]["type"] == ["null", "string"], (
-        f"Field '{field_name}' should be a nullable string"
-    )
+    assert properties[field_name]["type"] == ["null", "string"], f"Field '{field_name}' should be a nullable string"
