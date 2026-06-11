@@ -51,6 +51,11 @@ dependencies {
         exclude group: "org.apache.orc"
         exclude group: "org.pentaho"
     }
+    // HudHud: lightweight URL-connection HTTP client for Iceberg's S3FileIO. The default AWS SDK
+    // Apache client uses a pooled connection manager that gets shut down between catalog operations
+    // (create -> drop refresh), causing "Connection pool shut down". The Hive path forces
+    // http-client.type=urlconnection (mirroring destination-iceberg), so this client must be present.
+    implementation("software.amazon.awssdk:url-connection-client:${project.ext.awsSdkVersion}")
     implementation("software.amazon.awssdk:s3:${project.ext.awsSdkVersion}")
     implementation("software.amazon.awssdk:sts:${project.ext.awsSdkVersion}")
     implementation("software.amazon.awssdk:glue:${project.ext.awsSdkVersion}")

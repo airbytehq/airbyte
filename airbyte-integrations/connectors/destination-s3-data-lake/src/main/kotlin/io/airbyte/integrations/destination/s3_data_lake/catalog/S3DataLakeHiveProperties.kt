@@ -10,6 +10,7 @@ import org.apache.iceberg.CatalogProperties.URI
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE
 import org.apache.iceberg.aws.AwsClientProperties
+import org.apache.iceberg.aws.HttpClientProperties
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 
 /**
@@ -66,6 +67,10 @@ fun buildHiveProperties(
         mapOf(
             S3FileIOProperties.PATH_STYLE_ACCESS to "false",
             S3FileIOProperties.CHECKSUM_ENABLED to "false",
+            // Use the URL-connection HTTP client, not the default Apache client whose pooled
+            // connection manager gets shut down between catalog operations ("Connection pool shut
+            // down" on the drop/refresh after create). Mirrors destination-iceberg.
+            HttpClientProperties.CLIENT_TYPE to HttpClientProperties.CLIENT_TYPE_URLCONNECTION,
         )
 
     return hiveProperties + s3Properties + ossCompatibility
