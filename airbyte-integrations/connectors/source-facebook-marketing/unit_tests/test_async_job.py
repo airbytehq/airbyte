@@ -18,14 +18,14 @@ from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from facebook_business.exceptions import FacebookRequestError
-
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
 from source_facebook_marketing.streams.async_job_manager import APILimit
 from source_facebook_marketing.utils import DateInterval
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class DummyAPILimit:
