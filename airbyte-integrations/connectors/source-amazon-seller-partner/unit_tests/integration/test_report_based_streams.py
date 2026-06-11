@@ -159,9 +159,14 @@ def _get_reports_response(reports: Optional[List[dict]] = None) -> HttpResponse:
 
 def _download_document_response(stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False) -> HttpResponse:
     response_body = find_template(stream_name, __file__, data_format)
+    headers = {}
     if compressed:
         response_body = gzip.compress(response_body.encode("iso-8859-1"))
-    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
+        # Mirror Amazon's behavior with enableContentEncodingUrlHeader=true: a gzip-compressed
+        # document is served with an honest "Content-Encoding: gzip" header so the header-based
+        # GzipDecoder decompresses it.
+        headers = {"Content-Encoding": "gzip"}
+    return HttpResponse(body=response_body, status_code=HTTPStatus.OK, headers=headers)
 
 
 @freezegun.freeze_time(NOW.isoformat())
