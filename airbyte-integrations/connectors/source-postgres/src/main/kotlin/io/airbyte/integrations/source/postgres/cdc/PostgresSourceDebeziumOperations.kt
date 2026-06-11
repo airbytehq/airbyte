@@ -206,8 +206,7 @@ class PostgresSourceDebeziumOperations(
         val lsnCommit = Lsn.valueOf(value[LSN_COMMIT]?.asLong())
         val lsnToAdvanceTo =
             listOfNotNull(lsnProc, lsnCommit).minOrNull()
-                ?: Lsn.valueOf(value[LSN]?.asLong())
-                ?: return
+                ?: Lsn.valueOf(value[LSN]?.asLong()) ?: return
         replicationSlotManager.advanceLsn(lsnToAdvanceTo)
     }
 
