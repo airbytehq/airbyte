@@ -14,6 +14,7 @@ import json
 import re
 from typing import Any, Dict, List
 from unittest import TestCase
+from unittest.mock import patch
 
 import requests_mock as rm
 from freezegun import freeze_time
@@ -194,6 +195,7 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
         trace_messages = [msg for msg in output.trace_messages if hasattr(msg, "error")]
         assert len(trace_messages) > 0 or len(records) == 0, "Expected failure indication for FAIL handler on 400 response"
 
+    @patch("components._LOAD_QUOTA_BACKOFF_SECONDS", 1.0)
     @HttpMocker()
     def test_error_handler_rate_limited_on_load_quota_exceeded(self, http_mocker: HttpMocker) -> None:
         """Test RATE_LIMITED error handler for 403 'load quota exceeded' errors.
@@ -202,6 +204,8 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
         errors ('Search Analytics load quota exceeded') vs QPS quota errors.
         Both should be classified as RATE_LIMITED so the CDK retries with backoff
         instead of failing with config_error.
+
+        The backoff constant is patched to 1s so the test does not sleep 900s.
         """
         http_mocker.post(_oauth_request(), create_oauth_response())
 
@@ -213,7 +217,6 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
             """Return 403 load quota error on first request, then succeed."""
             request_count["count"] += 1
             if request_count["count"] <= 1:
-                # First request hits load quota
                 context.status_code = 403
                 return json.dumps(
                     {
@@ -224,7 +227,6 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
                         }
                     }
                 )
-            # Subsequent requests succeed
             context.status_code = 200
             return json.dumps(
                 _build_search_analytics_response(
@@ -244,9 +246,6 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
         output = self._read_stream(config)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # The CDK should have retried after the 403 load quota error and eventually
-        # succeeded, producing records. If the error were misclassified as config_error,
-        # the sync would fail immediately with 0 records and a trace error.
         assert len(records) > 0, (
             "Expected records after retry — 403 'load quota exceeded' should be classified "
             "as RATE_LIMITED (retryable), not config_error (fatal)"
