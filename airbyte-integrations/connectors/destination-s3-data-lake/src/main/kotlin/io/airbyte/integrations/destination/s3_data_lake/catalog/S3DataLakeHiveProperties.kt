@@ -55,5 +55,18 @@ fun buildHiveProperties(
         }
     }
 
-    return hiveProperties + s3Properties
+    // S3-compatible store (Alibaba OSS) compatibility, mirroring destination-iceberg's S3 settings.
+    // These intentionally override the toolkit's buildS3Properties defaults, so they are applied
+    // LAST (right-most map wins in Map.plus):
+    //  - PATH_STYLE_ACCESS=false: OSS only accepts virtual-hosted-style requests and 403s on
+    //    path-style ("Please use virtual hosted style to access"); buildS3Properties hardcodes true.
+    //  - CHECKSUM_ENABLED=false: OSS doesn't support the AWS SDK v2 flexible-checksum / chunked
+    //    trailing checksum, which otherwise breaks PutObject against S3-compatible stores.
+    val ossCompatibility =
+        mapOf(
+            S3FileIOProperties.PATH_STYLE_ACCESS to "false",
+            S3FileIOProperties.CHECKSUM_ENABLED to "false",
+        )
+
+    return hiveProperties + s3Properties + ossCompatibility
 }
