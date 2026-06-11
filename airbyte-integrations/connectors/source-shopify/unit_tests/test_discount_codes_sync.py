@@ -431,6 +431,36 @@ def test_null_total_sales(auth_config, time_sleep_mock):
     assert records[0]["total_sales"] is None
 
 
+@pytest.mark.parametrize(
+    "current_state,record_updated_at,expected_cursor",
+    [
+        pytest.param(
+            {},
+            "2023-08-01T00:00:00+00:00",
+            "2023-08-01T00:00:00+00:00",
+            id="empty_state_advances_to_record",
+        ),
+        pytest.param(
+            {"updated_at": "2023-07-01T00:00:00+00:00"},
+            "2023-08-01T00:00:00+00:00",
+            "2023-08-01T00:00:00+00:00",
+            id="older_state_advances_to_newer_record",
+        ),
+        pytest.param(
+            {"updated_at": "2023-09-01T00:00:00+00:00"},
+            "2023-08-01T00:00:00+00:00",
+            "2023-09-01T00:00:00+00:00",
+            id="newer_state_does_not_move_backwards",
+        ),
+    ],
+)
+def test_get_updated_state(auth_config, current_state, record_updated_at, expected_cursor):
+    stream = DiscountCodesSync(auth_config)
+    record = {"updated_at": record_updated_at}
+    new_state = stream.get_updated_state(current_state, record)
+    assert new_state == {"updated_at": expected_cursor}
+
+
 def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
     stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
