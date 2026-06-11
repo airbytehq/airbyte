@@ -636,7 +636,7 @@ class DiscountCodesSync(IncrementalShopifyStream):
         }
 
     def _fetch_child_codes(self, parent_gid: str, parent_meta: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        child_cursor: str | None = None
+        child_cursor: Optional[str] = None
         has_more = True
         while has_more:
             variables: dict = {"id": parent_gid, "first": self.CHILD_PAGE_SIZE}
@@ -656,16 +656,16 @@ class DiscountCodesSync(IncrementalShopifyStream):
 
     def read_records(
         self,
-        sync_mode: Any | None = None,
-        cursor_field: Any | None = None,
-        stream_slice: Mapping[str, Any] | None = None,
-        stream_state: Mapping[str, Any] | None = None,
+        sync_mode: Optional[Any] = None,
+        cursor_field: Optional[Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         state_value = (stream_state or {}).get(self.cursor_field, self.config.get("start_date", ""))
         if state_value:
             state_value = self._apply_lookback_window(state_value)
 
-        parent_cursor: str | None = None
+        parent_cursor: Optional[str] = None
         has_more_parents = True
 
         while has_more_parents:
