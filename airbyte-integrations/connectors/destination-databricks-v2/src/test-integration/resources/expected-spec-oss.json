@@ -47,6 +47,16 @@
         "default" : "default",
         "examples" : [ "default" ]
       },
+      "cdc_deletion_mode" : {
+        "type" : "string",
+        "default" : "Hard delete",
+        "description" : "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
+        "title" : "CDC deletion mode",
+        "enum" : [ "Hard delete", "Soft delete" ],
+        "group" : "advanced",
+        "order" : 7,
+        "always_show" : true
+      },
       "authentication" : {
         "oneOf" : [ {
           "title" : "OAuth2 (Recommended)",

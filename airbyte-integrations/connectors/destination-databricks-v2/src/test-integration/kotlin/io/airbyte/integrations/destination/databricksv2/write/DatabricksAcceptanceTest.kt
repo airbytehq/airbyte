@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.databricksv2.write
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -12,6 +13,8 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
+import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.destination.databricksv2.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Specification
 import java.nio.file.Files
 import java.nio.file.Path
@@ -25,9 +28,10 @@ abstract class DatabricksBaseAcceptanceTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    cdcDeletionMode: CdcDeletionMode = CdcDeletionMode.HARD_DELETE,
 ) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(Path.of(CONFIG_PATH)),
+        configContents = createConfigWithCdcMode(cdcDeletionMode),
         configSpecClass = DatabricksV2Specification::class.java,
         dataDumper = DatabricksDataDumper { DatabricksTestConfigProvider.configFrom(it) },
         destinationCleaner = DatabricksDataCleaner,
@@ -35,7 +39,13 @@ abstract class DatabricksBaseAcceptanceTest(
         isStreamSchemaRetroactive = true,
         isStreamSchemaRetroactiveForUnknownTypeToString =
             isStreamSchemaRetroactiveForUnknownTypeToString,
-        dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
+        dedupBehavior =
+            DedupBehavior(
+                when (cdcDeletionMode) {
+                    CdcDeletionMode.HARD_DELETE -> DedupBehavior.CdcDeletionMode.HARD_DELETE
+                    CdcDeletionMode.SOFT_DELETE -> DedupBehavior.CdcDeletionMode.SOFT_DELETE
+                }
+            ),
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -71,3 +81,17 @@ class DatabricksProtoAcceptanceTest :
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
         isStreamSchemaRetroactiveForUnknownTypeToString = false,
     )
+
+class DatabricksSoftDeleteAcceptanceTest :
+    DatabricksBaseAcceptanceTest(cdcDeletionMode = CdcDeletionMode.SOFT_DELETE)
+
+/** Reads the base config JSON and injects the `cdc_deletion_mode` property */
+private fun createConfigWithCdcMode(cdcDeletionMode: CdcDeletionMode): String {
+    val configStr = Files.readString(Path.of(CONFIG_PATH))
+    if (cdcDeletionMode == CdcDeletionMode.HARD_DELETE) {
+        return configStr
+    }
+    val config = Jsons.readTree(configStr) as ObjectNode
+    config.put("cdc_deletion_mode", cdcDeletionMode.cdcDeletionMode)
+    return Jsons.writeValueAsString(config)
+}

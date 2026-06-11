@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.LONG
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.STRING
 import io.airbyte.integrations.destination.databricksv2.schema.DatabricksTableSchemaMapper.Companion.TIMESTAMP
+import io.airbyte.integrations.destination.databricksv2.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
 import jakarta.inject.Singleton
 
@@ -115,19 +116,22 @@ class DatabricksSqlGenerator(
         // Deduped source records
         val selectSource = selectDedupedRecords(tableSchema, sourceTableName)
 
-        // CDC hard delete handling
-        val hasCdcDeleteColumn =
-            tableSchema.columnSchema.finalSchema.containsKey(CDC_DELETED_AT_COLUMN)
+        // CDC delete handling: only hard-delete when the column exists AND config is HARD_DELETE.
+        // In soft-delete mode, the deletion record is upserted as-is (the _ab_cdc_deleted_at
+        // column is preserved as a tombstone marker).
+        val cdcHardDeleteEnabled =
+            tableSchema.columnSchema.finalSchema.containsKey(CDC_DELETED_AT_COLUMN) &&
+                config.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
 
         val cdcDeleteClause =
-            if (hasCdcDeleteColumn) {
+            if (cdcHardDeleteEnabled) {
                 "WHEN MATCHED AND staging.${CDC_DELETED_AT_COLUMN.quote()} IS NOT NULL THEN DELETE"
             } else {
                 ""
             }
 
         val cdcSkipInsertClause =
-            if (hasCdcDeleteColumn) "AND staging.${CDC_DELETED_AT_COLUMN.quote()} IS NULL" else ""
+            if (cdcHardDeleteEnabled) "AND staging.${CDC_DELETED_AT_COLUMN.quote()} IS NULL" else ""
 
         return """
             |MERGE INTO ${fullyQualifiedName(targetTableName)} AS final
