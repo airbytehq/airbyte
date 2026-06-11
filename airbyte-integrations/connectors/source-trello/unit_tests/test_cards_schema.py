@@ -2,9 +2,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import yaml
-import pytest
 from pathlib import Path
+
+import pytest
+import yaml
 
 
 @pytest.fixture
