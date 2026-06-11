@@ -101,6 +101,11 @@ interface IcebergCatalogSpecifications {
                         (catalogType as PolarisCatalogSpecification).oauth2ServerUri,
                         (catalogType as PolarisCatalogSpecification).namespace,
                     )
+                is HiveCatalogSpecification ->
+                    HiveCatalogConfiguration(
+                        (catalogType as HiveCatalogSpecification).hiveThriftUri,
+                        (catalogType as HiveCatalogSpecification).databaseName,
+                    )
             }
 
         return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
@@ -123,6 +128,7 @@ interface IcebergCatalogSpecifications {
     JsonSubTypes.Type(value = GlueCatalogSpecification::class, name = "GLUE"),
     JsonSubTypes.Type(value = RestCatalogSpecification::class, name = "REST"),
     JsonSubTypes.Type(value = PolarisCatalogSpecification::class, name = "POLARIS"),
+    JsonSubTypes.Type(value = HiveCatalogSpecification::class, name = "HIVE"),
 )
 @JsonSchemaTitle("Iceberg Catalog Type")
 @JsonSchemaDescription(
@@ -135,6 +141,7 @@ sealed class CatalogType(@JsonSchemaTitle("Catalog Type") open val catalogType: 
         GLUE("GLUE"),
         REST("REST"),
         POLARIS("POLARIS"),
+        HIVE("HIVE"),
     }
 }
 

@@ -42,6 +42,15 @@ dependencies {
     implementation("org.apache.iceberg:iceberg-aws:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-orc:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-hive-metastore:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.hive:hive-metastore:2.3.9") {
+        exclude group: "org.apache.hadoop"
+        exclude group: "org.slf4j", module: "slf4j-log4j12"
+        exclude group: "log4j"
+        exclude group: "org.apache.logging.log4j"
+        exclude group: "org.apache.orc"
+        exclude group: "org.pentaho"
+    }
     implementation("software.amazon.awssdk:s3:${project.ext.awsSdkVersion}")
     implementation("software.amazon.awssdk:sts:${project.ext.awsSdkVersion}")
     implementation("software.amazon.awssdk:glue:${project.ext.awsSdkVersion}")

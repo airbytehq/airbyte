@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake.catalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.HiveCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.PolarisCatalogConfiguration
@@ -94,6 +95,7 @@ class S3DataLakeUtil(
             is PolarisCatalogConfiguration -> {
                 buildPolarisProperties(config, catalogConfig, s3Properties, region)
             }
+            is HiveCatalogConfiguration -> buildHiveProperties(config, catalogConfig, s3Properties)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"

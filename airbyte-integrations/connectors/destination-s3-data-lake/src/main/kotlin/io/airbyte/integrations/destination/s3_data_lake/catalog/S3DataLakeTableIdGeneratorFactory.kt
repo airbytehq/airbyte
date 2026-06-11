@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake.catalog
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.HiveCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.PolarisCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
@@ -58,6 +59,12 @@ class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeCon
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
                             as PolarisCatalogConfiguration)
                         .namespace
+                )
+            is HiveCatalogConfiguration ->
+                GlueTableIdGenerator(
+                    (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
+                            as HiveCatalogConfiguration)
+                        .databaseName
                 )
         }
 }
