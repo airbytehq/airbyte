@@ -16,21 +16,21 @@ definitions:
         type: ApiKeyAuthenticator
         header: x-api-key
         api_token: "{{ config['admin_api_key'] }}"
-      request_headers:
-        anthropic-version: "2023-06-01"
-      request_parameters:
-        bucket_width: 1d
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
-        backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: retry-after
-            max_waiting_time_in_seconds: 60
         response_filters:
           - type: HttpResponseFilter
             http_codes:
               - 429
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: retry-after
+            max_waiting_time_in_seconds: 60
+      request_headers:
+        anthropic-version: "2023-06-01"
+      request_parameters:
+        bucket_width: 1d
     SimpleRetriever:
       paginator:
         type: DefaultPaginator
@@ -56,12 +56,12 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -82,7 +82,6 @@ streams:
         properties:
           date:
             type: string
-            format: date
           user:
             type:
               - object
@@ -469,6 +468,8 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
@@ -476,8 +477,6 @@ streams:
           group_by[]: >-
             {{ ['product', 'model', 'context_window', 'inference_geo', 'speed',
             'cost_type', 'token_type'] }}
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -492,7 +491,7 @@ streams:
       - speed
       - user_id
       - cost_type
-      - token_type
+      - token_type_not_null
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -506,7 +505,7 @@ streams:
           - speed
           - user_id
           - cost_type
-          - token_type
+          - token_type_not_null
           - ending_at
         properties:
           actor:
@@ -540,7 +539,7 @@ streams:
             type: string
           amount:
             type:
-              - number
+              - string
               - "null"
           product:
             type: string
@@ -554,17 +553,19 @@ streams:
             type: string
           ending_at:
             type: string
-            format: date-time
           token_type:
-            type: string
+            type:
+              - string
+              - "null"
           list_amount:
             type:
-              - number
+              - string
               - "null"
           starting_at:
             type: string
-            format: date-time
           context_window:
+            type: string
+          token_type_not_null:
             type: string
         additionalProperties: true
     transformations:
@@ -584,6 +585,11 @@ streams:
             path:
               - user_id
             value: "{{ record['actor']['user_id'] }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - token_type_not_null
+            value: "{{ record.get('token_type') or '__NULL_TOKEN_TYPE__' }}"
             value_type: string
     incremental_sync:
       type: DatetimeBasedCursor
@@ -609,7 +615,7 @@ streams:
         inject_into: request_parameter
       cursor_granularity: PT0S
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%d"
   - type: DeclarativeStream
     name: user_usage_report
     retriever:
@@ -622,6 +628,8 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
@@ -629,8 +637,6 @@ streams:
           group_by[]: >-
             {{ ['product', 'model', 'context_window', 'inference_geo', 'speed']
             }}
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -649,31 +655,21 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - starting_at
+          - product
+          - model
+          - context_window
+          - speed
+          - user_id
+          - ending_at
         properties:
-          product:
-            type: string
-          model:
-            type: string
-          context_window:
-            type: string
-          speed:
-            type: string
-          starting_at:
-            type: string
-            format: date-time
-          ending_at:
-            type: string
-            format: date-time
           actor:
             type:
               - object
               - "null"
             properties:
               type:
-                type:
-                  - string
-                  - "null"
-              user_id:
                 type:
                   - string
                   - "null"
@@ -689,7 +685,31 @@ streams:
                 type:
                   - boolean
                   - "null"
-          uncached_input_tokens:
+              user_id:
+                type:
+                  - string
+                  - "null"
+          model:
+            type: string
+          speed:
+            type: string
+          product:
+            type: string
+          user_id:
+            type: string
+          requests:
+            type:
+              - number
+              - "null"
+          ending_at:
+            type: string
+          starting_at:
+            type: string
+          total_tokens:
+            type:
+              - number
+              - "null"
+          output_tokens:
             type:
               - number
               - "null"
@@ -706,18 +726,8 @@ streams:
                 type:
                   - number
                   - "null"
-          cache_read_input_tokens:
-            type:
-              - number
-              - "null"
-          output_tokens:
-            type:
-              - number
-              - "null"
-          total_tokens:
-            type:
-              - number
-              - "null"
+          context_window:
+            type: string
           server_tool_use:
             type:
               - object
@@ -727,20 +737,14 @@ streams:
                 type:
                   - number
                   - "null"
-          requests:
+          uncached_input_tokens:
             type:
               - number
               - "null"
-          user_id:
-            type: string
-        required:
-          - starting_at
-          - product
-          - model
-          - context_window
-          - speed
-          - user_id
-          - ending_at
+          cache_read_input_tokens:
+            type:
+              - number
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -797,12 +801,11 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        request_parameters:
-          limit: "1000"
         error_handler:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -821,10 +824,8 @@ streams:
         properties:
           ending_at:
             type: string
-            format: date
           starting_at:
             type: string
-            format: date
           assigned_seat_count:
             type:
               - number
@@ -909,12 +910,12 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -935,12 +936,10 @@ streams:
         properties:
           date:
             type: string
-            format: date
           created_at:
             type:
               - string
               - "null"
-            format: date-time
           created_by:
             type:
               - object
@@ -1014,12 +1013,12 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1040,7 +1039,6 @@ streams:
         properties:
           date:
             type: string
-            format: date
           skill_name:
             type: string
           chat_metrics:
@@ -1157,12 +1155,12 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
           limit: "1000"
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1183,7 +1181,6 @@ streams:
         properties:
           date:
             type: string
-            format: date
           chat_metrics:
             type:
               - object
@@ -1334,7 +1331,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     user_activity:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: 09da60c3cbb52a291238681f0aedc5389357ca72
       hasResponse: true
@@ -1342,7 +1339,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     skill_activity:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: 7b24be955e96a04be687887d4c1eaa5fd84ea8a6
       hasResponse: true
@@ -1350,7 +1347,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     project_activity:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: b94434c5f2122d9cbafec84524fad8a4f510b2b1
       hasResponse: true
@@ -1360,7 +1357,7 @@ metadata:
     user_cost_report:
       isStale: false
       hasRecords: true
-      streamHash: 929cb8e062170741a78c1aca0d1079a7c1fa91c7
+      streamHash: aa81054a79953a52401327c9fde094c6405312a2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1374,7 +1371,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     activity_summaries:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: ae6468efc3e138a151455b6bae2e5885b017d27a
       hasResponse: true
