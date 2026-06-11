@@ -397,7 +397,7 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
             "filters": [
                 {"propertyName": "hs_lastmodifieddate", "operator": "GTE", "value": 1643673000000},
                 {"propertyName": "hs_lastmodifieddate", "operator": "LTE", "value": 1645808400000},
-                {"propertyName": "hs_object_id", "operator": "GTE", "value": 0},
+                {"propertyName": "hs_object_id", "operator": "GT", "value": 0},
             ],
             "properties": fake_properties_list,
             "after": 0,
