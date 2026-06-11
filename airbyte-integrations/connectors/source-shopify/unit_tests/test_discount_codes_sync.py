@@ -6,7 +6,7 @@ import json
 
 import pytest
 import requests_mock as rmock
-from source_shopify.streams.streams import DiscountCodesPaginated
+from source_shopify.streams.streams import DiscountCodesSync
 
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -100,7 +100,7 @@ def _make_code_node(code_id, code_str="TESTCODE"):
 
 
 def test_single_parent_single_child(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     parent_node = _make_parent_node(100)
@@ -140,7 +140,7 @@ def test_single_parent_single_child(auth_config, time_sleep_mock):
     ],
 )
 def test_child_cursor_pagination(auth_config, time_sleep_mock, total_codes, page_size, expected_pages):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     stream.CHILD_PAGE_SIZE = page_size
     url = _graphql_url()
 
@@ -172,7 +172,7 @@ def test_child_cursor_pagination(auth_config, time_sleep_mock, total_codes, page
 
 
 def test_two_parents_independent_child_cursors(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     stream.CHILD_PAGE_SIZE = 2
     url = _graphql_url()
 
@@ -204,7 +204,7 @@ def test_two_parents_independent_child_cursors(auth_config, time_sleep_mock):
 
 
 def test_zero_code_parent(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     parent_node = _make_parent_node(100, codesCount={"count": 0})
@@ -223,7 +223,7 @@ def test_zero_code_parent(auth_config, time_sleep_mock):
 
 
 def test_parent_cursor_pagination(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     parent_a = _make_parent_node(100)
@@ -252,7 +252,7 @@ def test_parent_cursor_pagination(auth_config, time_sleep_mock):
 
 
 def test_state_filters_parent_query(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     parent_node = _make_parent_node(100)
@@ -282,7 +282,7 @@ def test_lookback_window_applied_to_state(time_sleep_mock):
         "authenticator": None,
         "lookback_window_in_days": 3,
     }
-    stream = DiscountCodesPaginated(config)
+    stream = DiscountCodesSync(config)
     url = _graphql_url()
 
     parent_node = _make_parent_node(100)
@@ -305,7 +305,7 @@ def test_lookback_window_applied_to_state(time_sleep_mock):
 
 
 def test_discount_code_app_typename_no_summary(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     parent_node = _make_parent_node(100, typename="DiscountCodeApp")
@@ -329,7 +329,7 @@ def test_discount_code_app_typename_no_summary(auth_config, time_sleep_mock):
 
 
 def test_schema_parity_with_json_schema(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     parent_node = _make_parent_node(100)
@@ -352,7 +352,7 @@ def test_schema_parity_with_json_schema(auth_config, time_sleep_mock):
 
 
 def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     error_response = {
@@ -368,7 +368,7 @@ def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
 
 
 def test_graphql_throttled_retries_then_succeeds(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     throttle_response = {
@@ -396,7 +396,7 @@ def test_graphql_throttled_retries_then_succeeds(auth_config, time_sleep_mock):
 
 
 def test_graphql_throttled_exhausts_retries(auth_config, time_sleep_mock):
-    stream = DiscountCodesPaginated(auth_config)
+    stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 
     throttle_response = {

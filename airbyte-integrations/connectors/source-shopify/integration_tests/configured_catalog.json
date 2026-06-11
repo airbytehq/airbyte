@@ -444,7 +444,7 @@
     },
     {
       "stream": {
-        "name": "discount_codes_paginated",
+        "name": "discount_codes_sync",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

@@ -429,7 +429,7 @@ class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
     bulk_query: DiscountCode = DiscountCode
 
 
-class DiscountCodesPaginated(IncrementalShopifyStream):
+class DiscountCodesSync(IncrementalShopifyStream):
     """Fetches discount codes via synchronous GraphQL with explicit nested cursor pagination.
 
     Shopify's Bulk Operations API does not fully expand nested connections beyond
@@ -584,13 +584,13 @@ class DiscountCodesPaginated(IncrementalShopifyStream):
                         ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
                         continue
                     raise AirbyteTracedException(
-                        message="GraphQL query for stream `discount_codes_paginated` exceeded max retries due to throttling."
+                        message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling."
                     )
                 error_messages = "; ".join(e.get("message", str(e)) for e in errors)
-                raise AirbyteTracedException(message=f"GraphQL query failed for stream `discount_codes_paginated`: {error_messages}")
+                raise AirbyteTracedException(message=f"GraphQL query failed for stream `discount_codes_sync`: {error_messages}")
             self._apply_graphql_rate_limit(result)
             return result
-        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_paginated` exceeded max retries due to throttling.")
+        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling.")
 
     @staticmethod
     def _is_throttled(errors: list) -> bool:
