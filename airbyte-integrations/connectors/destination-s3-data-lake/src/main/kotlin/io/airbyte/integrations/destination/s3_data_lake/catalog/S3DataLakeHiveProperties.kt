@@ -9,6 +9,7 @@ import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfigura
 import org.apache.iceberg.CatalogProperties.URI
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE
+import org.apache.iceberg.aws.AwsClientProperties
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 
 /**
@@ -35,6 +36,14 @@ fun buildHiveProperties(
     val hiveProperties = buildMap {
         put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_HIVE)
         put(URI, catalogConfig.hiveThriftUri)
+
+        // Region for the S3FileIO client. Without it the AWS SDK v2 falls through the default
+        // region provider chain and fails ("Unable to load region from any of the providers"),
+        // since there's no AWS_REGION env var / instance profile in the connector pod. The Glue and
+        // REST catalog paths set CLIENT_REGION for the same reason.
+        config.s3BucketConfiguration.s3BucketRegion?.let {
+            put(AwsClientProperties.CLIENT_REGION, it)
+        }
 
         // S3FileIO credentials for reading/writing data files. Optional: fall back to the default
         // AWS credentials provider chain (e.g. instance profiles) when not explicitly provided.
