@@ -20,7 +20,7 @@ from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now,
 from source_facebook_marketing.spec import TimeIncrementPeriod
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
-from source_facebook_marketing.streams.common import traced_exception
+from source_facebook_marketing.streams.common import sanitize_circular_references, traced_exception
 from source_facebook_marketing.utils import DateInterval, validate_start_date
 
 from .base_streams import FBMarketingIncrementalStream
@@ -239,6 +239,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         try:
             for obj in job.get_result():
                 data = obj.export_all_data()
+                data = sanitize_circular_references(data)
                 if self._response_data_is_valid(data):
                     self._add_account_id(data, account_id)
                     data = self._transform_breakdown(data)
