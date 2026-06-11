@@ -61,7 +61,11 @@ class TestProjectStreamsPartitionRouter:
             groups_list_response.append({"id": group_id})
             requests_mock.get(
                 url=f"https://gitlab.com/api/v4/groups/{group_id}?per_page=50",
-                json=[{"id": group_id, "projects": [{"id": project_id, "path_with_namespace": project_id}]}],
+                json=[{"id": group_id, "projects": []}],
+            )
+            requests_mock.get(
+                url=f"https://gitlab.com/api/v4/groups/{group_id}/projects?per_page=50&include_subgroups=false&with_shared=false",
+                json=[{"id": project_id, "path_with_namespace": project_id}],
             )
             expected_stream_slices.append(StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={}))
 
@@ -79,14 +83,13 @@ class TestProjectStreamsPartitionRouter:
         requests_mock.get(url=GROUPS_LIST_URL, json=[{"id": group_id}])
         requests_mock.get(
             url=f"https://gitlab.com/api/v4/groups/{group_id}?per_page=50",
+            json=[{"id": group_id, "projects": []}],
+        )
+        requests_mock.get(
+            url=f"https://gitlab.com/api/v4/groups/{group_id}/projects?per_page=50&include_subgroups=false&with_shared=false",
             json=[
-                {
-                    "id": group_id,
-                    "projects": [
-                        {"id": project_id, "path_with_namespace": project_id},
-                        {"id": unknown_project_id, "path_with_namespace": unknown_project_id},
-                    ],
-                },
+                {"id": project_id, "path_with_namespace": project_id},
+                {"id": unknown_project_id, "path_with_namespace": unknown_project_id},
             ],
         )
 

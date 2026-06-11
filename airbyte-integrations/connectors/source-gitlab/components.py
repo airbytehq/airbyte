@@ -57,14 +57,14 @@ class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
         parent_stream = self.parent_stream_configs[0].stream
         projects_list = self.config.get("projects_list", [])
 
-        group_project_ids = []
+        group_project_ids: list[str] = []
         for partition in parent_stream.generate_partitions():
             for record in partition.read():
-                group_project_ids.extend([i["path_with_namespace"] for i in record["projects"]])
+                group_project_ids.append(record["path_with_namespace"])
 
         if group_project_ids:
             for project_id in group_project_ids:
-                if not projects_list or projects_list and project_id in projects_list:
+                if not projects_list or project_id in projects_list:
                     yield StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
         else:
             for project_id in projects_list:
