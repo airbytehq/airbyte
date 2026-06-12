@@ -22,6 +22,21 @@ PASSWORD = "abc123"
 KEY_USER = "user2"
 
 
+def _fetch_host_key(ip: str, port: int) -> paramiko.PKey:
+    """
+    Open a bare transport to the running SFTP container and return the host key
+    it presents. The atmoz/sftp image generates its host key on startup, so the
+    expected key is only known at test time.
+    """
+    sock = socket.create_connection((ip, port), timeout=10.0)
+    transport = paramiko.Transport(sock)
+    try:
+        transport.start_client(timeout=10.0)
+        return transport.get_remote_server_key()
+    finally:
+        transport.close()
+
+
 def _generate_ssh_key() -> paramiko.RSAKey:
     """
     Generate an RSA keypair and publish the public half where the atmoz/sftp
@@ -55,9 +70,10 @@ def is_sftp_ready(ip: str, port: int) -> bool:
     """Helper function that checks if sftp is served on provided ip address and port."""
     try:
         with paramiko.client.SSHClient() as ssh:
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy)
-            # hardcoding the credentials is okay here, we're not testing them explicitly.
-            ssh.connect(ip, port=port, username=PASSWORD_USER, password=PASSWORD)
+            # The atmoz/sftp container generates a host key on startup; accept it for test readiness checks.
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            # Hardcoding the credentials is okay here, we're not testing them explicitly.
+            ssh.connect(ip, port=port, username=PASSWORD_USER, password=PASSWORD, look_for_keys=False, allow_agent=False)
         return True
     except (SSHException, socket.error):
         return False
@@ -91,4 +107,27 @@ def config_ssh_key(docker_ip, docker_services, ssh_private_key) -> Mapping:
         "username": KEY_USER,
         "credentials": {"auth_method": "SSH_KEY_AUTH", "auth_ssh_key": ssh_private_key},
         "destination_path": "upload",
+    }
+
+
+@pytest.fixture(scope="module")
+def config_strict_host_key(docker_ip, docker_services) -> Mapping:
+    """
+    Provides a password-auth SFTP configuration that pins the container's host
+    key via strict host key checking.
+    """
+    port = docker_services.port_for("sftp", 22)
+    docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_sftp_ready(docker_ip, port))
+    host_key = _fetch_host_key(docker_ip, port)
+    return {
+        "host": docker_ip,
+        "port": port,
+        "username": PASSWORD_USER,
+        "credentials": {"auth_method": "SSH_PASSWORD_AUTH", "auth_user_password": PASSWORD},
+        "destination_path": "upload",
+        "host_key_checking": {
+            "mode": "strict",
+            "host_key_type": host_key.get_name(),
+            "host_key": host_key.get_base64(),
+        },
     }

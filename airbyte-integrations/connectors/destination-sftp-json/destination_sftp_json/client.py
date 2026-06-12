@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import base64
+import binascii
 import errno
 import io
 import json
@@ -12,6 +14,10 @@ import paramiko
 
 class SshKeyError(Exception):
     """Raised when an SSH private key cannot be parsed."""
+
+
+class HostKeyError(Exception):
+    """Raised when the configured SSH host key cannot be parsed."""
 
 
 def _supported_key_classes():
@@ -29,17 +35,51 @@ def _load_private_key(key_str: str) -> paramiko.PKey:
     classes paramiko supports and return the first one that parses successfully.
     """
     last_error: Optional[Exception] = None
+    supported: List[str] = []
     for key_class in _supported_key_classes():
+        supported.append(key_class.__name__.removesuffix("Key").replace("DSS", "DSA"))
         try:
             return key_class.from_private_key(io.StringIO(key_str))
         except paramiko.SSHException as err:
             last_error = err
-    raise SshKeyError("Could not parse the provided SSH private key. Supported formats: RSA, Ed25519, ECDSA, DSA.") from last_error
+    raise SshKeyError(
+        f"Could not parse the provided SSH private key. Supported formats: {', '.join(supported)}."
+    ) from last_error
+
+
+def _load_host_key(key_type: str, key_str: str) -> paramiko.PKey:
+    """
+    Parse a server host public key (the ``type`` and ``key`` fields of a
+    ``known_hosts`` entry) into a paramiko key object.
+
+    ``key_str`` is the base64-encoded key blob, optionally still carrying the
+    leading ``key_type`` token and/or a trailing comment, as is common when
+    pasting a line straight out of ``known_hosts``.
+    """
+    token = key_str.strip().split()
+    if not token:
+        raise HostKeyError("No SSH host key was provided.")
+    # Tolerate a full "<type> <base64> [comment]" line by stripping a leading
+    # type token and ignoring any trailing comment.
+    if len(token) > 1 and token[0] == key_type:
+        token = token[1:]
+    key_data = token[0]
+    try:
+        decoded = base64.b64decode(key_data, validate=True)
+    except (binascii.Error, ValueError) as err:
+        raise HostKeyError("The configured SSH host key is not valid base64.") from err
+    try:
+        return paramiko.PKey.from_type_string(key_type, decoded)
+    except (paramiko.SSHException, paramiko.UnknownKeyType, ValueError) as err:
+        raise HostKeyError(f"Could not parse the configured SSH host key of type {key_type!r}.") from err
 
 
 class SftpClient:
     PASSWORD_AUTH = "SSH_PASSWORD_AUTH"
     KEY_AUTH = "SSH_KEY_AUTH"
+
+    HOST_KEY_AUTO_ADD = "auto_add"
+    HOST_KEY_STRICT = "strict"
 
     def __init__(
         self,
@@ -48,12 +88,15 @@ class SftpClient:
         credentials: Mapping[str, str],
         destination_path: str,
         port: int = 22,
+        host_key_checking: Optional[Mapping[str, str]] = None,
     ):
         self.host = host
         self.port = port
         self.username = username
         self.credentials = credentials
         self.destination_path = destination_path
+        # Defaults to "auto_add" (trust on first use) for backward compatibility.
+        self.host_key_checking: Mapping[str, str] = host_key_checking or {"mode": self.HOST_KEY_AUTO_ADD}
         self._ssh: Optional[paramiko.SSHClient] = None
         self._sftp: Optional[paramiko.SFTPClient] = None
         self._files: Dict[str, TextIO] = {}
@@ -71,11 +114,48 @@ class SftpClient:
             self._connect()
         return self._sftp
 
+    def _apply_host_key_policy(self, ssh: paramiko.SSHClient) -> None:
+        """
+        Configure how ``ssh`` verifies the server's host key based on the
+        ``host_key_checking`` configuration.
+
+        - ``auto_add`` (default): trust and cache the host key on first use via
+          ``AutoAddPolicy``. Convenient, but offers no MITM protection.
+        - ``strict``: pre-load the operator-supplied host key and use
+          ``RejectPolicy`` so any unknown or mismatched key aborts the
+          connection.
+        """
+        mode = self.host_key_checking.get("mode", self.HOST_KEY_AUTO_ADD)
+        if mode == self.HOST_KEY_AUTO_ADD:
+            ssh.load_system_host_keys()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        elif mode == self.HOST_KEY_STRICT:
+            key_type = self.host_key_checking.get("host_key_type")
+            key_str = self.host_key_checking.get("host_key")
+            if not key_type or not key_str:
+                raise HostKeyError("Strict host key checking requires both 'host_key_type' and 'host_key'.")
+            host_key = _load_host_key(key_type, key_str)
+            # Pin the expected key for this host/port and reject anything else.
+            host_keys = ssh.get_host_keys()
+            host_keys.add(self._host_key_lookup(), host_key.get_name(), host_key)
+            ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
+        else:
+            raise HostKeyError(f"Unsupported host key checking mode: {mode!r}")
+
+    def _host_key_lookup(self) -> str:
+        """
+        Build the hostname token paramiko uses to look up a pinned host key.
+
+        Paramiko stores non-default ports as ``[host]:port`` in its host-key
+        registry, so mirror that here when a custom port is in use.
+        """
+        if self.port and self.port != 22:
+            return f"[{self.host}]:{self.port}"
+        return self.host
+
     def _connect(self) -> None:
         ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
+        self._apply_host_key_policy(ssh)
         connect_kwargs: Dict[str, object] = {
             "hostname": self.host,
             "port": self.port,
@@ -86,6 +166,7 @@ class SftpClient:
         if auth_method == self.PASSWORD_AUTH:
             connect_kwargs["password"] = self.credentials["auth_user_password"]
             connect_kwargs["look_for_keys"] = False
+            connect_kwargs["allow_agent"] = False
         elif auth_method == self.KEY_AUTH:
             connect_kwargs["pkey"] = _load_private_key(self.credentials["auth_ssh_key"])
             connect_kwargs["look_for_keys"] = False
