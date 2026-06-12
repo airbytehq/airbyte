@@ -108,6 +108,18 @@ streams:
             type:
               - string
               - "null"
+          withCredentials:
+            type:
+              - boolean
+              - "null"
+          secureJsonFields:
+            type:
+              - object
+              - "null"
+          version:
+            type:
+              - integer
+              - "null"
   - type: DeclarativeStream
     name: folders
     retriever:
