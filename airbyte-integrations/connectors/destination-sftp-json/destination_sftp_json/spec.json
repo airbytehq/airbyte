@@ -118,7 +118,13 @@
                 "title": "Host Key Type",
                 "description": "The algorithm of the expected host key, as reported by the server (e.g. the first field of a known_hosts entry).",
                 "type": "string",
-                "enum": ["ssh-ed25519", "ssh-rsa", "ecdsa-sha2-nistp256", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp521"],
+                "enum": [
+                  "ssh-ed25519",
+                  "ssh-rsa",
+                  "ecdsa-sha2-nistp256",
+                  "ecdsa-sha2-nistp384",
+                  "ecdsa-sha2-nistp521"
+                ],
                 "examples": ["ssh-ed25519"],
                 "order": 1
               },
