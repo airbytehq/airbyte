@@ -204,16 +204,24 @@ jobs:
               }
             }
 
-            const failedDeployments = [...latestByContext.values()]
-              .filter(s => s.context.toLowerCase().includes('vercel') && (s.state === 'failure' || s.state === 'error'));
+            const vercelStatuses = [...latestByContext.values()]
+              .filter(s => s.context.toLowerCase().includes('vercel'));
 
-            if (failedDeployments.length > 0) {
-              for (const d of failedDeployments) {
+            const failed = vercelStatuses.filter(s => s.state === 'failure' || s.state === 'error');
+            const pending = vercelStatuses.filter(s => s.state === 'pending');
+
+            if (failed.length > 0) {
+              for (const d of failed) {
                 core.warning(`Vercel deployment failed: ${d.context} (${d.state})`);
               }
               core.setOutput('ready', 'false');
+            } else if (pending.length > 0) {
+              for (const d of pending) {
+                core.info(`Vercel deployment still building: ${d.context}`);
+              }
+              core.setOutput('ready', 'false');
             } else {
-              core.info('No failing Vercel deployments');
+              core.info('All Vercel deployments succeeded');
               core.setOutput('ready', 'true');
             }
 
