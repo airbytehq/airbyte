@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, OrderedDict, Set, Tuple
+from typing import Iterable, List, Optional, OrderedDict, Set, Tuple
 
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
