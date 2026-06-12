@@ -42,9 +42,7 @@ def _load_private_key(key_str: str) -> paramiko.PKey:
             return key_class.from_private_key(io.StringIO(key_str))
         except paramiko.SSHException as err:
             last_error = err
-    raise SshKeyError(
-        f"Could not parse the provided SSH private key. Supported formats: {', '.join(supported)}."
-    ) from last_error
+    raise SshKeyError(f"Could not parse the provided SSH private key. Supported formats: {', '.join(supported)}.") from last_error
 
 
 def _load_host_key(key_type: str, key_str: str) -> paramiko.PKey:
