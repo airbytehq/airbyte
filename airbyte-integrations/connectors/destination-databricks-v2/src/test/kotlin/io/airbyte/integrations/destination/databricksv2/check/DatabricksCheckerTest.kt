@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.databricksv2.check
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.databricksv2.client.DatabricksAirbyteClient
+import io.airbyte.integrations.destination.databricksv2.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.databricksv2.spec.DatabricksV2Configuration
 import io.airbyte.integrations.destination.databricksv2.spec.PersonalAccessTokenConfiguration
 import io.mockk.coEvery
@@ -47,6 +48,7 @@ class DatabricksCheckerTest {
                 authType = PersonalAccessTokenConfiguration("test-token"),
                 purgeStagingData = true,
                 acceptTerms = true,
+                cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
             )
         checker = DatabricksChecker(databricksClient, config)
     }
