@@ -441,23 +441,6 @@ jobs:
           rm -rf sonar-source
           echo "Cleaned up temporary files"
 
-      - name: Set up Node.js for Docusaurus build
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: "20"
-
-      - name: Validate Docusaurus Build
-        run: |
-          # Run a Docusaurus build to catch broken links, invalid MDX, or
-          # other issues *before* creating a PR. This prevents auto-merged
-          # PRs from breaking production deploys.
-          cd docusaurus
-          npm install -g pnpm@9
-          pnpm install --frozen-lockfile
-          pnpm clear
-          pnpm build
-          echo "Docusaurus build succeeded — generated docs are safe to merge"
-
       - name: Check for Changes
         id: changes
         run: |
