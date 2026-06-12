@@ -1,5 +1,28 @@
 # Airbyte Agents release notes
 
+## June 12, 2026
+
+Web app
+
+- Chat sessions and automations are now organized by workspace. If you use multiple workspaces, your conversations and workflows stay scoped to the workspace you're working in.
+- When you create a workspace, you're automatically granted admin permissions on it.
+- Agents now read connector documentation before executing each operation, improving accuracy when working with your connected data.
+- When your automations send Slack messages, they now include a link back to the automation for easy traceability.
+- Fixed an issue where organization and workspace data could appear stale after refreshing connector credentials.
+- Fixed progress indicators during connector editing to correctly show completed steps.
+
+SDK
+
+- New `build_connector_tools()` function builds hosted connector tools with progressive documentation lookup. Your agent inspects and reads connector docs before executing, improving accuracy. Pass `use_progressive_docs=False` to keep the single-tool behavior.
+
+API
+
+- Workspace-scoped tokens now properly restrict connector access to your workspace, preventing cross-workspace data access.
+
+Connectors
+
+- The Granola Notes entity is now pre-selected when you set up the connector.
+
 ## June 11, 2026
 
 Web app
