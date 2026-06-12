@@ -231,6 +231,7 @@ class ShopifyRateLimiter:
         # find the requests.Response inside args list
         response = ShopifyRateLimiter.get_response_from_args(*args)
 
+        load = None
         # Get the rate limit info from response
         if response:
             try:
