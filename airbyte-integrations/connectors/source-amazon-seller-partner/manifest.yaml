@@ -2703,12 +2703,18 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             reportOptions:
               sellingProgram: "FRESH"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: forecastByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["forecastByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2727,12 +2733,18 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             reportOptions:
               sellingProgram: "RETAIL"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: forecastByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["forecastByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2956,12 +2968,18 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             reportOptions:
               asinGranularity: "{{ config.get('sales_and_traffic_report_asin_granularity', 'PARENT') }}"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: salesAndTrafficByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["salesAndTrafficByAsin"]
+          field_path: []
       transformations:
         - type: AddFields
           fields:
@@ -3010,12 +3028,18 @@ definitions:
             reportOptions:
               dateGranularity: "MONTH"
               asinGranularity: "{{ config.get('sales_and_traffic_report_asin_granularity', 'PARENT') }}"
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: salesAndTrafficByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["salesAndTrafficByAsin"]
+          field_path: []
       transformations:
         - type: AddFields
           fields:
@@ -3061,12 +3085,18 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: salesAndTrafficByDate
         download_extractor:
           type: DpathExtractor
-          field_path: ["salesAndTrafficByDate"]
+          field_path: []
       transformations:
         - type: AddFields
           fields:
@@ -3105,12 +3135,18 @@ definitions:
           request_body_json:
             reportType: GET_VENDOR_SALES_REPORT
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: salesByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["salesByAsin"]
+          field_path: []
       transformations:
         - type: AddFields
           fields:
@@ -3132,12 +3168,18 @@ definitions:
           request_body_json:
             reportType: GET_VENDOR_INVENTORY_REPORT
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_target_requester:
+          $ref: "#/definitions/basic_async_retriever/download_target_requester"
+          request_parameters:
+            enableContentEncodingUrlHeader: "true"
         download_decoder:
-          type: CustomDecoder
-          class_name: source_declarative_manifest.components.GzipJsonDecoder
+          type: GzipDecoder
+          decoder:
+            type: JsonItemsDecoder
+            items_path: inventoryByAsin
         download_extractor:
           type: DpathExtractor
-          field_path: ["inventoryByAsin"]
+          field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
