@@ -54,15 +54,11 @@ def _get_datasources_schema_properties(manifest):
 def test_datasources_schema_has_field(manifest, field_name, expected_types):
     """Each expected Grafana datasource API field must be present with correct types."""
     props = _get_datasources_schema_properties(manifest)
-    assert field_name in props, (
-        f"datasources schema is missing field '{field_name}'"
-    )
+    assert field_name in props, f"datasources schema is missing field '{field_name}'"
     actual_type = props[field_name]["type"]
     if isinstance(actual_type, str):
         actual_type = [actual_type]
-    assert actual_type == expected_types, (
-        f"datasources field '{field_name}' has type {actual_type}, expected {expected_types}"
-    )
+    assert actual_type == expected_types, f"datasources field '{field_name}' has type {actual_type}, expected {expected_types}"
 
 
 def test_datasources_primary_key_is_id(manifest):
