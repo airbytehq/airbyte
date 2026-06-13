@@ -13,24 +13,31 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -269,6 +276,67 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  @Test
+  void testReadThrowsConfigErrorOnChangeStreamFatalError() {
+    final MongoCommandException mongoException = new MongoCommandException(
+        new BsonDocument("ok", new BsonInt32(0))
+            .append("errmsg", new BsonString("ChangeStreamFatalError"))
+            .append("code", new BsonInt32(280)),
+        new ServerAddress());
+    final RuntimeException wrappedException = new RuntimeException(
+        new RuntimeException("An exception occurred in the change event producer.", mongoException));
+
+    doReturn(mongoClient).when(source).createMongoClient(any());
+
+    final JsonNode schema = Jsons.jsonNode(Map.of("type", "object", "properties", Map.of("_id", Map.of("type", "string"))));
+    final io.airbyte.protocol.models.v0.ConfiguredAirbyteStream incrementalStream =
+        new io.airbyte.protocol.models.v0.ConfiguredAirbyteStream()
+            .withStream(new AirbyteStream().withName("test").withNamespace(DB_NAME).withJsonSchema(schema))
+            .withSyncMode(io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL);
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(incrementalStream));
+
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenAnswer(invocation -> {
+      final AutoCloseableIterator<AirbyteMessage> failingIterator = mock(AutoCloseableIterator.class);
+      when(failingIterator.hasNext()).thenThrow(wrappedException);
+      return List.of(failingIterator);
+    });
+
+    final AutoCloseableIterator<AirbyteMessage> iterator = source.read(airbyteSourceConfig, catalog, null);
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, iterator::hasNext);
+    assertTrue(thrown.getMessage().contains("CDC resume token is no longer valid"));
+  }
+
+  @Test
+  void testReadThrowsConfigErrorOnChangeStreamFatalErrorInNext() {
+    final MongoCommandException mongoException = new MongoCommandException(
+        new BsonDocument("ok", new BsonInt32(0))
+            .append("errmsg", new BsonString("ChangeStreamFatalError"))
+            .append("code", new BsonInt32(280)),
+        new ServerAddress());
+    final RuntimeException wrappedException = new RuntimeException(
+        new RuntimeException("An exception occurred in the change event producer.", mongoException));
+
+    doReturn(mongoClient).when(source).createMongoClient(any());
+
+    final JsonNode schema = Jsons.jsonNode(Map.of("type", "object", "properties", Map.of("_id", Map.of("type", "string"))));
+    final io.airbyte.protocol.models.v0.ConfiguredAirbyteStream incrementalStream =
+        new io.airbyte.protocol.models.v0.ConfiguredAirbyteStream()
+            .withStream(new AirbyteStream().withName("test").withNamespace(DB_NAME).withJsonSchema(schema))
+            .withSyncMode(io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL);
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(incrementalStream));
+
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenAnswer(invocation -> {
+      final AutoCloseableIterator<AirbyteMessage> failingIterator = mock(AutoCloseableIterator.class);
+      when(failingIterator.hasNext()).thenReturn(true);
+      when(failingIterator.next()).thenThrow(wrappedException);
+      return List.of(failingIterator);
+    });
+
+    final AutoCloseableIterator<AirbyteMessage> iterator = source.read(airbyteSourceConfig, catalog, null);
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, iterator::next);
+    assertTrue(thrown.getMessage().contains("CDC resume token is no longer valid"));
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
