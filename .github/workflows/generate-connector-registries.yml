@@ -16,6 +16,11 @@ on:
         description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
         required: false
         type: string
+      store:
+        description: "Registry store to compile."
+        required: false
+        type: string
+        default: "coral:prod"
       pr:
         description: "Associated pull request number, for linking in notifications."
         required: false
@@ -35,6 +40,11 @@ on:
         description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
         required: false
         type: string
+      store:
+        description: "Registry store to compile."
+        required: false
+        type: string
+        default: "coral:prod"
 
 permissions:
   contents: read
@@ -52,7 +62,7 @@ jobs:
     name: Compile Registries (ops CLI)
     runs-on: ubuntu-24.04
     env:
-      REGISTRY_STORE: "coral:prod"
+      REGISTRY_STORE: ${{ inputs.store || 'coral:prod' }}
 
     steps:
       - name: Checkout Airbyte
@@ -89,6 +99,7 @@ jobs:
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           PR_NUMBER="${{ inputs.pr }}"
           CONNECTOR_NAME="${{ inputs.connector-name }}"
+          REGISTRY_STORE="${{ inputs.store || 'coral:prod' }}"
           FORCE="${{ inputs.force }}"
 
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
@@ -99,6 +110,7 @@ jobs:
           fi
 
           DETAILS=""
+          DETAILS="${DETAILS}\nStore: \`${REGISTRY_STORE}\`"
           if [[ -n "$CONNECTOR_NAME" ]]; then
             DETAILS="${DETAILS}\nConnector: \`${CONNECTOR_NAME}\`"
           fi

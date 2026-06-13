@@ -122,6 +122,10 @@ Incremental streams page the Twilio API in fixed-size time windows between the r
 
 Smaller windows increase the number of API requests and are more likely to be rate limited, but they reduce the amount of data Twilio must return per request. Larger windows reduce request count but can time out on busy accounts. If syncs of the `calls`, `messages`, `recordings`, `message_media`, `conference_participants`, `usage_records`, or `alerts` streams fail with timeouts, lower the slice step duration.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, and `https://verify.twilio.com/v2` API endpoints.
@@ -144,7 +148,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.0.1 | 2026-05-22 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Fix `messages` incremental state handling so syncs resume from the saved `date_sent` cursor. |
+| 1.0.3 | 2026-06-13 | [78359](https://github.com/airbytehq/airbyte/pull/78359) | Fix `messages` incremental state handling so syncs resume from the saved `date_sent` cursor. |
+| 1.0.2 | 2026-06-09 | [79553](https://github.com/airbytehq/airbyte/pull/79553) | Update dependencies |
+| 1.0.1 | 2026-06-02 | [79027](https://github.com/airbytehq/airbyte/pull/79027) | Update dependencies |
 | 1.0.0 | 2026-05-21 | [76911](https://github.com/airbytehq/airbyte/pull/76911) | Migrate `services` and `roles` streams from the deprecated Programmable Chat API to the Conversations API. See the [migration guide](./twilio-migrations.md#upgrading-to-100). |
 | 0.17.11 | 2026-05-21 | [78322](https://github.com/airbytehq/airbyte/pull/78322) | Revert concurrency tuning rollout |
 | 0.17.10 | 2026-05-12 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |

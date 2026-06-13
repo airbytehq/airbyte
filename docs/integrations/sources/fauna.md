@@ -225,6 +225,10 @@ To select the collection name, add `"collection", "id"` to the "Path" of the add
 "Path" is `["data", "parent"]`, change the "Path" to `["data", "parent", "collection", "id"]`. Internally, the
 FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is used.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
