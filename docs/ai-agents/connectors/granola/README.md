@@ -4,8 +4,8 @@ The Granola agent connector is a Python package that equips AI agents to interac
 
 The Granola API connector provides read access to meeting notes from Granola,
 an AI-powered meeting notes platform. This connector integrates with the Granola
-Enterprise API to list and retrieve notes, including summaries, transcripts,
-attendees, and calendar event details. Requires an Enterprise plan API key.
+API to list and retrieve notes, including summaries, transcripts, attendees,
+and calendar event details. Requires a Granola API key.
 
 
 ## Example prompts
@@ -43,17 +43,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Granola API reference](https://docs.granola.ai/introduction).
 
-## SDK installation
+## Interfaces
+
+Use the Granola connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -243,7 +292,7 @@ async def granola_execute(entity: str, action: str, params: dict | None = None):
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
@@ -256,7 +305,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -277,7 +326,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -299,7 +348,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -324,7 +373,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -342,6 +391,10 @@ async def granola_execute(entity: str, action: str, params: dict | None = None):
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
+
 ## Version information
 
-**Connector version:** 1.0.6
+**Connector version:** 1.0.7

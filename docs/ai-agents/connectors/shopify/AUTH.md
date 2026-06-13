@@ -2,47 +2,54 @@
 
 This page documents the authentication and configuration options for the Shopify agent connector.
 
-## Authentication
+## Hosted mode (most cases)
 
-### Open source execution
+In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
-In open source mode, you provide API credentials directly to the connector.
+### OAuth
+Use the CLI for hosted OAuth connector creation when possible. It opens the hosted setup flow and avoids passing connector secrets through the command line:
 
-#### OAuth
-This authentication method isn't available for this connector.
+```bash
+airbyte-agent login
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify"
+}'
+```
 
-#### Token
+For API-first use cases, create a connector with OAuth credentials directly.
 
 `credentials` fields you need:
 
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Shopify Admin API access token |
+| `client_id` | `str` | No | Your Shopify OAuth2 application client ID |
+| `client_secret` | `str` | No | Your Shopify OAuth2 application client secret |
+| `access_token` | `str` | Yes | Your Shopify OAuth2 access token |
 
 Example request:
 
-```python
-from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
-from airbyte_agent_sdk.connectors.shopify.models import ShopifyAuthConfig
-
-connector = ShopifyConnector(
-    auth_config=ShopifyAuthConfig(
-        api_key="<Your Shopify Admin API access token>"
-    )
-)
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_name": "<WORKSPACE_NAME>",
+    "connector_type": "Shopify",
+    "name": "My Shopify Connector",
+    "credentials": {
+      "client_id": "<Your Shopify OAuth2 application client ID>",
+      "client_secret": "<Your Shopify OAuth2 application client secret>",
+      "access_token": "<Your Shopify OAuth2 access token>"
+    }
+  }'
 ```
 
-### Hosted execution
 
-In hosted mode, you first create a connector via the Airbyte Agent API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
-#### OAuth
-This authentication method isn't available for this connector.
 
-#### Bring your own OAuth flow
-This authentication method isn't available for this connector.
-
-#### Token
+### Token
 Create a connector with Token credentials.
 
 
@@ -69,11 +76,48 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-#### Execution
+### Execution
 
-After creating the connector, execute operations using either the Python SDK or API.
-If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
+After creating the connector, execute operations using the CLI, Python SDK, or API.
+If your Airbyte client can access multiple organizations, set the default organization with `airbyte-agent organizations use`, include `organization_id` in `AirbyteAuthConfig`, or include `X-Organization-Id` in raw API calls.
 
+**CLI**
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "<entity>",
+  "action": "<action>",
+  "params": {}
+}'
+```
 
 **Python SDK**
 
@@ -270,9 +314,64 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ```
 
 
+## Open source mode
+
+In open source mode, provide API credentials directly to the connector.
+
+### OAuth
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `client_id` | `str` | No | Your Shopify OAuth2 application client ID |
+| `client_secret` | `str` | No | Your Shopify OAuth2 application client secret |
+| `access_token` | `str` | Yes | Your Shopify OAuth2 access token |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyOauth2AuthConfig
+
+connector = ShopifyConnector(
+    auth_config=ShopifyOauth2AuthConfig(
+        client_id="<Your Shopify OAuth2 application client ID>",
+        client_secret="<Your Shopify OAuth2 application client secret>",
+        access_token="<Your Shopify OAuth2 access token>"
+    )
+)
+```
+
+### Token
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `api_key` | `str` | Yes | Your Shopify Admin API access token |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
+
+connector = ShopifyConnector(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
+        api_key="<Your Shopify Admin API access token>"
+    )
+)
+```
+
 ## Configuration
 
-The Shopify connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
+The Shopify connector also needs these configuration values to construct the base API URL.
+
+- **Hosted CLI**: `airbyte-agent connectors create` doesn't currently accept these configuration fields directly. For hosted connectors that need these values, create the connector with the hosted API `replication_config`, then use the CLI for describe and execute operations after creation.
+- **Hosted API**: pass these values in the connector creation `replication_config`.
+- **Open source mode**: provide these values with your local connector setup so the connector can build the correct API base URL.
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
