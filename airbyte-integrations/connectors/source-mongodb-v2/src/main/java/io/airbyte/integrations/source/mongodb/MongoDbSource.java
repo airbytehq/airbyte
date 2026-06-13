@@ -233,7 +233,8 @@ public class MongoDbSource extends BaseConnector implements Source {
 
       private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
         if (MongoUtil.isChangeStreamFatalException(e)) {
-          LOGGER.error("ChangeStreamFatalError detected during CDC sync. The resume token references a rotated oplog entry. Original error: {}", e.getMessage(), e);
+          LOGGER.error("ChangeStreamFatalError detected during CDC sync. The resume token references a rotated oplog entry. Original error: {}",
+              e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_FATAL_ERROR_MESSAGE, e);
         }
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
