@@ -15,7 +15,7 @@ Each organization has:
 - **Workspaces**: Every organization starts with a `default` [workspace](./workspaces), which is all most people need. If you need to isolate credentials across tenants or teams, you can create additional workspaces.
 - **Context Store**: The [Context Store](../context-store) is enabled by default and operates at the organization level. It is always on and requires no configuration.
 - **Billing**: Plans, payment methods, usage limits, and invoices live at the organization level. See [Billing and pricing](../../admin/billing).
-- **Users**: People who can sign in and interact with the organization through the [web app](../../interfaces/ui).
+- **Users**: People who can sign in and interact with the organization through the [web app](../../interfaces/ui). On the Team and Custom plans, administrators can [invite users, assign roles, and manage workspace access](../../admin/users.md).
 
 ## One organization per account
 
