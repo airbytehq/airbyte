@@ -141,7 +141,6 @@ class IcebergUtil(
                 // Convert complex types to string
                 // (note that schemaless arrays are stringified, but schematized arrays are not)
                 ArrayTypeWithoutSchema,
-                is ObjectType,
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
                 is UnionType,
@@ -152,6 +151,17 @@ class IcebergUtil(
                         StringValue(element.serializeToString()),
                         changeDescription = null,
                     )
+                // ObjectType with defined properties: leave as-is for StructType writing.
+                // ObjectType with empty properties: stringify (schemaless).
+                is ObjectType ->
+                    if (elementType.properties.isEmpty()) {
+                        ChangedValue(
+                            StringValue(element.serializeToString()),
+                            changeDescription = null,
+                        )
+                    } else {
+                        null
+                    }
                 // otherwise, don't change anything
                 else -> null
             }

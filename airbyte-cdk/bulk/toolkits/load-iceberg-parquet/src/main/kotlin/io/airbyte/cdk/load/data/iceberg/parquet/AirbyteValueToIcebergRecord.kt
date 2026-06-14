@@ -16,15 +16,21 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.util.serializeToString
 import java.time.ZoneOffset
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
+import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.TimestampType
 
 class AirbyteValueToIcebergRecord {
     fun convert(airbyteValue: AirbyteValue, type: Type): Any? {
         when (airbyteValue) {
             is ObjectValue -> {
+                // Depth-limited objects: when the schema says StringType, serialize to JSON.
+                if (type == Types.StringType.get()) {
+                    return airbyteValue.serializeToString()
+                }
                 val recordSchema =
                     if (type.isStructType) {
                         type.asStructType().asSchema()
