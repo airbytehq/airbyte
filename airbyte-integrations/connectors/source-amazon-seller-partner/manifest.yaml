@@ -381,8 +381,9 @@ spec:
           from automatically retrying a sync that is unlikely to succeed
           without configuration changes (such as reducing the number of
           report streams or increasing the sync interval). When disabled
-          (default), the connector reports a transient error and the
-          platform may schedule automatic retries.
+          (default), the source applies its retry mechanism; if all retry
+          attempts fail, a transient error is thrown and the platform may
+          schedule automatic retries.
         type: boolean
         default: false
         order: 21
