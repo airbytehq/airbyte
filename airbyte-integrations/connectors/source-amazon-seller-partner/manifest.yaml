@@ -373,7 +373,7 @@ spec:
         minimum: 0
         order: 20
       stop_sync_on_rate_limit:
-        title: Stop Sync When Rate Limited
+        title: Stop Sync When Report Streams Are Rate Limited
         description: >-
           Only applies to report streams. When enabled, the sync fails
           immediately with an actionable error if the report creation API
