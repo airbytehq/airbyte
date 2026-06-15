@@ -1,4 +1,4 @@
-version: 6.7.0
+version: 6.7.1
 
 type: DeclarativeSource
 
@@ -2554,6 +2554,22 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: config_error
+            http_codes:
+              - 403
+            error_message: "Bing Ads API authorization failed. The developer token does not have permission to access the requested account. Verify the developer token status and account access in the Microsoft Advertising Developer Portal."
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: config_error
+            http_codes:
+              - 400
+            error_message_contains: insufficient privileges
+            error_message: "Bing Ads Reporting API authorization failed. The account has insufficient privileges for report generation. Verify that the developer token has reporting access for all configured accounts."
   basic_bulk_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2617,6 +2633,15 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: config_error
+            http_codes:
+              - 403
+            error_message: "Bing Ads API authorization failed. The developer token does not have permission to access the requested account. Verify the developer token status and account access in the Microsoft Advertising Developer Portal."
 
   # substream partition routers
   account_substream_partition_router:
@@ -5215,6 +5240,19 @@ dynamic_streams:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 403
+                error_message: "Bing Ads API authorization failed. The developer token does not have permission to access the requested account. Verify the developer token status and account access in the Microsoft Advertising Developer Portal."
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 400
+                error_message_contains: insufficient privileges
+                error_message: "Bing Ads Reporting API authorization failed. The account has insufficient privileges for report generation. Verify that the developer token has reporting access for all configured accounts."
               - type: HttpResponseFilter
                 action: FAIL
                 failure_type: config_error

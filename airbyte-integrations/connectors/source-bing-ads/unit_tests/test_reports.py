@@ -6,7 +6,7 @@ import pytest
 from conftest import create_zip_from_csv, find_stream, get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -264,3 +264,40 @@ def test_custom_report_name_conversion(test_name, config, custom_report_config, 
         custom_stream is not None
     ), f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
     assert custom_stream.name == expected_name
+
+
+@freeze_time("2024-01-01")
+@pytest.mark.parametrize(
+    "status_code,response_body,expected_failure_type",
+    [
+        pytest.param(
+            403,
+            {"error": "UserIsNotAuthorized"},
+            FailureType.config_error,
+            id="http_403_classified_as_config_error",
+        ),
+        pytest.param(
+            400,
+            {"error": "The specified report request contains at least one account which you have insufficient privileges to access"},
+            FailureType.config_error,
+            id="http_400_insufficient_privileges_classified_as_config_error",
+        ),
+    ],
+)
+def test_report_creation_auth_errors_classified_as_config_error(
+    status_code, response_body, expected_failure_type, mock_auth_token, mock_user_query, mock_account_query, requests_mock
+):
+    stream_name = "account_performance_report_daily"
+    requests_mock.post(
+        "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Submit",
+        status_code=status_code,
+        json=response_body,
+    )
+
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+    source = get_source(TEST_CONFIG)
+    output = read(source, TEST_CONFIG, catalog)
+
+    assert output.errors, "Expected error trace messages but got none"
+    error_trace = output.errors[0].trace.error
+    assert error_trace.failure_type == expected_failure_type
