@@ -375,12 +375,13 @@ spec:
       stop_sync_on_rate_limit:
         title: Stop Sync When Rate Limited
         description: >-
-          When enabled, the sync fails immediately with an actionable error if
-          the report creation API exhausts its rate limit retry budget. This
-          prevents the platform from automatically retrying a sync that is
-          unlikely to succeed without configuration changes (such as reducing
-          the number of report streams or increasing the sync interval). When
-          disabled (default), the connector reports a transient error and the
+          Only applies to report streams. When enabled, the sync fails
+          immediately with an actionable error if the report creation API
+          exhausts its rate limit retry budget. This prevents the platform
+          from automatically retrying a sync that is unlikely to succeed
+          without configuration changes (such as reducing the number of
+          report streams or increasing the sync interval). When disabled
+          (default), the connector reports a transient error and the
           platform may schedule automatic retries.
         type: boolean
         default: false
