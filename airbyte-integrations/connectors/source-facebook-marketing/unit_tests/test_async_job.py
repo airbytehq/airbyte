@@ -436,6 +436,23 @@ class TestInsightAsyncJob:
         # in case this is not retried, an error will be raised
         job.get_result()
 
+    def test_get_result_retried_on_type_error(self, mocker, job, api, api_limit):
+        """TypeError from SDK v25 malformed response should be retried by backoff_policy."""
+        job.start(api_limit)
+        api.call().json.return_value = {"data": [{"some_data": 123}]}
+        ads_insights = AdsInsights(api=api)
+        ads_insights._set_data({"items": [{"some_data": 123}]})
+        mocker.patch(
+            "facebook_business.adobjects.objectparser.ObjectParser.parse_multiple",
+            side_effect=[
+                TypeError("string indices must be integers, not 'str'"),
+                ads_insights,
+            ],
+        )
+
+        result = job.get_result()
+        assert len(result) == 1
+
     def test_get_result_when_job_is_not_started(self, job):
         with pytest.raises(
             RuntimeError,
@@ -788,6 +805,107 @@ class TestInsightAsyncJob:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_result_fetch_type_error(self, mocker, api):
+        """
+        When get_result raises TypeError (SDK v25 malformed response),
+        _collect_child_ids should wrap it in AirbyteTracedException with transient_error.
+        """
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.side_effect = TypeError("string indices must be integers, not 'str'")
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
+
+        with pytest.raises(
+            AirbyteTracedException, match="Facebook Insights API returned an invalid response during data retrieval"
+        ) as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+        assert "Failed to fetch ID-collection results" in exc_info.value.internal_message
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_cursor_iteration_type_error(self, mocker, api):
+        """
+        When iterating the result cursor raises TypeError (malformed non-dict rows),
+        _collect_child_ids should wrap it in AirbyteTracedException with transient_error.
+        """
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        def bad_iterator():
+            yield {"campaign_id": "1"}
+            raise TypeError("string indices must be integers, not 'str'")
+
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.return_value = bad_iterator()
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
+
+        with pytest.raises(
+            AirbyteTracedException, match="Facebook Insights API returned an invalid response during data retrieval"
+        ) as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+        assert "Malformed row while iterating" in exc_info.value.internal_message
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_skips_non_dict_rows(self, mocker, api):
+        """
+        Non-dict rows in the result cursor should be silently skipped,
+        and valid dict rows should still be collected.
+        """
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.return_value = [
+            {"campaign_id": "1"},
+            "not-a-dict",
+            {"campaign_id": "2"},
+            42,
+        ]
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
+
+        ids = job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert sorted(ids) == ["1", "2"]
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_no_child_ids(self, mocker, api):
