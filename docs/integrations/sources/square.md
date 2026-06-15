@@ -107,6 +107,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.18 | 2026-06-15 | [77704](https://github.com/airbytehq/airbyte/pull/77704) | Fix `orders` stream pagination — was silently capping at 500 records per location partition; now follows Square's `cursor` to fetch all pages |
 | 1.7.17 | 2026-06-09 | [79525](https://github.com/airbytehq/airbyte/pull/79525) | Update dependencies |
 | 1.7.16 | 2026-06-02 | [78955](https://github.com/airbytehq/airbyte/pull/78955) | Update dependencies |
 | 1.7.15 | 2026-04-28 | [77463](https://github.com/airbytehq/airbyte/pull/77463) | Update dependencies |
