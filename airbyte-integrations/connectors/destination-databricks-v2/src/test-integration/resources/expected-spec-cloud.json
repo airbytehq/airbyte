@@ -1,0 +1,141 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/databricks",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Databricks V 2 Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "hostname" : {
+        "type" : "string",
+        "description" : "Databricks Cluster Server Hostname.",
+        "title" : "Server Hostname",
+        "group" : "connection",
+        "order" : 2,
+        "examples" : [ "abc-12345678-wxyz.cloud.databricks.com" ]
+      },
+      "http_path" : {
+        "type" : "string",
+        "description" : "Databricks Cluster HTTP Path.",
+        "title" : "HTTP Path",
+        "group" : "connection",
+        "order" : 3,
+        "examples" : [ "sql/1.0/warehouses/0000-1111111-abcd90" ]
+      },
+      "port" : {
+        "type" : "string",
+        "description" : "Databricks Cluster Port.",
+        "title" : "Port",
+        "group" : "advanced",
+        "order" : 4,
+        "default" : "443",
+        "examples" : [ "443" ]
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "The name of the unity catalog for the database",
+        "title" : "Databricks Unity Catalog Name",
+        "group" : "connection",
+        "order" : 5
+      },
+      "schema" : {
+        "type" : "string",
+        "description" : "The default schema tables are written. If not specified otherwise, the \"default\" will be used.",
+        "title" : "Default Schema",
+        "group" : "advanced",
+        "order" : 6,
+        "default" : "default",
+        "examples" : [ "default" ]
+      },
+      "cdc_deletion_mode" : {
+        "type" : "string",
+        "default" : "Hard delete",
+        "description" : "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
+        "title" : "CDC deletion mode",
+        "enum" : [ "Hard delete", "Soft delete" ],
+        "group" : "advanced",
+        "order" : 7,
+        "always_show" : true
+      },
+      "authentication" : {
+        "oneOf" : [ {
+          "title" : "OAuth2 (Recommended)",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Authentication using OAuth2 client credentials.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "OAUTH" ],
+              "default" : "OAUTH"
+            },
+            "client_id" : {
+              "type" : "string",
+              "title" : "Client ID",
+              "order" : 1
+            },
+            "secret" : {
+              "type" : "string",
+              "title" : "Secret",
+              "order" : 2,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "client_id", "secret" ]
+        }, {
+          "title" : "Personal Access Token",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Authentication using a personal access token.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "BASIC" ],
+              "default" : "BASIC"
+            },
+            "personal_access_token" : {
+              "type" : "string",
+              "title" : "Personal Access Token",
+              "order" : 1,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "personal_access_token" ]
+        } ],
+        "description" : "Authentication mechanism for Staging files and running queries",
+        "title" : "Authentication",
+        "group" : "connection",
+        "order" : 8,
+        "type" : "object"
+      },
+      "purge_staging_data" : {
+        "type" : "boolean",
+        "description" : "Default to 'true'. Switch it to 'false' for debugging purpose.",
+        "title" : "Purge Staging Files and Tables",
+        "group" : "advanced",
+        "order" : 9,
+        "default" : true
+      },
+      "accept_terms" : {
+        "type" : "boolean",
+        "description" : "You must agree to the Databricks JDBC Driver <a href=\"https://databricks.com/jdbc-odbc-driver-license\">Terms & Conditions</a> to use this connector.",
+        "title" : "v2 Agree to the Databricks JDBC Driver Terms & Conditions",
+        "group" : "connection",
+        "order" : 10,
+        "default" : false
+      }
+    },
+    "required" : [ "hostname", "http_path", "port", "database", "schema", "accept_terms" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}
