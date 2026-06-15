@@ -5,9 +5,9 @@
 Web app
 
 - You can now switch between workspaces and create new ones directly from the sidebar without leaving your current page.
-- Connector credentials now show "Paused" and "Re-enabling" status indicators for the Context Store, so you can see at a glance when data indexing is temporarily inactive.
+- The Connectors page now shows "Paused" and "Re-enabling" status indicators for the Context Store, so you can see at a glance when data indexing is temporarily inactive.
 - Connectors that only support direct requests now clearly indicate that the Context Store is not available, instead of showing irrelevant status information.
-- Fixed an issue where browsing connector templates could fail when some connectors had intermittent backend errors.
+- Fixed an issue where some connectors could temporarily disappear from the available connectors list during intermittent backend errors.
 
 API
 
