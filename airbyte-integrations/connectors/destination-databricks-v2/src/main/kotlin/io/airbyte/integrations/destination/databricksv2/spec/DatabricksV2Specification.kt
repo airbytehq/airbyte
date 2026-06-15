@@ -62,6 +62,14 @@ open class DatabricksV2Specification : ConfigurationSpecification() {
     )
     val schema: String = "default"
 
+    @get:JsonSchemaTitle("CDC deletion mode")
+    @get:JsonPropertyDescription(
+        """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
+    )
+    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7, "always_show": true}""")
+    val cdcDeletionMode: CdcDeletionMode? = null
+
     @get:JsonSchemaTitle("Authentication")
     @get:JsonSchemaDescription("Authentication mechanism for Staging files and running queries")
     @get:JsonProperty("authentication")
@@ -123,6 +131,11 @@ class PersonalAccessTokenSpecification(
     @get:JsonSchemaInject(json = """{"order": 1, "airbyte_secret": true}""")
     val personalAccessToken: String = "",
 ) : DatabricksAuthSpecification(Type.BASIC)
+
+enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
+    HARD_DELETE("Hard delete"),
+    SOFT_DELETE("Soft delete"),
+}
 
 @Singleton
 class DatabricksV2SpecificationExtension : DestinationSpecificationExtension {

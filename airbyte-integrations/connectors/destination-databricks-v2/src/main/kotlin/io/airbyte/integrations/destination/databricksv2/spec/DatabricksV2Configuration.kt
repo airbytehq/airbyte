@@ -17,6 +17,7 @@ data class DatabricksV2Configuration(
     val authType: DatabricksAuthConfiguration,
     val purgeStagingData: Boolean,
     val acceptTerms: Boolean,
+    val cdcDeletionMode: CdcDeletionMode,
 ) : DestinationConfiguration()
 
 sealed interface DatabricksAuthConfiguration
@@ -45,6 +46,7 @@ class DatabricksV2ConfigurationFactory :
             schema = pojo.schema.ifBlank { "default" },
             authType = pojo.authentication.toConfiguration(),
             purgeStagingData = pojo.purgeStagingData ?: true,
+            cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
         )
 }
 
