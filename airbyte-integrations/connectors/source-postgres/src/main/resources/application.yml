@@ -139,6 +139,13 @@ airbyte:
             group: Postgres SQL Exception
             output: Postgres server closed the connection due to an idle-in-transaction timeout. Please review your server's timeout configuration and increase the timeout if needed
 
+          - pattern: (?i).*the database system is shutting down.*
+            input-example: "org.postgresql.util.PSQLException: FATAL: the database system is shutting down"
+            error: transient
+            group: Postgres SQL Exception
+            output: The Postgres database system was shutting down (server restart or maintenance). The sync will retry.
+            reference-links: https://github.com/airbytehq/oncall/issues/12877
+
           - pattern: (?i).*An exception occurred in the change event producer. This connector will be stopped.*
             input-example: |
               io.airbyte.cdk.integrations.source.relationaldb.state.FailedRecordIteratorException: java.lang.RuntimeException:
