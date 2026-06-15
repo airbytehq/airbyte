@@ -7,7 +7,46 @@ This page documents the authentication and configuration options for the Shopify
 In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
 ### OAuth
-This authentication method isn't available for this connector.
+Use the CLI for hosted OAuth connector creation when possible. It opens the hosted setup flow and avoids passing connector secrets through the command line:
+
+```bash
+airbyte-agent login
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify"
+}'
+```
+
+For API-first use cases, create a connector with OAuth credentials directly.
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `client_id` | `str` | No | Your Shopify OAuth2 application client ID |
+| `client_secret` | `str` | No | Your Shopify OAuth2 application client secret |
+| `access_token` | `str` | Yes | Your Shopify OAuth2 access token |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_name": "<WORKSPACE_NAME>",
+    "connector_type": "Shopify",
+    "name": "My Shopify Connector",
+    "credentials": {
+      "client_id": "<Your Shopify OAuth2 application client ID>",
+      "client_secret": "<Your Shopify OAuth2 application client secret>",
+      "access_token": "<Your Shopify OAuth2 access token>"
+    }
+  }'
+```
+
+
 
 
 ### Token
@@ -280,7 +319,30 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 In open source mode, provide API credentials directly to the connector.
 
 ### OAuth
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `client_id` | `str` | No | Your Shopify OAuth2 application client ID |
+| `client_secret` | `str` | No | Your Shopify OAuth2 application client secret |
+| `access_token` | `str` | Yes | Your Shopify OAuth2 access token |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyOauth2AuthConfig
+
+connector = ShopifyConnector(
+    auth_config=ShopifyOauth2AuthConfig(
+        client_id="<Your Shopify OAuth2 application client ID>",
+        client_secret="<Your Shopify OAuth2 application client secret>",
+        access_token="<Your Shopify OAuth2 access token>"
+    )
+)
+```
 
 ### Token
 
@@ -294,10 +356,10 @@ Example request:
 
 ```python
 from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
-from airbyte_agent_sdk.connectors.shopify.models import ShopifyAuthConfig
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
 
 connector = ShopifyConnector(
-    auth_config=ShopifyAuthConfig(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
     )
 )
