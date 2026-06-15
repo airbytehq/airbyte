@@ -53,9 +53,7 @@ class PostgresExceptionClassifierTest {
         // classified as transient, but with a different message. Verify it still
         // matches its own rule.
         val exception =
-            RuntimeException(
-                "org.postgresql.util.PSQLException: ERROR: recovery is in progress"
-            )
+            RuntimeException("org.postgresql.util.PSQLException: ERROR: recovery is in progress")
         val result = classifier.classify(exception)
         assertNotNull(result)
         assertTrue(result is TransientError)
