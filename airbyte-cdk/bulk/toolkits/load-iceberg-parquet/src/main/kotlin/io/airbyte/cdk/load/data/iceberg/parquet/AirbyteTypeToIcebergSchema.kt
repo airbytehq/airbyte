@@ -38,8 +38,8 @@ class AirbyteTypeToIcebergSchema {
      * Converts an [AirbyteType] to an Iceberg [Type].
      *
      * [ObjectType] instances with defined properties are converted to [Types.StructType] up to
-     * [maxDepth] levels of nesting. Beyond that depth, or when properties are empty, they fall
-     * back to [Types.StringType] (JSON serialization).
+     * [maxDepth] levels of nesting. Beyond that depth, or when properties are empty, they fall back
+     * to [Types.StringType] (JSON serialization).
      */
     fun convert(airbyteSchema: AirbyteType, maxDepth: Int = DEFAULT_MAX_STRUCT_DEPTH): Type {
         return when (airbyteSchema) {
