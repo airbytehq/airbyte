@@ -429,12 +429,12 @@ internal class S3DataLakeStreamLoaderTest {
                                 Types.StructType.of(
                                     Types.NestedField.required(9, "field", Types.StringType.get()),
                                     Types.NestedField.required(
-                    10,
+                                        10,
                                         "change",
                                         Types.StringType.get(),
                                     ),
                                     Types.NestedField.required(
-                    11,
+                                        11,
                                         "reason",
                                         Types.StringType.get(),
                                     ),
@@ -673,12 +673,12 @@ internal class S3DataLakeStreamLoaderTest {
                                 Types.StructType.of(
                                     Types.NestedField.required(9, "field", Types.StringType.get()),
                                     Types.NestedField.required(
-                    10,
+                                        10,
                                         "change",
                                         Types.StringType.get(),
                                     ),
                                     Types.NestedField.required(
-                    11,
+                                        11,
                                         "reason",
                                         Types.StringType.get(),
                                     ),
