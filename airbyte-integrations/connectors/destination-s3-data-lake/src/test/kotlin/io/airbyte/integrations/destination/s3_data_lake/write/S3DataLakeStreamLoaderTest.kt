@@ -422,7 +422,7 @@ internal class S3DataLakeStreamLoaderTest {
                     Types.StructType.of(
                         Types.NestedField.required(6, "sync_id", Types.LongType.get()),
                         Types.NestedField.required(
-                    7,
+                            7,
                             "changes",
                             Types.ListType.ofRequired(
                                 8,
@@ -666,7 +666,7 @@ internal class S3DataLakeStreamLoaderTest {
                     Types.StructType.of(
                         Types.NestedField.required(6, "sync_id", Types.LongType.get()),
                         Types.NestedField.required(
-                    7,
+                            7,
                             "changes",
                             Types.ListType.ofRequired(
                                 8,
