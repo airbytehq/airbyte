@@ -316,6 +316,24 @@ definitions:
           stream: "#/definitions/groups_stream"
           partition_field: "id"
 
+  group_projects_stream:
+    name: "group_projects"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/groups_stream"
+            partition_field: "id"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/projects"
+      request_parameters:
+        include_subgroups: "false"
+        with_shared: "false"
+
   projects_streams_retriever:
     $ref: "#/definitions/retriever"
     partition_router:
@@ -323,8 +341,8 @@ definitions:
       class_name: source_declarative_manifest.components.ProjectStreamsPartitionRouter
       parent_stream_configs:
         - type: ParentStreamConfig
-          parent_key: "id"
-          stream: "#/definitions/groups_stream"
+          parent_key: "path_with_namespace"
+          stream: "#/definitions/group_projects_stream"
           partition_field: "id"
 
   projects_child_streams_retriever:
