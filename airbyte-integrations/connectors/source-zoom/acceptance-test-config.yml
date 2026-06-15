@@ -44,6 +44,16 @@ acceptance_tests:
             bypass_reason: "Need paid Webinar license to populate data"
           - name: "report_webinar_participants"
             bypass_reason: "Need paid Webinar license to populate data"
+          - name: "zra_conversations"
+            bypass_reason: "Requires iq_conversation:read OAuth scope not in test credentials"
+          - name: "zra_conversation_details"
+            bypass_reason: "Requires iq_conversation:read OAuth scope not in test credentials"
+          - name: "zra_conversation_interactions"
+            bypass_reason: "Requires iq_conversation:read OAuth scope not in test credentials"
+          - name: "zra_conversation_content_analysis"
+            bypass_reason: "Requires iq_conversation:read OAuth scope not in test credentials"
+          - name: "zra_conversation_scorecards"
+            bypass_reason: "Requires iq_conversation:read OAuth scope not in test credentials"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
