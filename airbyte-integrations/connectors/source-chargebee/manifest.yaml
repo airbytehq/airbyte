@@ -21,7 +21,7 @@ definitions:
           path: /addons
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -165,7 +165,7 @@ definitions:
           path: /customers
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -603,7 +603,7 @@ definitions:
           path: /orders
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -678,7 +678,7 @@ definitions:
           path: /hosted_pages
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -828,7 +828,7 @@ definitions:
           path: /items
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -903,7 +903,7 @@ definitions:
           path: /item_prices
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -978,7 +978,7 @@ definitions:
           path: /plans
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -1053,7 +1053,7 @@ definitions:
           path: /payment_sources
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -1202,7 +1202,7 @@ definitions:
           path: /subscriptions
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -1490,7 +1490,7 @@ definitions:
           path: /virtual_bank_accounts
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -1846,7 +1846,7 @@ definitions:
           path: /item_families
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
@@ -1921,7 +1921,7 @@ definitions:
           path: /differential_prices
           http_method: GET
           request_parameters:
-            sort_by[asc]: updated_at
+            sort_by[asc]: created_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
