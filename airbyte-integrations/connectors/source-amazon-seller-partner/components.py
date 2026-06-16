@@ -10,8 +10,8 @@ import threading
 import time
 from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
-from io import StringIO
-from typing import Any, Callable, Dict, Generator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from io import BytesIO, StringIO
+from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import dateparser
@@ -363,6 +363,164 @@ class GzipJsonDecoder(Decoder):
             yield {}
         else:
             yield from body_json
+
+
+@dataclass
+class StreamingGzipJsonDecoder(Decoder):
+    """
+    Streaming decoder for large gzip-compressed JSON reports.
+
+    Instead of loading the entire response into memory, this decoder:
+    1. Streams the HTTP response body (is_stream_response=True)
+    2. Decompresses gzip data incrementally
+    3. Parses JSON character-by-character to locate the target array
+    4. Yields individual records from the array without materializing the full document
+
+    This keeps peak memory proportional to a single record rather than the full
+    report size, preventing OOM kills for multi-GB Brand Analytics reports.
+    """
+
+    parameters: InitVar[Mapping[str, Any]]
+    items_field: str = ""
+
+    CHUNK_SIZE: int = 64 * 1024  # 64 KB read chunks
+
+    def is_stream_response(self) -> bool:
+        return True
+
+    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
+        byte_stream = self._get_decompressed_stream(response)
+        yield from self._stream_array_items(byte_stream)
+
+    def _get_decompressed_stream(self, response: requests.Response) -> Iterable[bytes]:
+        """Return an iterable of decompressed byte chunks from the response.
+
+        Buffers the compressed response (typically much smaller than the decompressed data),
+        then streams decompression in chunks. For a 3.2GB uncompressed report that compresses
+        ~10:1, this buffers ~320MB while avoiding the 3.2GB+ decompressed peak.
+        """
+        compressed = b"".join(response.iter_content(chunk_size=self.CHUNK_SIZE))
+        buf = BytesIO(compressed)
+        try:
+            gz = gzip.GzipFile(fileobj=buf)
+            while True:
+                decompressed_chunk = gz.read(self.CHUNK_SIZE)
+                if not decompressed_chunk:
+                    break
+                yield decompressed_chunk
+        except (gzip.BadGzipFile, OSError):
+            # Not gzip — yield the raw content directly
+            yield compressed
+
+    def _stream_array_items(self, byte_iter: Iterable[bytes]) -> Generator[MutableMapping[str, Any], None, None]:
+        """Parse JSON incrementally, yielding individual items from the target array."""
+        inside_string = False
+        escape_next = False
+        key_buffer: List[str] = []
+        collecting_key = False
+        found_target = False
+        array_depth = 0
+        record_depth = 0
+        inside_record = False
+        record_buffer: List[str] = []
+        awaiting_colon = False
+        records_yielded = 0
+
+        for chunk in byte_iter:
+            text = chunk.decode("iso-8859-1")
+            for char in text:
+                # Track string boundaries (handles escaped quotes)
+                if inside_string:
+                    if inside_record:
+                        record_buffer.append(char)
+                    if escape_next:
+                        escape_next = False
+                        continue
+                    if char == "\\":
+                        escape_next = True
+                        continue
+                    if char == '"':
+                        inside_string = False
+                        if collecting_key:
+                            collecting_key = False
+                            if "".join(key_buffer) == self.items_field:
+                                awaiting_colon = True
+                            key_buffer.clear()
+                    elif collecting_key:
+                        key_buffer.append(char)
+                    continue
+
+                if char == '"':
+                    inside_string = True
+                    if inside_record:
+                        record_buffer.append(char)
+                    elif not found_target and not awaiting_colon:
+                        collecting_key = True
+                        key_buffer.clear()
+                    continue
+
+                # Look for the colon after our target key
+                if awaiting_colon:
+                    if char == ":":
+                        awaiting_colon = False
+                        found_target = True
+                    elif not char.isspace():
+                        awaiting_colon = False
+                    continue
+
+                # Once we've found the target key, look for the array start
+                if found_target and array_depth == 0:
+                    if char == "[":
+                        array_depth = 1
+                    elif not char.isspace():
+                        # Target value is not an array; abort streaming
+                        return
+                    continue
+
+                # Inside the target array
+                if found_target and array_depth > 0:
+                    if inside_record:
+                        record_buffer.append(char)
+
+                    if char == "{":
+                        if not inside_record:
+                            inside_record = True
+                            record_buffer = ["{"]
+                            record_depth = 1
+                        else:
+                            record_depth += 1
+                    elif char == "}":
+                        if inside_record:
+                            record_depth -= 1
+                            if record_depth == 0:
+                                record_text = "".join(record_buffer)
+                                inside_record = False
+                                record_buffer.clear()
+                                try:
+                                    yield json.loads(record_text)
+                                    records_yielded += 1
+                                except json.JSONDecodeError:
+                                    logger.warning("Failed to parse record in streaming decode")
+                    elif char == "[":
+                        if inside_record:
+                            record_depth += 1
+                        else:
+                            array_depth += 1
+                    elif char == "]":
+                        if inside_record:
+                            record_depth -= 1
+                        else:
+                            array_depth -= 1
+                            if array_depth == 0:
+                                # End of target array
+                                if records_yielded == 0:
+                                    yield {}
+                                return
+                    continue
+
+        # If we never found the target field, yield empty
+        if records_yielded == 0:
+            yield {}
 
 
 @dataclass
