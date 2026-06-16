@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 import yaml
 
-from .conftest import _YAML_FILE_PATH, get_source
+from .conftest import _YAML_FILE_PATH
 
 
 def _load_manifest():
