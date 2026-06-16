@@ -916,7 +916,15 @@ class TestVendorSalesReportsFullRefresh:
         http_mocker._mocker.get(
             requests_mock.ANY,
             additional_matcher=http_mocker._matches_wrapper(document_request_matcher),
-            response_list=[{"content": document_response.body, "status_code": document_response.status_code}],
+            response_list=[
+                {
+                    "content": document_response.body,
+                    "status_code": document_response.status_code,
+                    # Preserve the "Content-Encoding: gzip" header so the header-based GzipDecoder
+                    # decompresses the body; without it ijson receives raw gzip bytes and fails.
+                    "headers": dict(document_response.headers),
+                }
+            ],
         )
 
         output = self._read(stream_name, config())
