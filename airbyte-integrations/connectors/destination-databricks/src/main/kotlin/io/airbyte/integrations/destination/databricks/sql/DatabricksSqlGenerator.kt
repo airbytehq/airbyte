@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.integrations.destination.databricks.schema.DatabricksTableSchemaMapper.Companion.LONG
 import io.airbyte.integrations.destination.databricks.schema.DatabricksTableSchemaMapper.Companion.STRING
 import io.airbyte.integrations.destination.databricks.schema.DatabricksTableSchemaMapper.Companion.TIMESTAMP
+import io.airbyte.integrations.destination.databricks.schema.DatabricksTableSchemaMapper.Companion.TIMESTAMP_NTZ
 import io.airbyte.integrations.destination.databricks.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.databricks.spec.DatabricksConfiguration
 import jakarta.inject.Singleton
@@ -64,8 +65,16 @@ class DatabricksSqlGenerator(
                 }
                 .joinToString(",\n    ")
 
+        val allColumnTypes = metaColumns.values + userColumns.values
+        val tblProperties =
+            if (allColumnTypes.any { it.type == TIMESTAMP_NTZ }) {
+                " TBLPROPERTIES ('delta.feature.timestampNtz' = 'supported')"
+            } else {
+                ""
+            }
+
         val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
-        return "$createPrefix ${fullyQualifiedName(tableName)} ( $columnDeclarations)"
+        return "$createPrefix ${fullyQualifiedName(tableName)} ( $columnDeclarations)$tblProperties"
     }
 
     fun dropTable(tableName: TableName): String =
@@ -182,6 +191,13 @@ class DatabricksSqlGenerator(
         // No type changes — use standard ADD / DROP COLUMN statements.
         val fqn = fullyQualifiedName(tableName)
         val statements = mutableListOf<String>()
+
+        // Enable timestampNtz feature if any new column uses TIMESTAMP_NTZ
+        if (changeset.columnsToAdd.values.any { it.type == TIMESTAMP_NTZ }) {
+            statements.add(
+                "ALTER TABLE $fqn SET TBLPROPERTIES ('delta.feature.timestampNtz' = 'supported')",
+            )
+        }
 
         changeset.columnsToAdd.forEach { (name, columnType) ->
             statements.add("ALTER TABLE $fqn ADD COLUMN ${name.quote()} ${columnType.type}")
