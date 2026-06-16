@@ -31,6 +31,9 @@ definitions:
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 40067 }}"
+          action: FAIL
+          error_message: "TikTok Marketing API query size limit exceeded (error 40067). The requested combination of metrics, dimensions, and date range is too large. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -443,6 +446,25 @@ definitions:
       datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
 
+  report_daily_single_day_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "stat_time_day"
+    lookback_window: "P{{ config.get('attribution_window', 0) }}D"
+    cursor_granularity: "P1D"
+    step: P1D
+    cursor_datetime_formats:
+      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', '2016-09-01') }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+
   report_hourly_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "stat_time_hour"
@@ -655,6 +677,8 @@ definitions:
       - ad_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
+    incremental_sync:
+      $ref: "#/definitions/report_daily_single_day_incremental_sync"
     transformations:
       - type: AddFields
         fields:
@@ -737,6 +761,8 @@ definitions:
       - stat_time_day
       - country_code
     $ref: "#/definitions/base_report_by_country_daily"
+    incremental_sync:
+      $ref: "#/definitions/report_daily_single_day_incremental_sync"
     transformations:
       - type: AddFields
         fields:
