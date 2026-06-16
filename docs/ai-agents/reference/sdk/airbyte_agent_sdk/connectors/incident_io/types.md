@@ -5504,6 +5504,37 @@ Classes
     `updated_at: str`
     :   When the severity was last updated
 
+<a id="TeamsGetParams"></a>
+
+`TeamsGetParams(*args, **kwargs)`
+:   Parameters for teams.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="TeamsListParams"></a>
+
+`TeamsListParams(*args, **kwargs)`
+:   Parameters for teams.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `page_size: int`
+    :   The type of the None singleton.
+
 <a id="UsersAndCondition"></a>
 
 `UsersAndCondition(*args, **kwargs)`

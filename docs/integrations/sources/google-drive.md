@@ -326,6 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.21 | 2026-06-16 | [79912](https://github.com/airbytehq/airbyte/pull/79912) | Update dependencies |
 | 0.5.20 | 2026-06-09 | [79341](https://github.com/airbytehq/airbyte/pull/79341) | Update dependencies |
 | 0.5.19 | 2026-06-02 | [78739](https://github.com/airbytehq/airbyte/pull/78739) | Update dependencies |
 | 0.5.18 | 2026-05-02 | [77714](https://github.com/airbytehq/airbyte/pull/77714) | Update airbyte-cdk to 7.18.1 (surface actionable check errors instead of full Python tracebacks) |

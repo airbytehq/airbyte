@@ -1,5 +1,18 @@
 # Airbyte Agents release notes
 
+## June 15, 2026
+
+Web app
+
+- You can now switch between workspaces and create new ones directly from the sidebar without leaving your current page.
+- The Connectors page now shows "Paused" and "Re-enabling" status indicators for the Context Store, so you can see at a glance when data indexing is temporarily inactive.
+- Connectors that only support direct requests now clearly indicate that the Context Store is not available, instead of showing irrelevant status information.
+- Fixed an issue where some connectors could temporarily disappear from the available connectors list during intermittent backend errors.
+
+API
+
+- Connector template and credential API responses now include `runtime_mode` and `supports_context_store` fields, so you can programmatically determine whether a connector supports the Context Store, direct requests, or both.
+
 ## June 12, 2026
 
 Web app
