@@ -1,0 +1,6 @@
+version: "6.45.1"
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names: []
+streams: []

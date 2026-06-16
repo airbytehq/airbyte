@@ -12,6 +12,7 @@ from source_github import constants
 from source_github.source import SourceGithub
 
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import command_check
@@ -22,6 +23,11 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
     config = {"access_token": "test_token", "repository": repo_line}
     logger_mock = MagicMock()
     return source.check(logger_mock, config)
+
+
+def test_source_extends_yaml_declarative_source():
+    source = SourceGithub()
+    assert isinstance(source, YamlDeclarativeSource)
 
 
 def test_source_will_continue_sync_on_stream_failure():
