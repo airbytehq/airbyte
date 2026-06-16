@@ -329,43 +329,6 @@ class GzipXmlDecoder(Decoder):
 
 
 @dataclass
-class GzipJsonDecoder(Decoder):
-    """
-    Decoder strategy that attempts to decompress a response using GZIP first and then parses the resulting
-    document as JSON. Also as a backup, this works for uncompressed responses that are already in JSON format
-    """
-
-    parameters: InitVar[Mapping[str, Any]]
-
-    def is_stream_response(self) -> bool:
-        return False
-
-    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
-        try:
-            document = gzip.decompress(response.content).decode("iso-8859-1")
-        except gzip.BadGzipFile:
-            document = response.content.decode("iso-8859-1")
-
-        try:
-            body_json = json.loads(document)
-            yield from self.parse_body_json(body_json)
-        except requests.exceptions.JSONDecodeError:
-            logger.warning(f"Response cannot be parsed into json: {response.status_code=}, {response.text=}")
-            yield {}
-
-    @staticmethod
-    def parse_body_json(
-        body_json: MutableMapping[str, Any] | List[MutableMapping[str, Any]],
-    ) -> Generator[MutableMapping[str, Any], None, None]:
-        if not isinstance(body_json, list):
-            body_json = [body_json]
-        if len(body_json) == 0:
-            yield {}
-        else:
-            yield from body_json
-
-
-@dataclass
 class SellerFeedbackReportsGzipCsvDecoder(Decoder):
     parameters: InitVar[Mapping[str, Any]]
     NORMALIZED_FIELD_NAMES = ["date", "rating", "comments", "response", "order_id", "rater_email"]
