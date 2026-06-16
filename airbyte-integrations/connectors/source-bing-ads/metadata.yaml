@@ -69,7 +69,7 @@ data:
           (see https://github.com/airbytehq/oncall/issues/12253). Users must refresh the
           source schema and reset the affected report streams after upgrading for the
           new primary keys to take effect and previously-collapsed rows to be backfilled.
-        upgradeDeadline: "2026-06-12"
+        upgradeDeadline: "2026-07-16"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
