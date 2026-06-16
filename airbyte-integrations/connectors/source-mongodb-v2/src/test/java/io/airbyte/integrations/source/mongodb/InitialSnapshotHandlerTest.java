@@ -393,7 +393,8 @@ class InitialSnapshotHandlerTest {
 
   @Test
   void testGetIteratorsWithNullIdDoesNotThrow() {
-    // Insert a document with an explicit null _id (valid in MongoDB) followed by a document with a valid ObjectId.
+    // Insert a document with an explicit null _id (valid in MongoDB) followed by a document with a
+    // valid ObjectId.
     // MongoDB sorts null before all other values in ascending _id order.
     final MongoCollection<Document> collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
     collection.insertOne(new Document("_id", null).append(NAME_FIELD, "null_id_doc"));
