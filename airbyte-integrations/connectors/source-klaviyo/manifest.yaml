@@ -1100,6 +1100,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 3600
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1159,7 +1160,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        step: P30D
+        step: P60D
         cursor_granularity: PT1S
       transformations:
         - type: AddFields
@@ -1250,6 +1251,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 3600
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1309,7 +1311,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        step: P30D
+        step: P60D
         cursor_granularity: PT1S
       transformations:
         - type: AddFields
