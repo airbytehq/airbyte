@@ -54,6 +54,7 @@ import java.sql.Connection
 import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.time.format.DateTimeFormatter
 
 private val logger = KotlinLogging.logger {}
 
@@ -404,7 +405,10 @@ class MSSQLQueryBuilder(
                     )
                 TimestampTypeWithoutTimezone ->
                     LIMITS.validateTimestamp(value)?.let {
-                        statement.setObject(statementIndex, it.toString())
+                        statement.setObject(
+                            statementIndex,
+                            it.format(DateTimeFormatter.ISO_DATE_TIME)
+                        )
                     }
                         ?: statement.setAsNullValue(statementIndex, field.type.type)
 

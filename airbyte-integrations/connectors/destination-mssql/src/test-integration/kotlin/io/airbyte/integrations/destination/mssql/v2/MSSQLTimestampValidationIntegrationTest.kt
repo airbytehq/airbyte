@@ -138,11 +138,12 @@ class MSSQLTimestampValidationIntegrationTest {
             // 2. Build a record with a pre-1753 timestamp (the value that originally crashed)
             val record = makeRecord(stream, """{"id": 1, "ts_col": "0001-01-01T00:00:00"}""")
 
-            // 3. Insert via populateStatement -- this should NOT throw
+            // 3. Insert via addBatch + executeBatch (mirrors MSSQLDirectLoader production path)
             val insertSql = builder.getFinalTableInsertColumnHeader()
             conn.prepareStatement(insertSql).use { stmt ->
                 builder.populateStatement(stmt, record, builder.finalTableSchema)
-                stmt.executeUpdate()
+                stmt.addBatch()
+                stmt.executeBatch()
             }
 
             // 4. Read back the record and verify ts_col is NULL
@@ -168,6 +169,87 @@ class MSSQLTimestampValidationIntegrationTest {
     }
 
     @Test
+    fun `zero datetime is nullified and INSERT succeeds via populateStatement`() {
+        val stream = makeStream()
+        val builder = MSSQLQueryBuilder(defaultSchema = TEST_SCHEMA, stream = stream)
+
+        getConnection().use { conn ->
+            builder.createTableIfNotExists(conn)
+
+            // "0000-01-01T00:00:00" is a common default/epoch value in many systems
+            // (e.g. .NET DateTime.MinValue serialized). It is far below the DATETIME
+            // lower bound of 1753-01-01 and must be nullified.
+            val record = makeRecord(stream, """{"id": 10, "ts_col": "0000-00-00 00:00:00"}""")
+
+            val insertSql = builder.getFinalTableInsertColumnHeader()
+            conn.prepareStatement(insertSql).use { stmt ->
+                builder.populateStatement(stmt, record, builder.finalTableSchema)
+                stmt.addBatch()
+                stmt.executeBatch()
+            }
+
+            conn
+                .prepareStatement(
+                    "SELECT * FROM [$TEST_SCHEMA].[$TABLE_NAME] WHERE [id] = 10",
+                )
+                .use { stmt ->
+                    stmt.executeQuery().use { rs ->
+                        assertTrue(rs.next(), "Expected one row in result set")
+                        val result = builder.readResult(rs, builder.finalTableSchema)
+
+                        val tsValue = result.values["ts_col"]
+                        assertEquals(
+                            NullValue,
+                            tsValue,
+                            "Zero datetime (0000-01-01) should be nullified to NULL in the database",
+                        )
+                    }
+                }
+        }
+    }
+
+    @Test
+    fun `timestamp with zero seconds round-trips correctly via populateStatement`() {
+        val stream = makeStream()
+        val builder = MSSQLQueryBuilder(defaultSchema = TEST_SCHEMA, stream = stream)
+
+        getConnection().use { conn ->
+            builder.createTableIfNotExists(conn)
+
+            // Timestamps with zero seconds are significant because
+            // LocalDateTime.toString() omits trailing zero components
+            // (e.g. "2023-06-15T12:00" instead of "2023-06-15T12:00:00"),
+            // and MSSQL cannot parse the truncated form.
+            // DateTimeFormatter.ISO_DATE_TIME always includes seconds.
+            val record = makeRecord(stream, """{"id": 11, "ts_col": "2023-06-15T12:00:00"}""")
+
+            val insertSql = builder.getFinalTableInsertColumnHeader()
+            conn.prepareStatement(insertSql).use { stmt ->
+                builder.populateStatement(stmt, record, builder.finalTableSchema)
+                stmt.addBatch()
+                stmt.executeBatch()
+            }
+
+            conn
+                .prepareStatement(
+                    "SELECT * FROM [$TEST_SCHEMA].[$TABLE_NAME] WHERE [id] = 11",
+                )
+                .use { stmt ->
+                    stmt.executeQuery().use { rs ->
+                        assertTrue(rs.next(), "Expected one row in result set")
+                        val result = builder.readResult(rs, builder.finalTableSchema)
+
+                        val tsValue = result.values["ts_col"]
+                        assertTrue(
+                            tsValue !is NullValue && tsValue != NullValue,
+                            "Timestamp with zero seconds should not be null, got: $tsValue",
+                        )
+                    }
+                }
+        }
+    }
+
+    @Test
     fun `valid timestamp passes through populateStatement and round-trips correctly`() {
         val stream = makeStream()
         val builder = MSSQLQueryBuilder(defaultSchema = TEST_SCHEMA, stream = stream)
@@ -182,7 +264,8 @@ class MSSQLTimestampValidationIntegrationTest {
             val insertSql = builder.getFinalTableInsertColumnHeader()
             conn.prepareStatement(insertSql).use { stmt ->
                 builder.populateStatement(stmt, record, builder.finalTableSchema)
-                stmt.executeUpdate()
+                stmt.addBatch()
+                stmt.executeBatch()
             }
 
             // Read back and verify the timestamp value is present
