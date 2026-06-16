@@ -26,9 +26,7 @@ import java.math.BigDecimal
 import java.sql.ResultSet
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.Calendar
-import java.util.TimeZone
-import java.util.UUID
+import java.util.*
 
 /**
  * Reads typed final tables from Databricks and converts rows to [OutputRecord] for test
@@ -162,23 +160,8 @@ class DatabricksDataDumper(
                 "INT" -> rs.getLong(index)
                 "DECIMAL" -> rs.getBigDecimal(index) ?: BigDecimal.ZERO
                 "BOOLEAN" -> rs.getBoolean(index)
-                "STRING" -> {
-                    val str = rs.getString(index)
-                    // Only parse JSON for Object/Array columns, not stringified unions.
-                    if (isJsonColumn) tryParseJson(str) ?: str else str
-                }
+                "STRING" -> rs.getString(index)
                 else -> rs.getObject(index)
-            }
-        }
-
-        private fun tryParseJson(str: String): Any? {
-            if (str.isBlank()) return str
-            val trimmed = str.trim()
-            if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null
-            return try {
-                Jsons.readValue(trimmed, Any::class.java)
-            } catch (_: Exception) {
-                null
             }
         }
 

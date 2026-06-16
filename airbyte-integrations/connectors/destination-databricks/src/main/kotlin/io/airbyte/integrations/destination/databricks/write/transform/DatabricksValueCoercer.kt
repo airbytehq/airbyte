@@ -21,11 +21,7 @@ import jakarta.inject.Singleton
 class DatabricksValueCoercer : ValueCoercer {
 
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        if (
-            (value.type is UnionType || value.type is UnknownType) &&
-                value.abValue !is NullValue &&
-                value.abValue !is StringValue
-        ) {
+        if ((value.type is UnionType || value.type is UnknownType) && value.abValue !is NullValue) {
             value.abValue = StringValue(value.abValue.serializeToString())
         }
         return value

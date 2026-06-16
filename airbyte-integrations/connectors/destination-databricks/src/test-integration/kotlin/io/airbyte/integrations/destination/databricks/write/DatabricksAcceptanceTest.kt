@@ -26,8 +26,7 @@ import java.nio.file.Path
 abstract class DatabricksBaseAcceptanceTest(
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
-    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
     cdcDeletionMode: CdcDeletionMode = CdcDeletionMode.HARD_DELETE,
 ) :
     BasicFunctionalityIntegrationTest(
@@ -37,8 +36,7 @@ abstract class DatabricksBaseAcceptanceTest(
         destinationCleaner = DatabricksDataCleaner,
         recordMangler = DatabricksExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
-        isStreamSchemaRetroactiveForUnknownTypeToString =
-            isStreamSchemaRetroactiveForUnknownTypeToString,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
         dedupBehavior =
             DedupBehavior(
                 when (cdcDeletionMode) {
@@ -46,9 +44,9 @@ abstract class DatabricksBaseAcceptanceTest(
                     CdcDeletionMode.SOFT_DELETE -> DedupBehavior.CdcDeletionMode.SOFT_DELETE
                 }
             ),
-        stringifySchemalessObjects = false,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        stringifySchemalessObjects = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
         stringifyUnionObjects = true,
         commitDataIncrementally = false,
@@ -79,7 +77,6 @@ class DatabricksProtoAcceptanceTest :
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
-        isStreamSchemaRetroactiveForUnknownTypeToString = false,
     )
 
 class DatabricksSoftDeleteAcceptanceTest :
