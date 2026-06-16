@@ -495,10 +495,7 @@ def test_crm_search_10k_boundary_emits_gt_string_id(mocker, requests_mock, fake_
     endpoint = "https://api.hubapi.com/crm/v3/objects/deal_split/search"
     requests_mock.register_uri("POST", endpoint, json=search_callback)
 
-    props = [
-        {"name": p, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-        for p in fake_properties_list
-    ]
+    props = [{"name": p, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048} for p in fake_properties_list]
     requests_mock.register_uri("GET", "https://api.hubapi.com/properties/v2/deal_split/properties", [dict(json=props, status_code=200)])
     mock_v3_properties(requests_mock, "deal_split", props)
     mock_dynamic_schema_requests_with_skip(requests_mock, ["deal_split"])
@@ -520,8 +517,7 @@ def test_crm_search_10k_boundary_emits_gt_string_id(mocker, requests_mock, fake_
 
     # Verify chunk 2 request body uses hs_object_id GT 7198 (CDK coerces to int)
     chunk2_bodies = [
-        b for b in captured_bodies
-        if any(f["propertyName"] == "hs_object_id" and str(f["value"]) == "7198" for f in b.get("filters", []))
+        b for b in captured_bodies if any(f["propertyName"] == "hs_object_id" and str(f["value"]) == "7198" for f in b.get("filters", []))
     ]
     assert chunk2_bodies, "Expected at least one request with hs_object_id=7198"
     hs_filter = next(f for f in chunk2_bodies[0]["filters"] if f["propertyName"] == "hs_object_id")
