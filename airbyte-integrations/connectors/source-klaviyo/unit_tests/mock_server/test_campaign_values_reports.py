@@ -18,11 +18,10 @@ from mock_server.request_builder import KlaviyoRequestBuilder
 
 
 _NOW = datetime(2024, 3, 2, 12, 0, 0, tzinfo=timezone.utc)
-_STREAM_NAME = "flow_series_reports"
+_STREAM_NAME = "campaign_values_reports"
 _API_KEY = "test_api_key_abc123"
 _BASE_URL = "https://a.klaviyo.com/api"
 
-_UNSUPPORTED_METRIC_ID = "unsupported_metric_RJYhz9"
 _SUPPORTED_METRIC_ID = "supported_metric_ABC123"
 
 
@@ -51,135 +50,49 @@ def _metrics_response(metric_ids: List[str]) -> HttpResponse:
     )
 
 
-def _flow_series_success_body() -> Dict[str, Any]:
-    """Build a successful flow-series-reports response body."""
+def _campaign_values_success_body() -> Dict[str, Any]:
+    """Build a successful campaign-values-reports response body."""
     return {
         "data": {
-            "type": "flow-series-report",
+            "type": "campaign-values-report",
             "attributes": {
                 "results": [
                     {
                         "groupings": {
-                            "flow_id": "flow_001",
-                            "flow_message_id": "msg_001",
+                            "campaign_id": "camp_001",
+                            "campaign_message_id": "msg_001",
                             "send_channel": "email",
                         },
                         "statistics": {
-                            "opens": 10,
-                            "clicks": 5,
-                            "delivered": 100,
-                            "bounced": 2,
-                            "recipients": 102,
+                            "opens": 50,
+                            "clicks": 25,
+                            "delivered": 500,
+                            "bounced": 10,
+                            "recipients": 510,
                         },
                     }
                 ],
             },
         },
-        "links": {"self": f"{_BASE_URL}/flow-series-reports", "next": None},
-    }
-
-
-def _unsupported_metric_error_body() -> Dict[str, Any]:
-    """Build the Klaviyo 400 error body for unsupported conversion metrics."""
-    return {
-        "errors": [
-            {
-                "id": "error-id",
-                "status": 400,
-                "code": "invalid",
-                "title": "Bad request",
-                "detail": "Passed in conversion metric does not support querying for values data",
-            }
-        ]
+        "links": {"self": f"{_BASE_URL}/campaign-values-reports", "next": None},
     }
 
 
 @freezegun.freeze_time(_NOW.isoformat())
-class TestFlowSeriesReportsUnsupportedMetric(TestCase):
+class TestCampaignValuesReportsRateLimiting(TestCase):
     """
-    Tests for the flow_series_reports stream handling of HTTP 400 errors
-    from unsupported conversion metrics.
+    Tests for the campaign_values_reports stream rate limit handling.
 
-    The Klaviyo API returns HTTP 400 with "does not support querying for
-    values data" for certain conversion metrics. The connector should
-    skip these partitions and continue syncing other metrics.
+    Verifies that the P60D step and max_waiting_time_in_seconds cap work correctly
+    to prevent the connector from hanging when Klaviyo's daily rate limit is exhausted.
     """
-
-    @HttpMocker()
-    def test_ignores_400_unsupported_conversion_metric(self, http_mocker: HttpMocker):
-        """
-        Verify that when one metric returns the unsupported 400 error,
-        the sync continues and returns records from other supported metrics.
-        """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
-
-        # Mock the parent metrics_for_reporting stream (GET /metrics)
-        http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
-            _metrics_response([_SUPPORTED_METRIC_ID, _UNSUPPORTED_METRIC_ID]),
-        )
-
-        # Use the underlying requests_mock to handle POST with dynamic body matching
-        def flow_series_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
-            body = json.loads(request.body)
-            metric_id = body.get("data", {}).get("attributes", {}).get("conversion_metric_id", "")
-            if metric_id == _UNSUPPORTED_METRIC_ID:
-                context.status_code = 400
-                return json.dumps(_unsupported_metric_error_body())
-            context.status_code = 200
-            return json.dumps(_flow_series_success_body())
-
-        http_mocker._mocker.post(
-            f"{_BASE_URL}/flow-series-reports",
-            text=flow_series_callback,
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        output = read(source, config=config, catalog=catalog)
-
-        # The sync should complete without errors
-        assert len(output.errors) == 0, f"Expected no errors but got: {output.errors}"
-        # We should have records from the supported metric
-        assert len(output.records) >= 1
-
-    @HttpMocker()
-    def test_all_metrics_unsupported_yields_zero_records(self, http_mocker: HttpMocker):
-        """
-        Verify that when all metrics are unsupported, the sync completes
-        with zero records and no errors.
-        """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
-
-        # Mock the parent metrics_for_reporting stream (GET /metrics)
-        http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
-            _metrics_response([_UNSUPPORTED_METRIC_ID]),
-        )
-
-        # Every POST returns 400 unsupported
-        def all_unsupported_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
-            context.status_code = 400
-            return json.dumps(_unsupported_metric_error_body())
-
-        http_mocker._mocker.post(
-            f"{_BASE_URL}/flow-series-reports",
-            text=all_unsupported_callback,
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert len(output.errors) == 0, f"Expected no errors but got: {output.errors}"
-        assert len(output.records) == 0
 
     @HttpMocker()
     def test_step_p60d_reduces_api_calls(self, http_mocker: HttpMocker):
         """
         Verify that the P60D step reduces the number of API calls.
         With start_date=2024-01-01 and now=2024-03-02, P60D should produce
-        exactly 1 time window (Jan 1 - Mar 1), meaning 1 POST per metric.
+        2 time windows, not 3 (which P30D would produce).
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
@@ -194,10 +107,10 @@ class TestFlowSeriesReportsUnsupportedMetric(TestCase):
             nonlocal call_count
             call_count += 1
             context.status_code = 200
-            return json.dumps(_flow_series_success_body())
+            return json.dumps(_campaign_values_success_body())
 
         http_mocker._mocker.post(
-            f"{_BASE_URL}/flow-series-reports",
+            f"{_BASE_URL}/campaign-values-reports",
             text=counting_callback,
         )
 
@@ -232,7 +145,7 @@ class TestFlowSeriesReportsUnsupportedMetric(TestCase):
             return json.dumps({"errors": [{"status": 429, "detail": "Rate limit exceeded"}]})
 
         http_mocker._mocker.post(
-            f"{_BASE_URL}/flow-series-reports",
+            f"{_BASE_URL}/campaign-values-reports",
             text=rate_limited_callback,
         )
 
