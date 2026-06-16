@@ -1,53 +1,46 @@
 {
   "properties": {
     "email": {
-      "description": "User's email address.",
+      "description": "User's email address (unique identifier).",
       "type": ["null", "string"]
     },
     "userId": {
-      "description": "User's unique identifier (alias).",
-      "type": ["null", "string"]
-    },
-    "itblUserId": {
-      "description": "Iterable's internal numeric user ID.",
-      "type": ["null", "string"]
-    },
-    "firstName": {
-      "description": "User's first name.",
-      "type": ["null", "string"]
-    },
-    "lastName": {
-      "description": "User's last name.",
-      "type": ["null", "string"]
-    },
-    "signupDate": {
-      "description": "Date and time when the user signed up. May be space-separated (non-RFC3339).",
-      "type": ["null", "string"]
-    },
-    "signupSource": {
-      "description": "Source through which the user signed up.",
-      "type": ["null", "string"]
-    },
-    "profileUpdatedAt": {
-      "description": "Date and time when the profile was last updated. May be space-separated (non-RFC3339).",
+      "description": "User's unique identifier assigned by the tenant.",
       "type": ["null", "string"]
     },
     "emailListIds": {
-      "description": "List of email list IDs the user is subscribed to.",
+      "description": "List of static list IDs the user is a member of (email-based projects).",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
+    },
+    "itblUserId": {
+      "description": "Iterable's internal unique user identifier.",
+      "type": ["null", "string"]
+    },
+    "knownLitigatorFilter": {
+      "description": "Known litigator confidence level (LT1, LT2, or LT3).",
+      "type": ["null", "string"]
+    },
+    "profileUpdatedAt": {
+      "description": "Date and time when the profile was last updated. Format: '2016-08-02 18:53:45 +00:00'.",
+      "type": ["null", "string"]
+    },
+    "receivedSMSDisclaimer": {
+      "description": "Whether the user has received an SMS with opt-out instructions.",
+      "type": ["null", "boolean"]
+    },
+    "signupDate": {
+      "description": "Date and time when the user profile was created. Format: '2016-08-02 18:53:45 +00:00'.",
+      "type": ["null", "string"]
+    },
+    "signupSource": {
+      "description": "How the contact was created in Iterable (e.g. API, IMPORT).",
+      "type": ["null", "string"]
     },
     "subscribedMessageTypeIds": {
-      "description": "List of message type IDs the user has subscribed to.",
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "unsubscribedMessageTypeIds": {
-      "description": "List of message type IDs the user has unsubscribed from.",
+      "description": "List of opt-in message type IDs the user has subscribed to.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
@@ -60,32 +53,61 @@
         "type": ["null", "integer"]
       }
     },
+    "unsubscribedMessageTypeIds": {
+      "description": "List of opt-out message type IDs the user has unsubscribed from.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "userListIds": {
+      "description": "List of static list IDs the user is a member of (userId/hybrid projects).",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "country": {
+      "description": "User's country.",
+      "type": ["null", "string"]
+    },
+    "devices": {
+      "description": "Devices registered for push notifications.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "ip": {
+      "description": "User's IP address.",
+      "type": ["null", "string"]
+    },
+    "locale": {
+      "description": "User's locale.",
+      "type": ["null", "string"]
+    },
     "phoneNumber": {
-      "description": "User's phone number.",
+      "description": "User's phone number used for SMS.",
       "type": ["null", "string"]
     },
-    "phoneNumberCarrier": {
-      "description": "Carrier associated with the user's phone number.",
-      "type": ["null", "string"]
+    "profile": {
+      "description": "Profile data used for message personalization.",
+      "type": ["null", "object"]
     },
-    "phoneNumberCountryPrefix": {
-      "description": "Country prefix for the user's phone number.",
-      "type": ["null", "string"]
-    },
-    "phoneNumberIsVoip": {
-      "description": "Whether the user's phone number is a VoIP number.",
-      "type": ["null", "boolean"]
-    },
-    "phoneNumberLineType": {
-      "description": "Line type of the user's phone number.",
-      "type": ["null", "string"]
-    },
-    "phoneNumberUpdatedAt": {
-      "description": "Date and time when the phone number was last updated.",
+    "timeZone": {
+      "description": "User's time zone.",
       "type": ["null", "string"]
     },
     "itblInternal.emailDomain": {
-      "description": "Domain of the user's email address (set by Iterable internally).",
+      "description": "Domain of the user's email address (managed by Iterable).",
+      "type": ["null", "string"]
+    },
+    "itblInternal.phoneCountry": {
+      "description": "ISO-3166 country code for the user's phone number.",
+      "type": ["null", "string"]
+    },
+    "itblInternal.phoneType": {
+      "description": "Type of phone number (MOBILE, FIXED_LINE, VOIP, etc.).",
       "type": ["null", "string"]
     },
     "itblInternal.documentCreatedAt": {
@@ -99,6 +121,14 @@
     "itblInternal.isUnknownUser": {
       "description": "Whether the user is flagged as unknown by Iterable.",
       "type": ["null", "boolean"]
+    },
+    "itblDS.brandAffinityLabel": {
+      "description": "Contact's engagement level as determined by Brand Affinity.",
+      "type": ["null", "string"]
+    },
+    "itblDS.predictiveGoals": {
+      "description": "User conversion scores for Predictive Goals.",
+      "type": ["null", "object"]
     },
     "data": {
       "description": "Custom data fields specific to the tenant. Contains all non-standard user profile fields.",

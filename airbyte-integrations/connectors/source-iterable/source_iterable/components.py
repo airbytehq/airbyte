@@ -28,34 +28,45 @@ class UsersRecordExtractor(DpathExtractor):
     """Extracts user records, keeping standard Iterable-managed fields at the top level
     and placing all custom/tenant-specific dataFields into a generic `data` object.
 
-    The Iterable export API returns `itblInternal.*` as flat dotted keys rather than
-    a nested object, so those are preserved as-is at the top level.
+    Standard fields are those documented at:
+    https://support.iterable.com/hc/en-us/articles/217744303-User-Profile-Fields-Used-by-Iterable
+
+    The Iterable export API returns `itblInternal.*` and `itblDS.*` as flat dotted
+    keys rather than nested objects, so those are preserved as-is at the top level.
     """
 
+    # Fields documented by Iterable as managed or used for sending messages.
+    # Reference: https://support.iterable.com/hc/en-us/articles/217744303
     STANDARD_FIELDS = frozenset(
         {
+            # Unique identifiers
             "email",
             "userId",
+            # Managed by Iterable
+            "emailListIds",
             "itblUserId",
-            "firstName",
-            "lastName",
+            "knownLitigatorFilter",
+            "profileUpdatedAt",
+            "receivedSMSDisclaimer",
             "signupDate",
             "signupSource",
-            "profileUpdatedAt",
-            "emailListIds",
             "subscribedMessageTypeIds",
-            "unsubscribedMessageTypeIds",
             "unsubscribedChannelIds",
+            "unsubscribedMessageTypeIds",
+            "userListIds",
+            # Fields used for sending messages
+            "country",
+            "devices",
+            "ip",
+            "locale",
             "phoneNumber",
-            "phoneNumberCarrier",
-            "phoneNumberCountryPrefix",
-            "phoneNumberIsVoip",
-            "phoneNumberLineType",
-            "phoneNumberUpdatedAt",
+            "profile",
+            "timeZone",
         }
     )
 
-    ITBL_INTERNAL_PREFIX = "itblInternal."
+    # itblInternal.* and itblDS.* come as flat dotted keys from the export API.
+    ITBL_PREFIXES = ("itblInternal.", "itblDS.")
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         jsonl_records = super().extract_records(response=response)
@@ -63,7 +74,7 @@ class UsersRecordExtractor(DpathExtractor):
             standard: dict[str, Any] = {}
             data: dict[str, Any] = {}
             for key, value in record_dict.items():
-                if key in self.STANDARD_FIELDS or key.startswith(self.ITBL_INTERNAL_PREFIX):
+                if key in self.STANDARD_FIELDS or key.startswith(self.ITBL_PREFIXES):
                     standard[key] = value
                 else:
                     data[key] = value
