@@ -183,3 +183,28 @@ class Purchases(Stream, IncrementalMixin):
                 self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
             self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+
+
+class Inventory(Stream, IncrementalMixin):
+    """Inventory stream tracking warehouse stock levels."""
+
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+        super().__init__(**kwargs)
+        self.count = count
+        self.seed = seed
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if hasattr(self, "_state"):
+            return self._state
+        return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        raise RuntimeError("Failed to connect to inventory data source: connection refused")
