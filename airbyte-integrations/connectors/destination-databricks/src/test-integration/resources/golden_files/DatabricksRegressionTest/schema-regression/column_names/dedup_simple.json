@@ -6,7 +6,7 @@
         "nullable" : true
       },
       "number" : {
-        "type" : "DECIMAL",
+        "type" : "DECIMAL(38, 10)",
         "nullable" : true
       },
       "integer" : {
@@ -74,7 +74,7 @@
         "nullable" : true
       },
       "number_nonnull" : {
-        "type" : "DECIMAL",
+        "type" : "DECIMAL(38, 10)",
         "nullable" : true
       },
       "integer_nonnull" : {
