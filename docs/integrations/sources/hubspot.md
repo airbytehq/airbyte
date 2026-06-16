@@ -79,7 +79,9 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
-| `property_history`          | `crm.objects.contacts.read`                                                                                  |
+| `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
+| `companies_property_history` | `crm.objects.companies.read`                                                                                |
+| `deals_property_history`    | `crm.objects.deals.read`                                                                                     |
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
 | `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
@@ -114,8 +116,14 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 </FieldAnchor>
 
-7. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
-8. Click **Set up source** and wait for the tests to complete.
+<!-- markdownlint-disable MD029 -->
+
+7. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
+8. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
+9. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
+10. Click **Set up source** and wait for the tests to complete.
+
+<!-- markdownlint-enable MD029 -->
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -130,8 +138,10 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
    - (Not Recommended:) To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (HubSpot creation date) will be used as start date. It's recommended to provide a start date relevant to your data to optimize synchronization.
-6. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
-7. Click **Set up source** and wait for the tests to complete.
+6. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
+7. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
+8. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
+9. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
 
@@ -273,7 +283,11 @@ The HubSpot source connector supports the following streams:
 
 ### Notes on the `property_history` streams
 
-`Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timestamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
+The property history streams (`contacts_property_history`, `companies_property_history`, `deals_property_history`) use Client-Side Incremental sync with a cursor timestamp to determine which records have changed since the previous sync.
+
+HubSpot calculated properties — formula fields, rollup summaries, and analytics properties such as `hs_analytics_*` — always have a timestamp that mirrors the time of the latest sync, not the time of the last user-initiated change. This causes the sync cursor to advance past records that have not yet been synced, which can result in missing records.
+
+To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is a reasonable starting point. Because these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
 
 ### Notes on the `engagements` stream
 
@@ -399,9 +413,23 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - Check out common troubleshooting issues for the HubSpot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
-- **Missing records** in CRMSearch streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`): 
+- **Missing records** in CRM Search streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`):
   - If you notice missing records during incremental syncs, it may be due to irregularities in HubSpot's API behavior.
-  - To mitigate this, you can configure a lookback window in the source settings. This setting allows the connector to re-fetch data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
+  - To mitigate this, configure the **CRM Search Lookback Window** in the source settings. This re-fetches data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
+
+- **Missing records** in property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`):
+  - HubSpot calculated properties (formula fields, rollup summaries, analytics properties) can emit timestamps ahead of user-initiated changes, causing the sync cursor to advance past records that have not yet been synced.
+  - To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is recommended. Since these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
+
+- **Destination type conversion errors on dynamic `number` / `boolean` properties** (for example, `JSON → NUMERIC`, `JSON → BOOL`, or decimal-precision / scale errors on fields like `hs_hd_ticket_ids`, `zendesk_requester_id`, `hs_task_send_default_reminder`, or any `companies.properties.*` field):
+  - HubSpot sometimes declares a property as `number` or `boolean` but returns values that cannot be cast to that type — for example, semicolon-separated IDs (`"3092727991;3881228353;15895321999"`) in a `number` field, multi-value text in a `boolean` field, or numbers beyond the declared precision. When that happens the connector emits the raw string, but because the published schema still says `number` / `boolean`, strict destinations reject the record.
+  - To resolve this, enable **Treat dynamic number and boolean properties as strings** (`treat_numbers_and_booleans_as_strings`) in the source configuration. When this option is on, the connector declares every HubSpot dynamic property that would otherwise be `number` or `boolean` as `string`, so the affected values land in the destination as strings rather than failing type conversion.
+  - The toggle only affects HubSpot dynamic `properties.*` fields. Static schema fields and non-property fields are not changed.
+  - **After enabling the toggle you must refresh both the schema and the data**, otherwise the new string type will not reach the destination. In the Airbyte UI:
+    1. Open the affected connection.
+    2. Click **Refresh source schema** and save the updated catalog — the affected columns should now be `string`.
+    3. Trigger a **Refresh data** sync (or clear the affected streams and run a new sync) so the destination tables are rewritten with the new column type and previously-rejected records are re-emitted as strings.
+  - The same steps apply if you later disable the toggle — refresh the schema and the data so the destination column types match the new catalog.
 
 </details>
 
@@ -416,8 +444,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.7.0 | 2026-06-11 | [76396](https://github.com/airbytehq/airbyte/pull/76396) | Add `treat_numbers_and_booleans_as_strings` config toggle to coerce dynamic `number`/`boolean` properties to `string` |
+| 6.6.1 | 2026-06-10 | [79636](https://github.com/airbytehq/airbyte/pull/79636) | Add configurable `property_history_lookback_window` (minutes) to property history streams (deals, contacts, companies) to prevent silent record loss caused by cursor drift from HubSpot calculated properties. Clarify existing `lookback_window` field as CRM Search-specific. |
 | 6.6.0 | 2026-06-08 | [71259](https://github.com/airbytehq/airbyte/pull/71259) | Add association streams for standard and custom objects, including optional OAuth scopes needed to support them |
-| 6.5.5 | 2026-04-22 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
+| 6.5.5 | 2026-04-28 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
 | 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
 | 6.5.3 | 2026-04-21 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
 | 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |

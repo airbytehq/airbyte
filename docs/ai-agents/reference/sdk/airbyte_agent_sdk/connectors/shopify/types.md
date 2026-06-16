@@ -537,6 +537,1513 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="ArticlesAndCondition"></a>
+
+`ArticlesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ArticlesAnyCondition"></a>
+
+`ArticlesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesAnyValueFilter"></a>
+
+`ArticlesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: Any`
+    :   Name of the author of the article
+
+    `blog_id: Any`
+    :   Identifier of the blog the article belongs to
+
+    `body_html: Any`
+    :   HTML content of the article body
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the article was created
+
+    `handle: Any`
+    :   URL-friendly handle for the article
+
+    `id: Any`
+    :   Unique identifier for the article
+
+    `published_at: Any`
+    :   ISO 8601 timestamp when the article was published
+
+    `summary_html: Any`
+    :   Summary of the article in HTML
+
+    `tags: Any`
+    :   Comma-separated list of tags for the article
+
+    `title: Any`
+    :   Title of the article
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the article was last updated
+
+<a id="ArticlesContainsCondition"></a>
+
+`ArticlesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesEqCondition"></a>
+
+`ArticlesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.ArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesFuzzyCondition"></a>
+
+`ArticlesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.ArticlesStringFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesGetParams"></a>
+
+`ArticlesGetParams(*args, **kwargs)`
+:   Parameters for articles.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `article_id: str`
+    :   The type of the None singleton.
+
+    `blog_id: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesGtCondition"></a>
+
+`ArticlesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.ArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesGteCondition"></a>
+
+`ArticlesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.ArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesInCondition"></a>
+
+`ArticlesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.ArticlesInFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesInFilter"></a>
+
+`ArticlesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: list[str]`
+    :   Name of the author of the article
+
+    `blog_id: list[int]`
+    :   Identifier of the blog the article belongs to
+
+    `body_html: list[str]`
+    :   HTML content of the article body
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the article was created
+
+    `handle: list[str]`
+    :   URL-friendly handle for the article
+
+    `id: list[int]`
+    :   Unique identifier for the article
+
+    `published_at: list[str]`
+    :   ISO 8601 timestamp when the article was published
+
+    `summary_html: list[str]`
+    :   Summary of the article in HTML
+
+    `tags: list[str]`
+    :   Comma-separated list of tags for the article
+
+    `title: list[str]`
+    :   Title of the article
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the article was last updated
+
+<a id="ArticlesKeywordCondition"></a>
+
+`ArticlesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.ArticlesStringFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesLikeCondition"></a>
+
+`ArticlesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.ArticlesStringFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesListParams"></a>
+
+`ArticlesListParams(*args, **kwargs)`
+:   Parameters for articles.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blog_id: str`
+    :   The type of the None singleton.
+
+    `created_at_max: str`
+    :   The type of the None singleton.
+
+    `created_at_min: str`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `published_status: str`
+    :   The type of the None singleton.
+
+    `since_id: int`
+    :   The type of the None singleton.
+
+    `updated_at_max: str`
+    :   The type of the None singleton.
+
+    `updated_at_min: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesLtCondition"></a>
+
+`ArticlesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.ArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesLteCondition"></a>
+
+`ArticlesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.ArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesNeqCondition"></a>
+
+`ArticlesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.ArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesNotCondition"></a>
+
+`ArticlesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="ArticlesOrCondition"></a>
+
+`ArticlesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ArticlesSearchFilter"></a>
+
+`ArticlesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering articles search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: str | None`
+    :   Name of the author of the article
+
+    `blog_id: int | None`
+    :   Identifier of the blog the article belongs to
+
+    `body_html: str | None`
+    :   HTML content of the article body
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the article was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the article
+
+    `id: int | None`
+    :   Unique identifier for the article
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the article was published
+
+    `summary_html: str | None`
+    :   Summary of the article in HTML
+
+    `tags: str | None`
+    :   Comma-separated list of tags for the article
+
+    `title: str | None`
+    :   Title of the article
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the article was last updated
+
+<a id="ArticlesSearchQuery"></a>
+
+`ArticlesSearchQuery(*args, **kwargs)`
+:   Search query for articles entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="ArticlesSortFilter"></a>
+
+`ArticlesSortFilter(*args, **kwargs)`
+:   Available fields for sorting articles search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: Literal['asc', 'desc']`
+    :   Name of the author of the article
+
+    `blog_id: Literal['asc', 'desc']`
+    :   Identifier of the blog the article belongs to
+
+    `body_html: Literal['asc', 'desc']`
+    :   HTML content of the article body
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the article was created
+
+    `handle: Literal['asc', 'desc']`
+    :   URL-friendly handle for the article
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the article
+
+    `published_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the article was published
+
+    `summary_html: Literal['asc', 'desc']`
+    :   Summary of the article in HTML
+
+    `tags: Literal['asc', 'desc']`
+    :   Comma-separated list of tags for the article
+
+    `title: Literal['asc', 'desc']`
+    :   Title of the article
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the article was last updated
+
+<a id="ArticlesStringFilter"></a>
+
+`ArticlesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: str`
+    :   Name of the author of the article
+
+    `blog_id: str`
+    :   Identifier of the blog the article belongs to
+
+    `body_html: str`
+    :   HTML content of the article body
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the article was created
+
+    `handle: str`
+    :   URL-friendly handle for the article
+
+    `id: str`
+    :   Unique identifier for the article
+
+    `published_at: str`
+    :   ISO 8601 timestamp when the article was published
+
+    `summary_html: str`
+    :   Summary of the article in HTML
+
+    `tags: str`
+    :   Comma-separated list of tags for the article
+
+    `title: str`
+    :   Title of the article
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the article was last updated
+
+<a id="BalanceTransactionsAndCondition"></a>
+
+`BalanceTransactionsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsAnyCondition"></a>
+
+`BalanceTransactionsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsAnyValueFilter"></a>
+
+`BalanceTransactionsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: Any`
+    :   Gross amount of the transaction
+
+    `currency: Any`
+    :   ISO 4217 currency code of the transaction
+
+    `fee: Any`
+    :   Total fees deducted from the transaction
+
+    `id: Any`
+    :   Unique identifier of the balance transaction
+
+    `net: Any`
+    :   Net amount of the transaction
+
+    `payout_id: Any`
+    :   Identifier of the payout the transaction was paid out in
+
+    `payout_status: Any`
+    :   Status of the associated payout
+
+    `processed_at: Any`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `source_order_id: Any`
+    :   Identifier of the source order, if applicable
+
+    `source_type: Any`
+    :   Type of the resource that led to this transaction
+
+    `type_: Any`
+    :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+
+<a id="BalanceTransactionsContainsCondition"></a>
+
+`BalanceTransactionsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsEqCondition"></a>
+
+`BalanceTransactionsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsFuzzyCondition"></a>
+
+`BalanceTransactionsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStringFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsGtCondition"></a>
+
+`BalanceTransactionsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsGteCondition"></a>
+
+`BalanceTransactionsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsInCondition"></a>
+
+`BalanceTransactionsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsInFilter"></a>
+
+`BalanceTransactionsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: list[str]`
+    :   Gross amount of the transaction
+
+    `currency: list[str]`
+    :   ISO 4217 currency code of the transaction
+
+    `fee: list[str]`
+    :   Total fees deducted from the transaction
+
+    `id: list[int]`
+    :   Unique identifier of the balance transaction
+
+    `net: list[str]`
+    :   Net amount of the transaction
+
+    `payout_id: list[int]`
+    :   Identifier of the payout the transaction was paid out in
+
+    `payout_status: list[str]`
+    :   Status of the associated payout
+
+    `processed_at: list[str]`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `source_order_id: list[int]`
+    :   Identifier of the source order, if applicable
+
+    `source_type: list[str]`
+    :   Type of the resource that led to this transaction
+
+    `type_: list[str]`
+    :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+
+<a id="BalanceTransactionsKeywordCondition"></a>
+
+`BalanceTransactionsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStringFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsLikeCondition"></a>
+
+`BalanceTransactionsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStringFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsListParams"></a>
+
+`BalanceTransactionsListParams(*args, **kwargs)`
+:   Parameters for balance_transactions.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `payout_id: int`
+    :   The type of the None singleton.
+
+    `payout_status: str`
+    :   The type of the None singleton.
+
+    `since_id: int`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsLtCondition"></a>
+
+`BalanceTransactionsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsLteCondition"></a>
+
+`BalanceTransactionsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsNeqCondition"></a>
+
+`BalanceTransactionsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsNotCondition"></a>
+
+`BalanceTransactionsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsOrCondition"></a>
+
+`BalanceTransactionsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsSearchFilter"></a>
+
+`BalanceTransactionsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering balance_transactions search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Gross amount of the transaction
+
+    `currency: str | None`
+    :   ISO 4217 currency code of the transaction
+
+    `fee: str | None`
+    :   Total fees deducted from the transaction
+
+    `id: int | None`
+    :   Unique identifier of the balance transaction
+
+    `net: str | None`
+    :   Net amount of the transaction
+
+    `payout_id: int | None`
+    :   Identifier of the payout the transaction was paid out in
+
+    `payout_status: str | None`
+    :   Status of the associated payout
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `source_order_id: int | None`
+    :   Identifier of the source order, if applicable
+
+    `source_type: str | None`
+    :   Type of the resource that led to this transaction
+
+    `type_: str | None`
+    :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+
+<a id="BalanceTransactionsSearchQuery"></a>
+
+`BalanceTransactionsSearchQuery(*args, **kwargs)`
+:   Search query for balance_transactions entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsSortFilter"></a>
+
+`BalanceTransactionsSortFilter(*args, **kwargs)`
+:   Available fields for sorting balance_transactions search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: Literal['asc', 'desc']`
+    :   Gross amount of the transaction
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code of the transaction
+
+    `fee: Literal['asc', 'desc']`
+    :   Total fees deducted from the transaction
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier of the balance transaction
+
+    `net: Literal['asc', 'desc']`
+    :   Net amount of the transaction
+
+    `payout_id: Literal['asc', 'desc']`
+    :   Identifier of the payout the transaction was paid out in
+
+    `payout_status: Literal['asc', 'desc']`
+    :   Status of the associated payout
+
+    `processed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `source_order_id: Literal['asc', 'desc']`
+    :   Identifier of the source order, if applicable
+
+    `source_type: Literal['asc', 'desc']`
+    :   Type of the resource that led to this transaction
+
+    `type_: Literal['asc', 'desc']`
+    :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+
+<a id="BalanceTransactionsStringFilter"></a>
+
+`BalanceTransactionsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   Gross amount of the transaction
+
+    `currency: str`
+    :   ISO 4217 currency code of the transaction
+
+    `fee: str`
+    :   Total fees deducted from the transaction
+
+    `id: str`
+    :   Unique identifier of the balance transaction
+
+    `net: str`
+    :   Net amount of the transaction
+
+    `payout_id: str`
+    :   Identifier of the payout the transaction was paid out in
+
+    `payout_status: str`
+    :   Status of the associated payout
+
+    `processed_at: str`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `source_order_id: str`
+    :   Identifier of the source order, if applicable
+
+    `source_type: str`
+    :   Type of the resource that led to this transaction
+
+    `type_: str`
+    :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+
+<a id="BlogsAndCondition"></a>
+
+`BlogsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="BlogsAnyCondition"></a>
+
+`BlogsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.BlogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsAnyValueFilter"></a>
+
+`BlogsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `commentable: Any`
+    :   Whether readers can post comments (no, moderate, yes)
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the blog was created
+
+    `handle: Any`
+    :   URL-friendly handle for the blog
+
+    `id: Any`
+    :   Unique identifier for the blog
+
+    `tags: Any`
+    :   Comma-separated tags from the blog's articles
+
+    `title: Any`
+    :   Title of the blog
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the blog was last updated
+
+<a id="BlogsContainsCondition"></a>
+
+`BlogsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.BlogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsEqCondition"></a>
+
+`BlogsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.BlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsFuzzyCondition"></a>
+
+`BlogsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.BlogsStringFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsGetParams"></a>
+
+`BlogsGetParams(*args, **kwargs)`
+:   Parameters for blogs.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blog_id: str`
+    :   The type of the None singleton.
+
+<a id="BlogsGtCondition"></a>
+
+`BlogsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.BlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsGteCondition"></a>
+
+`BlogsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.BlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsInCondition"></a>
+
+`BlogsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.BlogsInFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsInFilter"></a>
+
+`BlogsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `commentable: list[str]`
+    :   Whether readers can post comments (no, moderate, yes)
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the blog was created
+
+    `handle: list[str]`
+    :   URL-friendly handle for the blog
+
+    `id: list[int]`
+    :   Unique identifier for the blog
+
+    `tags: list[str]`
+    :   Comma-separated tags from the blog's articles
+
+    `title: list[str]`
+    :   Title of the blog
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the blog was last updated
+
+<a id="BlogsKeywordCondition"></a>
+
+`BlogsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.BlogsStringFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsLikeCondition"></a>
+
+`BlogsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.BlogsStringFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsListParams"></a>
+
+`BlogsListParams(*args, **kwargs)`
+:   Parameters for blogs.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `since_id: int`
+    :   The type of the None singleton.
+
+<a id="BlogsLtCondition"></a>
+
+`BlogsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.BlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsLteCondition"></a>
+
+`BlogsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.BlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsNeqCondition"></a>
+
+`BlogsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.BlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsNotCondition"></a>
+
+`BlogsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="BlogsOrCondition"></a>
+
+`BlogsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="BlogsSearchFilter"></a>
+
+`BlogsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering blogs search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `commentable: str | None`
+    :   Whether readers can post comments (no, moderate, yes)
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the blog was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the blog
+
+    `id: int | None`
+    :   Unique identifier for the blog
+
+    `tags: str | None`
+    :   Comma-separated tags from the blog's articles
+
+    `title: str | None`
+    :   Title of the blog
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the blog was last updated
+
+<a id="BlogsSearchQuery"></a>
+
+`BlogsSearchQuery(*args, **kwargs)`
+:   Search query for blogs entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.BlogsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="BlogsSortFilter"></a>
+
+`BlogsSortFilter(*args, **kwargs)`
+:   Available fields for sorting blogs search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `commentable: Literal['asc', 'desc']`
+    :   Whether readers can post comments (no, moderate, yes)
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the blog was created
+
+    `handle: Literal['asc', 'desc']`
+    :   URL-friendly handle for the blog
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the blog
+
+    `tags: Literal['asc', 'desc']`
+    :   Comma-separated tags from the blog's articles
+
+    `title: Literal['asc', 'desc']`
+    :   Title of the blog
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the blog was last updated
+
+<a id="BlogsStringFilter"></a>
+
+`BlogsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `commentable: str`
+    :   Whether readers can post comments (no, moderate, yes)
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the blog was created
+
+    `handle: str`
+    :   URL-friendly handle for the blog
+
+    `id: str`
+    :   Unique identifier for the blog
+
+    `tags: str`
+    :   Comma-separated tags from the blog's articles
+
+    `title: str`
+    :   Title of the blog
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the blog was last updated
+
 <a id="CollectsAndCondition"></a>
 
 `CollectsAndCondition(*args, **kwargs)`
@@ -2875,6 +4382,530 @@ Classes
 
     `usage_count: str`
     :   Number of times the code has been redeemed
+
+<a id="DisputesAndCondition"></a>
+
+`DisputesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="DisputesAnyCondition"></a>
+
+`DisputesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.DisputesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesAnyValueFilter"></a>
+
+`DisputesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: Any`
+    :   Disputed amount
+
+    `currency: Any`
+    :   ISO 4217 currency code of the dispute amount
+
+    `evidence_due_by: Any`
+    :   ISO 8601 deadline for evidence submission
+
+    `finalized_on: Any`
+    :   ISO 8601 timestamp when the dispute was resolved
+
+    `id: Any`
+    :   Unique identifier for the dispute
+
+    `initiated_at: Any`
+    :   ISO 8601 timestamp when the dispute was initiated
+
+    `network_reason_code: Any`
+    :   Network reason code from the cardholder's bank
+
+    `order_id: Any`
+    :   Identifier of the order the dispute belongs to
+
+    `reason: Any`
+    :   Reason for the dispute provided by the cardholder's bank
+
+    `status: Any`
+    :   Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+
+    `type_: Any`
+    :   Whether the dispute is an inquiry or chargeback
+
+<a id="DisputesContainsCondition"></a>
+
+`DisputesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.DisputesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesEqCondition"></a>
+
+`DisputesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.DisputesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesFuzzyCondition"></a>
+
+`DisputesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.DisputesStringFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesGetParams"></a>
+
+`DisputesGetParams(*args, **kwargs)`
+:   Parameters for disputes.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `dispute_id: str`
+    :   The type of the None singleton.
+
+<a id="DisputesGtCondition"></a>
+
+`DisputesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.DisputesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesGteCondition"></a>
+
+`DisputesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.DisputesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesInCondition"></a>
+
+`DisputesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.DisputesInFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesInFilter"></a>
+
+`DisputesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: list[str]`
+    :   Disputed amount
+
+    `currency: list[str]`
+    :   ISO 4217 currency code of the dispute amount
+
+    `evidence_due_by: list[str]`
+    :   ISO 8601 deadline for evidence submission
+
+    `finalized_on: list[str]`
+    :   ISO 8601 timestamp when the dispute was resolved
+
+    `id: list[int]`
+    :   Unique identifier for the dispute
+
+    `initiated_at: list[str]`
+    :   ISO 8601 timestamp when the dispute was initiated
+
+    `network_reason_code: list[str]`
+    :   Network reason code from the cardholder's bank
+
+    `order_id: list[int]`
+    :   Identifier of the order the dispute belongs to
+
+    `reason: list[str]`
+    :   Reason for the dispute provided by the cardholder's bank
+
+    `status: list[str]`
+    :   Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+
+    `type_: list[str]`
+    :   Whether the dispute is an inquiry or chargeback
+
+<a id="DisputesKeywordCondition"></a>
+
+`DisputesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.DisputesStringFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesLikeCondition"></a>
+
+`DisputesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.DisputesStringFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesListParams"></a>
+
+`DisputesListParams(*args, **kwargs)`
+:   Parameters for disputes.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `initiated_at: str`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `since_id: int`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+<a id="DisputesLtCondition"></a>
+
+`DisputesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.DisputesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesLteCondition"></a>
+
+`DisputesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.DisputesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesNeqCondition"></a>
+
+`DisputesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.DisputesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesNotCondition"></a>
+
+`DisputesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="DisputesOrCondition"></a>
+
+`DisputesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="DisputesSearchFilter"></a>
+
+`DisputesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering disputes search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Disputed amount
+
+    `currency: str | None`
+    :   ISO 4217 currency code of the dispute amount
+
+    `evidence_due_by: str | None`
+    :   ISO 8601 deadline for evidence submission
+
+    `finalized_on: str | None`
+    :   ISO 8601 timestamp when the dispute was resolved
+
+    `id: int | None`
+    :   Unique identifier for the dispute
+
+    `initiated_at: str | None`
+    :   ISO 8601 timestamp when the dispute was initiated
+
+    `network_reason_code: str | None`
+    :   Network reason code from the cardholder's bank
+
+    `order_id: int | None`
+    :   Identifier of the order the dispute belongs to
+
+    `reason: str | None`
+    :   Reason for the dispute provided by the cardholder's bank
+
+    `status: str | None`
+    :   Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+
+    `type_: str | None`
+    :   Whether the dispute is an inquiry or chargeback
+
+<a id="DisputesSearchQuery"></a>
+
+`DisputesSearchQuery(*args, **kwargs)`
+:   Search query for disputes entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.DisputesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="DisputesSortFilter"></a>
+
+`DisputesSortFilter(*args, **kwargs)`
+:   Available fields for sorting disputes search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: Literal['asc', 'desc']`
+    :   Disputed amount
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code of the dispute amount
+
+    `evidence_due_by: Literal['asc', 'desc']`
+    :   ISO 8601 deadline for evidence submission
+
+    `finalized_on: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the dispute was resolved
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the dispute
+
+    `initiated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the dispute was initiated
+
+    `network_reason_code: Literal['asc', 'desc']`
+    :   Network reason code from the cardholder's bank
+
+    `order_id: Literal['asc', 'desc']`
+    :   Identifier of the order the dispute belongs to
+
+    `reason: Literal['asc', 'desc']`
+    :   Reason for the dispute provided by the cardholder's bank
+
+    `status: Literal['asc', 'desc']`
+    :   Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+
+    `type_: Literal['asc', 'desc']`
+    :   Whether the dispute is an inquiry or chargeback
+
+<a id="DisputesStringFilter"></a>
+
+`DisputesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   Disputed amount
+
+    `currency: str`
+    :   ISO 4217 currency code of the dispute amount
+
+    `evidence_due_by: str`
+    :   ISO 8601 deadline for evidence submission
+
+    `finalized_on: str`
+    :   ISO 8601 timestamp when the dispute was resolved
+
+    `id: str`
+    :   Unique identifier for the dispute
+
+    `initiated_at: str`
+    :   ISO 8601 timestamp when the dispute was initiated
+
+    `network_reason_code: str`
+    :   Network reason code from the cardholder's bank
+
+    `order_id: str`
+    :   Identifier of the order the dispute belongs to
+
+    `reason: str`
+    :   Reason for the dispute provided by the cardholder's bank
+
+    `status: str`
+    :   Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+
+    `type_: str`
+    :   Whether the dispute is an inquiry or chargeback
 
 <a id="DraftOrdersAndCondition"></a>
 
@@ -5731,6 +7762,987 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the location was last updated
 
+<a id="MetafieldArticlesAndCondition"></a>
+
+`MetafieldArticlesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesAnyCondition"></a>
+
+`MetafieldArticlesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesAnyValueFilter"></a>
+
+`MetafieldArticlesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Identifier key for the metafield
+
+    `namespace: Any`
+    :   Container namespace for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the article that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `article`)
+
+    `type_: Any`
+    :   The metafield's information type
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   The metafield value
+
+<a id="MetafieldArticlesContainsCondition"></a>
+
+`MetafieldArticlesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesEqCondition"></a>
+
+`MetafieldArticlesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesFuzzyCondition"></a>
+
+`MetafieldArticlesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesGtCondition"></a>
+
+`MetafieldArticlesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesGteCondition"></a>
+
+`MetafieldArticlesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesInCondition"></a>
+
+`MetafieldArticlesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesInFilter"></a>
+
+`MetafieldArticlesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Identifier key for the metafield
+
+    `namespace: list[str]`
+    :   Container namespace for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the article that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `article`)
+
+    `type_: list[str]`
+    :   The metafield's information type
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   The metafield value
+
+<a id="MetafieldArticlesKeywordCondition"></a>
+
+`MetafieldArticlesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesLikeCondition"></a>
+
+`MetafieldArticlesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesListParams"></a>
+
+`MetafieldArticlesListParams(*args, **kwargs)`
+:   Parameters for metafield_articles.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `article_id: str`
+    :   The type of the None singleton.
+
+    `blog_id: str`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesLtCondition"></a>
+
+`MetafieldArticlesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesLteCondition"></a>
+
+`MetafieldArticlesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesNeqCondition"></a>
+
+`MetafieldArticlesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesNotCondition"></a>
+
+`MetafieldArticlesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesOrCondition"></a>
+
+`MetafieldArticlesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesSearchFilter"></a>
+
+`MetafieldArticlesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering metafield_articles search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the article that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `article`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
+
+<a id="MetafieldArticlesSearchQuery"></a>
+
+`MetafieldArticlesSearchQuery(*args, **kwargs)`
+:   Search query for metafield_articles entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesSortFilter"></a>
+
+`MetafieldArticlesSortFilter(*args, **kwargs)`
+:   Available fields for sorting metafield_articles search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Identifier key for the metafield
+
+    `namespace: Literal['asc', 'desc']`
+    :   Container namespace for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the article that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `article`)
+
+    `type_: Literal['asc', 'desc']`
+    :   The metafield's information type
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   The metafield value
+
+<a id="MetafieldArticlesStringFilter"></a>
+
+`MetafieldArticlesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Identifier key for the metafield
+
+    `namespace: str`
+    :   Container namespace for the metafield
+
+    `owner_id: str`
+    :   Identifier of the article that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `article`)
+
+    `type_: str`
+    :   The metafield's information type
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   The metafield value
+
+<a id="MetafieldBlogsAndCondition"></a>
+
+`MetafieldBlogsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsAnyCondition"></a>
+
+`MetafieldBlogsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsAnyValueFilter"></a>
+
+`MetafieldBlogsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Identifier key for the metafield
+
+    `namespace: Any`
+    :   Container namespace for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the blog that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `blog`)
+
+    `type_: Any`
+    :   The metafield's information type
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   The metafield value
+
+<a id="MetafieldBlogsContainsCondition"></a>
+
+`MetafieldBlogsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsEqCondition"></a>
+
+`MetafieldBlogsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsFuzzyCondition"></a>
+
+`MetafieldBlogsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsGtCondition"></a>
+
+`MetafieldBlogsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsGteCondition"></a>
+
+`MetafieldBlogsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsInCondition"></a>
+
+`MetafieldBlogsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsInFilter"></a>
+
+`MetafieldBlogsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Identifier key for the metafield
+
+    `namespace: list[str]`
+    :   Container namespace for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the blog that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `blog`)
+
+    `type_: list[str]`
+    :   The metafield's information type
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   The metafield value
+
+<a id="MetafieldBlogsKeywordCondition"></a>
+
+`MetafieldBlogsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsLikeCondition"></a>
+
+`MetafieldBlogsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsListParams"></a>
+
+`MetafieldBlogsListParams(*args, **kwargs)`
+:   Parameters for metafield_blogs.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blog_id: str`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsLtCondition"></a>
+
+`MetafieldBlogsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsLteCondition"></a>
+
+`MetafieldBlogsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsNeqCondition"></a>
+
+`MetafieldBlogsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsNotCondition"></a>
+
+`MetafieldBlogsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsOrCondition"></a>
+
+`MetafieldBlogsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsSearchFilter"></a>
+
+`MetafieldBlogsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering metafield_blogs search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the blog that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `blog`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
+
+<a id="MetafieldBlogsSearchQuery"></a>
+
+`MetafieldBlogsSearchQuery(*args, **kwargs)`
+:   Search query for metafield_blogs entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsSortFilter"></a>
+
+`MetafieldBlogsSortFilter(*args, **kwargs)`
+:   Available fields for sorting metafield_blogs search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Identifier key for the metafield
+
+    `namespace: Literal['asc', 'desc']`
+    :   Container namespace for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the blog that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `blog`)
+
+    `type_: Literal['asc', 'desc']`
+    :   The metafield's information type
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   The metafield value
+
+<a id="MetafieldBlogsStringFilter"></a>
+
+`MetafieldBlogsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Identifier key for the metafield
+
+    `namespace: str`
+    :   Container namespace for the metafield
+
+    `owner_id: str`
+    :   Identifier of the blog that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `blog`)
+
+    `type_: str`
+    :   The metafield's information type
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   The metafield value
+
 <a id="MetafieldCustomersAndCondition"></a>
 
 `MetafieldCustomersAndCondition(*args, **kwargs)`
@@ -7722,6 +10734,495 @@ Classes
 
     `value: str`
     :   Serialized value stored in the metafield
+
+<a id="MetafieldPagesAndCondition"></a>
+
+`MetafieldPagesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesAnyCondition"></a>
+
+`MetafieldPagesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesAnyValueFilter"></a>
+
+`MetafieldPagesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Identifier key for the metafield
+
+    `namespace: Any`
+    :   Container namespace for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the page that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `page`)
+
+    `type_: Any`
+    :   The metafield's information type
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   The metafield value
+
+<a id="MetafieldPagesContainsCondition"></a>
+
+`MetafieldPagesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesEqCondition"></a>
+
+`MetafieldPagesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesFuzzyCondition"></a>
+
+`MetafieldPagesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesGtCondition"></a>
+
+`MetafieldPagesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesGteCondition"></a>
+
+`MetafieldPagesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesInCondition"></a>
+
+`MetafieldPagesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesInFilter"></a>
+
+`MetafieldPagesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Identifier key for the metafield
+
+    `namespace: list[str]`
+    :   Container namespace for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the page that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `page`)
+
+    `type_: list[str]`
+    :   The metafield's information type
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   The metafield value
+
+<a id="MetafieldPagesKeywordCondition"></a>
+
+`MetafieldPagesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesLikeCondition"></a>
+
+`MetafieldPagesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesListParams"></a>
+
+`MetafieldPagesListParams(*args, **kwargs)`
+:   Parameters for metafield_pages.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page_id: str`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesLtCondition"></a>
+
+`MetafieldPagesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesLteCondition"></a>
+
+`MetafieldPagesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesNeqCondition"></a>
+
+`MetafieldPagesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesNotCondition"></a>
+
+`MetafieldPagesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesOrCondition"></a>
+
+`MetafieldPagesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesSearchFilter"></a>
+
+`MetafieldPagesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering metafield_pages search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the page that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `page`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
+
+<a id="MetafieldPagesSearchQuery"></a>
+
+`MetafieldPagesSearchQuery(*args, **kwargs)`
+:   Search query for metafield_pages entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesSortFilter"></a>
+
+`MetafieldPagesSortFilter(*args, **kwargs)`
+:   Available fields for sorting metafield_pages search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Identifier key for the metafield
+
+    `namespace: Literal['asc', 'desc']`
+    :   Container namespace for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the page that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `page`)
+
+    `type_: Literal['asc', 'desc']`
+    :   The metafield's information type
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   The metafield value
+
+<a id="MetafieldPagesStringFilter"></a>
+
+`MetafieldPagesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Identifier key for the metafield
+
+    `namespace: str`
+    :   Container namespace for the metafield
+
+    `owner_id: str`
+    :   Identifier of the page that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `page`)
+
+    `type_: str`
+    :   The metafield's information type
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   The metafield value
 
 <a id="MetafieldProductImagesAndCondition"></a>
 
@@ -10676,6 +14177,166 @@ Classes
     `user_id: str`
     :   Identifier of the staff user who processed the refund
 
+<a id="OrdersAndCondition"></a>
+
+`OrdersAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="OrdersAnyCondition"></a>
+
+`OrdersAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersAnyValueFilter"></a>
+
+`OrdersAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: Any`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: Any`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: Any`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: Any`
+    :   ISO 4217 currency code for the order totals
+
+    `email: Any`
+    :   Email address associated with the order
+
+    `financial_status: Any`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: Any`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: Any`
+    :   Unique identifier for the order
+
+    `name: Any`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: Any`
+    :   Merchant-provided note on the order
+
+    `order_number: Any`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: Any`
+    :   Phone number associated with the order
+
+    `processed_at: Any`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: Any`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: Any`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: Any`
+    :   Total discount amount applied to the order
+
+    `total_price: Any`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: Any`
+    :   Total tax amount applied to the order
+
+    `total_weight: Any`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersContainsCondition"></a>
+
+`OrdersContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersEqCondition"></a>
+
+`OrdersEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersFuzzyCondition"></a>
+
+`OrdersFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrdersGetParams"></a>
 
 `OrdersGetParams(*args, **kwargs)`
@@ -10688,6 +14349,158 @@ Classes
     ### Class variables
 
     `order_id: str`
+    :   The type of the None singleton.
+
+<a id="OrdersGtCondition"></a>
+
+`OrdersGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersGteCondition"></a>
+
+`OrdersGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersInCondition"></a>
+
+`OrdersInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.OrdersInFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersInFilter"></a>
+
+`OrdersInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: list[str]`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: list[str]`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: list[str]`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: list[str]`
+    :   ISO 4217 currency code for the order totals
+
+    `email: list[str]`
+    :   Email address associated with the order
+
+    `financial_status: list[str]`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: list[str]`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: list[int]`
+    :   Unique identifier for the order
+
+    `name: list[str]`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: list[str]`
+    :   Merchant-provided note on the order
+
+    `order_number: list[int]`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: list[str]`
+    :   Phone number associated with the order
+
+    `processed_at: list[str]`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: list[str]`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: list[str]`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: list[str]`
+    :   Total discount amount applied to the order
+
+    `total_price: list[str]`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: list[str]`
+    :   Total tax amount applied to the order
+
+    `total_weight: list[int]`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersKeywordCondition"></a>
+
+`OrdersKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersLikeCondition"></a>
+
+`OrdersLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="OrdersListParams"></a>
@@ -10727,6 +14540,819 @@ Classes
 
     `updated_at_min: str`
     :   The type of the None singleton.
+
+<a id="OrdersLtCondition"></a>
+
+`OrdersLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersLteCondition"></a>
+
+`OrdersLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersNeqCondition"></a>
+
+`OrdersNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.OrdersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersNotCondition"></a>
+
+`OrdersNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
+    :   The type of the None singleton.
+
+<a id="OrdersOrCondition"></a>
+
+`OrdersOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="OrdersSearchFilter"></a>
+
+`OrdersSearchFilter(*args, **kwargs)`
+:   Available fields for filtering orders search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: str | None`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: str | None`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: str | None`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the order totals
+
+    `email: str | None`
+    :   Email address associated with the order
+
+    `financial_status: str | None`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: str | None`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: int | None`
+    :   Unique identifier for the order
+
+    `name: str | None`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: str | None`
+    :   Merchant-provided note on the order
+
+    `order_number: int | None`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: str | None`
+    :   Phone number associated with the order
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: str | None`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: str | None`
+    :   Total discount amount applied to the order
+
+    `total_price: str | None`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: str | None`
+    :   Total tax amount applied to the order
+
+    `total_weight: int | None`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersSearchQuery"></a>
+
+`OrdersSearchQuery(*args, **kwargs)`
+:   Search query for orders entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.OrdersSortFilter]`
+    :   The type of the None singleton.
+
+<a id="OrdersSortFilter"></a>
+
+`OrdersSortFilter(*args, **kwargs)`
+:   Available fields for sorting orders search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: Literal['asc', 'desc']`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code for the order totals
+
+    `email: Literal['asc', 'desc']`
+    :   Email address associated with the order
+
+    `financial_status: Literal['asc', 'desc']`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: Literal['asc', 'desc']`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the order
+
+    `name: Literal['asc', 'desc']`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: Literal['asc', 'desc']`
+    :   Merchant-provided note on the order
+
+    `order_number: Literal['asc', 'desc']`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: Literal['asc', 'desc']`
+    :   Phone number associated with the order
+
+    `processed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: Literal['asc', 'desc']`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: Literal['asc', 'desc']`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: Literal['asc', 'desc']`
+    :   Total discount amount applied to the order
+
+    `total_price: Literal['asc', 'desc']`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: Literal['asc', 'desc']`
+    :   Total tax amount applied to the order
+
+    `total_weight: Literal['asc', 'desc']`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="OrdersStringFilter"></a>
+
+`OrdersStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cancel_reason: str`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: str`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: str`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: str`
+    :   ISO 4217 currency code for the order totals
+
+    `email: str`
+    :   Email address associated with the order
+
+    `financial_status: str`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: str`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: str`
+    :   Unique identifier for the order
+
+    `name: str`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: str`
+    :   Merchant-provided note on the order
+
+    `order_number: str`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: str`
+    :   Phone number associated with the order
+
+    `processed_at: str`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: str`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: str`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: str`
+    :   Total discount amount applied to the order
+
+    `total_price: str`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: str`
+    :   Total tax amount applied to the order
+
+    `total_weight: str`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="PagesAndCondition"></a>
+
+`PagesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="PagesAnyCondition"></a>
+
+`PagesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PagesAnyValueFilter"></a>
+
+`PagesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: Any`
+    :   Name of the page author
+
+    `body_html: Any`
+    :   HTML content of the page
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the page was created
+
+    `handle: Any`
+    :   URL-friendly handle for the page
+
+    `id: Any`
+    :   Unique identifier for the page
+
+    `published_at: Any`
+    :   ISO 8601 timestamp when the page was published
+
+    `title: Any`
+    :   Title of the page
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the page was last updated
+
+<a id="PagesContainsCondition"></a>
+
+`PagesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PagesEqCondition"></a>
+
+`PagesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.PagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="PagesFuzzyCondition"></a>
+
+`PagesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.PagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="PagesGetParams"></a>
+
+`PagesGetParams(*args, **kwargs)`
+:   Parameters for pages.get operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `page_id: str`
+    :   The type of the None singleton.
+
+<a id="PagesGtCondition"></a>
+
+`PagesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.PagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="PagesGteCondition"></a>
+
+`PagesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.PagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="PagesInCondition"></a>
+
+`PagesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.PagesInFilter`
+    :   The type of the None singleton.
+
+<a id="PagesInFilter"></a>
+
+`PagesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: list[str]`
+    :   Name of the page author
+
+    `body_html: list[str]`
+    :   HTML content of the page
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the page was created
+
+    `handle: list[str]`
+    :   URL-friendly handle for the page
+
+    `id: list[int]`
+    :   Unique identifier for the page
+
+    `published_at: list[str]`
+    :   ISO 8601 timestamp when the page was published
+
+    `title: list[str]`
+    :   Title of the page
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the page was last updated
+
+<a id="PagesKeywordCondition"></a>
+
+`PagesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.PagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="PagesLikeCondition"></a>
+
+`PagesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.PagesStringFilter`
+    :   The type of the None singleton.
+
+<a id="PagesListParams"></a>
+
+`PagesListParams(*args, **kwargs)`
+:   Parameters for pages.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at_max: str`
+    :   The type of the None singleton.
+
+    `created_at_min: str`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `published_status: str`
+    :   The type of the None singleton.
+
+    `since_id: int`
+    :   The type of the None singleton.
+
+    `updated_at_max: str`
+    :   The type of the None singleton.
+
+    `updated_at_min: str`
+    :   The type of the None singleton.
+
+<a id="PagesLtCondition"></a>
+
+`PagesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.PagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="PagesLteCondition"></a>
+
+`PagesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.PagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="PagesNeqCondition"></a>
+
+`PagesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.PagesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="PagesNotCondition"></a>
+
+`PagesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="PagesOrCondition"></a>
+
+`PagesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="PagesSearchFilter"></a>
+
+`PagesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering pages search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: str | None`
+    :   Name of the page author
+
+    `body_html: str | None`
+    :   HTML content of the page
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the page was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the page
+
+    `id: int | None`
+    :   Unique identifier for the page
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the page was published
+
+    `title: str | None`
+    :   Title of the page
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the page was last updated
+
+<a id="PagesSearchQuery"></a>
+
+`PagesSearchQuery(*args, **kwargs)`
+:   Search query for pages entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.PagesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="PagesSortFilter"></a>
+
+`PagesSortFilter(*args, **kwargs)`
+:   Available fields for sorting pages search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: Literal['asc', 'desc']`
+    :   Name of the page author
+
+    `body_html: Literal['asc', 'desc']`
+    :   HTML content of the page
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the page was created
+
+    `handle: Literal['asc', 'desc']`
+    :   URL-friendly handle for the page
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the page
+
+    `published_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the page was published
+
+    `title: Literal['asc', 'desc']`
+    :   Title of the page
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the page was last updated
+
+<a id="PagesStringFilter"></a>
+
+`PagesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: str`
+    :   Name of the page author
+
+    `body_html: str`
+    :   HTML content of the page
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the page was created
+
+    `handle: str`
+    :   URL-friendly handle for the page
+
+    `id: str`
+    :   Unique identifier for the page
+
+    `published_at: str`
+    :   ISO 8601 timestamp when the page was published
+
+    `title: str`
+    :   Title of the page
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the page was last updated
 
 <a id="PriceRulesAndCondition"></a>
 
@@ -12255,6 +16881,139 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the variant was last updated
 
+<a id="ProductsAndCondition"></a>
+
+`ProductsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ProductsAnyCondition"></a>
+
+`ProductsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.shopify.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsAnyValueFilter"></a>
+
+`ProductsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: Any`
+    :   Product description in HTML
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: Any`
+    :   URL-friendly handle for the product
+
+    `id: Any`
+    :   Unique identifier for the product
+
+    `product_type: Any`
+    :   Product type used for categorization
+
+    `published_at: Any`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: Any`
+    :   Publishing scope (`web` or `global`)
+
+    `status: Any`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: Any`
+    :   Comma-separated tags attached to the product
+
+    `title: Any`
+    :   Product title
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: Any`
+    :   Product vendor or manufacturer
+
+<a id="ProductsContainsCondition"></a>
+
+`ProductsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.shopify.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsEqCondition"></a>
+
+`ProductsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsFuzzyCondition"></a>
+
+`ProductsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductsGetParams"></a>
 
 `ProductsGetParams(*args, **kwargs)`
@@ -12267,6 +17026,131 @@ Classes
     ### Class variables
 
     `product_id: str`
+    :   The type of the None singleton.
+
+<a id="ProductsGtCondition"></a>
+
+`ProductsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsGteCondition"></a>
+
+`ProductsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsInCondition"></a>
+
+`ProductsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.shopify.types.ProductsInFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsInFilter"></a>
+
+`ProductsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: list[str]`
+    :   Product description in HTML
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: list[str]`
+    :   URL-friendly handle for the product
+
+    `id: list[int]`
+    :   Unique identifier for the product
+
+    `product_type: list[str]`
+    :   Product type used for categorization
+
+    `published_at: list[str]`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: list[str]`
+    :   Publishing scope (`web` or `global`)
+
+    `status: list[str]`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: list[str]`
+    :   Comma-separated tags attached to the product
+
+    `title: list[str]`
+    :   Product title
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: list[str]`
+    :   Product vendor or manufacturer
+
+<a id="ProductsKeywordCondition"></a>
+
+`ProductsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsLikeCondition"></a>
+
+`ProductsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductsListParams"></a>
@@ -12309,6 +17193,250 @@ Classes
 
     `vendor: str`
     :   The type of the None singleton.
+
+<a id="ProductsLtCondition"></a>
+
+`ProductsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsLteCondition"></a>
+
+`ProductsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsNeqCondition"></a>
+
+`ProductsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.shopify.types.ProductsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsNotCondition"></a>
+
+`ProductsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="ProductsOrCondition"></a>
+
+`ProductsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ProductsSearchFilter"></a>
+
+`ProductsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering products search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: str | None`
+    :   Product description in HTML
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the product
+
+    `id: int | None`
+    :   Unique identifier for the product
+
+    `product_type: str | None`
+    :   Product type used for categorization
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `status: str | None`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the product
+
+    `title: str | None`
+    :   Product title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: str | None`
+    :   Product vendor or manufacturer
+
+<a id="ProductsSearchQuery"></a>
+
+`ProductsSearchQuery(*args, **kwargs)`
+:   Search query for products entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.shopify.types.ProductsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="ProductsSortFilter"></a>
+
+`ProductsSortFilter(*args, **kwargs)`
+:   Available fields for sorting products search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: Literal['asc', 'desc']`
+    :   Product description in HTML
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: Literal['asc', 'desc']`
+    :   URL-friendly handle for the product
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the product
+
+    `product_type: Literal['asc', 'desc']`
+    :   Product type used for categorization
+
+    `published_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: Literal['asc', 'desc']`
+    :   Publishing scope (`web` or `global`)
+
+    `status: Literal['asc', 'desc']`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: Literal['asc', 'desc']`
+    :   Comma-separated tags attached to the product
+
+    `title: Literal['asc', 'desc']`
+    :   Product title
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: Literal['asc', 'desc']`
+    :   Product vendor or manufacturer
+
+<a id="ProductsStringFilter"></a>
+
+`ProductsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body_html: str`
+    :   Product description in HTML
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: str`
+    :   URL-friendly handle for the product
+
+    `id: str`
+    :   Unique identifier for the product
+
+    `product_type: str`
+    :   Product type used for categorization
+
+    `published_at: str`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: str`
+    :   Publishing scope (`web` or `global`)
+
+    `status: str`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: str`
+    :   Comma-separated tags attached to the product
+
+    `title: str`
+    :   Product title
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: str`
+    :   Product vendor or manufacturer
 
 <a id="ShopAndCondition"></a>
 
