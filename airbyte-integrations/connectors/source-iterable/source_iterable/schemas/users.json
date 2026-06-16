@@ -24,16 +24,20 @@
       "type": ["null", "string"]
     },
     "profileUpdatedAt": {
-      "description": "Date and time when the profile was last updated. Format: '2016-08-02 18:53:45 +00:00'.",
-      "type": ["null", "string"]
+      "description": "Date and time when the profile was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "receivedSMSDisclaimer": {
       "description": "Whether the user has received an SMS with opt-out instructions.",
       "type": ["null", "boolean"]
     },
     "signupDate": {
-      "description": "Date and time when the user profile was created. Format: '2016-08-02 18:53:45 +00:00'.",
-      "type": ["null", "string"]
+      "description": "Date and time when the user profile was created.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "signupSource": {
       "description": "How the contact was created in Iterable (e.g. API, IMPORT).",
