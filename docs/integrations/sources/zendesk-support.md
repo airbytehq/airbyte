@@ -230,6 +230,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.11 | 2026-06-16 | [80108](https://github.com/airbytehq/airbyte/pull/80108) | Update dependencies |
 | 5.2.10 | 2026-06-12 | [79668](https://github.com/airbytehq/airbyte/pull/79668) | Gracefully skip streams when Zendesk returns permission-denied error instead of failing the entire sync |
 | 5.2.9 | 2026-06-09 | [79583](https://github.com/airbytehq/airbyte/pull/79583) | Update dependencies |
 | 5.2.8 | 2026-06-02 | [77507](https://github.com/airbytehq/airbyte/pull/77507) | Update dependencies |
