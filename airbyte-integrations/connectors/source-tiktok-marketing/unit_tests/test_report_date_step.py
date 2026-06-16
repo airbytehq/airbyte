@@ -4,7 +4,12 @@ from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+import requests_mock as rm
 import yaml
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 
 from .conftest import _YAML_FILE_PATH
 
@@ -71,12 +76,6 @@ def test_ads_reports_daily_requests_single_day_slices():
         "end_date": "2024-01-05",
         "environment": {"advertiser_id": "12345"},
     }
-
-    import requests_mock as rm
-
-    from airbyte_cdk.models import SyncMode
-    from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-    from airbyte_cdk.test.catalog_builder import CatalogBuilder
 
     catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.incremental).build()
     source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=[])
