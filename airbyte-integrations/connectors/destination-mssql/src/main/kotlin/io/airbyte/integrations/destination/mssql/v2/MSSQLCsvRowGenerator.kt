@@ -153,7 +153,7 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
  * of validateValuesPreLoad, because BULK INSERT is strict about the textual form of each value:
  * - Booleans are emitted as 0/1 because SQL Server BIT columns reject true/false.
  * - Numbers are emitted via [BigDecimal.toPlainString] because the default rendering can use
- *   scientific notation (e.g. "1.5E+8"), which BULK INSERT cannot parse into a DECIMAL column.
+ * scientific notation (e.g. "1.5E+8"), which BULK INSERT cannot parse into a DECIMAL column.
  */
 internal fun AirbyteValue?.toMssqlCsvValue(): Any =
     when (this) {
