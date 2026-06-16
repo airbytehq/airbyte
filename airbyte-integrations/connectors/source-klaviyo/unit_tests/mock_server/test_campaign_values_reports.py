@@ -154,6 +154,6 @@ class TestCampaignValuesReportsRateLimiting(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         # The stream should error out due to max backoff exceeded rather than hanging
-        assert len(output.errors) > 0 or len(output.trace_messages) > 0, (
-            "Expected the stream to stop with an error when Retry-After exceeds max_waiting_time_in_seconds"
-        )
+        assert (
+            len(output.errors) > 0 or len(output.trace_messages) > 0
+        ), "Expected the stream to stop with an error when Retry-After exceeds max_waiting_time_in_seconds"
