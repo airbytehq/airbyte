@@ -17,10 +17,12 @@ from source_google_ads.components import (
     GoogleAdsRetriever,
     GoogleAdsStreamingDecoder,
     SerializeMessageFieldsTransformation,
+    TimeoutHTTPAdapter,
 )
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
@@ -1061,3 +1063,69 @@ class TestSerializeMessageFieldsTransformation:
         # MESSAGE fields map to "string" type in schema
         assert schema["properties"]["change_event.old_resource"] == {"type": ["string", "null"]}
         assert schema["properties"]["change_event.new_resource"] == {"type": ["string", "null"]}
+
+
+def _stream_to_retriever(stream):
+    """Return the underlying retriever for either a top-level concurrent stream or a parent declarative stream."""
+    factory = getattr(getattr(stream, "_stream_partition_generator", None), "_partition_factory", None)
+    if factory is not None and hasattr(factory, "_retriever"):
+        return factory._retriever
+    return getattr(stream, "retriever", None)
+
+
+def _collect_retrievers(config):
+    """Yield `(stream_name, retriever)` tuples for every stream the source builds, including parent streams reached via `SubstreamPartitionRouter`."""
+    source = get_source(config)
+    seen: set = set()
+    pairs: list = []
+
+    def visit(name, retriever):
+        if retriever is None or id(retriever) in seen:
+            return
+        seen.add(id(retriever))
+        pairs.append((name, retriever))
+        partition_router = getattr(retriever, "stream_slicer", None) or getattr(retriever, "partition_router", None)
+        if isinstance(partition_router, SubstreamPartitionRouter):
+            for parent_config in partition_router.parent_stream_configs:
+                parent_stream = parent_config.stream
+                visit(parent_stream.name, _stream_to_retriever(parent_stream))
+
+    for stream in source.streams(config):
+        visit(stream.name, _stream_to_retriever(stream))
+
+    return pairs
+
+
+@pytest.mark.parametrize(
+    "stream_name,retriever",
+    [pytest.param(name, ret, id=name) for name, ret in _collect_retrievers(_DEFAULT_CONFIG)],
+)
+def test_every_stream_has_timeout_adapter_mounted(stream_name, retriever):
+    """Every stream's HTTP session must mount `TimeoutHTTPAdapter` on `https://`.
+
+    Guards against regressions of the heartbeat-timeout class of failures where a
+    stream's session lacked a default socket-level idle timeout and worker threads
+    hung indefinitely on unresponsive Google Ads API calls. Covers data streams,
+    custom GAQL streams, criterion streams, and parent streams reached via
+    `SubstreamPartitionRouter` (e.g. `customer_client`, `accessible_accounts`).
+    """
+    requester = retriever.requester
+    session = requester._http_client._session
+    adapter = session.adapters.get("https://")
+    assert isinstance(
+        adapter, TimeoutHTTPAdapter
+    ), f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+
+
+@pytest.mark.parametrize(
+    "stream_name,retriever",
+    [pytest.param(name, ret, id=name) for name, ret in _collect_retrievers(_DYNAMIC_STREAM_CONFIG) if name == "test_custom_query"],
+)
+def test_dynamic_streams_have_timeout_adapter_mounted(stream_name, retriever):
+    """Dynamic (custom GAQL) streams must also mount `TimeoutHTTPAdapter` on `https://`."""
+    requester = retriever.requester
+    session = requester._http_client._session
+    adapter = session.adapters.get("https://")
+    assert isinstance(
+        adapter, TimeoutHTTPAdapter
+    ), f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"

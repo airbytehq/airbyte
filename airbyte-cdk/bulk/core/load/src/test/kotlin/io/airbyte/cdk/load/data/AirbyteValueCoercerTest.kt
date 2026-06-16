@@ -4,7 +4,6 @@
 
 // Test cases ported from legacy-task-loader's AirbyteValueDeepCoercingMapperTest.kt,
 // adapted to call AirbyteValueCoercer.coerce() directly with hardcoded expected values.
-// All tests run against both legacy (flag=false) and fast (flag=true) implementations.
 
 package io.airbyte.cdk.load.data
 
@@ -26,74 +25,63 @@ import org.junit.jupiter.params.provider.MethodSource
 // Formatting disabled — breaking up timestamp creation across lines makes it much harder to read
 class AirbyteValueCoercerTest {
 
-    private val legacyCoercer = AirbyteValueCoercer(useFastTimestampParsing = false)
-    private val fastCoercer = AirbyteValueCoercer(useFastTimestampParsing = true)
+    private val coercer = AirbyteValueCoercer()
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("timestampWithTimezoneArgs")
     fun testCoerceTimestampWithTimezone(input: String, expected: AirbyteValue) {
-        assertEquals(expected, legacyCoercer.coerce(StringValue(input), TimestampTypeWithTimezone))
-        assertEquals(expected, fastCoercer.coerce(StringValue(input), TimestampTypeWithTimezone))
+        assertEquals(expected, coercer.coerce(StringValue(input), TimestampTypeWithTimezone))
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("timestampWithoutTimezoneArgs")
     fun testCoerceTimestampWithoutTimezone(input: String, expected: AirbyteValue) {
-        assertEquals(expected, legacyCoercer.coerce(StringValue(input), TimestampTypeWithoutTimezone))
-        assertEquals(expected, fastCoercer.coerce(StringValue(input), TimestampTypeWithoutTimezone))
+        assertEquals(expected, coercer.coerce(StringValue(input), TimestampTypeWithoutTimezone))
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("timeWithTimezoneArgs")
     fun testCoerceTimeWithTimezone(input: String, expected: AirbyteValue) {
-        assertEquals(expected, legacyCoercer.coerce(StringValue(input), TimeTypeWithTimezone))
-        assertEquals(expected, fastCoercer.coerce(StringValue(input), TimeTypeWithTimezone))
+        assertEquals(expected, coercer.coerce(StringValue(input), TimeTypeWithTimezone))
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("timeWithoutTimezoneArgs")
     fun testCoerceTimeWithoutTimezone(input: String, expected: AirbyteValue) {
-        assertEquals(expected, legacyCoercer.coerce(StringValue(input), TimeTypeWithoutTimezone))
-        assertEquals(expected, fastCoercer.coerce(StringValue(input), TimeTypeWithoutTimezone))
+        assertEquals(expected, coercer.coerce(StringValue(input), TimeTypeWithoutTimezone))
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("dateArgs")
     fun testCoerceDate(input: String, expected: AirbyteValue) {
-        assertEquals(expected, legacyCoercer.coerce(StringValue(input), DateType))
-        assertEquals(expected, fastCoercer.coerce(StringValue(input), DateType))
+        assertEquals(expected, coercer.coerce(StringValue(input), DateType))
     }
 
     @Test
     fun testCoerceNullValue() {
-        assertEquals(NullValue, legacyCoercer.coerce(NullValue, TimestampTypeWithTimezone))
-        assertEquals(NullValue, fastCoercer.coerce(NullValue, TimestampTypeWithTimezone))
+        assertEquals(NullValue, coercer.coerce(NullValue, TimestampTypeWithTimezone))
     }
 
     @Test
     fun testCoerceAlreadyTypedTimestamp() {
         val value: AirbyteValue = TimestampWithTimezoneValue(OffsetDateTime.of(2024, 1, 23, 1, 23, 45, 0, ZoneOffset.UTC))
-        assertEquals(value, legacyCoercer.coerce(value, TimestampTypeWithTimezone))
-        assertEquals(value, fastCoercer.coerce(value, TimestampTypeWithTimezone))
+        assertEquals(value, coercer.coerce(value, TimestampTypeWithTimezone))
     }
 
     @Test
     fun testCoerceAlreadyTypedTime() {
         val value: AirbyteValue = TimeWithTimezoneValue(OffsetTime.of(1, 23, 45, 0, ZoneOffset.UTC))
-        assertEquals(value, legacyCoercer.coerce(value, TimeTypeWithTimezone))
-        assertEquals(value, fastCoercer.coerce(value, TimeTypeWithTimezone))
+        assertEquals(value, coercer.coerce(value, TimeTypeWithTimezone))
     }
 
     @Test
     fun testCoerceWrongTypeReturnsNull() {
-        assertNull(legacyCoercer.coerce(IntegerValue(12345), TimestampTypeWithTimezone))
-        assertNull(fastCoercer.coerce(IntegerValue(12345), TimestampTypeWithTimezone))
+        assertNull(coercer.coerce(IntegerValue(12345), TimestampTypeWithTimezone))
     }
 
     @Test
     fun testCoerceInvalidStringReturnsNull() {
-        assertNull(legacyCoercer.coerce(StringValue("not-a-timestamp"), TimestampTypeWithTimezone))
-        assertNull(fastCoercer.coerce(StringValue("not-a-timestamp"), TimestampTypeWithTimezone))
+        assertNull(coercer.coerce(StringValue("not-a-timestamp"), TimestampTypeWithTimezone))
     }
 
     companion object {

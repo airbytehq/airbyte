@@ -44,3 +44,25 @@ def test_config_not_migrated(requests_mock):
     source = get_source(config=load_config(TEST_CONFIG_ACTUAL_PATH), state=state)
     output = _run_command(source=source, args=SOURCE_INPUT_ARGS_LEGACY)
     assert len([log for log in output.logs if log.log.message == "Check succeeded"]) == 1
+
+
+def test_include_archived_channels_migration_stamps_true_on_existing_config(requests_mock, capsys):
+    """Existing configs without include_archived_channels should get it set to true
+    so they keep syncing archived channels after the upgrade."""
+    requests_mock.get(
+        "https://slack.com/api/users.list?limit=1000",
+        json={"users": [{"id": 1}]},
+        status_code=200,
+    )
+    config = load_config(TEST_CONFIG_ACTUAL_PATH)
+    assert "include_archived_channels" not in config
+
+    state = StateBuilder().build()
+    source = get_source(config=config, state=state)
+    _run_command(source=source, args=SOURCE_INPUT_ARGS_ACTUAL)
+
+    captured = capsys.readouterr()
+    control_lines = [json.loads(line) for line in captured.out.strip().splitlines() if line.strip() and '"CONNECTOR_CONFIG"' in line]
+    assert len(control_lines) >= 1
+    migrated_config = control_lines[-1]["control"]["connectorConfig"]["config"]
+    assert migrated_config["include_archived_channels"] is True

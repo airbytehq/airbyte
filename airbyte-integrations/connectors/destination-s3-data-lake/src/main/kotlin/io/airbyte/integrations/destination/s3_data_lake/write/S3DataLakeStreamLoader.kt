@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
-import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -36,6 +35,7 @@ class S3DataLakeStreamLoader(
 ) : StreamLoader {
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
+    private var stagingBranchCreated = false
 
     // If we're executing a truncate, then force the schema change.
     internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
@@ -72,53 +72,84 @@ class S3DataLakeStreamLoader(
         // incrementally, and if the entire sync is in a transaction, we might crash before we can
         // commit that transaction.
         targetSchema = computeOrExecuteSchemaUpdate().schema
+        logger.info {
+            "Creating staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
+        }
         try {
+            table.manageSnapshots().createBranch(stagingBranchName).commit()
+        } catch (_: IllegalArgumentException) {
             logger.info {
-                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
-            }
-            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
-        } catch (e: IllegalArgumentException) {
-            logger.info {
-                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.mappedDescriptor}"
+                "Staging branch $stagingBranchName already exists for stream ${stream.mappedDescriptor}; reusing it for recovery."
             }
         }
+        stagingBranchCreated = true
 
         val state =
             S3DataLakeStreamState(
                 table = table,
                 schema = targetSchema,
+                stagingBranchName = stagingBranchName,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
     override suspend fun teardown(completedSuccessfully: Boolean) {
-        if (completedSuccessfully) {
-            // Doing it first to make sure that data coming in the current batch is written to the
-            // main branch
+        if (!completedSuccessfully) {
             logger.info {
-                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
+                "Stream ${stream.mappedDescriptor} did not complete successfully. Keeping staging branch $stagingBranchName for recovery."
             }
-            // We've modified the table over the sync (i.e. adding new snapshots)
-            // so we need to refresh here to get the latest table metadata.
-            // In principle, this doesn't matter, but the iceberg SDK throws an error about
-            // stale table metadata without this.
-            table.refresh()
-            // Commit all pending schema updates in order (important for two-phase commits)
-            computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
-            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+            return
+        }
 
-            if (stream.isSingleGenerationTruncate()) {
-                logger.info {
-                    "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
-                }
-                val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
-                //  Doing it again to push the deletes from the staging to main branch
-                logger.info {
-                    "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
-                        "Pushing these updates to the '$mainBranchName' branch."
-                }
-                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+        // Doing it first to make sure that data coming in the current batch is written to
+        // the main branch
+        logger.info {
+            "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName'."
+        }
+        // We've modified the table over the sync (i.e. adding new snapshots)
+        // so we need to refresh here to get the latest table metadata.
+        // In principle, this doesn't matter, but the iceberg SDK throws an error about
+        // stale table metadata without this.
+        table.refresh()
+        // Commit all pending schema updates in order (important for two-phase commits)
+        computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
+        table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+
+        if (stream.isSingleGenerationTruncate()) {
+            logger.info {
+                "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
+            }
+            val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
+            icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
+            //  Doing it again to push the deletes from the staging to main branch
+            logger.info {
+                "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
+                    "Pushing these updates to the '$mainBranchName' branch."
+            }
+            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+        }
+
+        removeStagingBranch()
+    }
+
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        justification = "Kotlin lateinit table access confuses spotbugs"
+    )
+    private fun removeStagingBranch() {
+        if (!this::table.isInitialized || !stagingBranchCreated) {
+            return
+        }
+
+        try {
+            logger.info {
+                "Removing staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
+            }
+            table.manageSnapshots().removeBranch(stagingBranchName).commit()
+            stagingBranchCreated = false
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Failed to remove staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
             }
         }
     }

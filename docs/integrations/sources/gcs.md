@@ -79,6 +79,12 @@ The Google Cloud Storage (GCS) source connector uses `signed url` to work with f
 This is important to know that File urls are used in the connection state. 
 So if you change authorization type, and you use Incremental sync the next sync will not use old state and reread provided files in Full Refresh mode(like initial sync), next syncs will be Incremental as expected.
 
+#### Sanitize File URLs
+
+When using Service Account authentication, signed URLs contain credential-bearing query parameters such as `X-Goog-Credential` and `X-Goog-Signature`. By default, these are included in the `_ab_source_file_url` field of synced records.
+
+To remove these sensitive parameters from the `_ab_source_file_url` field, enable the **Sanitize File URLs** option in the advanced settings. When enabled, the connector strips query parameters from signed URLs, so only the base URL is stored in records. This option has no effect when using OAuth authentication, since OAuth does not use signed URLs.
+
 ## Path Patterns
 
 \(tl;dr -&gt; path pattern syntax using [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/). GLOBSTAR and SPLIT flags are enabled.\)
@@ -131,7 +137,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -229,6 +235,10 @@ Google Cloud Storage (GCS) supports following file formats:
  - unstructured document format
  - excel
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -236,6 +246,11 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.17 | 2026-06-16 | [79871](https://github.com/airbytehq/airbyte/pull/79871) | Update dependencies |
+| 0.10.16 | 2026-06-09 | [79336](https://github.com/airbytehq/airbyte/pull/79336) | Update dependencies |
+| 0.10.15 | 2026-06-02 | [78684](https://github.com/airbytehq/airbyte/pull/78684) | Update dependencies |
+| 0.10.14 | 2026-04-27 | [77033](https://github.com/airbytehq/airbyte/pull/77033) | Add `sanitize_signed_urls` option to strip Service Account credentials from `_ab_source_file_url` signed URL query parameters |
+| 0.10.13 | 2026-04-28 | [77257](https://github.com/airbytehq/airbyte/pull/77257) | Update dependencies |
 | 0.10.12 | 2026-04-21 | [76591](https://github.com/airbytehq/airbyte/pull/76591) | Update dependencies |
 | 0.10.11 | 2026-03-31 | [75690](https://github.com/airbytehq/airbyte/pull/75690) | Update dependencies |
 | 0.10.10 | 2026-03-24 | [75390](https://github.com/airbytehq/airbyte/pull/75390) | Update dependencies |

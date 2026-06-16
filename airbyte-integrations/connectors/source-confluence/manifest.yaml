@@ -69,14 +69,16 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: start
+            field_name: cursor
             inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: CursorPagination
+            cursor_value: '{{ response.get("_links", {}).get("next", "") | regex_search("cursor=([^&]+)") }}'
+            stop_condition: '{{ "next" not in response.get("_links", {}) }}'
             page_size: 25
         decoder:
           type: JsonDecoder
@@ -144,14 +146,16 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: start
+            field_name: cursor
             inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: CursorPagination
+            cursor_value: '{{ response.get("_links", {}).get("next", "") | regex_search("cursor=([^&]+)") }}'
+            stop_condition: '{{ "next" not in response.get("_links", {}) }}'
             page_size: 25
         decoder:
           type: JsonDecoder
@@ -182,14 +186,16 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: start
+            field_name: cursor
             inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: CursorPagination
+            cursor_value: '{{ response.get("_links", {}).get("next", "") | regex_search("cursor=([^&]+)") }}'
+            stop_condition: '{{ "next" not in response.get("_links", {}) }}'
             page_size: 25
         decoder:
           type: JsonDecoder

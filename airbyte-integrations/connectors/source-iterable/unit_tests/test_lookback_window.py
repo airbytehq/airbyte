@@ -242,6 +242,35 @@ def test_campaigns_metrics_does_not_have_lookback():
     assert not hasattr(campaigns_metrics[0], "_lookback_window")
 
 
+@responses.activate
+@pytest.mark.parametrize(
+    "region, expected_url_base",
+    [
+        pytest.param("US", "https://api.iterable.com/api/", id="us_region_propagates"),
+        pytest.param("EU", "https://api.eu.iterable.com/api/", id="eu_region_propagates"),
+    ],
+)
+def test_export_streams_receive_region_from_config(region, expected_url_base):
+    from source_iterable.source import SourceIterable
+
+    responses.get(expected_url_base + "lists", json={"lists": [{"id": 1}]})
+    responses.get(expected_url_base + "lists/getUsers?listId=1", body="user@example.com")
+
+    config = {
+        "api_key": "test-key",
+        "start_date": "2020-01-01T00:00:00",
+        "lookback_window": 0,
+        "region": region,
+    }
+
+    streams = SourceIterable().streams(config=config)
+    export_streams = [s for s in streams if isinstance(s, IterableExportStream)]
+
+    assert len(export_streams) > 0
+    for stream in export_streams:
+        assert stream.url_base == expected_url_base, f"{stream.name} has url_base={stream.url_base}, expected {expected_url_base}"
+
+
 # ---------------------------------------------------------------------------
 # Edge cases
 # ---------------------------------------------------------------------------
