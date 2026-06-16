@@ -785,9 +785,7 @@ def test_crm_search_pagination_10k_boundary_with_mixed_length_ids(components_mod
         )
 
     # After 10,000 records the strategy must reset: after=0, id="7198" (raw string)
-    assert token == {"after": 0, "id": "7198"}, (
-        f"Expected boundary reset with raw string ID '7198', got {token}"
-    )
+    assert token == {"after": 0, "id": "7198"}, f"Expected boundary reset with raw string ID '7198', got {token}"
     assert not isinstance(token["id"], int), "ID must remain a string, not be converted to int"
 
     # --- Chunk 2: new query with hs_object_id GT "7198" ---
