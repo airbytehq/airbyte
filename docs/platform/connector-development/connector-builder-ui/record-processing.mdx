@@ -774,6 +774,12 @@ This information is used by the Airbyte system for different purposes:
 When doing test reads, the connector builder analyzes the test records and shows the derived schema in the "Detected schema" tab. By default, new streams are configured to automatically import the detected schema into the declared schema on every test read.
 This behavior can be toggled off by disabling the `Automatically import declared schema` switch, in which case the declared schema can be manually edited in the UI and it will no longer be automatically updated when triggering test reads.
 
+:::caution
+If you disable `Automatically import declared schema`, you **must** manually define a valid schema for each stream. Without a declared schema, the connector has no field definitions for the stream. This means syncs will complete successfully but produce **zero records**, because Airbyte cannot map the source data to a destination schema. This is a common cause of unexpected zero-record syncs for custom connectors built with the Connector Builder.
+
+If you prefer to manage schemas manually, run at least one test read with auto-import enabled to generate a baseline schema, then disable auto-import and make your edits from there.
+:::
+
 For example the following test records:
 
 ```
