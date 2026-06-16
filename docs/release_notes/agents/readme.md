@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## June 16, 2026
+
+API
+
+- You now see only the workspaces you belong to, and deleting a workspace requires workspace admin permission.
+
+Connectors
+
+- The incident.io connector now lets you list and retrieve teams from your incident.io account.
+
 ## June 15, 2026
 
 Web app
