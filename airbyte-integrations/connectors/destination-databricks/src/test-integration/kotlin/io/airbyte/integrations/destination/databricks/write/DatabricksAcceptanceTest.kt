@@ -18,6 +18,8 @@ import io.airbyte.integrations.destination.databricks.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.databricks.spec.DatabricksSpecification
 import java.nio.file.Files
 import java.nio.file.Path
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 /**
  * Full end-to-end acceptance test for the Databricks destination. Runs the connector as a process
@@ -63,7 +65,13 @@ abstract class DatabricksBaseAcceptanceTest(
         nullEqualsUnset = true,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
-    )
+    ) {
+    @Test
+    @Disabled("Disabled due to frequent timeouts syncing 21 streams against Databricks")
+    override fun testManyStreamsCompletion() {
+        super.testManyStreamsCompletion()
+    }
+}
 
 /** Default acceptance test using JSONL over STDIO (standard data channel). */
 class DatabricksAcceptanceTest : DatabricksBaseAcceptanceTest()
