@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, Union
 
@@ -12,6 +13,8 @@ from source_s3.source_files_abstract.formats.csv_spec import CsvFormat
 from source_s3.source_files_abstract.formats.jsonl_spec import JsonlFormat
 from source_s3.source_files_abstract.formats.parquet_spec import ParquetFormat
 
+
+logger = logging.getLogger("airbyte")
 
 SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -72,6 +75,22 @@ class LegacyConfigTransformer:
         if isinstance(format_options, AvroFormat):
             return {"filetype": "avro"}
         elif isinstance(format_options, CsvFormat):
+            # `newlines_in_values` was a PyArrow-only toggle in v3 and has no equivalent in the v4
+            # file-based CDK CSV parser, so it cannot be carried over during migration. Surface this
+            # explicitly instead of silently dropping it (see issue #76853) so users who relied on it
+            # know why their config changed and how to handle non-RFC-4180 files going forward.
+            if format_options.newlines_in_values:
+                logger.warning(
+                    "The 'newlines_in_values' CSV option is no longer supported as of source-s3 v4 and is being "
+                    "dropped from the migrated configuration. The v4 file-based parser already handles newlines "
+                    "inside fully double-quoted (RFC 4180) values, but it no longer exposes a toggle for "
+                    "non-compliant files. If syncs fail with ERROR_PARSING_RECORD_MISMATCHED_COLUMNS / "
+                    "ERROR_PARSING_RECORD_MISMATCHED_ROWS, set 'ignore_errors_on_fields_mismatch: true' on the "
+                    "stream's CSV format, ensure fields with embedded newlines are fully double-quoted, or "
+                    "pre-process the files before ingest. See "
+                    "https://docs.airbyte.com/integrations/sources/s3-migrations for details."
+                )
+
             additional_reader_options = cls.parse_config_options_str("additional_reader_options", format_options.additional_reader_options)
             advanced_options = cls.parse_config_options_str("advanced_options", format_options.advanced_options)
 
