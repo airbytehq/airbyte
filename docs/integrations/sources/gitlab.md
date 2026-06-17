@@ -46,7 +46,7 @@ If you authenticate with a personal access token, generate one in **Settings > A
 10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
-**Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
+**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 
 <!-- /env:cloud -->
 
@@ -64,7 +64,7 @@ If you authenticate with a personal access token, generate one in **Settings > A
 8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 9. Click **Set up source**.
 
-**Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
+**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -91,11 +91,11 @@ This connector outputs the following streams:
 - [Group Milestones](https://docs.gitlab.com/api/group_milestones/)
 - [Groups](https://docs.gitlab.com/api/groups/)
 - [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
-- [Jobs](https://docs.gitlab.com/api/jobs/)
+- [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
 - [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
 - [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
-- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/)
+- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
 - [Project Labels](https://docs.gitlab.com/api/labels/)
 - [Project Members](https://docs.gitlab.com/api/members/)
 - [Project Milestones](https://docs.gitlab.com/api/milestones/)
@@ -112,7 +112,7 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 ### Rate limits
 
-GitLab.com enforces per-endpoint rate limits on its REST API. The following defaults apply to the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
+The connector respects per-endpoint rate limits based on [GitLab.com's documented defaults](https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom) for the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
 
 | Endpoint | Rate limit |
 | :--- | :--- |
