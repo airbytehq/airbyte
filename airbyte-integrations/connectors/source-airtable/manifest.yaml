@@ -271,7 +271,7 @@ definitions:
                 field_type: array
                 items: string
               current_type: lookup
-              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText', 'aiText', 'formula', 'lookup', 'rollup', 'manualSort', 'linkToRecord', 'multipleLookupValues'] }}"
             - type: TypesMap
               target_type:
                 field_type: array
@@ -314,8 +314,13 @@ definitions:
               target_type:
                 field_type: array
                 items: string
+              current_type: lookup
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
               current_type: rollup
-              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText', 'aiText', 'formula', 'lookup', 'rollup', 'manualSort', 'linkToRecord', 'multipleLookupValues'] }}"
             - type: TypesMap
               target_type:
                 field_type: array
@@ -358,8 +363,13 @@ definitions:
               target_type:
                 field_type: array
                 items: string
+              current_type: rollup
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
               current_type: multipleLookupValues
-              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText', 'aiText', 'formula', 'lookup', 'rollup', 'manualSort', 'linkToRecord', 'multipleLookupValues'] }}"
             - type: TypesMap
               target_type:
                 field_type: array
@@ -398,6 +408,11 @@ definitions:
                 items: string
               current_type: multipleLookupValues
               condition: "{{ not raw_schema['options']['result'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
+              current_type: multipleLookupValues
             - type: TypesMap
               target_type: number
               current_type: formula
