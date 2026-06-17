@@ -398,7 +398,7 @@ definitions:
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
   # Error handler for daily report streams. Surfaces error 40067 ("query too large")
-  # as a config_error so users are directed to reduce the Report Date Step setting.
+  # as a config_error so users are directed to reduce the Daily Reports Date Step setting.
   # Only used by base_report_retriever and audience_base_report_retriever;
   # non-report streams keep the generic handler from the global requester.
   report_daily_error_handler:
@@ -416,7 +416,7 @@ definitions:
       - predicate: "{{ response.get('code') == 40067 }}"
         action: FAIL
         failure_type: config_error
-        error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Report Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
+        error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Daily Reports Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
       - predicate: "{{ response.get('code') != 0 }}"
         action: FAIL
         error_message: "{{ response['message'] }}"
@@ -426,7 +426,7 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
       # Override error handler to surface error 40067 as a config_error
-      # with guidance to reduce the Report Date Step setting.
+      # with guidance to reduce the Daily Reports Date Step setting.
       error_handler:
         $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
@@ -952,7 +952,7 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
       # Override error handler to surface error 40067 as a config_error
-      # with guidance to reduce the Report Date Step setting.
+      # with guidance to reduce the Daily Reports Date Step setting.
       error_handler:
         $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
@@ -6026,7 +6026,7 @@ spec:
         order: 3
         type: integer
       report_granularity:
-        title: Report Date Step
+        title: Daily Reports Date Step
         description: >-
           The number of days per API request for daily report streams.
           Use the default 30 for most accounts. If syncs fail with

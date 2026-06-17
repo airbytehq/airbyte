@@ -121,7 +121,9 @@ def test_error_40067_handler_is_config_error_on_daily_report_handler():
     handler = error_40067_filters[0]
     assert handler["action"] == "FAIL"
     assert handler.get("failure_type") == "config_error", "Error 40067 should be a config_error"
-    assert "report date step" in handler["error_message"].lower(), "Error message should guide user to reduce the Report Date Step setting"
+    assert (
+        "daily reports date step" in handler["error_message"].lower()
+    ), "Error message should guide user to reduce the Daily Reports Date Step setting"
 
 
 def test_error_40067_not_on_global_requester():

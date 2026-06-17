@@ -55,7 +55,7 @@ To access the Sandbox environment:
 7. Choose a **Start date**. Any data before this date is not replicated.
 8. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 9. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-10. Optionally, adjust the **Report Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+10. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
 11. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
 12. Click **Set up source**.
 <!-- /env:cloud -->
@@ -71,7 +71,7 @@ To access the Sandbox environment:
 5. Choose a **Start date**. Any data before this date is not replicated.
 6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-8. Optionally, adjust the **Report Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+8. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
 9. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
 10. Click `Set up source`.
 <!-- /env:oss -->
