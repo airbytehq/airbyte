@@ -14,6 +14,7 @@ import yaml
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
+
 MANIFEST_PATH = Path(__file__).resolve().parent.parent / "manifest.yaml"
 TIME_BOUND_STREAMS = ("follower_statistics_time_bound", "share_statistics_time_bound")
 
@@ -83,7 +84,4 @@ def test_end_minus_start_is_whole_days(manifest, stream_name):
     end = datetime.strptime(end_result, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     delta_seconds = (end - start).total_seconds()
     assert delta_seconds >= 0, "end_datetime must be >= start_datetime"
-    assert delta_seconds % 86400 == 0, (
-        f"Gap must be a whole number of days, got {delta_seconds}s "
-        f"({delta_seconds / 86400:.2f} days)"
-    )
+    assert delta_seconds % 86400 == 0, f"Gap must be a whole number of days, got {delta_seconds}s " f"({delta_seconds / 86400:.2f} days)"
