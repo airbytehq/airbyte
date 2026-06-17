@@ -140,9 +140,9 @@ Amazon may incorrectly detect duplicate report requests when syncing both summar
 The connector provides three types of Sponsored Brands V3 reports, each using a different Amazon Ads report type:
 
 | Stream prefix | Report type | Use case |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `sponsored_brands_v3_report_stream` | `sbPurchasedProduct` | Purchased-product attribution data. Does not include `cost`. |
-| `sponsored_brands_campaigns_report_stream` | `sbCampaigns` | Campaign-level spend and performance metrics (`cost`, `clicks`, `impressions`, `sales`, `purchases`, `unitsSold`). |
+| `sponsored_brands_campaigns_report_stream` | `sbCampaigns` | Campaign-level spend and performance (`cost`, `clicks`, `impressions`, `sales`, `purchases`, `unitsSold`). |
 | `sponsored_brands_adgroups_report_stream` | `sbAdGroup` | Ad-group-level spend and performance metrics. |
 
 Each stream above is available in both summary and daily variants.
