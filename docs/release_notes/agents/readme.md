@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## June 17, 2026
+
+Other
+
+- The Context Store now pauses automatically for connectors that haven't been searched recently. When you next search a paused connector, it resumes immediately and you'll see a notice while its data refreshes.
+
 ## June 16, 2026
 
 API
