@@ -6,7 +6,6 @@ HubSpot CRM source connector using the declarative (low-code) framework with ext
 components in `components.py`. The connector syncs data from HubSpot's CRM, marketing, and engagement
 APIs.
 
-
 ## Key Files
 
 - `manifest.yaml` -- Declarative stream definitions, authentication, pagination, error handling, and
@@ -16,19 +15,18 @@ APIs.
   including hidden API calls during extraction, dual-endpoint selection, pagination workarounds, and
   property chunking. Understanding these behaviors is critical before making changes.
 
-
 ## Important Patterns
 
 - CRM search streams make additional association API calls inside the record extractor. See
   `CONTRIBUTING.md` section 1.
 - The engagements stream dynamically selects between two different API endpoints. See `CONTRIBUTING.md`
   section 2.
-- Pagination resets at 10,000 results for search endpoints. See `CONTRIBUTING.md` section 3.
+- Pagination resets at 10,000 results for search endpoints; `hs_object_id` boundaries must use raw
+  string IDs with `GT`, never `int()+1`. See `CONTRIBUTING.md` section 3.
 - Custom objects use `StateDelegatingStream` with two different sub-stream implementations. See
   `CONTRIBUTING.md` section 4.
 - Many streams use character-based property chunking (15,000 char limit). See `CONTRIBUTING.md` section 5.
 - Authentication retries on 401 to handle mid-sync token expiration. See `CONTRIBUTING.md` section 8.
-
 
 This document describes the biggest non-obvious gotchas in `source-hubspot` that deviate from standard
 declarative connector patterns. Read this before making changes to the connector.
@@ -37,7 +35,7 @@ declarative connector patterns. Read this before making changes to the connector
 
 ## 1. HubspotAssociationsExtractor: Hidden API Calls Inside Record Extraction
 
-The CRM search streams (contacts, companies, deals, tickets, leads, engagements_*, deal_splits) use
+The CRM search streams (contacts, companies, deals, tickets, leads, engagements\_\*, deal_splits) use
 `HubspotAssociationsExtractor` as their record extractor. This extractor does **not** simply parse the
 HTTP response -- it makes **additional batch POST requests** to the HubSpot Associations v4 API
 (`/crm/v4/associations/{entity}/{association}/batch/read`) for every page of results.
@@ -75,17 +73,37 @@ logic.
 
 HubSpot's CRM Search API (`POST /crm/v3/objects/{entity}/search`) enforces a hard limit of 10,000
 total results per query. This is documented in
-[HubSpot's API reference](https://developers.hubspot.com/docs/api/crm/search): attempting to page
-beyond offset 10,000 returns a 400 error. The limit applies per-query, not per-account -- you can
-issue multiple queries with different filters to access more data.
+[HubSpot's CRM Search API reference](https://developers.hubspot.com/docs/api-reference/legacy/crm/search-the-crm):
+attempting to page beyond offset 10,000 returns a 400 error. The limit applies per-query, not
+per-account -- you can issue multiple queries with different filters to access more data.
 
-The custom pagination strategy works around this by:
+### How the connector paginates CRM search streams
 
-1. Tracking the current offset (`after`) and detecting when it approaches 10,000.
-2. When the limit is reached, resetting `after` to 0 and adding an `id` filter using the last
-   record's `hs_object_id + 1` to effectively start a new query window.
-3. The CRM search request body includes a `sorts` clause ordering by `hs_object_id ASCENDING` and a
-   filter `hs_object_id >= {id}` to ensure deterministic ordering and seamless continuation.
+The connector creates 30-day `lastmodifieddate` time slices for each CRM search stream. Within each
+slice, it uses HubSpot's normal `after` cursor for page-level pagination (up to 200 records per page).
+When a slice contains more than 10,000 results, the connector starts a new query using `hs_object_id`
+as a keyset boundary:
+
+1. Tracking the current offset (`after`) and detecting when it reaches 10,000.
+2. When the limit is reached, resetting `after` to 0 and recording the **exact** last-seen
+   `hs_object_id` as the boundary for the next query.
+3. The next query includes a filter `hs_object_id GT {last_id}` (strictly greater than) along with
+   the same `lastmodifieddate` time-range filters, sorted by `hs_object_id ASCENDING`.
+
+### Critical: `hs_object_id` is a string -- do not cast to integer
+
+HubSpot officially documents `hs_object_id` as a string type that
+[should be treated as a string](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide).
+The Search API sorts and filters string properties lexicographically, not numerically. Since HubSpot's
+[March 2024 migration to 64-bit IDs](https://developers.hubspot.com/changelog/increasing-the-size-of-contact-record-ids),
+short IDs (e.g., `"7198"`) and long 12-digit IDs (e.g., `"719869649082"`) coexist in the same
+account.
+
+**Contributors must not cast IDs to integers or calculate `int(last_id) + 1`.** With mixed-length
+IDs, integer arithmetic produces a boundary that is lexicographically unreachable. For example,
+`int("7198") + 1` produces `"7199"`, which is lexicographically greater than `"719869649082"` (at
+position 3: `'9' > '8'`). Records in this gap are silently skipped. The correct approach is to
+preserve the exact last-seen string ID and use the `GT` (strictly greater than) operator.
 
 This is necessary because HubSpot's search endpoint was designed for filtered discovery, not bulk
 export. The 10,000 limit is intentional on HubSpot's side and cannot be increased.
