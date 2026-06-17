@@ -43,7 +43,7 @@ If you authenticate with a personal access token, generate one in **Settings > A
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
 **Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
@@ -61,7 +61,7 @@ If you authenticate with a personal access token, generate one in **Settings > A
 5. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 6. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 7. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 9. Click **Set up source**.
 
 **Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
@@ -143,6 +143,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.30 | 2026-06-17 | [77516](https://github.com/airbytehq/airbyte/pull/77516) | Lower default concurrency from 8 to 4; set HTTPAPIBudget to documented GitLab.com rate limits |
 | 4.4.29 | 2026-06-16 | [79874](https://github.com/airbytehq/airbyte/pull/79874) | Update dependencies |
 | 4.4.28 | 2026-06-09 | [79295](https://github.com/airbytehq/airbyte/pull/79295) | Update dependencies |
 | 4.4.27 | 2026-06-02 | [78724](https://github.com/airbytehq/airbyte/pull/78724) | Update dependencies |
