@@ -63,9 +63,10 @@ def test_type_has_catch_all_fallback(types_mapping, current_type):
 
     # Catch-all should default to array of string
     target = last_entry["target_type"]
-    assert target == {"field_type": "array", "items": "string"}, (
-        f"Catch-all for '{current_type}' should map to array of string, got {target!r}"
-    )
+    assert target == {
+        "field_type": "array",
+        "items": "string",
+    }, f"Catch-all for '{current_type}' should map to array of string, got {target!r}"
 
 
 @pytest.mark.parametrize(
@@ -84,9 +85,9 @@ def test_string_condition_covers_previously_missing_types(types_mapping, current
     string_entry = entries[0]
     condition = string_entry.get("condition", "")
 
-    assert missing_type in condition, (
-        f"TypesMap for '{current_type}' string-array condition does not include '{missing_type}'. Condition: {condition!r}"
-    )
+    assert (
+        missing_type in condition
+    ), f"TypesMap for '{current_type}' string-array condition does not include '{missing_type}'. Condition: {condition!r}"
 
 
 @pytest.mark.parametrize(
@@ -143,6 +144,6 @@ def test_multipleLookupValues_result_type_resolves(types_mapping, result_type, e
     assert matching_entry is not None, f"No TypesMap entry for multipleLookupValues matches result type '{result_type}'"
 
     target = matching_entry["target_type"]
-    assert target.get("items") == expected_items_type, (
-        f"multipleLookupValues with result type '{result_type}' should map items to {expected_items_type!r}, got {target.get('items')!r}"
-    )
+    assert (
+        target.get("items") == expected_items_type
+    ), f"multipleLookupValues with result type '{result_type}' should map items to {expected_items_type!r}, got {target.get('items')!r}"
