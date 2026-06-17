@@ -4,7 +4,7 @@
 
 Other
 
-- Background data syncs for connected services now pause automatically after a period of inactivity. Syncs resume the next time you search, with a notice if cached data may be temporarily out of date.
+- The Context Store now pauses automatically for connectors that haven't been searched recently. When you next search a paused connector, it resumes immediately and you'll see a notice while its data refreshes.
 
 ## June 16, 2026
 
