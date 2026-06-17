@@ -31,10 +31,6 @@ definitions:
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
-        - predicate: "{{ response.get('code') == 40067 }}"
-          action: FAIL
-          failure_type: config_error
-          error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Report Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -401,10 +397,32 @@ definitions:
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
+  report_daily_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ response.get('code') == 40100 }}"
+        action: RATE_LIMITED
+        error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 60001 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 40002 }}"
+        action: IGNORE
+        error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 40067 }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Report Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
+      - predicate: "{{ response.get('code') != 0 }}"
+        action: FAIL
+        error_message: "{{ response['message'] }}"
+
   base_report_retriever:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/requester"
+      error_handler:
+        $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
         service_type: "AUCTION"
         report_type: "BASIC"
@@ -927,6 +945,8 @@ definitions:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/requester"
+      error_handler:
+        $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
         service_type: "AUCTION"
         report_type: "AUDIENCE"

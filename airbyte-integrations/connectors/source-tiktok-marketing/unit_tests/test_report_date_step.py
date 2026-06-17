@@ -112,13 +112,35 @@ def test_ads_reports_daily_respects_configured_step(report_granularity, max_days
                 ), f"Date range {start} to {end} spans {delta} days; expected <={max_days} with report_granularity={report_granularity}"
 
 
-def test_error_40067_handler_is_config_error():
+def test_error_40067_handler_is_config_error_on_daily_report_handler():
     manifest = _load_manifest()
-    error_handler = manifest["definitions"]["requester"]["error_handler"]
-    filters = error_handler["response_filters"]
+    handler_def = manifest["definitions"]["report_daily_error_handler"]
+    filters = handler_def["response_filters"]
     error_40067_filters = [f for f in filters if "40067" in f.get("predicate", "")]
     assert len(error_40067_filters) == 1, "Expected exactly one error handler for code 40067"
     handler = error_40067_filters[0]
     assert handler["action"] == "FAIL"
     assert handler.get("failure_type") == "config_error", "Error 40067 should be a config_error"
     assert "report date step" in handler["error_message"].lower(), "Error message should guide user to reduce the Report Date Step setting"
+
+
+def test_error_40067_not_on_global_requester():
+    manifest = _load_manifest()
+    global_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
+    error_40067 = [f for f in global_filters if "40067" in f.get("predicate", "")]
+    assert len(error_40067) == 0, "Error 40067 config_error should NOT be on the global requester"
+
+
+@pytest.mark.parametrize(
+    "retriever_name",
+    [
+        pytest.param("base_report_retriever", id="basic_daily_retriever"),
+        pytest.param("audience_base_report_retriever", id="audience_daily_retriever"),
+    ],
+)
+def test_daily_retrievers_use_report_daily_error_handler(retriever_name):
+    manifest = _load_manifest()
+    retriever = manifest["definitions"][retriever_name]
+    requester = retriever["requester"]
+    assert "error_handler" in requester, f"{retriever_name} requester should override error_handler"
+    assert requester["error_handler"]["$ref"] == "#/definitions/report_daily_error_handler"
