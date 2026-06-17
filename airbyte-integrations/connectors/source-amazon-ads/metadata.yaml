@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 8.1.2
+  dockerImageTag: 9.0.0
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
@@ -37,6 +37,13 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      9.0.0:
+        message: "The `sponsored_product_ad_group_suggested_keywords` stream has been migrated from the deprecated V2 Suggested Keywords API to the new Keyword Recommendations API (`/sp/targets/keywords/recommendations`). The response schema has changed: the old `suggestedKeywords` array (containing `keywordText` and `matchType`) is replaced by individual keyword records with fields such as `keyword`, `recId`, `matchType`, `bidInfo`, and ranking metrics. Users must refresh the schema and reset data for this stream."
+        upgradeDeadline: "2026-06-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_product_ad_group_suggested_keywords"
       8.0.0:
         message: "Daily report streams now use the `date` field from the API response as the cursor and primary key instead of the synthetic `reportDate` field. Previously, all rows within a 30-day window were incorrectly assigned the same `reportDate`, causing ~96% data loss during deduplication. Users must refresh all affected daily report streams to backfill the missing data."
         upgradeDeadline: "2026-05-22"
