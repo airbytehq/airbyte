@@ -159,9 +159,14 @@ def _get_reports_response(reports: Optional[List[dict]] = None) -> HttpResponse:
 
 def _download_document_response(stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False) -> HttpResponse:
     response_body = find_template(stream_name, __file__, data_format)
+    headers = {}
     if compressed:
         response_body = gzip.compress(response_body.encode("iso-8859-1"))
-    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
+        # Mirror Amazon's behavior with enableContentEncodingUrlHeader=true: a gzip-compressed
+        # document is served with an honest "Content-Encoding: gzip" header so the header-based
+        # GzipDecoder decompresses it.
+        headers = {"Content-Encoding": "gzip"}
+    return HttpResponse(body=response_body, status_code=HTTPStatus.OK, headers=headers)
 
 
 @freezegun.freeze_time(NOW.isoformat())
@@ -911,7 +916,15 @@ class TestVendorSalesReportsFullRefresh:
         http_mocker._mocker.get(
             requests_mock.ANY,
             additional_matcher=http_mocker._matches_wrapper(document_request_matcher),
-            response_list=[{"content": document_response.body, "status_code": document_response.status_code}],
+            response_list=[
+                {
+                    "content": document_response.body,
+                    "status_code": document_response.status_code,
+                    # Preserve the "Content-Encoding: gzip" header so the header-based GzipDecoder
+                    # decompresses the body; without it ijson receives raw gzip bytes and fails.
+                    "headers": dict(document_response.headers),
+                }
+            ],
         )
 
         output = self._read(stream_name, config())
