@@ -39,7 +39,7 @@ data:
     breakingChanges:
       9.0.0:
         message: "The `sponsored_product_ad_group_suggested_keywords` stream has been migrated from the deprecated V2 Suggested Keywords API (`/v2/sp/adGroups/{adGroupId}/suggested/keywords`) to the Keyword Recommendations API (`/sp/targets/keywords/recommendations`). The response schema has changed: fields `suggestedKeywords[].keywordText` and `suggestedKeywords[].matchType` are replaced by `keyword`, `recId`, `bidInfo[]`, `searchTermImpressionShare`, `searchTermImpressionRank`, and other new fields. Users must reset this stream after upgrading."
-        upgradeDeadline: "2026-06-17"
+        upgradeDeadline: "2026-06-24"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
