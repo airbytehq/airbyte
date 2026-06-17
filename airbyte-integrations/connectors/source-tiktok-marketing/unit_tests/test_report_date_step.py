@@ -19,61 +19,60 @@ def _load_manifest():
         return yaml.safe_load(f)
 
 
-@pytest.mark.parametrize(
-    "cursor_name,expected_step",
-    [
-        pytest.param("report_daily_incremental_sync", "P30D", id="default_daily_cursor_P30D"),
-        pytest.param("report_daily_single_day_incremental_sync", "P1D", id="single_day_cursor_P1D"),
-        pytest.param("report_hourly_incremental_sync", "P1D", id="hourly_cursor_P1D"),
-    ],
-)
-def test_cursor_step_values(cursor_name, expected_step):
+def test_daily_cursor_step_uses_config_interpolation():
     manifest = _load_manifest()
-    cursor_def = manifest["definitions"][cursor_name]
-    assert cursor_def["step"] == expected_step
+    cursor_def = manifest["definitions"]["report_daily_incremental_sync"]
+    assert (
+        "config.get('report_granularity'" in cursor_def["step"]
+    ), "report_daily_incremental_sync step should reference config.report_granularity"
 
 
-@pytest.mark.parametrize(
-    "stream_name,expected_cursor_ref",
-    [
-        pytest.param(
-            "ads_reports_daily_stream",
-            "#/definitions/report_daily_single_day_incremental_sync",
-            id="ads_reports_daily_uses_P1D",
-        ),
-        pytest.param(
-            "ads_reports_by_country_daily_stream",
-            "#/definitions/report_daily_single_day_incremental_sync",
-            id="ads_reports_by_country_daily_uses_P1D",
-        ),
-    ],
-)
-def test_high_metric_streams_use_single_day_cursor(stream_name, expected_cursor_ref):
+def test_hourly_cursor_step_is_fixed_p1d():
     manifest = _load_manifest()
-    stream_def = manifest["definitions"][stream_name]
-    assert "incremental_sync" in stream_def, f"{stream_name} must override incremental_sync"
-    assert stream_def["incremental_sync"]["$ref"] == expected_cursor_ref
+    cursor_def = manifest["definitions"]["report_hourly_incremental_sync"]
+    assert cursor_def["step"] == "P1D"
+
+
+def test_spec_includes_report_granularity_field():
+    manifest = _load_manifest()
+    spec_props = manifest["spec"]["connection_specification"]["properties"]
+    assert "report_granularity" in spec_props
+    field = spec_props["report_granularity"]
+    assert field["default"] == "P30D"
+    assert field["type"] == "string"
 
 
 @pytest.mark.parametrize(
     "stream_name",
     [
+        pytest.param("ads_reports_daily_stream", id="ads_reports_daily"),
+        pytest.param("ads_reports_by_country_daily_stream", id="ads_reports_by_country_daily"),
         pytest.param("ad_groups_reports_daily_stream", id="ad_groups_reports_daily"),
         pytest.param("campaigns_reports_daily_stream", id="campaigns_reports_daily"),
         pytest.param("advertisers_reports_daily_stream", id="advertisers_reports_daily"),
     ],
 )
-def test_other_daily_streams_do_not_override_cursor(stream_name):
+def test_daily_streams_do_not_override_cursor(stream_name):
     manifest = _load_manifest()
     stream_def = manifest["definitions"][stream_name]
-    assert "incremental_sync" not in stream_def, f"{stream_name} should not override incremental_sync (inherits P30D from base)"
+    assert (
+        "incremental_sync" not in stream_def
+    ), f"{stream_name} should not override incremental_sync (all daily streams inherit the configurable cursor)"
 
 
-def test_ads_reports_daily_requests_single_day_slices():
+@pytest.mark.parametrize(
+    "report_granularity,max_days",
+    [
+        pytest.param("P1D", 2, id="P1D_single_day_slices"),
+        pytest.param("P30D", 31, id="P30D_default_slices"),
+    ],
+)
+def test_ads_reports_daily_respects_configured_step(report_granularity, max_days):
     config = {
         "access_token": "TOKEN",
         "start_date": "2024-01-01",
         "end_date": "2024-01-05",
+        "report_granularity": report_granularity,
         "environment": {"advertiser_id": "12345"},
     }
 
@@ -105,10 +104,12 @@ def test_ads_reports_daily_requests_single_day_slices():
                 start_dt = datetime.strptime(start, "%Y-%m-%d")
                 end_dt = datetime.strptime(end, "%Y-%m-%d")
                 delta = (end_dt - start_dt).days
-                assert delta <= 2, f"Date range {start} to {end} spans {delta} days; expected <=2 days (P1D step)"
+                assert (
+                    delta <= max_days
+                ), f"Date range {start} to {end} spans {delta} days; expected <={max_days} days with step {report_granularity}"
 
 
-def test_error_40067_handler_in_manifest():
+def test_error_40067_handler_is_config_error():
     manifest = _load_manifest()
     error_handler = manifest["definitions"]["requester"]["error_handler"]
     filters = error_handler["response_filters"]
@@ -116,4 +117,5 @@ def test_error_40067_handler_in_manifest():
     assert len(error_40067_filters) == 1, "Expected exactly one error handler for code 40067"
     handler = error_40067_filters[0]
     assert handler["action"] == "FAIL"
-    assert "query size limit" in handler["error_message"].lower()
+    assert handler.get("failure_type") == "config_error", "Error 40067 should be a config_error"
+    assert "report date step" in handler["error_message"].lower(), "Error message should guide user to reduce the Report Date Step setting"

@@ -33,7 +33,8 @@ definitions:
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') == 40067 }}"
           action: FAIL
-          error_message: "TikTok Marketing API query size limit exceeded (error 40067). The requested combination of metrics, dimensions, and date range is too large. {{ response.get('message', '') }}"
+          failure_type: config_error
+          error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Report Date Step' in your connector settings to a smaller value (e.g., P7D or P1D) and retry."
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -432,7 +433,7 @@ definitions:
     cursor_field: "stat_time_day"
     lookback_window: "P{{ config.get('attribution_window', 0) }}D"
     cursor_granularity: "P1D"
-    step: P30D
+    step: "{{ config.get('report_granularity', 'P30D') }}"
     cursor_datetime_formats:
       - "%Y-%m-%d %H:%M:%S"
       - "%Y-%m-%dT%H:%M:%SZ"
@@ -446,24 +447,6 @@ definitions:
       datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
 
-  report_daily_single_day_incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "stat_time_day"
-    lookback_window: "P{{ config.get('attribution_window', 0) }}D"
-    cursor_granularity: "P1D"
-    step: P1D
-    cursor_datetime_formats:
-      - "%Y-%m-%d %H:%M:%S"
-      - "%Y-%m-%dT%H:%M:%SZ"
-    datetime_format: "%Y-%m-%d"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', '2016-09-01') }}"
-      datetime_format: "%Y-%m-%d"
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
-      datetime_format: "%Y-%m-%d"
 
   report_hourly_incremental_sync:
     type: DatetimeBasedCursor
@@ -677,8 +660,6 @@ definitions:
       - ad_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
-    incremental_sync:
-      $ref: "#/definitions/report_daily_single_day_incremental_sync"
     transformations:
       - type: AddFields
         fields:
@@ -761,8 +742,6 @@ definitions:
       - stat_time_day
       - country_code
     $ref: "#/definitions/base_report_by_country_daily"
-    incremental_sync:
-      $ref: "#/definitions/report_daily_single_day_incremental_sync"
     transformations:
       - type: AddFields
         fields:
@@ -6018,11 +5997,23 @@ spec:
         default: 3
         order: 3
         type: integer
+      report_granularity:
+        title: Report Date Step
+        description: >-
+          The date range step size for daily report API requests.
+          Use the default P30D for most accounts. If syncs fail with
+          TikTok API error 40067 ("query too large"), reduce this value
+          to P7D or P1D. Smaller values make more API requests but avoid
+          query size limits for accounts with many ads.
+        default: "P30D"
+        examples: ["P30D", "P7D", "P1D"]
+        order: 4
+        type: string
       include_deleted:
         title: Include Deleted Data in Reports and Ads, Ad Groups and Campaign streams.
         description: Set to active if you want to include deleted data in report based streams and Ads, Ad Groups and Campaign streams.
         default: false
-        order: 4
+        order: 5
         type: boolean
   advanced_auth:
     auth_flow_type: oauth2.0
