@@ -336,8 +336,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             val cursor = EmittedField("created_at", PostgresTimestampFieldType)
             val checkpoint = Jsons.textNode("2026-06-12T16:31:33.680000")
 
-            val result =
-                PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
+            val result = PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
 
             assertEquals("2026-06-12T16:29:33.680000", result.asText())
         }
@@ -347,8 +346,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             val cursor = EmittedField("updated_at", PostgresTimestampTzFieldType)
             val checkpoint = Jsons.textNode("2026-06-12T16:31:33.680000+00:00")
 
-            val result =
-                PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
+            val result = PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
 
             assertEquals("2026-06-12T16:29:33.680000Z", result.asText())
         }
@@ -360,8 +358,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             val cursor = EmittedField("id", intType)
             val checkpoint = Jsons.textNode("12345")
 
-            val result =
-                PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
+            val result = PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
 
             assertEquals("12345", result.asText())
         }
@@ -371,8 +368,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             val cursor = EmittedField("created_at", PostgresTimestampFieldType)
             val checkpoint = Jsons.nullNode()
 
-            val result =
-                PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
+            val result = PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
 
             assertEquals(checkpoint, result)
         }
@@ -382,8 +378,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             val cursor = EmittedField("created_at", PostgresTimestampFieldType)
             val checkpoint = Jsons.textNode("not-a-timestamp")
 
-            val result =
-                PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
+            val result = PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
 
             assertEquals("not-a-timestamp", result.asText())
         }
@@ -393,8 +388,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             val cursor = EmittedField("created_at", PostgresTimestampFieldType)
             val checkpoint = Jsons.textNode("1970-01-01T00:01:00.000000")
 
-            val result =
-                PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
+            val result = PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
 
             // Should go negative (before epoch) but still be valid
             assertEquals("1969-12-31T23:59:00.000000", result.asText())
@@ -405,8 +399,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             val cursor = EmittedField("created_at", PostgresTimestampFieldType)
             val checkpoint = Jsons.textNode("2026-06-12T16:31:32.869123")
 
-            val result =
-                PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
+            val result = PostgresSourceJdbcPartitionFactory.applyCursorLookback(cursor, checkpoint)
 
             assertEquals("2026-06-12T16:29:32.869123", result.asText())
         }

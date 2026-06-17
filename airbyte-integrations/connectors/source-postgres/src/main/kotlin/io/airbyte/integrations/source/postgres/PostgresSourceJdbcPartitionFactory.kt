@@ -29,7 +29,6 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.read.querySingleValue
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.postgres.operations.types.DateTimeConverter
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_CHANGED
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NEW_STREAM
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NOT_FOUND
@@ -42,6 +41,7 @@ import io.airbyte.integrations.source.postgres.config.XminIncrementalConfigurati
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator.Companion.toQualifiedTableName
+import io.airbyte.integrations.source.postgres.operations.types.DateTimeConverter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -238,8 +238,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         // Incremental complete
                         null
                     } else {
-                        val adjustedLowerBound =
-                            applyCursorLookback(cursor, cursorCheckpoint)
+                        val adjustedLowerBound = applyCursorLookback(cursor, cursorCheckpoint)
                         filenode?.run { // Incremental ongoing
                             PostgresSourceJdbcCursorIncrementalPartition(
                                 selectQueryGenerator,
@@ -380,16 +379,15 @@ open class PostgresSourceJdbcPartitionFactory(
         }
 
         /**
-         * Lookback window subtracted from the cursor lower bound for timestamp-based
-         * incremental syncs. Re-reads recent records to catch rows from transactions that
-         * were in-flight when the previous sync queried the table.
+         * Lookback window subtracted from the cursor lower bound for timestamp-based incremental
+         * syncs. Re-reads recent records to catch rows from transactions that were in-flight when
+         * the previous sync queried the table.
          */
         val CURSOR_LOOKBACK_DURATION: Duration = Duration.ofSeconds(120)
 
         /**
-         * Adjusts [cursorCheckpoint] backward by [CURSOR_LOOKBACK_DURATION] for
-         * timestamp-type cursors. For non-timestamp cursors the value is returned
-         * unchanged.
+         * Adjusts [cursorCheckpoint] backward by [CURSOR_LOOKBACK_DURATION] for timestamp-type
+         * cursors. For non-timestamp cursors the value is returned unchanged.
          */
         fun applyCursorLookback(
             cursor: DataField,
@@ -404,9 +402,7 @@ open class PostgresSourceJdbcPartitionFactory(
                     try {
                         val ts = LocalDateTime.parse(cursorCheckpoint.asText())
                         val adjusted = ts.minus(CURSOR_LOOKBACK_DURATION)
-                        Jsons.textNode(
-                            adjusted.format(DateTimeConverter.TIMESTAMP_FORMATTER)
-                        )
+                        Jsons.textNode(adjusted.format(DateTimeConverter.TIMESTAMP_FORMATTER))
                     } catch (_: Exception) {
                         cursorCheckpoint
                     }
@@ -415,9 +411,7 @@ open class PostgresSourceJdbcPartitionFactory(
                     try {
                         val ts = OffsetDateTime.parse(cursorCheckpoint.asText())
                         val adjusted = ts.minus(CURSOR_LOOKBACK_DURATION)
-                        Jsons.textNode(
-                            adjusted.format(DateTimeConverter.TIMESTAMPTZ_FORMATTER)
-                        )
+                        Jsons.textNode(adjusted.format(DateTimeConverter.TIMESTAMPTZ_FORMATTER))
                     } catch (_: Exception) {
                         cursorCheckpoint
                     }
