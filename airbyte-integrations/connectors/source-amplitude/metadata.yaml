@@ -64,13 +64,16 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: Product Updates
+      url: https://amplitude.com/releases
+      type: api_release_history
     - title: Analytics API
-      url: https://www.docs.developers.amplitude.com/analytics/apis/http-v2-api/
+      url: https://amplitude.com/docs/apis/analytics/http-v2
       type: api_reference
     - title: Authentication
-      url: https://www.docs.developers.amplitude.com/analytics/apis/authentication/
+      url: https://amplitude.com/docs/apis/authentication
       type: authentication_guide
     - title: Rate limits
-      url: https://www.docs.developers.amplitude.com/analytics/apis/http-v2-api/#rate-limits
+      url: https://amplitude.com/docs/apis/analytics/http-v2#rate-limits
       type: rate_limits
 metadataSpecVersion: "1.0"
