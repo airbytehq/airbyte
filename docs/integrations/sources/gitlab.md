@@ -43,7 +43,7 @@ If you authenticate with a personal access token, generate one in **Settings > A
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
 **Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
@@ -61,7 +61,7 @@ If you authenticate with a personal access token, generate one in **Settings > A
 5. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 6. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 7. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 9. Click **Set up source**.
 
 **Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.

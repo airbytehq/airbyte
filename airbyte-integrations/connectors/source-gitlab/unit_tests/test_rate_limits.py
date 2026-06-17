@@ -25,41 +25,41 @@ def test_default_concurrency_is_four():
 
 
 def test_num_workers_spec_defaults():
-    """The num_workers spec field must default to 4 with minimum 1."""
+    """The num_workers spec field must default to 4 with minimum 2."""
     manifest = _load_manifest()
     spec_props = manifest["spec"]["connection_specification"]["properties"]
     num_workers = spec_props["num_workers"]
     assert num_workers["default"] == 4
-    assert num_workers["minimum"] == 1
+    assert num_workers["minimum"] == 2
     assert num_workers["maximum"] == 25
 
 
-def test_rate_limit_safety_margins():
-    """All HTTPAPIBudget policies must have safety margins below GitLab's documented limits.
+def test_rate_limits_match_gitlab_docs():
+    """HTTPAPIBudget policies must match documented GitLab.com rate limits.
 
-    GitLab documented limits → connector budget (70 % safety margin):
-      Members:           200/min → 140/min
-      Groups list:       200/min → 140/min
-      Descendant groups: 200/min → 140/min
-      Groups/:id:        400/min → 280/min
-      Projects/:id:      400/min → 280/min
-      Catch-all:       2,000/min → 1,400/min
+    https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom
+      Members:           200/min
+      Groups list:       200/min
+      Descendant groups: 200/min
+      Groups/:id:        400/min
+      Projects/:id:      400/min
+      Catch-all:       2,000/min
     """
     manifest = _load_manifest()
     policies = manifest["api_budget"]["policies"]
 
     expected = {
-        "/members": 140,
-        "^groups$": 140,
-        "/descendant_groups$": 140,
-        "^groups/[^/]+$": 280,
-        "^projects/[^/]+$": 280,
+        "/members": 200,
+        "^groups$": 200,
+        "/descendant_groups$": 200,
+        "^groups/[^/]+$": 400,
+        "^projects/[^/]+$": 400,
     }
 
     for policy in policies:
         matchers = policy.get("matchers", [])
         if not matchers:
-            assert policy["rates"][0]["limit"] == 1400, "Catch-all budget must be 1400"
+            assert policy["rates"][0]["limit"] == 2000, "Catch-all budget must be 2000"
             continue
         for matcher in matchers:
             pattern = matcher.get("url_path_pattern")
