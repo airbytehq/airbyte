@@ -18,7 +18,6 @@ import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NullValue
@@ -31,11 +30,8 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimeWithTimezoneValue
-import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -371,10 +367,10 @@ class MSSQLQueryBuilder(
                 BooleanType ->
                     statement.setBoolean(statementIndex, (value.abValue as BooleanValue).value)
                 DateType ->
-                    statement.setDate(
-                        statementIndex,
-                        Date.valueOf((value.abValue as DateValue).value)
-                    )
+                    LIMITS.validateDate(value)?.let {
+                        statement.setDate(statementIndex, Date.valueOf(it))
+                    }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 IntegerType ->
                     LIMITS.validateInteger(value)?.let {
                         statement.setLong(statementIndex, it.longValueExact())
@@ -388,20 +384,20 @@ class MSSQLQueryBuilder(
                 StringType ->
                     statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->
-                    statement.setObject(
-                        statementIndex,
-                        (value.abValue as TimeWithTimezoneValue).value
-                    )
+                    LIMITS.validateTimeWithTimezone(value)?.let {
+                        statement.setObject(statementIndex, it)
+                    }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 TimeTypeWithoutTimezone ->
-                    statement.setObject(
-                        statementIndex,
-                        (value.abValue as TimeWithoutTimezoneValue).value
-                    )
+                    LIMITS.validateTimeWithoutTimezone(value)?.let {
+                        statement.setObject(statementIndex, it)
+                    }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 TimestampTypeWithTimezone ->
-                    statement.setObject(
-                        statementIndex,
-                        (value.abValue as TimestampWithTimezoneValue).value
-                    )
+                    LIMITS.validateTimestampWithTimezone(value)?.let {
+                        statement.setObject(statementIndex, it)
+                    }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 TimestampTypeWithoutTimezone ->
                     LIMITS.validateTimestamp(value)?.let {
                         statement.setObject(statementIndex, it.toString())

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.mssql.v2
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -15,6 +16,8 @@ import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -27,7 +30,11 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
 import java.time.format.DateTimeFormatter
 
 object LIMITS {
@@ -43,8 +50,54 @@ object LIMITS {
     // Minimum value for DATETIME in SQL Server (1753-01-01 00:00:00.000)
     val MIN_DATETIME: LocalDateTime = LocalDateTime.of(1753, 1, 1, 0, 0, 0)
 
+    // SQL Server DATE range: 0001-01-01 through 9999-12-31
+    val MIN_DATE: LocalDate = LocalDate.of(1, 1, 1)
+    val MAX_DATE: LocalDate = LocalDate.of(9999, 12, 31)
+
     val TRUE = IntegerValue(1)
     val FALSE = IntegerValue(0)
+
+    fun validateDate(value: EnrichedAirbyteValue): LocalDate? {
+        return try {
+            val dateValue = (value.abValue as DateValue).value
+            if (dateValue < MIN_DATE || dateValue > MAX_DATE) {
+                value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                null
+            } else {
+                dateValue
+            }
+        } catch (_: Exception) {
+            value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
+            null
+        }
+    }
+
+    fun validateTimeWithTimezone(value: EnrichedAirbyteValue): OffsetTime? {
+        return try {
+            (value.abValue as TimeWithTimezoneValue).value
+        } catch (_: Exception) {
+            value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
+            null
+        }
+    }
+
+    fun validateTimeWithoutTimezone(value: EnrichedAirbyteValue): LocalTime? {
+        return try {
+            (value.abValue as TimeWithoutTimezoneValue).value
+        } catch (_: Exception) {
+            value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
+            null
+        }
+    }
+
+    fun validateTimestampWithTimezone(value: EnrichedAirbyteValue): OffsetDateTime? {
+        return try {
+            (value.abValue as TimestampWithTimezoneValue).value
+        } catch (_: Exception) {
+            value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
+            null
+        }
+    }
 
     fun validateTimestamp(value: EnrichedAirbyteValue): LocalDateTime? {
         val tsValue = (value.abValue as TimestampWithoutTimezoneValue).value

@@ -165,6 +165,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.2.18 | 2026-06-17 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add defensive null-handling for date/time columns to prevent SQL Server error 241 on NULL values |
 | 2.2.17 | 2026-06-05 | [79154](https://github.com/airbytehq/airbyte/pull/79154) | fix(destination-mssql): validate timestamp values against DATETIME lower bound |
 | 2.2.16 | 2026-04-23 | [76946](https://github.com/airbytehq/airbyte/pull/76946) | Upgrade Bulk CDK to 1.0.11 and fix `_ab_cdc_deleted_at` column type so the secondary index on CDC streams can be created. |
 | 2.2.15 | 2026-01-26 | [72297](https://github.com/airbytehq/airbyte/pull/72297) | Upgrade CDK to 0.2.0 |
