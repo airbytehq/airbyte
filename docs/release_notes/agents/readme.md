@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## June 17, 2026
+
+Connectors
+
+- You can now connect Shopify using OAuth sign-in for faster, more secure setup.
+
+Other
+
+- Background data syncs for connected services now pause automatically after a period of inactivity. Syncs resume the next time you search, with a notice if cached data may be temporarily out of date.
+
 ## June 16, 2026
 
 API
