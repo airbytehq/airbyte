@@ -275,7 +275,7 @@ class MongoDbSourceTest {
   @Test
   void testOrphanedThreadFilterExcludesDebeziumReplicatorFetcher() {
     // Verify the orphaned thread filter predicate logic registered in MongoDbSource.main():
-    //   threadInfo -> !threadInfo.getThread().getName().contains("replicator-fetcher")
+    // threadInfo -> !threadInfo.getThread().getName().contains("replicator-fetcher")
     //
     // This prevents Debezium's BufferingChangeStreamCursor$EventFetcher thread
     // from triggering IntegrationRunner.stopOrphanedThreads() force-exit (System.exit(2)).
