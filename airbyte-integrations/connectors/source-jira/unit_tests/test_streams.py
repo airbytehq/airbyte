@@ -923,43 +923,47 @@ def test_sprint_issues_stream_cursor_pagination(config, mock_board_response, moc
         return (
             200,
             {},
-            json.dumps({
-                "issues": [
-                    {
-                        "id": "10001",
-                        "key": "IT-1",
-                        "fields": {
-                            "customfield_10016": None,
-                            "created": "2021-01-01T00:00:00.000-0000",
-                            "updated": "2022-01-01T00:00:00.000-0000",
-                            "status": {"name": "To Do", "id": "10000"},
-                        },
-                    }
-                ],
-                "nextPageToken": "sprint_cursor_xyz",
-                "isLast": False,
-            }),
+            json.dumps(
+                {
+                    "issues": [
+                        {
+                            "id": "10001",
+                            "key": "IT-1",
+                            "fields": {
+                                "customfield_10016": None,
+                                "created": "2021-01-01T00:00:00.000-0000",
+                                "updated": "2022-01-01T00:00:00.000-0000",
+                                "status": {"name": "To Do", "id": "10000"},
+                            },
+                        }
+                    ],
+                    "nextPageToken": "sprint_cursor_xyz",
+                    "isLast": False,
+                }
+            ),
         )
 
     def _page2(_request):
         return (
             200,
             {},
-            json.dumps({
-                "issues": [
-                    {
-                        "id": "10002",
-                        "key": "IT-2",
-                        "fields": {
-                            "customfield_10016": 5,
-                            "created": "2021-02-01T00:00:00.000-0000",
-                            "updated": "2022-02-01T00:00:00.000-0000",
-                            "status": {"name": "Done", "id": "10001"},
-                        },
-                    }
-                ],
-                "isLast": True,
-            }),
+            json.dumps(
+                {
+                    "issues": [
+                        {
+                            "id": "10002",
+                            "key": "IT-2",
+                            "fields": {
+                                "customfield_10016": 5,
+                                "created": "2021-02-01T00:00:00.000-0000",
+                                "updated": "2022-02-01T00:00:00.000-0000",
+                                "status": {"name": "Done", "id": "10001"},
+                            },
+                        }
+                    ],
+                    "isLast": True,
+                }
+            ),
         )
 
     # Each board (3 boards) yields sprint 2, so the endpoint is called 3 times.
