@@ -48,18 +48,14 @@ def test_server_managed_fields_in_server_input_spec(oauth_spec):
     """Verify client_id/client_secret remain in complete_oauth_server_input_specification."""
     server_input_props = oauth_spec["complete_oauth_server_input_specification"]["properties"]
     for field in SERVER_MANAGED_FIELDS:
-        assert field in server_input_props, (
-            f"{field} must be in complete_oauth_server_input_specification"
-        )
+        assert field in server_input_props, f"{field} must be in complete_oauth_server_input_specification"
 
 
 def test_server_managed_fields_in_server_output_spec(oauth_spec):
     """Verify client_id/client_secret remain in complete_oauth_server_output_specification."""
     server_output_props = oauth_spec["complete_oauth_server_output_specification"]["properties"]
     for field in SERVER_MANAGED_FIELDS:
-        assert field in server_output_props, (
-            f"{field} must be in complete_oauth_server_output_specification"
-        )
+        assert field in server_output_props, f"{field} must be in complete_oauth_server_output_specification"
 
 
 def test_refresh_token_in_oauth_output_spec(oauth_spec):
