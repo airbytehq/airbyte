@@ -23,6 +23,9 @@ data:
     - title: Sentry API OpenAPI specification
       url: https://github.com/getsentry/sentry-api-schema
       type: openapi_spec
+    - title: Sentry API Deprecation Policy
+      url: https://develop.sentry.dev/backend/api/deprecation-policy/
+      type: api_deprecations
   githubIssueLabel: source-sentry
   icon: sentry.svg
   license: ELv2
