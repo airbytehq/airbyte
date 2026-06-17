@@ -20,8 +20,10 @@ data:
       type: api_release_history
     - title: Community blog
       url: https://community.airtable.com/development-apis-11
-    - title: OAuth refference
+      type: community
+    - title: OAuth reference
       url: https://airtable.com/developers/web/api/oauth-reference#authorization-request
+      type: authentication_guide
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection
