@@ -170,6 +170,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.0.0 | 2026-06-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate `sponsored_product_ad_group_suggested_keywords` stream from deprecated V2 Suggested Keywords API to Keyword Recommendations API. Schema has changed — reset required. |
 | 8.1.2 | 2026-06-16 | [79761](https://github.com/airbytehq/airbyte/pull/79761) | Update dependencies |
 | 8.1.1 | 2026-06-09 | [79217](https://github.com/airbytehq/airbyte/pull/79217) | Update dependencies |
 | 8.1.0 | 2026-05-28 | [78487](https://github.com/airbytehq/airbyte/pull/78487) | Added Sponsored Brands campaign and ad group report streams with spend and performance metrics. |

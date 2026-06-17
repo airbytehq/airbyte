@@ -2,6 +2,30 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Amazon Ads Migration Guide
 
+## Upgrading to 9.0.0
+
+The `sponsored_product_ad_group_suggested_keywords` stream has been migrated from the deprecated Amazon Ads V2 Suggested Keywords API (`/v2/sp/adGroups/{adGroupId}/suggested/keywords`) to the new Keyword Recommendations API (`/sp/targets/keywords/recommendations`). Amazon shut off the V2 endpoint on June 1, 2026.
+
+### Schema changes
+
+The response schema has changed entirely:
+
+| Before (V2) | After (Keyword Recommendations API v5) |
+|---|---|
+| `adGroupId` (integer) | `adGroupId` (string, injected from parent) |
+| `suggestedKeywords[].keywordText` | `keyword` (top-level field per record) |
+| `suggestedKeywords[].matchType` | `bidInfo[].matchType` (per bid suggestion) |
+| — | `campaignId` (string, injected from parent) |
+| — | `recId`, `translation`, `userSelectedKeyword` |
+| — | `searchTermImpressionShare`, `searchTermImpressionRank` |
+| — | `bidInfo[].bid`, `bidInfo[].theme`, `bidInfo[].suggestedBid` |
+
+Each record now represents a single recommended keyword (previously, a single record contained a nested array of suggested keywords for the ad group).
+
+### Refresh affected schemas and reset data
+
+<MigrationGuide />
+
 ## Upgrading to 8.0.0
 
 Daily report streams now use the `date` field from the Amazon Ads API response as the cursor and primary key instead of the synthetic `reportDate` field.

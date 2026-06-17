@@ -1,0 +1,25 @@
+{
+  "keywordTargetList": [
+    {
+      "keyword": "wireless earbuds",
+      "recId": "rec-1234567890",
+      "translation": "wireless earbuds",
+      "userSelectedKeyword": false,
+      "searchTermImpressionShare": 0.12,
+      "searchTermImpressionRank": 8,
+      "bidInfo": [
+        {
+          "rank": 1,
+          "matchType": "BROAD",
+          "bid": 120,
+          "theme": "CONVERSION_OPPORTUNITIES",
+          "suggestedBid": {
+            "low": 95,
+            "medium": 120,
+            "high": 150
+          }
+        }
+      ]
+    }
+  ]
+}
