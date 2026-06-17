@@ -4480,6 +4480,16 @@
           },
           "execution_metadata": {
             "$ref": "#/components/schemas/ExecutionMetadata"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextStoreInactivityWarning"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -5448,6 +5458,69 @@
         "type": "string",
         "enum": ["source", "destination"],
         "title": "ConnectorType"
+      },
+      "ContextStoreInactivityWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "deactivated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deactivated At"
+          },
+          "reactivated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reactivated At"
+          },
+          "stale_since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stale Since"
+          },
+          "status_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Url"
+          }
+        },
+        "type": "object",
+        "required": ["code", "message"],
+        "title": "ContextStoreInactivityWarning",
+        "description": "Structured warning attached to a search response when the Context Store was inactivity-paused.\n\nEmitted when a search reactivates an inactivity-disabled source (or when a prior search already\nreactivated it and table creation has not yet returned the streams to READY). The timestamps are\nthe durable transition clocks; ``stale_since`` is the preserved last cache update, so the data\nmay be stale until the next update completes."
       },
       "CronExpressionDescribeRequest": {
         "properties": {
