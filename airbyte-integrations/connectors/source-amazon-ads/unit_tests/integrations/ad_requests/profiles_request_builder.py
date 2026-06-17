@@ -14,6 +14,7 @@ class ProfilesRequestBuilder(AmazonAdsRequestBuilder):
             .with_client_id(client_id)
             .with_client_access_token(client_access_token)
             .with_profile_type_filter(["seller", "vendor"])
+            .with_access_level("view")
         )
 
     def __init__(self, resource: str) -> None:
@@ -21,12 +22,18 @@ class ProfilesRequestBuilder(AmazonAdsRequestBuilder):
         self._client_id: str = None
         self._client_access_token: str = None
         self._profile_type_filter: Optional[List[str]] = None
+        self._access_level: Optional[str] = None
 
     @property
     def url(self) -> str:
         url = f"{BASE_URL}/{self._resource}"
+        params = []
         if self._profile_type_filter:
-            url = f"{url}?profileTypeFilter={','.join(self._profile_type_filter)}"
+            params.append(f"profileTypeFilter={','.join(self._profile_type_filter)}")
+        if self._access_level:
+            params.append(f"accessLevel={self._access_level}")
+        if params:
+            url = f"{url}?{'&'.join(params)}"
         return url
 
     @property
@@ -54,4 +61,8 @@ class ProfilesRequestBuilder(AmazonAdsRequestBuilder):
 
     def with_client_access_token(self, client_access_token: str) -> "ProfilesRequestBuilder":
         self._client_access_token: str = client_access_token
+        return self
+
+    def with_access_level(self, access_level: str) -> "ProfilesRequestBuilder":
+        self._access_level: str = access_level
         return self

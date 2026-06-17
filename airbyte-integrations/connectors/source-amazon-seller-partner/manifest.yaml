@@ -249,10 +249,10 @@ spec:
           matching the same date range and marketplace, it can reuse that report
           instead of creating a new one. This setting controls how old (in hours)
           a completed report can be and still be reused. Set to 0 to always create
-          new reports. Maximum is 24 hours."
+          new reports. Maximum is 72 hours."
         default: 0
         minimum: 0
-        maximum: 24
+        maximum: 72
         order: 14
       financial_events_step:
         title: Financial Events Step Size
@@ -372,6 +372,21 @@ spec:
         default: 5
         minimum: 0
         order: 20
+      stop_sync_on_rate_limit:
+        title: Stop Sync When Report Streams Are Rate Limited
+        description: >-
+          Only applies to report streams. When enabled, the source stops
+          retrying immediately once the rate limit retry budget is exhausted
+          and fails with an actionable configuration error. This is useful
+          when persistent rate limiting indicates the connector configuration
+          needs adjustment (such as reducing the number of report streams or
+          increasing the sync interval). When disabled (default), the source
+          applies its backoff and retry strategy; if all retry attempts are
+          exhausted, a transient error is thrown and the sync may be
+          rescheduled automatically.
+        type: boolean
+        default: false
+        order: 21
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
