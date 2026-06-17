@@ -397,6 +397,10 @@ definitions:
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
+  # Error handler for daily report streams. Surfaces error 40067 ("query too large")
+  # as a config_error so users are directed to reduce the Report Date Step setting.
+  # Only used by base_report_retriever and audience_base_report_retriever;
+  # non-report streams keep the generic handler from the global requester.
   report_daily_error_handler:
     type: DefaultErrorHandler
     response_filters:
@@ -421,6 +425,8 @@ definitions:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/requester"
+      # Override error handler to surface error 40067 as a config_error
+      # with guidance to reduce the Report Date Step setting.
       error_handler:
         $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
@@ -945,6 +951,8 @@ definitions:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/requester"
+      # Override error handler to surface error 40067 as a config_error
+      # with guidance to reduce the Report Date Step setting.
       error_handler:
         $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
