@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
@@ -61,25 +60,19 @@ internal class SnowflakeAirbyteClientTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet =
             mockk<ResultSet> {
-                every { next() } returns true andThen false
-                every { getLong(COUNT_TOTAL_ALIAS) } returns 1L
-            }
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns resultSet
-                every { close() } just Runs
+                every { next() } returns true
+                every { getLong("rows") } returns 1L
             }
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns true
+                every { executeQuery() } returns resultSet
                 every { close() } just runs
             }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
                 every { prepareStatement(any()) } returns preparedStatement
-                every { createStatement() } returns statement
             }
 
         every { dataSource.connection } returns mockConnection
@@ -87,17 +80,18 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.countTable(tableName)
             assertEquals(1L, result)
-            verify(exactly = 2) { mockConnection.close() }
+            verify(exactly = 1) { mockConnection.close() }
         }
     }
 
     @Test
     fun testCountMissingTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
+        val resultSet = mockk<ResultSet> { every { next() } returns false }
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns false
+                every { executeQuery() } returns resultSet
                 every { close() } just runs
             }
         val mockConnection =
@@ -116,25 +110,23 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
-    fun testCountTableNoResults() {
+    fun testCountTableEmpty() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val resultSet = mockk<ResultSet> { every { next() } returns false }
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns resultSet
-                every { close() } just Runs
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getLong("rows") } returns 0L
             }
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns true
+                every { executeQuery() } returns resultSet
                 every { close() } just runs
             }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
                 every { prepareStatement(any()) } returns preparedStatement
-                every { createStatement() } returns statement
             }
 
         every { dataSource.connection } returns mockConnection
@@ -142,7 +134,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.countTable(tableName)
             assertEquals(0L, result)
-            verify(exactly = 2) { mockConnection.close() }
+            verify(exactly = 1) { mockConnection.close() }
         }
     }
 
@@ -259,73 +251,28 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
-    fun testCopyTable() {
+    fun testCreateTempTableDefersCreation() {
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
-        val sourceTableName = TableName(namespace = "namespace", name = "source")
-        val destinationTableName = TableName(namespace = "namespace", name = "destination")
-        val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns resultSet
-                every { close() } just Runs
-            }
-        val mockConnection =
-            mockk<Connection> {
-                every { close() } just Runs
-                every { createStatement() } returns statement
-            }
-
-        every { dataSource.connection } returns mockConnection
-
-        runBlocking {
-            client.copyTable(
-                columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = destinationTableName,
-            )
-            verify(exactly = 1) {
-                sqlGenerator.copyTable(any<Set<String>>(), sourceTableName, destinationTableName)
-            }
-            verify(exactly = 1) { mockConnection.close() }
-        }
-    }
-
-    @Test
-    fun testUpsertTable() {
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
-        val sourceTableName = TableName(namespace = "namespace", name = "source")
-        val destinationTableName = TableName(namespace = "namespace", name = "destination")
         val stream = mockk<DestinationStream>(relaxed = true)
-        val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns resultSet
-                every { close() } just Runs
-            }
-        val mockConnection =
-            mockk<Connection> {
-                every { close() } just Runs
-                every { createStatement() } returns statement
-            }
-
-        every { dataSource.connection } returns mockConnection
+        val tableName = TableName(namespace = "namespace", name = "name")
 
         runBlocking {
-            client.upsertTable(
+            client.createTempTable(
                 stream = stream,
+                tableName = tableName,
                 columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = destinationTableName,
+                replace = true,
             )
-            verify(exactly = 1) {
-                sqlGenerator.upsertTable(any(), sourceTableName, destinationTableName)
-            }
-            verify(exactly = 1) { mockConnection.close() }
+            // createTempTable should NOT execute any DDL — creation is deferred to putInStage
+            verify(exactly = 0) { sqlGenerator.createTable(any(), any(), any()) }
+            verify(exactly = 0) { sqlGenerator.createSnowflakeStage(any()) }
         }
     }
 
     @Test
-    fun testDropTable() {
+    fun testPutInStageLazilyCreatesTempTable() {
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val stream = mockk<DestinationStream>(relaxed = true)
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet>(relaxed = true)
         val statement =
@@ -342,9 +289,156 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns mockConnection
 
         runBlocking {
+            // Register the pending temp table
+            client.createTempTable(
+                stream = stream,
+                tableName = tableName,
+                columnNameMapping = columnNameMapping,
+                replace = true,
+            )
+            // First putInStage should lazily create table + stage, then PUT
+            client.putInStage(tableName, "/tmp/test.csv.gz")
+            verify(exactly = 1) { sqlGenerator.createTable(tableName, any(), true) }
+            verify(exactly = 1) { sqlGenerator.createSnowflakeStage(tableName) }
+            verify(exactly = 1) { sqlGenerator.putInStage(tableName, "/tmp/test.csv.gz") }
+
+            // Second putInStage should only PUT (no more DDL)
+            client.putInStage(tableName, "/tmp/test2.csv.gz")
+            verify(exactly = 1) { sqlGenerator.createTable(tableName, any(), true) }
+            verify(exactly = 1) { sqlGenerator.createSnowflakeStage(tableName) }
+            verify(exactly = 1) { sqlGenerator.putInStage(tableName, "/tmp/test2.csv.gz") }
+        }
+    }
+
+    @Test
+    fun testCopyTable() {
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val destinationTableName = TableName(namespace = "namespace", name = "destination")
+        val resultSet = mockk<ResultSet>(relaxed = true)
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        // tableExists fallback uses PreparedStatement for SHOW TABLES
+        val showTablesResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getLong("rows") } returns 1L
+            }
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns showTablesResultSet
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            // Populate activeTempTables via tableExists so isTempTableActive returns true
+            client.tableExists(sourceTableName)
+            client.copyTable(
+                columnNameMapping = columnNameMapping,
+                sourceTableName = sourceTableName,
+                targetTableName = destinationTableName,
+            )
+            verify(exactly = 1) {
+                sqlGenerator.copyTable(any<Set<String>>(), sourceTableName, destinationTableName)
+            }
+        }
+    }
+
+    @Test
+    fun testUpsertTable() {
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val destinationTableName = TableName(namespace = "namespace", name = "destination")
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val resultSet = mockk<ResultSet>(relaxed = true)
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        // tableExists uses PreparedStatement for SHOW TABLES to populate activeTempTables
+        val showTablesResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getLong("rows") } returns 1L
+            }
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns showTablesResultSet
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            // Populate activeTempTables via tableExists so isTempTableActive returns true
+            client.tableExists(sourceTableName)
+            client.upsertTable(
+                stream = stream,
+                columnNameMapping = columnNameMapping,
+                sourceTableName = sourceTableName,
+                targetTableName = destinationTableName,
+            )
+            verify(exactly = 1) {
+                sqlGenerator.upsertTable(any(), sourceTableName, destinationTableName)
+            }
+        }
+    }
+
+    @Test
+    fun testDropTable() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val resultSet = mockk<ResultSet>(relaxed = true)
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        // tableExists uses PreparedStatement for SHOW TABLES to populate activeTempTables
+        val showTablesResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getLong("rows") } returns 1L
+            }
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns showTablesResultSet
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            // Populate activeTempTables via tableExists so isTempTableActive returns true
+            client.tableExists(tableName)
             client.dropTable(tableName)
             verify(exactly = 1) { sqlGenerator.dropTable(tableName) }
-            verify(exactly = 1) { mockConnection.close() }
         }
     }
 
@@ -630,9 +724,6 @@ internal class SnowflakeAirbyteClientTest {
     @Test
     fun testCountTableWithClosedConnection() {
         val tableName = TableName("namespace", "table")
-        val sql = "SELECT COUNT(*) FROM namespace.table"
-
-        every { sqlGenerator.countTable(tableName) } returns sql
 
         val connection = mockk<Connection>()
 
