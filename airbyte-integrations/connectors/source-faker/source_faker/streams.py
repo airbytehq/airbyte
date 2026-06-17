@@ -64,6 +64,75 @@ class Products(Stream, IncrementalMixin):
         self.state = {"seed": self.seed, "updated_at": updated_at}
 
 
+class Inventory(Stream, IncrementalMixin):
+    """Inventory stream that derives warehouse stock data from the products catalog and warehouse configuration."""
+
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+        super().__init__(**kwargs)
+        self.count = count
+        self.seed = seed
+        self.records_per_slice = records_per_slice
+        self.always_updated = always_updated
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return self.records_per_slice
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if hasattr(self, "_state"):
+            return self._state
+        return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def load_products(self) -> List[Dict]:
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        return read_json(os.path.join(dirname, "record_data", "products.json"))
+
+    def load_warehouses(self) -> List[Dict]:
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        return read_json(os.path.join(dirname, "record_data", "warehouses.json"))
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        if "updated_at" in self.state and not self.always_updated:
+            return iter([])
+
+        products = self.load_products()
+        warehouses = self.load_warehouses()
+        updated_at = ""
+        record_id = 0
+
+        total_rows = len(products) * len(warehouses)
+        median_record_byte_size = 140
+        yield generate_estimate(self.name, total_rows, median_record_byte_size)
+
+        for warehouse in warehouses:
+            for product in products:
+                if product["id"] <= self.count:
+                    record_id += 1
+                    stock_level = abs(hash((self.seed, product["make"], warehouse["code"]))) % 500
+                    max_capacity = warehouse.get("capacity", 1000)
+                    updated_at = format_airbyte_time(datetime.datetime.now())
+                    yield {
+                        "id": record_id,
+                        "product_id": product["id"],
+                        "warehouse_code": warehouse["code"],
+                        "warehouse_name": warehouse["name"],
+                        "stock_level": stock_level,
+                        "max_capacity": max_capacity,
+                        "reorder_threshold": max_capacity // 5,
+                        "updated_at": updated_at,
+                    }
+
+        self.state = {"seed": self.seed, "updated_at": updated_at}
+
+
 class Users(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"

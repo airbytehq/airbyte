@@ -8,7 +8,7 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .streams import Products, Purchases, Users
+from .streams import Inventory, Products, Purchases, Users
 
 
 DEFAULT_COUNT = 1_000
@@ -30,6 +30,7 @@ class SourceFaker(AbstractSource):
 
         return [
             Products(count, seed, parallelism, records_per_slice, always_updated),
+            Inventory(count, seed, parallelism, records_per_slice, always_updated),
             Users(count, seed, parallelism, records_per_slice, always_updated),
             Purchases(count, seed, parallelism, records_per_slice, always_updated),
         ]
