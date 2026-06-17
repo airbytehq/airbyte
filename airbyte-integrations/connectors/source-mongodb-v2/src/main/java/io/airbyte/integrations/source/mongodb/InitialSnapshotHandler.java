@@ -113,8 +113,8 @@ public class InitialSnapshotHandler {
   }
 
   /**
-   * Returns a list of types (as strings) that the _id field has for the provided collection.
-   * Uses {@code $sample} to avoid a full collection scan on large collections.
+   * Returns a list of types (as strings) that the _id field has for the provided collection. Uses
+   * {@code $sample} to avoid a full collection scan on large collections.
    *
    * @param collection Collection to aggregate the _id types of.
    * @param sampleSize Number of documents to sample for the type check.
@@ -123,9 +123,9 @@ public class InitialSnapshotHandler {
   List<String> aggregateIdField(final MongoCollection<Document> collection, final int sampleSize) {
     final List<String> idTypes = new ArrayList<>();
     /*
-     * Sanity check that all ID_FIELD values are of the same type for this collection.
-     * Uses $sample to avoid a full collection scan (COLLSCAN) on large collections.
-     * db.collection.aggregate([{ $sample: { size: N } }, { $group : { _id : { $type : "$_id" }, count : { $sum : 1 } } }])
+     * Sanity check that all ID_FIELD values are of the same type for this collection. Uses $sample to
+     * avoid a full collection scan (COLLSCAN) on large collections. db.collection.aggregate([{ $sample:
+     * { size: N } }, { $group : { _id : { $type : "$_id" }, count : { $sum : 1 } } }])
      */
     collection.aggregate(List.of(
         Aggregates.sample(sampleSize),
