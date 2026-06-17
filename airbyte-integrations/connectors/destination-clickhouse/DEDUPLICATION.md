@@ -353,8 +353,8 @@ column references in the `ORDER BY` of the table engine.
 
 | Concern | File | Symbol |
 | --- | --- | --- |
-| Engine + `ORDER BY` selection | `src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlGenerator.kt` | `createTable`, `flattenPks` |
-| Version column rules | `src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlTypes.kt` | `VALID_VERSION_COLUMN_TYPES`, `isValidVersionColumn` |
-| NOT NULL enforcement for PK / cursor | `src/main/kotlin/io/airbyte/integrations/destination/clickhouse/schema/ClickhouseTableSchemaMapper.kt` | `toFinalSchema` |
-| Skipping `upsertTable` | `src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseAirbyteClient.kt` | `upsertTable` |
-| Schema-evolution PK/cursor rebuild | `src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseAirbyteClient.kt` | `applyChangeset`, `applyDeduplicationChanges` |
+| Engine + `ORDER BY` selection | [`ClickhouseSqlGenerator.kt`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlGenerator.kt) | [`createTable`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlGenerator.kt#L27), [`flattenPks`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlGenerator.kt#L176) |
+| Version column rules | [`ClickhouseSqlTypes.kt`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlTypes.kt) | [`VALID_VERSION_COLUMN_TYPES`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlTypes.kt#L19), [`isValidVersionColumn`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseSqlTypes.kt#L29) |
+| NOT NULL enforcement for PK / cursor | [`ClickhouseTableSchemaMapper.kt`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/schema/ClickhouseTableSchemaMapper.kt) | [`toFinalSchema`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/schema/ClickhouseTableSchemaMapper.kt#L86) |
+| Skipping `upsertTable` | [`ClickhouseAirbyteClient.kt`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseAirbyteClient.kt) | [`upsertTable`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseAirbyteClient.kt#L90) |
+| Schema-evolution PK/cursor rebuild | [`ClickhouseAirbyteClient.kt`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseAirbyteClient.kt) | [`applyChangeset`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseAirbyteClient.kt#L133), [`applyDeduplicationChanges`](src/main/kotlin/io/airbyte/integrations/destination/clickhouse/client/ClickhouseAirbyteClient.kt#L165) |
