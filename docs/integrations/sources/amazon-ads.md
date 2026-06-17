@@ -170,7 +170,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 8.1.3 | 2026-06-17 | [](https://github.com/airbytehq/airbyte/pull/) | Fixed `sponsored_display_targets_report_stream_daily` schema: moved `date` field into `properties` block so the primary key is recognized by destinations |
+| 8.1.3 | 2026-06-17 | [80175](https://github.com/airbytehq/airbyte/pull/80175) | Fixed `sponsored_display_targets_report_stream_daily` schema: moved `date` field into `properties` block so the primary key is recognized by destinations |
 | 8.1.2 | 2026-06-16 | [79761](https://github.com/airbytehq/airbyte/pull/79761) | Update dependencies |
 | 8.1.1 | 2026-06-09 | [79217](https://github.com/airbytehq/airbyte/pull/79217) | Update dependencies |
 | 8.1.0 | 2026-05-28 | [78487](https://github.com/airbytehq/airbyte/pull/78487) | Added Sponsored Brands campaign and ad group report streams with spend and performance metrics. |
