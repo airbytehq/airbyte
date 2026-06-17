@@ -146,8 +146,7 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
-        execute(sqlGenerator.createSnowflakeStage(tableName))
+        createTableAndStage(tableName, stream.tableSchema, replace)
     }
 
     /**
@@ -246,6 +245,16 @@ class SnowflakeAirbyteClient(
         }
         execute(sqlGenerator.dropTable(tableName))
         activeTempTables.remove(tableName)
+    }
+
+    /** Creates a table and its associated Snowflake stage. */
+    private fun createTableAndStage(
+        tableName: TableName,
+        tableSchema: StreamTableSchema,
+        replace: Boolean
+    ) {
+        execute(sqlGenerator.createTable(tableName, tableSchema, replace))
+        execute(sqlGenerator.createSnowflakeStage(tableName))
     }
 
     /** Checks if a table has been materialized and tracked in [activeTempTables]. */
@@ -375,8 +384,7 @@ class SnowflakeAirbyteClient(
 
     fun putInStage(tableName: TableName, tempFilePath: String) {
         pendingTempTables.remove(tableName)?.let { tableSchema ->
-            execute(sqlGenerator.createTable(tableName, tableSchema, replace = true))
-            execute(sqlGenerator.createSnowflakeStage(tableName))
+            createTableAndStage(tableName, tableSchema, replace = true)
             activeTempTables.add(tableName)
         }
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
