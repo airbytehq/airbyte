@@ -7,9 +7,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from .ad_requests import OAuthRequestBuilder, ProfilesRequestBuilder
+from .ad_requests.constants import BASE_URL
 from .ad_responses import OAuthResponseBuilder, ProfilesResponseBuilder
 from .ad_responses.records import ProfilesRecordBuilder
-from .ad_requests.constants import BASE_URL
 from .config import ConfigBuilder
 from .utils import read_stream
 
@@ -100,9 +100,7 @@ class TestSuggestedKeywordsStream(TestCase):
             HttpResponse(body=_SP_AD_GROUPS_RESPONSE, status_code=200),
         )
 
-    def _mock_keyword_recommendations(
-        self, http_mocker: HttpMocker, config: dict, profile_id: str, response_body: str = None
-    ) -> None:
+    def _mock_keyword_recommendations(self, http_mocker: HttpMocker, config: dict, profile_id: str, response_body: str = None) -> None:
         http_mocker.post(
             HttpRequest(
                 url=f"{BASE_URL}/sp/targets/keywords/recommendations",
