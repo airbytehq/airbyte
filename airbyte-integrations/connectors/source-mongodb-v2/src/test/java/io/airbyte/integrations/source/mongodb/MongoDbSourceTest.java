@@ -18,6 +18,7 @@ import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -269,6 +270,30 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  @Test
+  void testOrphanedThreadFilterExcludesDebeziumReplicatorFetcher() {
+    // Register the same filter that MongoDbSource.main() registers to exclude
+    // Debezium's BufferingChangeStreamCursor$EventFetcher thread from orphan detection.
+    IntegrationRunner.addOrphanedThreadFilter(
+        threadInfo -> !threadInfo.getThread().getName().contains("replicator-fetcher"));
+
+    // Mock OrphanedThreadInfo for a Debezium replicator-fetcher thread
+    final Thread fetcherThread = new Thread("replicator-fetcher-0");
+    final IntegrationRunner.OrphanedThreadInfo fetcherInfo = mock(IntegrationRunner.OrphanedThreadInfo.class);
+    when(fetcherInfo.getThread()).thenReturn(fetcherThread);
+
+    // The replicator-fetcher thread should be excluded from orphan detection
+    assertFalse(IntegrationRunner.Companion.filterOrphanedThread(fetcherInfo));
+
+    // Mock OrphanedThreadInfo for a normal non-daemon thread
+    final Thread normalThread = new Thread("pool-1-thread-1");
+    final IntegrationRunner.OrphanedThreadInfo normalInfo = mock(IntegrationRunner.OrphanedThreadInfo.class);
+    when(normalInfo.getThread()).thenReturn(normalThread);
+
+    // Normal threads should still be detected as orphaned
+    assertTrue(IntegrationRunner.Companion.filterOrphanedThread(normalInfo));
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
