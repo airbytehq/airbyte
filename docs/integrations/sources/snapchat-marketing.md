@@ -147,6 +147,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.38 | 2026-06-16 | [80030](https://github.com/airbytehq/airbyte/pull/80030) | Update dependencies |
+| 1.5.37 | 2026-06-09 | [79506](https://github.com/airbytehq/airbyte/pull/79506) | Update dependencies |
 | 1.5.36 | 2026-06-02 | [78950](https://github.com/airbytehq/airbyte/pull/78950) | Update dependencies |
 | 1.5.35 | 2026-05-26 | [74289](https://github.com/airbytehq/airbyte/pull/74289) | Add `none` option to view_attribution_window enum to support disabling view attribution tracking |
 | 1.5.34 | 2026-04-28 | [76758](https://github.com/airbytehq/airbyte/pull/76758) | Update dependencies |

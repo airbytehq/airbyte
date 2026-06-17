@@ -1,5 +1,5 @@
 ext {
-    apacheIcebergVersion = '1.7.0'
+    apacheIcebergVersion = '1.11.0'
 }
 
 dependencies {
@@ -15,6 +15,7 @@ dependencies {
     api "org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}"
     api("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
     api "org.apache.iceberg:iceberg-parquet:${project.ext.apacheIcebergVersion}"
+    api "org.apache.iceberg:iceberg-orc:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}"
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
