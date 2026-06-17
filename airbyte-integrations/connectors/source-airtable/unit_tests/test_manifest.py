@@ -34,10 +34,7 @@ def _get_entries_for_type(types_mapping, current_type):
 
 def _get_catch_all_entry(entries):
     """Get the catch-all entry (no condition) that is NOT the 'not result' entry."""
-    catch_alls = [
-        e for e in entries
-        if "condition" not in e or e["condition"] is None
-    ]
+    catch_alls = [e for e in entries if "condition" not in e or e["condition"] is None]
     return catch_alls
 
 
@@ -88,8 +85,7 @@ def test_string_condition_covers_previously_missing_types(types_mapping, current
     condition = string_entry.get("condition", "")
 
     assert missing_type in condition, (
-        f"TypesMap for '{current_type}' string-array condition does not include '{missing_type}'. "
-        f"Condition: {condition!r}"
+        f"TypesMap for '{current_type}' string-array condition does not include '{missing_type}'. Condition: {condition!r}"
     )
 
 
@@ -106,12 +102,8 @@ def test_all_entries_have_valid_target_types(types_mapping, current_type):
     entries = _get_entries_for_type(types_mapping, current_type)
     for i, entry in enumerate(entries):
         target = entry["target_type"]
-        assert isinstance(target, dict), (
-            f"Entry {i} for '{current_type}' should have a dict target_type (array), got {target!r}"
-        )
-        assert target.get("field_type") == "array", (
-            f"Entry {i} for '{current_type}' should have field_type=array, got {target!r}"
-        )
+        assert isinstance(target, dict), f"Entry {i} for '{current_type}' should have a dict target_type (array), got {target!r}"
+        assert target.get("field_type") == "array", f"Entry {i} for '{current_type}' should have field_type=array, got {target!r}"
 
 
 @pytest.mark.parametrize(
@@ -148,12 +140,9 @@ def test_multipleLookupValues_result_type_resolves(types_mapping, result_type, e
             matching_entry = entry
             break
 
-    assert matching_entry is not None, (
-        f"No TypesMap entry for multipleLookupValues matches result type '{result_type}'"
-    )
+    assert matching_entry is not None, f"No TypesMap entry for multipleLookupValues matches result type '{result_type}'"
 
     target = matching_entry["target_type"]
     assert target.get("items") == expected_items_type, (
-        f"multipleLookupValues with result type '{result_type}' should map items to "
-        f"{expected_items_type!r}, got {target.get('items')!r}"
+        f"multipleLookupValues with result type '{result_type}' should map items to {expected_items_type!r}, got {target.get('items')!r}"
     )
