@@ -22,9 +22,10 @@ def _load_manifest():
 def test_daily_cursor_step_uses_config_interpolation():
     manifest = _load_manifest()
     cursor_def = manifest["definitions"]["report_daily_incremental_sync"]
-    assert (
-        "config.get('report_granularity'" in cursor_def["step"]
-    ), "report_daily_incremental_sync step should reference config.report_granularity"
+    step = cursor_def["step"]
+    assert "config.get('report_granularity'" in step, "report_daily_incremental_sync step should reference config.report_granularity"
+    assert step.startswith("P"), "step should start with P (ISO 8601 duration prefix)"
+    assert step.endswith("D"), "step should end with D (days suffix)"
 
 
 def test_hourly_cursor_step_is_fixed_p1d():
@@ -38,8 +39,10 @@ def test_spec_includes_report_granularity_field():
     spec_props = manifest["spec"]["connection_specification"]["properties"]
     assert "report_granularity" in spec_props
     field = spec_props["report_granularity"]
-    assert field["default"] == "P30D"
-    assert field["type"] == "string"
+    assert field["default"] == 30
+    assert field["type"] == "integer"
+    assert field["minimum"] == 1
+    assert field["maximum"] == 30
 
 
 @pytest.mark.parametrize(
@@ -63,8 +66,8 @@ def test_daily_streams_do_not_override_cursor(stream_name):
 @pytest.mark.parametrize(
     "report_granularity,max_days",
     [
-        pytest.param("P1D", 2, id="P1D_single_day_slices"),
-        pytest.param("P30D", 31, id="P30D_default_slices"),
+        pytest.param(1, 2, id="1_day_step"),
+        pytest.param(30, 31, id="30_day_step_default"),
     ],
 )
 def test_ads_reports_daily_respects_configured_step(report_granularity, max_days):
@@ -106,7 +109,7 @@ def test_ads_reports_daily_respects_configured_step(report_granularity, max_days
                 delta = (end_dt - start_dt).days
                 assert (
                     delta <= max_days
-                ), f"Date range {start} to {end} spans {delta} days; expected <={max_days} days with step {report_granularity}"
+                ), f"Date range {start} to {end} spans {delta} days; expected <={max_days} with report_granularity={report_granularity}"
 
 
 def test_error_40067_handler_is_config_error():
