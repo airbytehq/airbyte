@@ -163,6 +163,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.12 | 2026-06-18 | [80240](https://github.com/airbytehq/airbyte/pull/80240) | Classify app_id/access_token mismatch and error 40001 as config_error with actionable guidance |
 | 5.0.11 | 2026-06-16 | [80094](https://github.com/airbytehq/airbyte/pull/80094) | Update dependencies |
 | 5.0.10 | 2026-06-09 | [79549](https://github.com/airbytehq/airbyte/pull/79549) | Update dependencies |
 | 5.0.9 | 2026-06-02 | [78999](https://github.com/airbytehq/airbyte/pull/78999) | Update dependencies |
