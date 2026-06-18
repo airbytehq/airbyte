@@ -5,7 +5,7 @@ acceptance_tests:
     tests:
       - spec_path: manifest.yaml
         backward_compatibility_tests_config:
-          disable_for_version: 9.0.0
+          disable_for_version: 5.0.0
   connection:
     tests:
       - config_path: secrets/config.json
