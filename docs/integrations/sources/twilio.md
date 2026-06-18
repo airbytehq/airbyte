@@ -148,6 +148,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.3 | 2026-06-16 | [80075](https://github.com/airbytehq/airbyte/pull/80075) | Update dependencies |
 | 1.0.2 | 2026-06-09 | [79553](https://github.com/airbytehq/airbyte/pull/79553) | Update dependencies |
 | 1.0.1 | 2026-06-02 | [79027](https://github.com/airbytehq/airbyte/pull/79027) | Update dependencies |
 | 1.0.0 | 2026-05-21 | [76911](https://github.com/airbytehq/airbyte/pull/76911) | Migrate `services` and `roles` streams from the deprecated Programmable Chat API to the Conversations API. See the [migration guide](./twilio-migrations.md#upgrading-to-100). |

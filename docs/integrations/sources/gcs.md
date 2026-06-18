@@ -246,6 +246,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.17 | 2026-06-16 | [79871](https://github.com/airbytehq/airbyte/pull/79871) | Update dependencies |
 | 0.10.16 | 2026-06-09 | [79336](https://github.com/airbytehq/airbyte/pull/79336) | Update dependencies |
 | 0.10.15 | 2026-06-02 | [78684](https://github.com/airbytehq/airbyte/pull/78684) | Update dependencies |
 | 0.10.14 | 2026-04-27 | [77033](https://github.com/airbytehq/airbyte/pull/77033) | Add `sanitize_signed_urls` option to strip Service Account credentials from `_ab_source_file_url` signed URL query parameters |
