@@ -7601,11 +7601,11 @@ schemas:
       - object
   sponsored_display_targets_report_stream_daily:
     $schema: http://json-schema.org/draft-07/schema#
-    date:
-      type:
-        - "null"
-        - string
     properties:
+      date:
+        type:
+          - "null"
+          - string
       profileId:
         type:
           - "null"
