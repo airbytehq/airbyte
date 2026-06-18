@@ -17,6 +17,10 @@ API Reference: https://www.docuseal.com/docs/api
 | templates | id | DefaultPaginator | ✅ |  ✅  |
 | submitters | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,9 @@ API Reference: https://www.docuseal.com/docs/api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2026-06-16 | [79821](https://github.com/airbytehq/airbyte/pull/79821) | Update dependencies |
+| 0.0.27 | 2026-06-09 | [79244](https://github.com/airbytehq/airbyte/pull/79244) | Update dependencies |
+| 0.0.26 | 2026-06-02 | [78660](https://github.com/airbytehq/airbyte/pull/78660) | Update dependencies |
 | 0.0.25 | 2026-04-28 | [77219](https://github.com/airbytehq/airbyte/pull/77219) | Update dependencies |
 | 0.0.24 | 2026-04-21 | [76562](https://github.com/airbytehq/airbyte/pull/76562) | Update dependencies |
 | 0.0.23 | 2026-03-17 | [75091](https://github.com/airbytehq/airbyte/pull/75091) | Update dependencies |

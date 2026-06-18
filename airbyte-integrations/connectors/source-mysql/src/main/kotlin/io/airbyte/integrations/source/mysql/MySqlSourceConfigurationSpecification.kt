@@ -196,16 +196,16 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var treatTinyint1AsInteger: Boolean? = false
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
 }
 
@@ -371,7 +371,7 @@ data object UserDefinedCursor : IncrementalConfigurationSpecification
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
         "Incrementally reads new inserts, updates, and deletes using MySQL's <a href=" +
-        "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
+        "\"https://docs.airbyte.com/integrations/sources/mysql#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
 class Cdc : IncrementalConfigurationSpecification {

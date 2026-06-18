@@ -44,6 +44,10 @@ Copy your key and secret and paste them into the respective fields.
 | warehouses | warehouseId | No pagination | ✅ |  ❌  |
 | webhooks | WebHookID | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -51,6 +55,9 @@ Copy your key and secret and paste them into the respective fields.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.36 | 2026-06-16 | [80018](https://github.com/airbytehq/airbyte/pull/80018) | Update dependencies |
+| 0.2.35 | 2026-06-09 | [79471](https://github.com/airbytehq/airbyte/pull/79471) | Update dependencies |
+| 0.2.34 | 2026-06-02 | [78974](https://github.com/airbytehq/airbyte/pull/78974) | Update dependencies |
 | 0.2.33 | 2026-04-28 | [77448](https://github.com/airbytehq/airbyte/pull/77448) | Update dependencies |
 | 0.2.32 | 2026-04-21 | [75332](https://github.com/airbytehq/airbyte/pull/75332) | Update dependencies |
 | 0.2.31 | 2026-03-10 | [74592](https://github.com/airbytehq/airbyte/pull/74592) | Update dependencies |

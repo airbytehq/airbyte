@@ -62,11 +62,18 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[ArticleAttachmentsSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[ArticlesSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[AutomationsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[BrandsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[DeletedTicketsSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[GroupMembershipsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[GroupsSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[MacrosSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[OrganizationMembershipsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[OrganizationsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[SatisfactionRatingsSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[SlaPoliciesSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TagsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TicketAuditsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TicketCommentsSearchData]
@@ -74,6 +81,7 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TicketFormsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TicketMetricsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TicketsSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TriggersSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[UsersSearchData]
 
     ### Class variables
@@ -86,6 +94,123 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+`AirbyteSearchResult[ArticleAttachmentsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ArticleAttachmentsSearchResult"></a>
+
+`ArticleAttachmentsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[ArticlesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ArticlesSearchResult"></a>
+
+`ArticlesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[AutomationsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AutomationsSearchResult"></a>
+
+`AutomationsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 `AirbyteSearchResult[BrandsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -165,6 +290,45 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`AirbyteSearchResult[GroupMembershipsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="GroupMembershipsSearchResult"></a>
+
+`GroupMembershipsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `AirbyteSearchResult[GroupsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -189,6 +353,84 @@ Classes
 <a id="GroupsSearchResult"></a>
 
 `GroupsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[MacrosSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="MacrosSearchResult"></a>
+
+`MacrosSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[OrganizationMembershipsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="OrganizationMembershipsSearchResult"></a>
+
+`OrganizationMembershipsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -267,6 +509,45 @@ Classes
 <a id="SatisfactionRatingsSearchResult"></a>
 
 `SatisfactionRatingsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[SlaPoliciesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SlaPoliciesSearchResult"></a>
+
+`SlaPoliciesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -555,6 +836,45 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`AirbyteSearchResult[TriggersSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TriggersSearchResult"></a>
+
+`TriggersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `AirbyteSearchResult[UsersSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -744,6 +1064,57 @@ Classes
     `previous_page: str | None`
     :   The type of the None singleton.
 
+<a id="ArticleAttachmentsSearchData"></a>
+
+`ArticleAttachmentsSearchData(**data: Any)`
+:   Search result data for article_attachments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `article_id: int | None`
+    :   The ID of the article this attachment belongs to
+
+    `content_type: str | None`
+    :   The MIME type of the attachment
+
+    `content_url: str | None`
+    :   The URL to download the attachment
+
+    `created_at: str | None`
+    :   The time the attachment was created
+
+    `file_name: str | None`
+    :   The name of the attached file
+
+    `id: int | None`
+    :   The unique ID of the attachment
+
+    `inline: bool | None`
+    :   Whether the attachment is displayed inline
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `size: int | None`
+    :   The size of the attachment in bytes
+
+    `updated_at: str | None`
+    :   The time the attachment was last updated
+
+    `url: str | None`
+    :   The API URL of the attachment
+
 <a id="ArticlesListResultMeta"></a>
 
 `ArticlesListResultMeta(**data: Any)`
@@ -773,6 +1144,75 @@ Classes
 
     `previous_page: str | None`
     :   The type of the None singleton.
+
+<a id="ArticlesSearchData"></a>
+
+`ArticlesSearchData(**data: Any)`
+:   Search result data for articles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author_id: int | None`
+    :   The ID of the user who created the article
+
+    `body: str | None`
+    :   The body content of the article (HTML)
+
+    `created_at: str | None`
+    :   The time the article was created
+
+    `draft: bool | None`
+    :   Whether the article is a draft
+
+    `html_url: str | None`
+    :   The public URL of the article
+
+    `id: int | None`
+    :   The unique ID of the article
+
+    `label_names: list[typing.Any] | None`
+    :   List of label names associated with the article
+
+    `locale: str | None`
+    :   The locale of the article
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `position: int | None`
+    :   Position of the article in the section
+
+    `promoted: bool | None`
+    :   Whether the article is promoted
+
+    `section_id: int | None`
+    :   The ID of the section the article belongs to
+
+    `title: str | None`
+    :   The title of the article
+
+    `updated_at: str | None`
+    :   The time the article was last updated
+
+    `url: str | None`
+    :   The API URL of the article
+
+    `vote_count: int | None`
+    :   Number of votes
+
+    `vote_sum: int | None`
+    :   Sum of upvotes and downvotes
 
 <a id="Attachment"></a>
 
@@ -917,6 +1357,54 @@ Classes
 
     `previous_page: str | None`
     :   The type of the None singleton.
+
+<a id="AutomationsSearchData"></a>
+
+`AutomationsSearchData(**data: Any)`
+:   Search result data for automations entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `actions: list[typing.Any] | None`
+    :   An array of actions
+
+    `active: bool | None`
+    :   Whether the automation is active
+
+    `conditions: dict[str, typing.Any] | None`
+    :   An object that describes the conditions under which the automation will execute
+
+    `created_at: str | None`
+    :   The time the automation was created
+
+    `id: int | None`
+    :   Automatically assigned when created
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `position: int | None`
+    :   The position of the automation
+
+    `raw_title: str | None`
+    :   The dynamic content placeholder for title
+
+    `title: str | None`
+    :   The title of the automation
+
+    `updated_at: str | None`
+    :   The time the automation was last updated
 
 <a id="Brand"></a>
 
@@ -1341,6 +1829,48 @@ Classes
     `previous_page: str | None`
     :   The type of the None singleton.
 
+<a id="GroupMembershipsSearchData"></a>
+
+`GroupMembershipsSearchData(**data: Any)`
+:   Search result data for group_memberships entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   When the group membership was created
+
+    `default: bool | None`
+    :   If true, tickets assigned directly to the agent will assume this membership's group
+
+    `group_id: int | None`
+    :   The id of a group
+
+    `id: int | None`
+    :   Automatically assigned upon creation
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   When the group membership was last updated
+
+    `url: str | None`
+    :   The API url of this record
+
+    `user_id: int | None`
+    :   The id of an agent
+
 <a id="GroupsListResultMeta"></a>
 
 `GroupsListResultMeta(**data: Any)`
@@ -1542,6 +2072,60 @@ Classes
     `previous_page: str | None`
     :   The type of the None singleton.
 
+<a id="MacrosSearchData"></a>
+
+`MacrosSearchData(**data: Any)`
+:   Search result data for macros entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `actions: list[typing.Any] | None`
+    :   Actions to perform when macro is applied
+
+    `active: bool | None`
+    :   Useful for determining if the macro should be displayed
+
+    `created_at: str | None`
+    :   The time the macro was created
+
+    `description: str | None`
+    :   The description of the macro
+
+    `id: int | None`
+    :   Automatically assigned when the macro is created
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `position: int | None`
+    :   The position of the macro
+
+    `raw_title: str | None`
+    :   The dynamic content placeholder for title
+
+    `restriction: dict[str, typing.Any] | None`
+    :   Who may access this macro
+
+    `title: str | None`
+    :   The title of the macro
+
+    `updated_at: str | None`
+    :   The time the macro was last updated
+
+    `url: str | None`
+    :   A URL to access the macro's details
+
 <a id="Organization"></a>
 
 `Organization(**data: Any)`
@@ -1682,6 +2266,54 @@ Classes
 
     `previous_page: str | None`
     :   The type of the None singleton.
+
+<a id="OrganizationMembershipsSearchData"></a>
+
+`OrganizationMembershipsSearchData(**data: Any)`
+:   Search result data for organization_memberships entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   When the membership was created
+
+    `default: bool | None`
+    :   If true, this is the default organization for the user
+
+    `id: int | None`
+    :   Automatically assigned when the membership is created
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `organization_id: int | None`
+    :   The ID of the organization associated with this user
+
+    `organization_name: str | None`
+    :   The name of the organization
+
+    `updated_at: str | None`
+    :   When the membership was last updated
+
+    `url: str | None`
+    :   The API url of this membership
+
+    `user_id: int | None`
+    :   The ID of the user for whom this memberships belongs
+
+    `view_tickets: bool | None`
+    :   If true, this user can view tickets from this organization
 
 <a id="OrganizationsListResultMeta"></a>
 
@@ -2003,6 +2635,54 @@ Classes
 
     `previous_page: str | None`
     :   The type of the None singleton.
+
+<a id="SlaPoliciesSearchData"></a>
+
+`SlaPoliciesSearchData(**data: Any)`
+:   Search result data for sla_policies entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   When the SLA policy was created
+
+    `description: str | None`
+    :   The description of the SLA policy
+
+    `filter: dict[str, typing.Any] | None`
+    :   Filter for the SLA policy
+
+    `id: int | None`
+    :   Automatically assigned when the SLA policy is created
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `policy_metrics: list[typing.Any] | None`
+    :   Array of policy metrics
+
+    `position: int | None`
+    :   Position of the SLA policy
+
+    `title: str | None`
+    :   The title of the SLA policy
+
+    `updated_at: str | None`
+    :   When the SLA policy was last updated
+
+    `url: str | None`
+    :   URL of the SLA policy
 
 <a id="Tag"></a>
 
@@ -3831,6 +4511,63 @@ Classes
     `previous_page: str | None`
     :   The type of the None singleton.
 
+<a id="TriggersSearchData"></a>
+
+`TriggersSearchData(**data: Any)`
+:   Search result data for triggers entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `actions: list[typing.Any] | None`
+    :   An array of actions
+
+    `active: bool | None`
+    :   Whether the trigger is active
+
+    `category_id: str | None`
+    :   The ID of the category the trigger belongs to
+
+    `conditions: dict[str, typing.Any] | None`
+    :   An object that describes the conditions under which the trigger will execute
+
+    `created_at: str | None`
+    :   The time the trigger was created
+
+    `description: str | None`
+    :   The description of the trigger
+
+    `id: int | None`
+    :   Automatically assigned when created
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `position: int | None`
+    :   Position of the trigger
+
+    `raw_title: str | None`
+    :   The dynamic content placeholder for title
+
+    `title: str | None`
+    :   The title of the trigger
+
+    `updated_at: str | None`
+    :   The time the trigger was last updated
+
+    `url: str | None`
+    :   The URL of the trigger
+
 <a id="User"></a>
 
 `User(**data: Any)`
@@ -4523,7 +5260,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `ZendeskSupportExecuteResultWithMeta[list[ArticleAttachment], ArticleAttachmentsListResultMeta](**data: Any)`

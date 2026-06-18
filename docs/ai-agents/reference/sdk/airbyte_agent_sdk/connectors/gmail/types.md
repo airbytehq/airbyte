@@ -125,7 +125,7 @@ Classes
 <a id="DraftsCreateParamsMessage"></a>
 
 `DraftsCreateParamsMessage(*args, **kwargs)`
-:   The draft message content
+:   The draft message content encoded in Gmail raw message format
 
     ### Ancestors (in MRO)
 
@@ -504,7 +504,7 @@ Classes
 <a id="DraftsUpdateParamsMessage"></a>
 
 `DraftsUpdateParamsMessage(*args, **kwargs)`
-:   The draft message content
+:   The draft message content encoded in Gmail raw message format
 
     ### Ancestors (in MRO)
 
@@ -1093,8 +1093,26 @@ Classes
 
     ### Class variables
 
+    `history_id: Any`
+    :   Mailbox history record identifier for the message
+
     `id: Any`
     :   Unique identifier for the message
+
+    `internal_date: Any`
+    :   Internal message creation timestamp in epoch milliseconds
+
+    `label_ids: Any`
+    :   Labels applied to the message
+
+    `payload: Any`
+    :   Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers.
+
+    `size_estimate: Any`
+    :   Estimated size of the message in bytes
+
+    `snippet: Any`
+    :   Short snippet of the message text
 
     `thread_id: Any`
     :   Identifier of the thread this message belongs to
@@ -1239,8 +1257,26 @@ Classes
 
     ### Class variables
 
+    `history_id: list[str]`
+    :   Mailbox history record identifier for the message
+
     `id: list[str]`
     :   Unique identifier for the message
+
+    `internal_date: list[str]`
+    :   Internal message creation timestamp in epoch milliseconds
+
+    `label_ids: list[list[typing.Any]]`
+    :   Labels applied to the message
+
+    `payload: list[dict[str, typing.Any]]`
+    :   Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers.
+
+    `size_estimate: list[int]`
+    :   Estimated size of the message in bytes
+
+    `snippet: list[str]`
+    :   Short snippet of the message text
 
     `thread_id: list[str]`
     :   Identifier of the thread this message belongs to
@@ -1396,8 +1432,26 @@ Classes
 
     ### Class variables
 
+    `history_id: str | None`
+    :   Mailbox history record identifier for the message
+
     `id: str`
     :   Unique identifier for the message
+
+    `internal_date: str | None`
+    :   Internal message creation timestamp in epoch milliseconds
+
+    `label_ids: list[typing.Any] | None`
+    :   Labels applied to the message
+
+    `payload: dict[str, typing.Any] | None`
+    :   Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers.
+
+    `size_estimate: int | None`
+    :   Estimated size of the message in bytes
+
+    `snippet: str | None`
+    :   Short snippet of the message text
 
     `thread_id: str | None`
     :   Identifier of the thread this message belongs to
@@ -1430,8 +1484,26 @@ Classes
 
     ### Class variables
 
+    `history_id: Literal['asc', 'desc']`
+    :   Mailbox history record identifier for the message
+
     `id: Literal['asc', 'desc']`
     :   Unique identifier for the message
+
+    `internal_date: Literal['asc', 'desc']`
+    :   Internal message creation timestamp in epoch milliseconds
+
+    `label_ids: Literal['asc', 'desc']`
+    :   Labels applied to the message
+
+    `payload: Literal['asc', 'desc']`
+    :   Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers.
+
+    `size_estimate: Literal['asc', 'desc']`
+    :   Estimated size of the message in bytes
+
+    `snippet: Literal['asc', 'desc']`
+    :   Short snippet of the message text
 
     `thread_id: Literal['asc', 'desc']`
     :   Identifier of the thread this message belongs to
@@ -1447,8 +1519,26 @@ Classes
 
     ### Class variables
 
+    `history_id: str`
+    :   Mailbox history record identifier for the message
+
     `id: str`
     :   Unique identifier for the message
+
+    `internal_date: str`
+    :   Internal message creation timestamp in epoch milliseconds
+
+    `label_ids: str`
+    :   Labels applied to the message
+
+    `payload: str`
+    :   Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers.
+
+    `size_estimate: str`
+    :   Estimated size of the message in bytes
+
+    `snippet: str`
+    :   Short snippet of the message text
 
     `thread_id: str`
     :   Identifier of the thread this message belongs to

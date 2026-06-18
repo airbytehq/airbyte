@@ -199,11 +199,25 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             if response_or_exception.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
-                self.stream.page_size = int(self.stream.page_size / 2)
+                # Halve the page size on every 502/504 to reduce GraphQL query cost,
+                # but never let it drop below 1 — a page_size of 0 would request no
+                # records and cause infinite paging.
+                previous_page_size = self.stream.page_size
+                self.stream.page_size = max(1, int(self.stream.page_size / 2))
+                self._logger.info(
+                    "GitHub GraphQL endpoint returned HTTP %s for stream `%s`; reducing GraphQL page_size from %s to %s and retrying.",
+                    response_or_exception.status_code,
+                    self.stream.name,
+                    previous_page_size,
+                    self.stream.page_size,
+                )
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=(
+                        f"GitHub GraphQL endpoint returned HTTP {response_or_exception.status_code} "
+                        f"for stream `{self.stream.name}`. Reducing GraphQL page size and retrying."
+                    ),
                 )
 
             self.stream.page_size = (
@@ -214,7 +228,10 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=(
+                        f"GitHub GraphQL endpoint returned errors in the response body "
+                        f"for stream `{self.stream.name}` (HTTP {response_or_exception.status_code}). Retrying."
+                    ),
                 )
 
         return super().interpret_response(response_or_exception)

@@ -276,11 +276,7 @@ There are currently no options for JSONL parsing.
 
 <FieldAnchor field="streams.0.format[unstructured],streams.1.format[unstructured],streams.2.format[unstructured]">
 
-#### Document File Type Format (Experimental)
-
-:::warning
-The Document File Type Format is currently an experimental feature and not subject to SLAs. Use at your own risk.
-:::
+#### Document File Type Format
 
 The Document File Type Format is a special format that allows you to extract text from Markdown, TXT, PDF, Word and Powerpoint documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`), Word (`docx`) or Powerpoint (`.pptx`) file.
 
@@ -304,6 +300,10 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 - Requires Airbyte version 1.2.0 or later (1.7.0+ for metadata support)
 - Only works with file-based destinations that support file transfer
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -311,6 +311,9 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.20 | 2026-06-16 | [79773](https://github.com/airbytehq/airbyte/pull/79773) | Update dependencies |
+| 0.8.19 | 2026-06-09 | [79224](https://github.com/airbytehq/airbyte/pull/79224) | Update dependencies |
+| 0.8.18 | 2026-06-02 | [78559](https://github.com/airbytehq/airbyte/pull/78559) | Update dependencies |
 | 0.8.17 | 2026-04-28 | [77147](https://github.com/airbytehq/airbyte/pull/77147) | Update dependencies |
 | 0.8.16 | 2026-04-21 | [75028](https://github.com/airbytehq/airbyte/pull/75028) | Update dependencies |
 | 0.8.15 | 2026-03-10 | [74507](https://github.com/airbytehq/airbyte/pull/74507) | Update dependencies |

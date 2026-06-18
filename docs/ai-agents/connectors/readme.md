@@ -6,7 +6,7 @@ import AgentConnectorRegistry from '@site/src/components/AgentConnectorRegistry'
 
 # Agent connectors
 
-Airbyte's agent connectors equip AI agents to call third-party APIs through strongly typed, well-documented tools. All connectors ship inside the single `airbyte-agent-sdk` Python package and are ready to use in the Airbyte Agents platform through any of Airbyte's [supported interfaces](../interfaces/).
+Airbyte's agent connectors equip AI agents to call third-party APIs through strongly typed, well-documented tools. All connectors ship inside the single `airbyte-agent-sdk` Python package and are ready to use in Airbyte Agents through any of the [supported interfaces](../interfaces/).
 
 Airbyte's connectors are open source, and you can find them in the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk/tree/main/airbyte_agent_sdk/connectors).
 

@@ -251,13 +251,12 @@ You can also use `kubectl` to create the secret directly from the command-line t
 
 ```bash
 kubectl create secret generic airbyte-config-secrets \
-  --from-literal=license-key='' \
   --from-literal=DATA_PLANE_CLIENT_ID='' \
   --from-literal=DATA_PLANE_CLIENT_SECRET='' \
-  --from-literal=s3-access-key-id='' \
-  --from-literal=s3-secret-access-key='' \
-  --from-literal=aws-secret-manager-access-key-id='' \
-  --from-literal=aws-secret-manager-secret-access-key='' \
+  --from-literal=S3_ACCESS_KEY_ID='' \
+  --from-literal=S3_SECRET_ACCESS_KEY='' \
+  --from-literal=AWS_SECRET_MANAGER_ACCESS_KEY_ID='' \
+  --from-literal=AWS_SECRET_MANAGER_SECRET_ACCESS_KEY='' \
   --namespace airbyte
 ```
 

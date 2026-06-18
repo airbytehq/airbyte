@@ -153,7 +153,9 @@ constructor(
         // Configure SSH tunneling.
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
-            SshConnectionOptions.fromAdditionalProperties(pojo.additionalPropertiesMap)
+            SshConnectionOptions.fromAdditionalProperties(
+                pojo.additionalPropertiesMap ?: emptyMap()
+            )
 
         val sslJdbcProperties: Map<String, String> = pojo.getEncryptionValue()!!.jdbcProperties()
         jdbcProperties.putAll(sslJdbcProperties)

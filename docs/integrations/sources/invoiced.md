@@ -28,6 +28,10 @@ This Airbyte connector for **Invoiced** enables seamless data integration betwee
 | metered_billings | id | DefaultPaginator | ✅ |  ❌  |
 | payment_sources | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,9 @@ This Airbyte connector for **Invoiced** enables seamless data integration betwee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-06-16 | [79923](https://github.com/airbytehq/airbyte/pull/79923) | Update dependencies |
+| 0.0.56 | 2026-06-09 | [79362](https://github.com/airbytehq/airbyte/pull/79362) | Update dependencies |
+| 0.0.55 | 2026-06-02 | [78777](https://github.com/airbytehq/airbyte/pull/78777) | Update dependencies |
 | 0.0.54 | 2026-04-28 | [77319](https://github.com/airbytehq/airbyte/pull/77319) | Update dependencies |
 | 0.0.53 | 2026-04-21 | [76630](https://github.com/airbytehq/airbyte/pull/76630) | Update dependencies |
 | 0.0.52 | 2026-03-31 | [75658](https://github.com/airbytehq/airbyte/pull/75658) | Update dependencies |

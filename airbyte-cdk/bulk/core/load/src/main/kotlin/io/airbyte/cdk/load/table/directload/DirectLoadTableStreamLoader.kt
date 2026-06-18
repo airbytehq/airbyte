@@ -95,7 +95,7 @@ class DirectLoadTableDedupStreamLoader(
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream: ${stream.mappedDescriptor}"
             }
-            tableOperationsClient.createTable(
+            tableOperationsClient.createTempTable(
                 stream,
                 tempTableName,
                 columnNameMapping,
@@ -177,7 +177,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     logger.info {
                         "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
-                    tableOperationsClient.createTable(
+                    tableOperationsClient.createTempTable(
                         stream,
                         tempTableName,
                         columnNameMapping,
@@ -213,7 +213,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 logger.info {
                     "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.mappedDescriptor.toPrettyString()}"
                 }
-                tableOperationsClient.createTable(
+                tableOperationsClient.createTempTable(
                     stream,
                     tempTableName,
                     columnNameMapping,
@@ -305,7 +305,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     logger.info {
                         "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
-                    tableOperationsClient.createTable(
+                    tableOperationsClient.createTempTable(
                         stream,
                         tempTableName,
                         columnNameMapping,
@@ -318,7 +318,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
             }
-            tableOperationsClient.createTable(
+            tableOperationsClient.createTempTable(
                 stream,
                 tempTableName,
                 columnNameMapping,
@@ -395,7 +395,12 @@ class DirectLoadTableDedupTruncateStreamLoader(
         val tempTempTable = tempTableNameGenerator.generate(tempTableName)
 
         // Create temporary table for intermediate operations
-        tableOperationsClient.createTable(stream, tempTempTable, columnNameMapping, replace = true)
+        tableOperationsClient.createTempTable(
+            stream,
+            tempTempTable,
+            columnNameMapping,
+            replace = true,
+        )
 
         // Upsert from temp to temp-temp table
         tableOperationsClient.upsertTable(

@@ -25,6 +25,10 @@ Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may l
 | organization_memberships | uri         | DefaultPaginator | ✅                 | ❌                   |
 | scheduled_events         | uri         | DefaultPaginator | ✅                 | ✅                   |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,9 @@ Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may l
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.41 | 2026-06-16 | [79778](https://github.com/airbytehq/airbyte/pull/79778) | Update dependencies |
+| 0.1.40 | 2026-06-09 | [79236](https://github.com/airbytehq/airbyte/pull/79236) | Update dependencies |
+| 0.1.39 | 2026-06-02 | [78555](https://github.com/airbytehq/airbyte/pull/78555) | Update dependencies |
 | 0.1.38 | 2026-04-28 | [77167](https://github.com/airbytehq/airbyte/pull/77167) | Update dependencies |
 | 0.1.37 | 2026-04-21 | [76522](https://github.com/airbytehq/airbyte/pull/76522) | Update dependencies |
 | 0.1.36 | 2026-03-31 | [75659](https://github.com/airbytehq/airbyte/pull/75659) | Update dependencies |

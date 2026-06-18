@@ -44,6 +44,10 @@ The following fields are required fields for the connector to work:
   web schedule data for. Can be left blank for all countries and global
   channels, or set to 'global' for only global channels.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

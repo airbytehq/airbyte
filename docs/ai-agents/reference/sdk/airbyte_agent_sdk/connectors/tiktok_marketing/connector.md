@@ -672,6 +672,28 @@ Classes
         Returns:
             CampaignsReportsDailyListResult
 
+<a id="CatalogsQuery"></a>
+
+`CatalogsQuery(connector: TiktokMarketingConnector)`
+:   Query class for Catalogs entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `list(self, advertiser_id: str, bc_id: str | None = None, page: int | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[Catalog], CatalogsListResultMeta]`
+    :   Get product catalogs for an advertiser
+        
+        Args:
+            advertiser_id: Advertiser ID
+            bc_id: Business Center ID. Required by the TikTok API to scope catalog results.
+            page: Page number
+            page_size: Number of items per page
+            **kwargs: Additional parameters
+        
+        Returns:
+            CatalogsListResult
+
 <a id="CreativeAssetsImagesQuery"></a>
 
 `CreativeAssetsImagesQuery(connector: TiktokMarketingConnector)`
@@ -777,6 +799,53 @@ Classes
         Returns:
             CreativeAssetsVideosListResult
 
+<a id="SparkAdsQuery"></a>
+
+`SparkAdsQuery(connector: TiktokMarketingConnector)`
+:   Query class for SparkAds entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: SparkAdsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[SparkAdsSearchData]`
+    :   Search spark_ads records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SparkAdsSearchFilter):
+        - item_info: Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+        - user_info: Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+        - auth_info: Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+        - video_info: Video post details including duration, preview_url, poster_url, height, width, and size.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SparkAdsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, advertiser_id: str, page: int | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[SparkAd], SparkAdsListResultMeta]`
+    :   Get Spark Ad posts that have been authorized to an ad account
+        
+        Args:
+            advertiser_id: Advertiser ID
+            page: Page number
+            page_size: Number of items per page
+            **kwargs: Additional parameters
+        
+        Returns:
+            SparkAdsListResult
+
 <a id="TiktokMarketingConnector"></a>
 
 `TiktokMarketingConnector(auth_config: TiktokMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
@@ -830,53 +899,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'TiktokMarketingAuthConfig'", name: str | None = None, replication_config: "'TiktokMarketingReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Typed replication settings.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A TiktokMarketingConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await TiktokMarketingConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=TiktokMarketingAuthConfig(access_token="..."),
-            )
-        
-            # With replication config (required for this connector):
-            connector = await TiktokMarketingConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=TiktokMarketingAuthConfig(access_token="..."),
-                replication_config=TiktokMarketingReplicationConfig(start_date="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -927,10 +949,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await TiktokMarketingConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -967,7 +985,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -979,6 +997,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation

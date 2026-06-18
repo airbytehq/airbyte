@@ -26,7 +26,6 @@ Self-Managed Enterprise
 Elastic License 2.0
 ELv2
 MIT
-Agent Engine
 [Aa]gent(ic)? [Oo]peration(s)?
 AO
 AOs
@@ -78,6 +77,7 @@ CDC
 CRM[s]
 FAQ
 MCP
+Streamable
 
 # Airbyte connectors
 
@@ -109,6 +109,11 @@ FastMCP
 Supabase
 Lovable
 Deno
+Claude
+Claude Code
+ChatGPT
+Codex
+skills.sh
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
@@ -166,3 +171,6 @@ expirations
 httpx
 [Aa]uto-?create(s|d)?
 async
+Automations
+enum
+uv

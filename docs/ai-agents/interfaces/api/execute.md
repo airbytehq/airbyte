@@ -5,7 +5,7 @@ sidebar_position: 3
 
 # Execute operations
 
-You can execute operations directly through the Airbyte Agent API. This approach is useful when you're not using Python, when building custom integrations, or when you need to execute operations from a backend service.
+You can execute operations directly through the Agent API. This approach is useful when you're not using Python, when building custom integrations, or when you need to execute operations from a backend service.
 
 To execute operations from Python code instead, see [Execute operations](../sdk/execute) in the SDK section.
 
@@ -24,7 +24,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=defau
 
 `definition_id` is the connector type (GitHub, HubSpot, and so on). See [Find a `definition_id`](./add-connector#find-a-definition_id) for how to look one up. The response includes each matching connector's `id`. Use it in the execute URL below.
 
-The Airbyte Agent Python SDK can resolve a connector by its slug (for example, `"hubspot"`) without any IDs. Consider using the [SDK](../sdk/execute) if you want to avoid managing connector IDs in application code.
+The Agent SDK can resolve a connector by its slug (for example, `"hubspot"`) without any IDs. Consider using the [SDK](../sdk/execute) if you want to avoid managing connector IDs in application code.
 
 ## Execute an operation
 

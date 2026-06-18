@@ -17,6 +17,10 @@ Documentation: https://developers.heypoplar.com/
 | me | id | No pagination | ✅ |  ❌  |
 | mailings | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,9 @@ Documentation: https://developers.heypoplar.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.40 | 2026-06-16 | [79978](https://github.com/airbytehq/airbyte/pull/79978) | Update dependencies |
+| 0.0.39 | 2026-06-09 | [79453](https://github.com/airbytehq/airbyte/pull/79453) | Update dependencies |
+| 0.0.38 | 2026-06-02 | [78882](https://github.com/airbytehq/airbyte/pull/78882) | Update dependencies |
 | 0.0.37 | 2026-04-28 | [77393](https://github.com/airbytehq/airbyte/pull/77393) | Update dependencies |
 | 0.0.36 | 2026-04-21 | [76694](https://github.com/airbytehq/airbyte/pull/76694) | Update dependencies |
 | 0.0.35 | 2026-03-31 | [75869](https://github.com/airbytehq/airbyte/pull/75869) | Update dependencies |

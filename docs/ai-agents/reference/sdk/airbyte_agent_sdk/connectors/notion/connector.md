@@ -83,6 +83,17 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, children: list[BlocksCreateParamsChildrenItem], block_id: str, **kwargs) ‑> list[airbyte_agent_sdk.connectors.notion.models.Block]`
+    :   Creates and appends new children blocks to the specified parent block or page
+        
+        Args:
+            children: Array of block objects to append (max 100). Each block must specify a type and corresponding content.
+            block_id: Block or page ID to append children to
+            **kwargs: Additional parameters
+        
+        Returns:
+            list[Block]
+
     `get(self, block_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Block`
     :   Retrieves a block object using the ID specified
         
@@ -105,6 +116,37 @@ Classes
         Returns:
             BlocksListResult
 
+    `update(self, block_id: str, paragraph: BlocksUpdateParamsParagraph | None = None, heading_1: BlocksUpdateParamsHeading1 | None = None, heading_2: BlocksUpdateParamsHeading2 | None = None, heading_3: BlocksUpdateParamsHeading3 | None = None, bulleted_list_item: BlocksUpdateParamsBulletedListItem | None = None, numbered_list_item: BlocksUpdateParamsNumberedListItem | None = None, to_do: BlocksUpdateParamsToDo | None = None, toggle: BlocksUpdateParamsToggle | None = None, code: BlocksUpdateParamsCode | None = None, quote: BlocksUpdateParamsQuote | None = None, callout: BlocksUpdateParamsCallout | None = None, bookmark: BlocksUpdateParamsBookmark | None = None, embed: BlocksUpdateParamsEmbed | None = None, equation: BlocksUpdateParamsEquation | None = None, image: BlocksUpdateParamsImage | None = None, video: BlocksUpdateParamsVideo | None = None, file: BlocksUpdateParamsFile | None = None, pdf: BlocksUpdateParamsPdf | None = None, audio: BlocksUpdateParamsAudio | None = None, table: BlocksUpdateParamsTable | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Block`
+    :   Updates the content of a block based on its type
+        
+        Args:
+            paragraph: Updated paragraph content
+            heading_1: Updated heading 1 content
+            heading_2: Updated heading 2 content
+            heading_3: Updated heading 3 content
+            bulleted_list_item: Updated bulleted list item
+            numbered_list_item: Updated numbered list item
+            to_do: Updated to-do content
+            toggle: Updated toggle content
+            code: Updated code block content
+            quote: Updated quote content
+            callout: Updated callout content
+            bookmark: Updated bookmark
+            embed: Updated embed
+            equation: Updated equation
+            image: Media file. Use external URL or file upload.
+            video: Media file. Use external URL or file upload.
+            file: Media file. Use external URL or file upload.
+            pdf: Media file. Use external URL or file upload.
+            audio: Media file. Use external URL or file upload.
+            table: Updated table properties
+            archived: Set to true to archive the block (API version 2025-09-03)
+            block_id: Block ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Block
+
 <a id="CommentsQuery"></a>
 
 `CommentsQuery(connector: NotionConnector)`
@@ -113,6 +155,48 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: CommentsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[CommentsSearchData]`
+    :   Search comments records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CommentsSearchFilter):
+        - created_by: User who created the comment.
+        - created_time: Date and time when the comment was created.
+        - discussion_id: Discussion thread ID.
+        - id: Unique identifier for the comment.
+        - last_edited_time: Date and time when the comment was last edited.
+        - object_: Always comment.
+        - parent: Parent of the comment.
+        - rich_text: Content of the comment as rich text.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CommentsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, rich_text: list[CommentsCreateParamsRichTextItem], parent: dict[str, Any] | None = None, discussion_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Comment`
+    :   Creates a comment on a page or block, or replies to an existing discussion thread
+        
+        Args:
+            parent: Parent of the comment. Provide exactly one of page_id or block_id. Mutually exclusive with discussion_id.
+            discussion_id: ID of an existing discussion thread to reply to. Mutually exclusive with parent.
+            rich_text: Content of the comment as rich text
+            **kwargs: Additional parameters
+        
+        Returns:
+            Comment
 
     `list(self, block_id: str, start_cursor: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.NotionExecuteResultWithMeta[list[Comment], CommentsListResultMeta]`
     :   Returns a list of comments for a specified block or page
@@ -197,6 +281,23 @@ Classes
         Returns:
             DataSourcesListResult
 
+    `update(self, data_source_id: str, title: list[DataSourcesUpdateParamsTitleItem] | None = None, description: list[DataSourcesUpdateParamsDescriptionItem] | None = None, properties: dict[str, Any] | None = None, icon: DataSourcesUpdateParamsIcon | None | None = None, cover: DataSourcesUpdateParamsCover | None | None = None, archived: bool | None = None, in_trash: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.DataSource`
+    :   Updates a data source's title, description, icon, properties, or trash status
+        
+        Args:
+            title: Updated title of the data source as rich text
+            description: Updated description of the data source as rich text
+            properties: Data source property schema to update. Keys are property names or IDs. Set a property to null to remove it.
+            icon: Icon. Supports emoji, external URL, file upload, custom emoji, and Notion native icons. Set to null to remove.
+            cover: Cover image. Supports external URL or file upload. Set to null to remove.
+            archived: Set to true to archive the data source
+            in_trash: Set to true to move the data source to trash
+            data_source_id: Data source ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            DataSource
+
 <a id="NotionConnector"></a>
 
 `NotionConnector(auth_config: NotionAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
@@ -250,129 +351,6 @@ Classes
 
     ### Static methods
 
-    `configure_oauth_app_parameters(*, airbyte_config: AirbyteAuthConfig, credentials: NotionOAuthCredentials | None) ‑> None`
-    :   Configure or remove OAuth app credentials for your organization.
-        
-        When credentials are provided, replaces the default Airbyte-managed OAuth
-        app credentials with your own. After calling this, all OAuth flows for
-        this connector in your organization will use the provided credentials.
-        
-        When credentials are None, removes any existing override so the
-        organization reverts to the default Airbyte-managed OAuth app.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials.
-            credentials: Your OAuth app credentials (NotionOAuthCredentials), or None to remove the override.
-        
-        Example:
-            await NotionConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=NotionOAuthCredentials(
-                    client_id="...",
-                    client_secret="...",
-                ),
-            )
-        
-            await NotionConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=None,
-            )
-
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'NotionAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A NotionConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await NotionConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=NotionAuthConfig(client_id="...", client_secret="...", access_token="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await NotionConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await NotionConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Notion Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -423,10 +401,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await NotionConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -463,7 +437,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -475,6 +449,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -545,6 +522,20 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, parent: dict[str, Any], properties: dict[str, Any] | None = None, children: list[dict[str, Any]] | None = None, icon: PagesCreateParamsIcon | None | None = None, cover: PagesCreateParamsCover | None | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Page`
+    :   Creates a new page as a child of an existing page or data source
+        
+        Args:
+            parent: Parent of the page. Provide exactly one of page_id, database_id, data_source_id, or workspace.
+            properties: Page properties. For pages under a page, use title property. For data source pages, match the data source schema.
+            children: Content blocks to add to the page (max 100)
+            icon: Icon. Supports emoji, external URL, file upload, custom emoji, and Notion native icons. Set to null to remove.
+            cover: Cover image. Supports external URL or file upload. Set to null to remove.
+            **kwargs: Additional parameters
+        
+        Returns:
+            Page
+
     `get(self, page_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Page`
     :   Retrieves a page object using the ID specified
         
@@ -567,6 +558,21 @@ Classes
         
         Returns:
             PagesListResult
+
+    `update(self, page_id: str, properties: dict[str, Any] | None = None, icon: PagesUpdateParamsIcon | None | None = None, cover: PagesUpdateParamsCover | None | None = None, archived: bool | None = None, in_trash: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Page`
+    :   Updates page properties, icon, cover, or archived status
+        
+        Args:
+            properties: Page property values to update. Keys must match the page's property schema.
+            icon: Icon. Supports emoji, external URL, file upload, custom emoji, and Notion native icons. Set to null to remove.
+            cover: Cover image. Supports external URL or file upload. Set to null to remove.
+            archived: Set to true to archive the page, false to un-archive
+            in_trash: Set to true to move the page to trash, false to restore
+            page_id: Page ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Page
 
 <a id="UsersQuery"></a>
 

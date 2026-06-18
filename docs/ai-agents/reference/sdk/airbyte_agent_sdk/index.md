@@ -62,7 +62,7 @@ connector.close()` in a `finally` block.
 ## Workspace operations
 
 - [`Workspace`](#Workspace) — async context manager for workspace-level
-  operations (list/create/delete connectors, workflows, and automations).
+  operations (list/delete connectors, workflows, and automations).
 - [`HostedExecutor`](#HostedExecutor) — fallback executor returned by
   [`connect()`](#connect) when no typed connector package exists.
 
@@ -125,6 +125,7 @@ Sub-modules
 * airbyte_agent_sdk.constants
 * airbyte_agent_sdk.executor
 * airbyte_agent_sdk.http_client
+* airbyte_agent_sdk.tools
 * airbyte_agent_sdk.translation
 * airbyte_agent_sdk.types
 * airbyte_agent_sdk.utils
@@ -132,6 +133,14 @@ Sub-modules
 
 Functions
 ---------
+
+<a id="build_connector_tools"></a>
+
+`build_connector_tools(connector: Any, *, framework: FrameworkName | None = None, docs_provider: ConnectorDocsProvider | None = None, use_progressive_docs: bool = True, max_output_chars: int | None = 100000, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> airbyte_agent_sdk.tools.ConnectorTools`
+:   Build inspect/docs/execute tools bound to a single connector.
+    
+    Hosted connectors use the live inspect and skill-docs endpoints. Local
+    connectors keep the generated YAML-derived rich docs as their fallback.
 
 <a id="configure"></a>
 
@@ -501,6 +510,24 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="ConnectorDocsProvider"></a>
+
+`ConnectorDocsProvider(*args, **kwargs)`
+:   Provider of connector inspection and skill-doc endpoints.
+
+    ### Ancestors (in MRO)
+
+    * typing.Protocol
+    * typing.Generic
+
+    ### Methods
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :
+
+    `read_skill_docs(self, id: str, section: str | None = None) ‑> dict[str, typing.Any]`
+    :
+
 <a id="ConnectorInfo"></a>
 
 `ConnectorInfo(id: str, name: str, connector_type: str | None = None, created_at: str | None = None, updated_at: str | None = None)`
@@ -533,6 +560,30 @@ Classes
     * builtins.ValueError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="ConnectorTools"></a>
+
+`ConnectorTools(inspect_connector: ToolCallable, read_skill_docs: ToolCallable, execute: ToolCallable, use_progressive_docs: bool = True)`
+:   Connector tool callables for agent frameworks.
+
+    ### Instance variables
+
+    `execute: Callable[..., typing.Awaitable[typing.Any]]`
+    :   The type of the None singleton.
+
+    `inspect_connector: Callable[..., typing.Awaitable[typing.Any]]`
+    :   The type of the None singleton.
+
+    `read_skill_docs: Callable[..., typing.Awaitable[typing.Any]]`
+    :   The type of the None singleton.
+
+    `use_progressive_docs: bool`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `as_list(self) ‑> list[Callable[..., typing.Awaitable[typing.Any]]]`
+    :
 
 <a id="ConnectorValidationError"></a>
 
@@ -574,7 +625,7 @@ Classes
 
 <a id="ExecutionConfig"></a>
 
-`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None)`
+`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None)`
 :   Configuration for connector execution.
     
     Used by both LocalExecutor and HostedExecutor to specify the operation to execute.
@@ -588,6 +639,10 @@ Classes
             - For GET: \{"id": "cus_123"\}
             - For LIST: \{"limit": 10\}
             - For CREATE: \{"email": "...", "name": "..."\}
+        select_fields: Optional allowlist of dot-notation fields to include
+        exclude_fields: Optional blocklist of dot-notation fields to remove
+        skip_truncation: Disable long-text truncation for collection actions
+        intent: Optional short description of why this execution is being performed (max 512 chars)
     
     Example:
         config = ExecutionConfig(
@@ -604,7 +659,19 @@ Classes
     `entity: str`
     :   The type of the None singleton.
 
+    `exclude_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `intent: str | None`
+    :   The type of the None singleton.
+
     `params: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `select_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `skip_truncation: bool`
     :   The type of the None singleton.
 
 <a id="ExecutionResult"></a>
@@ -771,20 +838,26 @@ Classes
     
     Initialize hosted executor.
     
-    Either provide connector_id directly OR (workspace_name + connector_definition_id)
-    for lookup.
+    Either provide `connector_id` directly OR (`workspace_name` +
+    `connector_definition_id`) for lookup. When neither `connector_id`
+    nor `workspace_name` is provided, `workspace_name` defaults to
+    `"default"`, so the lookup resolves against the workspace literally
+    named "default" as long as `connector_definition_id` is supplied.
     
     Args:
         airbyte_client_id: Airbyte client ID for authentication
         airbyte_client_secret: Airbyte client secret for authentication
         connector_id: Direct connector/source ID (skips lookup if provided)
-        workspace_name: Workspace name for connector lookup
+        workspace_name: Workspace name for connector lookup. Defaults to
+            `"default"` when neither this nor `connector_id` is provided.
         connector_definition_id: Connector definition ID (for lookup)
         organization_id: Optional Airbyte organization ID for multi-org request routing
         model: Optional ConnectorModel for health check operation selection
     
     Raises:
-        ValueError: If neither connector_id nor (workspace_name + connector_definition_id) provided
+        ValueError: If neither `connector_id` nor `connector_definition_id` is provided
+            (a missing `workspace_name` alone no longer raises, since it now
+            defaults to `"default"`).
     
     Example:
         # With explicit connector_id (no lookup)
@@ -826,11 +899,11 @@ Classes
             finally:
                 await executor.close()
 
-    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
+    `execute(self, *args: ExecutionConfig | str, config_or_entity: ExecutionConfig | str | None = None, config: ExecutionConfig | None = None, params: dict[str, Any] | None = None, entity: str | None = None, action: str | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
     :   Execute connector via cloud API (ExecutorProtocol implementation).
         
-        Accepts either an :class:`ExecutionConfig` or positional ``(entity, action)``
-        strings with an optional ``params`` keyword argument.
+        Accepts either an :class:`ExecutionConfig`, positional ``(entity, action)``
+        strings, or keyword ``entity=...``/``action=...`` strings.
         
         Flow:
         1. Use provided connector_id or look up from workspace_name + definition_id
@@ -838,9 +911,20 @@ Classes
         3. Parse the response into ExecutionResult
         
         Args:
-            config_or_entity: ExecutionConfig object *or* entity name string
+            config_or_entity: Backward-compatible alias for either an
+                ExecutionConfig object or entity name string.
+            config: ExecutionConfig object
+            entity: Entity name string, or an ExecutionConfig when passed positionally
             action: Action string (required when entity is a string)
             params: Optional parameters dict (only with string form)
+            select_fields: Optional allowlist of dot-notation fields to include
+                (only with string form)
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+                (only with string form)
+            skip_truncation: Disable long-text truncation for collection actions
+                (only with string form)
+            intent: Optional short description of why this execution is being
+                performed, max 512 chars (only with string form)
         
         Returns:
             ExecutionResult with success/failure status
@@ -865,6 +949,12 @@ Classes
         
             # Shorthand form:
             result = await executor.execute("customers", "list", params=\{"limit": 10\})
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect hosted connector metadata and readiness.
+
+    `read_skill_docs(self, id: str, section: str | None = None) ‑> dict[str, typing.Any]`
+    :   Read hosted skill docs by skill ID.
 
 <a id="InvalidParameterError"></a>
 
@@ -996,7 +1086,7 @@ Classes
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.
     
-    Provides workspace-level methods: list/create/delete connectors, get a
+    Provides workspace-level methods: list/delete connectors, get a
     connector executor, and workflow/automation CRUD. Use `Workspace` when
     you want to operate against a whole workspace (many connectors,
     workflows, automations); use [`connect()`](#connect) when you already
@@ -1038,9 +1128,6 @@ Classes
 
     `create_automation(self, workflow_id: str, *, trigger_type: str = 'schedule', enabled: bool = True, cron_expression: str | None = None, timezone: str | None = None, completion_webhook_url: str | None = None) ‑> airbyte_agent_sdk.executor.models.AutomationInfo`
     :   Create an automation on a workflow.
-
-    `create_connector(self, *, definition_id: str, credentials: dict[str, Any] | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Create a new connector, returns the connector ID.
 
     `create_workflow(self, name: str, *, tasks: list[dict[str, Any]] | None = None) ‑> airbyte_agent_sdk.executor.models.WorkflowInfo`
     :   Create a workflow in this workspace.

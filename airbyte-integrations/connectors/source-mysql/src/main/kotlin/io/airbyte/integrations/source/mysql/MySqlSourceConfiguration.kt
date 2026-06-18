@@ -124,7 +124,9 @@ constructor(
         // Configure SSH tunneling.
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
-            SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
+            SshConnectionOptions.fromAdditionalProperties(
+                pojo.getAdditionalProperties() ?: emptyMap()
+            )
 
         // Configure SSL encryption.
         if (

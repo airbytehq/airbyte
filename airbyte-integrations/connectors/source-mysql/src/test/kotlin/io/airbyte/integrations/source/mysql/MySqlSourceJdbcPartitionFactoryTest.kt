@@ -12,6 +12,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
@@ -32,6 +33,7 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
+import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.util.Base64
 import kotlin.test.assertNull
@@ -78,6 +80,8 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredPrimaryKey = listOf(timestampFieldId),
                 configuredCursor = timestampFieldId,
             )
+
+        val bigintUnsignedFieldId = Field("id5", BigIntegerFieldType)
 
         val binaryFieldId = Field("id3", BinaryStreamFieldType)
 
@@ -304,6 +308,38 @@ class MySqlSourceJdbcPartitionFactoryTest {
             Jsons.valueToTree("2024-11-21T11:59:57.123000"),
             (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
         )
+    }
+
+    @Test
+    fun testBigintUnsignedBoundaries() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": 10}"""),
+                Jsons.readTree("""{"pk_val": 20}"""),
+                Jsons.readTree("""{"pk_val": 30}"""),
+            )
+
+        val result =
+            mySqlSourceJdbcPartitionFactory.calculateBoundaries(
+                opaqueStateValues,
+                BigDecimal("0"),
+                BigDecimal("18446744073709551615"),
+            )!!
+
+        assertEquals(opaqueStateValues.size, result.size)
+        assertEquals(BigDecimal("0"), result.keys.first())
+        assertEquals(null, result.values.last())
+    }
+
+    @Test
+    fun testBigintUnsignedStateValue() {
+        val result =
+            mySqlSourceJdbcPartitionFactory.stateValueToJsonNode(
+                bigintUnsignedFieldId,
+                "18446744073709551615",
+            )
+
+        assertEquals(BigDecimal("18446744073709551615"), result.decimalValue())
     }
 
     @Test

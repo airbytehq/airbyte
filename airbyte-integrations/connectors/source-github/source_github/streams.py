@@ -201,6 +201,12 @@ class GithubStreamABC(HttpStream, ABC):
                     f"GitHub returned HTTP 502 Bad Gateway for stream `{self.name}` after exhausting retries. "
                     f"This is usually transient — the next sync attempt should succeed."
                 )
+            elif e._exception.response.status_code == requests.codes.GATEWAY_TIMEOUT:
+                error_msg = (
+                    f"GitHub returned HTTP 504 Gateway Timeout for stream `{self.name}` after exhausting retries "
+                    f"and reducing the GraphQL page size. The next sync attempt should succeed; "
+                    f'if 504s persist, lower "Page size for large streams" in the source configuration.'
+                )
             else:
                 self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
                 raise e
@@ -232,11 +238,15 @@ class GithubStream(GithubStreamABC):
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if (
             isinstance(exception, DefaultBackoffException)
-            and exception.response.status_code == requests.codes.BAD_GATEWAY
+            and exception.response.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT)
             and self.large_stream
             and self.page_size > 1
         ):
-            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
+            return (
+                f'Please try to decrease the "Page size for large streams" below {self.page_size}. '
+                f'The stream "{self.name}" is a large stream, such streams can fail with '
+                f'{exception.response.status_code} for high "page_size" values.'
+            )
         return super().get_error_display_message(exception)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -850,6 +860,16 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
 
     cursor_field = "created_at"
     is_sorted = "asc"
+    # The Releases GraphQL query is high-cost on the server side: every node
+    # materializes `description` and `descriptionHTML`, which forces GitHub
+    # to render each release body to HTML. On repositories with long release
+    # notes, a page_size of 100 pushes the resolver past its internal 10s
+    # deadline and returns 504 Gateway Timeout (reproduced deterministically
+    # against nodejs/node: first=100 -> 504 in ~11s; first=10 -> 200 in ~3s).
+    # `releaseAssets` / `reactionGroups` / `mentions` are NOT the cost driver
+    # — stripping them does not fix the timeout, only lowering `first` does.
+    # Mark as large_stream so it picks up the smaller default page size.
+    large_stream = True
 
     GRAPHQL_REACTION_TO_REST = {
         "THUMBS_UP": "plus_one",

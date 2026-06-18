@@ -36,7 +36,6 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -238,12 +237,14 @@ class MSSQLQueryBuilder(
             SoftDelete,
             Update -> throw ConfigErrorException("Unsupported sync mode: ${stream.importType}")
         }
-    private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
     private val toMssqlType = AirbyteTypeToMssqlType()
 
     val finalTableSchema: List<NamedField> = airbyteFinalTableFields + extractFinalTableSchema()
     val hasCdc: Boolean = finalTableSchema.any { it.name == AIRBYTE_CDC_DELETED_AT }
+
+    private val indexedColumns: Set<String> =
+        if (hasCdc) uniquenessKey.toSet() + AIRBYTE_CDC_DELETED_AT else uniquenessKey.toSet()
 
     private fun getExistingSchema(connection: Connection): List<NamedSqlField> {
         val fields = mutableListOf<NamedSqlField>()
@@ -378,10 +379,12 @@ class MSSQLQueryBuilder(
                     LIMITS.validateInteger(value)?.let {
                         statement.setLong(statementIndex, it.longValueExact())
                     }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 NumberType ->
                     LIMITS.validateNumber(value)?.let {
                         statement.setBigDecimal(statementIndex, it)
                     }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
                 StringType ->
                     statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->
@@ -400,10 +403,10 @@ class MSSQLQueryBuilder(
                         (value.abValue as TimestampWithTimezoneValue).value
                     )
                 TimestampTypeWithoutTimezone ->
-                    statement.setObject(
-                        statementIndex,
-                        (value.abValue as TimestampWithoutTimezoneValue).value
-                    )
+                    LIMITS.validateTimestamp(value)?.let {
+                        statement.setObject(statementIndex, it.toString())
+                    }
+                        ?: statement.setAsNullValue(statementIndex, field.type.type)
 
                 // Serialize complex types to string
                 is ArrayType,

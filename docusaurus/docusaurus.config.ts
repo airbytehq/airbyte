@@ -26,7 +26,7 @@ const getRemarkPlugins = () => ({
 
 const plugins = getRemarkPlugins();
 
-// Import constants for Airbyte Agents API sidebar generation
+// Import constants for Agent API sidebar generation
 const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
@@ -166,7 +166,7 @@ const config: Config = {
         async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
           const sidebarItems = await defaultSidebarItemsGenerator(args);
 
-          // Load and filter the Airbyte Agents API sidebar based on allowed tags
+          // Load and filter the Agent API sidebar based on allowed tags
           const agentEngineApiItems = loadAgentEngineApiSidebar();
 
           // Replace the "api-reference" category with the filtered API items

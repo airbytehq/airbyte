@@ -76,6 +76,10 @@ Because these timestamps use the site's local timezone, clock changes during day
 - **Authenticated endpoints**: The `plugins`, `themes`, and `settings` streams require valid credentials. If the connector is configured without authentication, these streams return errors or empty results.
 - **WordPress.com hosted sites**: This connector is designed for the self-hosted WordPress REST API (`/wp-json/wp/v2/`). It may not work with WordPress.com sites that use a different API structure.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -83,6 +87,9 @@ Because these timestamps use the site's local timezone, clock changes during day
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.0.54 | 2026-06-16 | [80120](https://github.com/airbytehq/airbyte/pull/80120) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79563](https://github.com/airbytehq/airbyte/pull/79563) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [79064](https://github.com/airbytehq/airbyte/pull/79064) | Update dependencies |
 | 0.0.51 | 2026-04-28 | [77478](https://github.com/airbytehq/airbyte/pull/77478) | Update dependencies |
 | 0.0.49 | 2026-04-09 | [76063](https://github.com/airbytehq/airbyte/pull/76063) | Add configurable lookback window to incremental streams to prevent data loss; fix tab character in pages stream request parameter |
 | Version | Date       | Pull Request | Subject                                                                               |
