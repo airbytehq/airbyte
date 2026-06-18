@@ -63,7 +63,12 @@ class DirectLoadTableStreamLoaderTest {
         loader.start()
 
         coVerify(exactly = 1) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
         coVerify(exactly = 0) {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
@@ -96,7 +101,12 @@ class DirectLoadTableStreamLoaderTest {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
         }
         coVerify(exactly = 0) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
     }
 
@@ -165,7 +175,12 @@ class DirectLoadTableStreamLoaderTest {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
         }
         coVerify(exactly = 0) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
     }
 
@@ -236,7 +251,12 @@ class DirectLoadTableStreamLoaderTest {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
         }
         coVerify(exactly = 0) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
     }
 
