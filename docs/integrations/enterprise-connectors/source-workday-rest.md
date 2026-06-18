@@ -4,11 +4,15 @@ enterprise-connector: true
 ---
 # Source Workday REST
 
+<HideInUI>
+
 :::info We no longer sell this connector
 
 Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
 
 :::
+
+</HideInUI>
 
 Airbyte's [Workday](https://workday.com) enterprise source connector currently offers the following features:
 

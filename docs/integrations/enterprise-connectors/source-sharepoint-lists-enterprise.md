@@ -5,11 +5,15 @@ enterprise-connector: true
 
 # SharePoint Lists Enterprise
 
+<HideInUI>
+
 :::info We no longer sell this connector
 
 Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
 
 :::
+
+</HideInUI>
 
 <HideInUI>
 
