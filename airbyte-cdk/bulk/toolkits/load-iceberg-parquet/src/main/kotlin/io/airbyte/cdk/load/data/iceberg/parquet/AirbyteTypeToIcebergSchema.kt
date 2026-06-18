@@ -21,7 +21,6 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.message.Meta
 import java.util.UUID
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
@@ -30,12 +29,22 @@ import org.apache.iceberg.types.Types.NestedField
 
 class AirbyteTypeToIcebergSchema {
 
-    fun convert(airbyteSchema: AirbyteType, stringifyObjects: Boolean): Type {
+    companion object {
+        /** Default maximum nesting depth for ObjectType → StructType conversion. */
+        const val DEFAULT_MAX_STRUCT_DEPTH = 3
+    }
+
+    /**
+     * Converts an [AirbyteType] to an Iceberg [Type].
+     *
+     * [ObjectType] instances with defined properties are converted to [Types.StructType] up to
+     * [maxDepth] levels of nesting. Beyond that depth, or when properties are empty, they fall back
+     * to [Types.StringType] (JSON serialization).
+     */
+    fun convert(airbyteSchema: AirbyteType, maxDepth: Int = DEFAULT_MAX_STRUCT_DEPTH): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
-                if (stringifyObjects) {
-                    Types.StringType.get()
-                } else {
+                if (airbyteSchema.properties.isNotEmpty() && maxDepth > 0) {
                     Types.StructType.of(
                         *airbyteSchema.properties.entries
                             .map { (name, field) ->
@@ -43,22 +52,24 @@ class AirbyteTypeToIcebergSchema {
                                     NestedField.optional(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects)
+                                        convert(field.type, maxDepth - 1)
                                     )
                                 } else {
                                     NestedField.required(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects)
+                                        convert(field.type, maxDepth - 1)
                                     )
                                 }
                             }
                             .toTypedArray()
                     )
+                } else {
+                    Types.StringType.get()
                 }
             }
             is ArrayType -> {
-                val convert = convert(airbyteSchema.items.type, stringifyObjects)
+                val convert = convert(airbyteSchema.items.type, maxDepth)
                 if (airbyteSchema.items.nullable) {
                     return Types.ListType.ofOptional(UUID.randomUUID().hashCode(), convert)
                 }
@@ -68,7 +79,7 @@ class AirbyteTypeToIcebergSchema {
             is DateType -> Types.DateType.get()
             is IntegerType -> Types.LongType.get()
             is NumberType -> Types.DoubleType.get()
-            // Schemaless types are converted to string
+            // Schemaless types are always converted to string
             is ArrayTypeWithoutSchema,
             is ObjectTypeWithEmptySchema,
             is ObjectTypeWithoutSchema -> Types.StringType.get()
@@ -84,7 +95,7 @@ class AirbyteTypeToIcebergSchema {
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first(), stringifyObjects)
+                        convert(airbyteSchema.options.first(), maxDepth)
                     )
                 }
                 // We stringify nontrivial unions
@@ -104,16 +115,13 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
         val id = generatedSchemaFieldId()
         val isPrimaryKey = identifierFieldNames.contains(name)
         val isOptional = !isPrimaryKey && field.nullable
-        // There's no _airbyte_data field, because we flatten the fields.
-        // But we should leave the _airbyte_meta field as an actual object.
-        val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
         val icebergType =
             if (isPrimaryKey && field.type is NumberType) {
                 // Override PK NumberType fields to StringType so they can be used as
                 // Iceberg identifier fields (float/double are disallowed as identifiers).
                 Types.StringType.get()
             } else {
-                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+                icebergTypeConverter.convert(field.type)
             }
         fields.add(
             NestedField.builder()
