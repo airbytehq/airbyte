@@ -101,12 +101,11 @@ data:
           more `_airbyte_raw_*` tables). Oversized or out-of-range values are
           nullified before insertion and tracked in `_airbyte_meta`. If you have
           downstream dbt models or SQL queries referencing `_airbyte_raw_*` tables,
-          update them before upgrading. See the [migration guide](https://docs.airbyte.com/integrations/destinations/redshift-v2-migrations)
-          for details. Selecting `Upgrade` will upgrade **all** connections using
-          this destination at their next sync.
+          update them before upgrading.
 
           "
         upgradeDeadline: "2026-08-31"
+        deadlineAction: "auto_upgrade"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
