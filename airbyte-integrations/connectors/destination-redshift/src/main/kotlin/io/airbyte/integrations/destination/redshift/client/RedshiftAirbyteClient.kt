@@ -173,7 +173,10 @@ class RedshiftAirbyteClient(
         }
 
         val metaType = columnsInDb[COLUMN_NAME_AB_META]?.type
-        if (metaType != null && metaType != RedshiftSqlGenerator.META_COLUMNS[COLUMN_NAME_AB_META]?.type) {
+        if (
+            metaType != null &&
+                metaType != RedshiftSqlGenerator.META_COLUMNS[COLUMN_NAME_AB_META]?.type
+        ) {
             val message =
                 "Column \"$COLUMN_NAME_AB_META\" in table " +
                     "${tableName.namespace}.${tableName.name} has type \"$metaType\"; " +
