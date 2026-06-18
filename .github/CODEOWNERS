@@ -48,7 +48,6 @@
 /airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-customer-io/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-databricks/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-databricks-v2/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-gcs-data-lake/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-hubspot/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-mssql/ @airbytehq/destinations
