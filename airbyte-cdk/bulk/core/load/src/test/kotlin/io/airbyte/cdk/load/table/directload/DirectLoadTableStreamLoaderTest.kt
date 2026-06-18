@@ -38,6 +38,208 @@ class DirectLoadTableStreamLoaderTest {
             every { generate(tempTableName) } returns tempTempTableName
         }
 
+    // --- Tests for non-empty temp table recreation on retry (duplicate prevention) ---
+
+    @Test
+    fun `DedupStreamLoader recreates non-empty temp table on retry`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = DirectLoadTableStatus(isEmpty = false),
+            )
+
+        val loader =
+            DirectLoadTableDedupStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+            )
+
+        loader.start()
+
+        coVerify(exactly = 1) {
+            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+        }
+        coVerify(exactly = 0) {
+            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+        }
+    }
+
+    @Test
+    fun `DedupStreamLoader reuses empty temp table on retry`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = DirectLoadTableStatus(isEmpty = true),
+            )
+
+        val loader =
+            DirectLoadTableDedupStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+            )
+
+        loader.start()
+
+        coVerify(exactly = 1) {
+            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+        }
+        coVerify(exactly = 0) {
+            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+        }
+    }
+
+    @Test
+    fun `AppendTruncateStreamLoader recreates non-empty temp table on retry regardless of generation ID`() =
+        runTest {
+            val initialStatus =
+                DirectLoadInitialStatus(
+                    realTable = DirectLoadTableStatus(isEmpty = false),
+                    tempTable = DirectLoadTableStatus(isEmpty = false),
+                )
+
+            // Even with a matching generation ID, non-empty temp should be recreated
+            coEvery { tableOperationsClient.getGenerationId(tempTableName) } returns 1L
+
+            val loader =
+                DirectLoadTableAppendTruncateStreamLoader(
+                    stream = stream,
+                    initialStatus = initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping = columnNameMapping,
+                    schemaEvolutionClient = schemaEvolutionClient,
+                    tableOperationsClient = tableOperationsClient,
+                    streamStateStore = streamStateStore,
+                )
+
+            loader.start()
+
+            coVerify(exactly = 1) {
+                tableOperationsClient.createTable(
+                    stream,
+                    tempTableName,
+                    columnNameMapping,
+                    replace = true
+                )
+            }
+            coVerify(exactly = 0) {
+                schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            }
+        }
+
+    @Test
+    fun `AppendTruncateStreamLoader reuses empty temp table on retry`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = DirectLoadTableStatus(isEmpty = true),
+            )
+
+        val loader =
+            DirectLoadTableAppendTruncateStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+            )
+
+        loader.start()
+
+        coVerify(exactly = 1) {
+            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+        }
+        coVerify(exactly = 0) {
+            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+        }
+    }
+
+    @Test
+    fun `DedupTruncateStreamLoader recreates non-empty temp table on retry regardless of generation ID`() =
+        runTest {
+            val initialStatus =
+                DirectLoadInitialStatus(
+                    realTable = DirectLoadTableStatus(isEmpty = false),
+                    tempTable = DirectLoadTableStatus(isEmpty = false),
+                )
+
+            // Even with a matching generation ID, non-empty temp should be recreated
+            coEvery { tableOperationsClient.getGenerationId(tempTableName) } returns 1L
+
+            val loader =
+                DirectLoadTableDedupTruncateStreamLoader(
+                    stream = stream,
+                    initialStatus = initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping = columnNameMapping,
+                    schemaEvolutionClient = schemaEvolutionClient,
+                    tableOperationsClient = tableOperationsClient,
+                    streamStateStore = streamStateStore,
+                    tempTableNameGenerator = tempTableNameGenerator,
+                )
+
+            loader.start()
+
+            coVerify(exactly = 1) {
+                tableOperationsClient.createTable(
+                    stream,
+                    tempTableName,
+                    columnNameMapping,
+                    replace = true
+                )
+            }
+            coVerify(exactly = 0) {
+                schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            }
+        }
+
+    @Test
+    fun `DedupTruncateStreamLoader reuses empty temp table on retry`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = DirectLoadTableStatus(isEmpty = true),
+            )
+
+        val loader =
+            DirectLoadTableDedupTruncateStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+                tempTableNameGenerator = tempTableNameGenerator,
+            )
+
+        loader.start()
+
+        coVerify(exactly = 1) {
+            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+        }
+        coVerify(exactly = 0) {
+            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+        }
+    }
+
     @Test
     fun `AppendTruncateStreamLoader teardown overwrites real table with temp on success`() =
         runTest {
