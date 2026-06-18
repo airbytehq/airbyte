@@ -4,6 +4,12 @@ enterprise-connector: true
 ---
 # Source ServiceNow
 
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
 Airbyte’s incubating ServiceNow enterprise source connector currently offers Full Refresh syncs for streams that are part of Software Asset Management and Configuration Management Database applications.
 
 ## Features
