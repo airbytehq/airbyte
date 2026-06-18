@@ -106,6 +106,7 @@ data:
 
           "
         upgradeDeadline: "2026-08-31"
+        deadlineAction: "auto_upgrade"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
