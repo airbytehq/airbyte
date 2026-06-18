@@ -178,6 +178,33 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 
+### Stream availability by account type
+
+Not all streams are available for every account type. The connector automatically shows only the streams that are compatible with your configured **Account Type** (Seller or Vendor).
+
+**Seller accounts** have access to all streams listed above _except_ the following vendor-only streams:
+
+- Vendor Orders
+- Vendor Order Status
+- Vendor Direct Fulfillment Shipping
+- Vendor Forecasting Report (Fresh)
+- Vendor Forecasting Report (Retail)
+- Vendor Sales Report
+- Vendor Inventory Report
+
+**Vendor accounts** have access to all streams _except_ the following seller-only streams:
+
+- Orders
+- Order Items
+- Financial Events
+- Financial Event Groups
+
+These seller-only streams use the Orders API and Finances API, which are not available to Vendor Central accounts. All report-based streams and vendor-specific streams are available to Vendor accounts.
+
+If you previously had vendor streams configured on a Seller account (or seller streams on a Vendor account), they will be automatically removed from your connection's catalog after upgrading to version 5.7.10 or later. You may see a schema change notification prompting you to accept the updated catalog. After accepting, only streams compatible with your account type will be synced.
+
+For more information about Amazon SP-API roles and permissions, see the [Amazon SP-API Role Mappings documentation](https://developer-docs.amazon.com/sp-api/docs/role-mappings).
+
 <HideInUI>
 
 ### Entity-Relationship Diagram (ERD)
@@ -363,7 +390,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.7.11 | 2026-06-17 | [79614](https://github.com/airbytehq/airbyte/pull/79614) | Fix connectivity check for Vendor Central accounts by using dynamic stream check and gating seller/vendor streams by account type |
-| 5.7.10 | 2026-06-17 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only streams behind account_type=Vendor so Seller accounts no longer see streams that always fail with 403/400 errors |
+| 5.7.10 | 2026-06-17 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only streams behind account_type=Vendor so Seller accounts no longer see streams that always fail with 403/400 errors. Added documentation for stream availability by account type. |
 | 5.7.9 | 2026-06-16 | [75470](https://github.com/airbytehq/airbyte/pull/75470) | Fix GzipXmlDecoder error handling that caused AttributeError on malformed XML responses |
 | 5.7.8 | 2026-06-11 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
 | 5.7.7 | 2026-05-21 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
