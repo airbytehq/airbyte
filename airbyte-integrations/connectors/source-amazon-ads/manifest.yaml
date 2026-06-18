@@ -113,7 +113,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/profiles?profileTypeFilter=seller,vendor
+          path: v2/profiles?profileTypeFilter=seller,vendor&accessLevel=view
           http_method: GET
           use_cache: true
         record_selector:
@@ -137,7 +137,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/profiles?profileTypeFilter=seller,vendor
+          path: v2/profiles?profileTypeFilter=seller,vendor&accessLevel=view
           http_method: GET
           use_cache: true
         record_selector:
