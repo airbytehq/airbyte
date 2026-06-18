@@ -6900,6 +6900,29 @@ Classes
     `split_test_variable: str`
     :   Variable being tested in a split test campaign
 
+<a id="CatalogsListParams"></a>
+
+`CatalogsListParams(*args, **kwargs)`
+:   Parameters for catalogs.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `advertiser_id: str`
+    :   The type of the None singleton.
+
+    `bc_id: str`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
+
+    `page_size: int`
+    :   The type of the None singleton.
+
 <a id="CreativeAssetsImagesAndCondition"></a>
 
 `CreativeAssetsImagesAndCondition(*args, **kwargs)`
@@ -7868,3 +7891,405 @@ Classes
 
     `width: str`
     :   Width of the video in pixels.
+
+<a id="SparkAdsAndCondition"></a>
+
+`SparkAdsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SparkAdsAnyCondition"></a>
+
+`SparkAdsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsAnyValueFilter"></a>
+
+`SparkAdsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: Any`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: Any`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: Any`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: Any`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsContainsCondition"></a>
+
+`SparkAdsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsEqCondition"></a>
+
+`SparkAdsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsFuzzyCondition"></a>
+
+`SparkAdsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsGtCondition"></a>
+
+`SparkAdsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsGteCondition"></a>
+
+`SparkAdsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsInCondition"></a>
+
+`SparkAdsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsInFilter"></a>
+
+`SparkAdsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: list[dict[str, typing.Any]]`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: list[dict[str, typing.Any]]`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: list[dict[str, typing.Any]]`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: list[dict[str, typing.Any]]`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsKeywordCondition"></a>
+
+`SparkAdsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsLikeCondition"></a>
+
+`SparkAdsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsListParams"></a>
+
+`SparkAdsListParams(*args, **kwargs)`
+:   Parameters for spark_ads.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `advertiser_id: str`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
+
+    `page_size: int`
+    :   The type of the None singleton.
+
+<a id="SparkAdsLtCondition"></a>
+
+`SparkAdsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsLteCondition"></a>
+
+`SparkAdsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsNeqCondition"></a>
+
+`SparkAdsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsNotCondition"></a>
+
+`SparkAdsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="SparkAdsOrCondition"></a>
+
+`SparkAdsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SparkAdsSearchFilter"></a>
+
+`SparkAdsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering spark_ads search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: dict[str, typing.Any] | None`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: dict[str, typing.Any] | None`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: dict[str, typing.Any] | None`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: dict[str, typing.Any] | None`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsSearchQuery"></a>
+
+`SparkAdsSearchQuery(*args, **kwargs)`
+:   Search query for spark_ads entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="SparkAdsSortFilter"></a>
+
+`SparkAdsSortFilter(*args, **kwargs)`
+:   Available fields for sorting spark_ads search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: Literal['asc', 'desc']`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: Literal['asc', 'desc']`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: Literal['asc', 'desc']`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: Literal['asc', 'desc']`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsStringFilter"></a>
+
+`SparkAdsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: str`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: str`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: str`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: str`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
