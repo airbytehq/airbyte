@@ -31,6 +31,14 @@ definitions:
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 40001 }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Insufficient permissions for this endpoint (error 40001). Verify that the access token has the required scopes and that the TikTok developer application is approved. {{ response.get('message', '') }}"
+        - predicate: "{{ 'app_id' in response.get('message', '').lower() and 'inconsistent' in response.get('message', '').lower() }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "TikTok app_id does not match the access token. The app_id, secret, and access_token must all belong to the same TikTok developer application. If using Airbyte Cloud OAuth, do not manually override the app_id or access_token after authenticating. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -158,7 +166,7 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           secret: "{{ config.get('credentials', config.get('environment', {})).get('secret') }}"
-          app_id: "{{ config.get('credentials', config.get('environment', {})).get('app_id', 0) }}"
+          app_id: "{{ config.get('credentials', config.get('environment', {})).get('app_id', '') }}"
         request_headers: {}
       record_selector:
         $ref: "#/definitions/record_selector"
