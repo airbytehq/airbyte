@@ -12492,7 +12492,7 @@ definitions:
         value: "{{ record.fields.updated }}"
     - type: CustomTransformation
       class_name: "source_declarative_manifest.components.RemoveEmptyFields"
-      field_pointers: ["renderedFields", fields]
+      field_pointers: ["renderedFields"]
 
     $parameters:
       path: "search/jql"

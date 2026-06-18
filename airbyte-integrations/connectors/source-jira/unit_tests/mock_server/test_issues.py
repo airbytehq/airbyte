@@ -377,3 +377,71 @@ class TestIssuesStream(TestCase):
         output = read(source, config=config, catalog=catalog, state=state)
 
         assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_custom_fields_preserved_including_null_values(self, http_mocker: HttpMocker):
+        """
+        Test that custom fields are preserved in the output, including those with null values.
+
+        The RemoveEmptyFields transformation must NOT strip null-valued custom fields from
+        the `fields` object. Null and missing are semantically different: null means the
+        field exists but has no value, while missing means the field was never returned.
+        """
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+
+        issue_records = [
+            {
+                "id": "10001",
+                "key": "PROJ-1",
+                "self": f"https://{_DOMAIN}/rest/api/3/issue/10001",
+                "fields": {
+                    "summary": "Test Issue with Custom Fields",
+                    "project": {"id": "10001", "key": "PROJ1"},
+                    "created": "2024-01-01T00:00:00.000+0000",
+                    "updated": "2024-01-15T00:00:00.000+0000",
+                    "timespent": None,
+                    "customfield_10001": "Custom Text Value",
+                    "customfield_10002": None,
+                    "customfield_10003": {"self": "https://example.com", "value": "Option A", "id": "10100"},
+                    "customfield_10004": None,
+                    "customfield_10005": 42.5,
+                },
+                "renderedFields": {
+                    "description": "<p>Rendered description</p>",
+                    "comment": None,
+                },
+            },
+        ]
+
+        http_mocker.get(
+            JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        record_data = output.records[0].record.data
+        fields = record_data["fields"]
+
+        # Non-null custom fields are preserved
+        assert fields["customfield_10001"] == "Custom Text Value"
+        assert fields["customfield_10003"] == {"self": "https://example.com", "value": "Option A", "id": "10100"}
+        assert fields["customfield_10005"] == 42.5
+
+        # Null-valued custom fields are preserved (not stripped)
+        assert "customfield_10002" in fields
+        assert fields["customfield_10002"] is None
+        assert "customfield_10004" in fields
+        assert fields["customfield_10004"] is None
+
+        # Null-valued standard fields are also preserved
+        assert "timespent" in fields
+        assert fields["timespent"] is None
+
+        # renderedFields still has null values removed
+        rendered = record_data.get("renderedFields", {})
+        assert "description" in rendered
+        assert "comment" not in rendered
