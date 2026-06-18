@@ -43,7 +43,6 @@ interface LoadTypeSpecification {
                         sharedAccessSignature = lt.azureBlobStorageSharedAccessSignature,
                         accountKey = lt.azureBlobStorageAccountKey,
                         bulkLoadDataSource = lt.bulkLoadDataSource,
-                        validateValuesPreLoad = lt.validateValuesPreLoad
                     )
                 }
                 is InsertLoadSpecification -> InsertLoadTypeConfiguration()
@@ -228,7 +227,6 @@ data class BulkLoadConfiguration(
     val sharedAccessSignature: String?,
     val accountKey: String?,
     val bulkLoadDataSource: String,
-    val validateValuesPreLoad: Boolean?
 ) : LoadTypeConfiguration
 
 /**

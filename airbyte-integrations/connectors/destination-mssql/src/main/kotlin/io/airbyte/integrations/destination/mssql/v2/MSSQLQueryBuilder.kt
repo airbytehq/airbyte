@@ -21,8 +21,10 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -36,6 +38,7 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -49,6 +52,7 @@ import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlTy
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
+import io.airbyte.integrations.destination.mssql.v2.convert.ValueCohercer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Date
@@ -238,7 +242,7 @@ class MSSQLQueryBuilder(
             Update -> throw ConfigErrorException("Unsupported sync mode: ${stream.importType}")
         }
 
-    private val toMssqlType = AirbyteTypeToMssqlType()
+    private val toMssqlType = AirbyteTypeToMssqlType
 
     val finalTableSchema: List<NamedField> = airbyteFinalTableFields + extractFinalTableSchema()
     val hasCdc: Boolean = finalTableSchema.any { it.name == AIRBYTE_CDC_DELETED_AT }
@@ -367,6 +371,14 @@ class MSSQLQueryBuilder(
                 return@forEachIndexed
             }
 
+            // Apply shared MSSQL coercion: range validation + complex-type serialisation
+            ValueCohercer.coerce(value)
+            if (value.abValue is NullValue) {
+                statement.setAsNullValue(statementIndex, field.type.type)
+                return@forEachIndexed
+            }
+
+            // INSERT-specific: set typed JDBC parameters
             when (value.type) {
                 BooleanType ->
                     statement.setBoolean(statementIndex, (value.abValue as BooleanValue).value)
@@ -376,15 +388,12 @@ class MSSQLQueryBuilder(
                         Date.valueOf((value.abValue as DateValue).value)
                     )
                 IntegerType ->
-                    LIMITS.validateInteger(value)?.let {
-                        statement.setLong(statementIndex, it.longValueExact())
-                    }
-                        ?: statement.setAsNullValue(statementIndex, field.type.type)
+                    statement.setLong(
+                        statementIndex,
+                        (value.abValue as IntegerValue).value.longValueExact()
+                    )
                 NumberType ->
-                    LIMITS.validateNumber(value)?.let {
-                        statement.setBigDecimal(statementIndex, it)
-                    }
-                        ?: statement.setAsNullValue(statementIndex, field.type.type)
+                    statement.setBigDecimal(statementIndex, (value.abValue as NumberValue).value)
                 StringType ->
                     statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->
@@ -403,12 +412,12 @@ class MSSQLQueryBuilder(
                         (value.abValue as TimestampWithTimezoneValue).value
                     )
                 TimestampTypeWithoutTimezone ->
-                    LIMITS.validateTimestamp(value)?.let {
-                        statement.setObject(statementIndex, it.toString())
-                    }
-                        ?: statement.setAsNullValue(statementIndex, field.type.type)
+                    statement.setObject(
+                        statementIndex,
+                        (value.abValue as TimestampWithoutTimezoneValue).value
+                    )
 
-                // Serialize complex types to string
+                // Complex types already serialised to StringValue by ValueCohercer.coerce()
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is ObjectType,
@@ -416,7 +425,7 @@ class MSSQLQueryBuilder(
                 ObjectTypeWithoutSchema,
                 is UnionType,
                 is UnknownType ->
-                    statement.setString(statementIndex, value.abValue.serializeToString())
+                    statement.setString(statementIndex, (value.abValue as StringValue).value)
             }
         }
 
