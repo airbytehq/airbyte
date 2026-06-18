@@ -1,0 +1,127 @@
+version: 7.10.0
+
+type: DeclarativeSource
+
+description: |-
+  strasbourg IRL parking occupation API from https://data.strasbourg.eu/
+  Test connector
+
+check:
+  type: CheckStream
+  stream_names:
+    - parkings
+
+streams:
+  - type: DeclarativeStream
+    name: parkings
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          inject_on_first_request: false
+      requester:
+        type: HttpRequester
+        url: >-
+          https://data.strasbourg.eu/api/explore/v2.1/catalog/datasets/occupation-parkings-temps-reel/records
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          etat:
+            type:
+              - number
+              - "null"
+          ident:
+            type:
+              - number
+              - "null"
+          libre:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+          idsurfs:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - object
+              - "null"
+            properties:
+              lat:
+                type:
+                  - number
+                  - "null"
+              lon:
+                type:
+                  - number
+                  - "null"
+          infoappli:
+            type:
+              - string
+              - "null"
+          infousager:
+            type:
+              - string
+              - "null"
+          taux_occup:
+            type:
+              - number
+              - "null"
+          nom_parking:
+            type:
+              - string
+              - "null"
+          couleur_occup:
+            type:
+              - string
+              - "null"
+          realtimestatus:
+            type:
+              - string
+              - "null"
+          etat_descriptif:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations: []
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    properties: {}
+
+metadata:
+  testedStreams:
+    parkings:
+      isStale: false
+      hasRecords: true
+      streamHash: 69e66b1962c2d4c2dd905710ec29e46bc3f44964
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+  autoImportSchema:
+    parkings: true
