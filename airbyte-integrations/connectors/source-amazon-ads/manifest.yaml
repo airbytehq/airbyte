@@ -7960,18 +7960,22 @@ schemas:
                 - "null"
                 - object
               properties:
-                low:
+                rangeStart:
                   type:
                     - "null"
                     - number
-                medium:
+                rangeMedian:
                   type:
                     - "null"
                     - number
-                high:
+                rangeEnd:
                   type:
                     - "null"
                     - number
+                bidRecId:
+                  type:
+                    - "null"
+                    - string
     title: sponsored_product_ad_group_suggested_keywords
     type:
       - "null"
