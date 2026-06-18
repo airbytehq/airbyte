@@ -128,9 +128,9 @@ def test_check_connection_vendor_account(requests_mock, connector_vendor_config_
     )
     requests_mock.register_uri(
         "GET",
-        "https://sandbox.sellingpartnerapi-na.amazon.com/vendor/directFulfillment/shipping/v1/shippingLabels",
+        "https://sandbox.sellingpartnerapi-na.amazon.com/vendor/orders/v1/purchaseOrders",
         status_code=200,
-        json={"payload": {"shippingLabels": [{"createdBefore": "2017-02-25T00:00:00Z"}]}},
+        json={"payload": {"orders": [{"purchaseOrderDate": "2017-02-25T00:00:00Z"}]}},
     )
     config = dict(connector_vendor_config_with_report_options)
     source = get_source(config, config_path=None)

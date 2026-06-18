@@ -3389,10 +3389,12 @@ streams:
   # Amazon SP-API rejects these with 403 (REST) or 400 InvalidInput (reports) for Seller accounts.
   - type: ConditionalStreams
     condition: "{{ config.get('account_type') == 'Vendor' }}"
+    # VendorOrders is listed first because it uses the standard Amazon Fulfillment role available to all vendors,
+    # while VendorDirectFulfillmentShipping requires the restricted Direct to Consumer Shipping role.
     streams:
-      - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
       - $ref: "#/definitions/streams/vendor_orders"
       - $ref: "#/definitions/streams/vendor_orders_status"
+      - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
       - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
       - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
       - $ref: "#/definitions/streams/get_vendor_sales_report"
