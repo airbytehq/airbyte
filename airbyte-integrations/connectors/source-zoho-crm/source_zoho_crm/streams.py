@@ -4,6 +4,7 @@
 
 import concurrent.futures
 import datetime
+import logging
 import math
 from abc import ABC
 from dataclasses import asdict
@@ -17,6 +18,13 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
+
+logger = logging.getLogger("airbyte")
+
+
+def _parse_datetime(value: str) -> datetime.datetime:
+    """Parse an ISO-8601 datetime string, tolerating the Z suffix on Python <3.11."""
+    return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
 # 204 and 304 status codes are valid successful responses,
@@ -67,6 +75,10 @@ class ZohoCrmStream(HttpStream, ABC):
             raise
 
 
+# Common cursor field candidates in order of preference.
+_CURSOR_FIELD_CANDIDATES = ["Modified_Time", "Action_Performed_Time", "modified_time"]
+
+
 class IncrementalZohoCrmStream(ZohoCrmStream):
     cursor_field = "Modified_Time"
 
@@ -75,6 +87,22 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
         self._config = config
         self._state = {}
         self._start_datetime = self._config.get("start_datetime") or "1970-01-01T00:00:00+00:00"
+        self._resolve_cursor_field()
+
+    def _resolve_cursor_field(self):
+        """Resolve cursor field from module metadata if available."""
+        if not self.module or not self.module.fields:
+            return
+        field_names = {field.api_name for field in self.module.fields}
+        for candidate in _CURSOR_FIELD_CANDIDATES:
+            if candidate in field_names:
+                self.cursor_field = candidate
+                return
+        # Fallback: find any datetime field
+        for field in self.module.fields:
+            if field.data_type == "datetime":
+                self.cursor_field = field.api_name
+                return
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -88,8 +116,17 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            current_cursor_value = datetime.datetime.fromisoformat(self.state[self.cursor_field])
-            latest_cursor_value = datetime.datetime.fromisoformat(record[self.cursor_field])
+            cursor_value = record.get(self.cursor_field)
+            if cursor_value is None:
+                logger.warning(
+                    "Record in stream %s is missing cursor field '%s', skipping cursor update.",
+                    self.name,
+                    self.cursor_field,
+                )
+                yield record
+                continue
+            current_cursor_value = _parse_datetime(self.state[self.cursor_field])
+            latest_cursor_value = _parse_datetime(cursor_value)
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
             self.state = {self.cursor_field: new_cursor_value.isoformat("T", "seconds")}
             yield record
@@ -99,7 +136,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     ) -> Mapping[str, Any]:
         last_modified = stream_state.get(self.cursor_field, self._start_datetime)
         # since API filters inclusively, we add 1 sec to prevent duplicate reads
-        last_modified_dt = datetime.datetime.fromisoformat(last_modified)
+        last_modified_dt = _parse_datetime(last_modified)
         last_modified_dt += datetime.timedelta(seconds=1)
         last_modified = last_modified_dt.isoformat("T", "seconds")
         return {"If-Modified-Since": last_modified}

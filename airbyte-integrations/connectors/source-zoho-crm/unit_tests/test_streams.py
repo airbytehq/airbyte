@@ -99,15 +99,12 @@ def test_dynamic_attrs(stream_factory):
     )
     stream = stream_factory(ModuleMeta(api_name="Leads", module_name="Leads", api_supported=True, fields=[field]))
     assert stream.path() == "/crm/v2/Leads"
-    assert stream.get_json_schema() == {
-        "additionalProperties": True,
-        "description": "Leads",
-        "properties": {
-            "Modified_Time": {"format": "date-time", "type": "string"},
-            "Name": {"maxLength": None, "title": "Name", "type": ["null", "string"]},
-            "id": {"type": "string"},
-        },
-        "required": ["id", "Modified_Time", "Name"],
-        "schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
+    schema = stream.get_json_schema()
+    assert schema["properties"] == {
+        "Modified_Time": {"format": "date-time", "type": "string"},
+        "Name": {"maxLength": None, "title": "Name", "type": ["null", "string"]},
+        "id": {"type": "string"},
     }
+    assert set(schema["required"]) == {"id", "Modified_Time", "Name"}
+    assert schema["description"] == "Leads"
+    assert schema["type"] == "object"

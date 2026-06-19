@@ -114,7 +114,7 @@ class FieldMeta(FromDictMixin):
     system_mandatory: bool
     display_label: str
     pick_list_values: Optional[List[ZohoPickListItem]]
-    auto_number: Optional[AutoNumberDict] = AutoNumberDict(prefix="", suffix="")
+    auto_number: Optional[AutoNumberDict] = dataclasses.field(default_factory=lambda: AutoNumberDict(prefix="", suffix=""))
 
     def _default_type_kwargs(self) -> Dict[str, str]:
         return {"title": self.display_label}
@@ -233,7 +233,13 @@ class ModuleMeta(FromDictMixin):
     def schema(self) -> Schema:
         if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
-        required = ["id", "Modified_Time"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
-        properties = {"id": {"type": "string"}, "Modified_Time": {"type": "string", "format": "date-time"}, **field_to_properties}
+        required = ["id"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
+        properties: Dict[str, Any] = {"id": {"type": "string"}, **field_to_properties}
+        # Only inject Modified_Time if it is not already provided by field metadata
+        if "Modified_Time" not in field_to_properties:
+            has_datetime_field = any(f.data_type == "datetime" for f in self.fields)
+            if not has_datetime_field:
+                required.append("Modified_Time")
+                properties["Modified_Time"] = {"type": "string", "format": "date-time"}
         return Schema(description=self.module_name, properties=properties, required=required)
