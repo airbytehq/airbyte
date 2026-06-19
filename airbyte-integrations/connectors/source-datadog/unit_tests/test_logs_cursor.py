@@ -63,11 +63,7 @@ def test_logs_cursor_advances_across_windows(requests_mock):
     requests_mock.get(f"{BASE}/v2/logs/events", json=_logs_response)
 
     saved_cursor = "2024-02-01T00:00:00Z"
-    state = (
-        StateBuilder()
-        .with_stream_state("logs", {"sync_date": saved_cursor})
-        .build()
-    )
+    state = StateBuilder().with_stream_state("logs", {"sync_date": saved_cursor}).build()
 
     # --- Sync 1: read from the saved cursor ---
     output_1 = read_from_stream(TEST_CONFIG, "logs", SyncMode.incremental, state)
@@ -77,17 +73,11 @@ def test_logs_cursor_advances_across_windows(requests_mock):
     # Capture the state emitted by sync 1
     final_state_1 = output_1.most_recent_state.stream_state.__dict__
     cursor_after_sync_1 = final_state_1.get("sync_date", saved_cursor)
-    assert cursor_after_sync_1 > saved_cursor, (
-        f"sync 1 cursor did not advance (stuck at {cursor_after_sync_1!r})"
-    )
+    assert cursor_after_sync_1 > saved_cursor, f"sync 1 cursor did not advance (stuck at {cursor_after_sync_1!r})"
 
     # --- Sync 2: use the state from sync 1 ---
     call_log.clear()
-    state_2 = (
-        StateBuilder()
-        .with_stream_state("logs", final_state_1)
-        .build()
-    )
+    state_2 = StateBuilder().with_stream_state("logs", final_state_1).build()
     output_2 = read_from_stream(TEST_CONFIG, "logs", SyncMode.incremental, state_2)
     sync_2_calls = len(call_log)
 
