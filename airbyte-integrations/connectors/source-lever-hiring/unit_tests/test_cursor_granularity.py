@@ -12,6 +12,7 @@ Fix: cursor_granularity must be PT0.001S (1 millisecond) to match the format
 resolution.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -36,8 +37,7 @@ def _collect_cursors(node, path=""):
 @pytest.fixture(scope="module")
 def manifest():
     manifest_file = Path(__file__).parent.parent / "manifest.yaml"
-    with open(manifest_file) as f:
-        return yaml.safe_load(f)
+    return yaml.safe_load(manifest_file.read_text())
 
 
 def test_all_epoch_ms_cursors_have_millisecond_granularity(manifest):
@@ -45,18 +45,12 @@ def test_all_epoch_ms_cursors_have_millisecond_granularity(manifest):
     cursors = _collect_cursors(manifest)
     assert len(cursors) > 0, "Expected to find DatetimeBasedCursor nodes in manifest"
 
-    epoch_ms_cursors = [
-        (path, cursor)
-        for path, cursor in cursors
-        if cursor.get("datetime_format") == "%ms"
-    ]
+    epoch_ms_cursors = [(path, cursor) for path, cursor in cursors if cursor.get("datetime_format") == "%ms"]
     assert len(epoch_ms_cursors) > 0, "Expected to find cursors with %ms format"
 
     for path, cursor in epoch_ms_cursors:
         granularity = cursor.get("cursor_granularity")
-        assert granularity is not None, (
-            f"DatetimeBasedCursor at {path} missing cursor_granularity"
-        )
+        assert granularity is not None, f"DatetimeBasedCursor at {path} missing cursor_granularity"
         duration = parse_duration(granularity)
         total_seconds = duration.total_seconds()
         assert total_seconds == 0.001, (
@@ -82,8 +76,6 @@ def test_interval_merge_with_epoch_ms_format(granularity_iso, should_merge):
     they never merge. With PT0.001S, the gap equals exactly the granularity and
     intervals merge correctly.
     """
-    from datetime import timedelta
-
     granularity = parse_duration(granularity_iso)
     granularity_td = timedelta(seconds=granularity.total_seconds())
 
