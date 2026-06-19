@@ -176,6 +176,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.0 | 2026-06-19 | [76091](https://github.com/airbytehq/airbyte/pull/76091) | Dynamic schema discovery implementation |
 | 0.1.8 | 2026-06-16 | [79933](https://github.com/airbytehq/airbyte/pull/79933) | Update dependencies |
 | 0.1.7 | 2026-06-09 | [78847](https://github.com/airbytehq/airbyte/pull/78847) | Update dependencies |
 | 0.1.6 | 2026-04-28 | [77333](https://github.com/airbytehq/airbyte/pull/77333) | Update dependencies |
