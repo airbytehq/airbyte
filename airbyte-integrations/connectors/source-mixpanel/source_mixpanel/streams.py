@@ -450,8 +450,13 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             properties = record["properties"]
             for result in transform_property_names(properties.keys()):
                 # Convert all values to string (this is default property type)
-                # because API does not provide properties type information
-                item[result.transformed_name] = str(properties[result.source_name])
+                # because API does not provide properties type information.
+                # Nested objects/arrays are JSON-encoded instead of passed through
+                # str(), which would emit invalid Python-dict syntax (e.g.
+                # "{'enabled': False}") that downstream destinations cannot parse.
+                # See https://github.com/airbytehq/airbyte/issues/73493.
+                value = properties[result.source_name]
+                item[result.transformed_name] = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
 
             # convert timestamp to datetime string
             item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()

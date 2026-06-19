@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.0.1 | 2026-06-19 | [80304](https://github.com/airbytehq/airbyte/pull/80304) | Encode nested object/array event properties as JSON instead of Python-dict strings in the Export stream |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
