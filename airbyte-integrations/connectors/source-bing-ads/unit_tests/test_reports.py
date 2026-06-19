@@ -331,9 +331,9 @@ def test_custom_report_name_conversion(test_name, config, custom_report_config, 
             custom_stream = stream
             break
 
-    assert custom_stream is not None, (
-        f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
-    )
+    assert (
+        custom_stream is not None
+    ), f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
     assert custom_stream.name == expected_name
 
 
