@@ -68,6 +68,6 @@ def test_cursor_granularity_interval_merging(granularity: timedelta, should_merg
     if should_merge:
         assert len(merged) == 1, f"Expected all {len(intervals)} intervals to merge into 1, got {len(merged)}"
     else:
-        assert len(merged) == len(intervals), (
-            f"Expected intervals to stay fragmented ({len(intervals)}), but got {len(merged)} after merging"
-        )
+        assert len(merged) == len(
+            intervals
+        ), f"Expected intervals to stay fragmented ({len(intervals)}), but got {len(merged)} after merging"
