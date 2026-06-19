@@ -11,7 +11,6 @@ Fix: set cursor_granularity to P1D for day-precision streams.
 
 from urllib.parse import parse_qs, urlparse
 
-import pytest
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
