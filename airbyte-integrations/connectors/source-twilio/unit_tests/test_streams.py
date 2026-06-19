@@ -216,13 +216,20 @@ class TestIncrementalTwilioStream:
         The per-partition cursor then never advances past the first window and the stream
         re-reads its whole history every sync. With a matching granularity (``PT1S``) the
         intervals merge and the cursor advances to the newest record.
+
+        The assertion checks the cursor lands on the *newest record across every window* (not
+        merely that it moved), so a partial-advance regression where only some slices merge
+        would still fail.
         """
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
 
         # Each monthly window returns one record dated at its lower bound (DateSent>),
         # echoed back in the ISO 'T' form the connector normalizes records to.
+        windows = []
+
         def _messages(request, context):
             lower = parse_qs(urlparse(request.url).query, keep_blank_values=True).get("DateSent>", ["1970-01-01 00:00:00Z"])[0]
+            windows.append(lower)
             context.status_code = 200
             return {"messages": [{"sid": "SM", "date_sent": lower.replace(" ", "T")}]}
 
@@ -250,10 +257,22 @@ class TestIncrementalTwilioStream:
 
         output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
 
-        # Emitted per-partition cursor must advance past the saved value, not stay stuck on it.
+        # The sync must span several windows, otherwise the multi-slice merge isn't exercised.
+        assert len(set(windows)) >= 3, f"expected multiple date windows, got {sorted(set(windows))}"
+
+        # The newest record returned across all windows (records sit at each window's lower bound).
+        # Window bounds and the stored cursor share the second-precision format, so a string
+        # comparison is exact and order-preserving.
+        newest_record = max(windows)
+
+        # Emitted per-partition cursor must land on that newest record -- i.e. every slice merged
+        # and the cursor advanced fully, not just past the first window.
         final = output.most_recent_state.stream_state.__dict__
         partition_cursor = final["states"][0]["cursor"]["date_sent"]
-        assert partition_cursor > saved_cursor, f"per-partition cursor did not advance (stuck at {partition_cursor})"
+        assert partition_cursor == newest_record, (
+            f"per-partition cursor did not advance to the newest record: "
+            f"cursor={partition_cursor!r}, newest_record={newest_record!r}, saved={saved_cursor!r}"
+        )
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_pagination_limit_error_message(self, requests_mock):
