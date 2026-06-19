@@ -78,7 +78,7 @@ def test_logs_cursor_advances_across_windows(requests_mock):
     # --- Sync 2: use the state from sync 1 ---
     call_log.clear()
     state_2 = StateBuilder().with_stream_state("logs", final_state_1).build()
-    output_2 = read_from_stream(TEST_CONFIG, "logs", SyncMode.incremental, state_2)
+    read_from_stream(TEST_CONFIG, "logs", SyncMode.incremental, state_2)
     sync_2_calls = len(call_log)
 
     # With a working cursor, sync 2 should make fewer calls than sync 1
