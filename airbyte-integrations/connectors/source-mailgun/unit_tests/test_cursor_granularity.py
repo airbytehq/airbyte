@@ -44,10 +44,7 @@ def test_cursor_granularity_interval_merging(granularity: timedelta, should_merg
     converter = _make_converter(granularity)
 
     # Monthly window boundaries (Jan-Jun 2024)
-    boundary_dts = [
-        datetime.datetime(2024, m, 1, tzinfo=timezone.utc)
-        for m in range(1, 7)
-    ]
+    boundary_dts = [datetime.datetime(2024, m, 1, tzinfo=timezone.utc) for m in range(1, 7)]
 
     # Build intervals replicating the CDK's slice-end computation:
     #   end_dt = next_start - granularity
@@ -69,12 +66,8 @@ def test_cursor_granularity_interval_merging(granularity: timedelta, should_merg
     merged = converter.merge_intervals(intervals)
 
     if should_merge:
-        assert len(merged) == 1, (
-            f"Expected all {len(intervals)} intervals to merge into 1, "
-            f"got {len(merged)}"
-        )
+        assert len(merged) == 1, f"Expected all {len(intervals)} intervals to merge into 1, got {len(merged)}"
     else:
         assert len(merged) == len(intervals), (
-            f"Expected intervals to stay fragmented ({len(intervals)}), "
-            f"but got {len(merged)} after merging"
+            f"Expected intervals to stay fragmented ({len(intervals)}), but got {len(merged)} after merging"
         )
