@@ -835,9 +835,9 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
 def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
-    )
+    assert isinstance(
+        extractor.decoder, GoogleAdsStreamingDecoder
+    ), f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
 
 
 @pytest.mark.parametrize(
@@ -851,9 +851,9 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
 def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
-    )
+    assert isinstance(
+        extractor.decoder, GoogleAdsStreamingDecoder
+    ), f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
 
 
 class TestSerializeMessageFieldsTransformation:
@@ -1113,9 +1113,9 @@ def test_every_stream_has_timeout_adapter_mounted(stream_name, retriever):
     requester = retriever.requester
     session = requester._http_client._session
     adapter = session.adapters.get("https://")
-    assert isinstance(adapter, TimeoutHTTPAdapter), (
-        f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
-    )
+    assert isinstance(
+        adapter, TimeoutHTTPAdapter
+    ), f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
 
 
 @pytest.mark.parametrize(
@@ -1127,9 +1127,9 @@ def test_dynamic_streams_have_timeout_adapter_mounted(stream_name, retriever):
     requester = retriever.requester
     session = requester._http_client._session
     adapter = session.adapters.get("https://")
-    assert isinstance(adapter, TimeoutHTTPAdapter), (
-        f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
-    )
+    assert isinstance(
+        adapter, TimeoutHTTPAdapter
+    ), f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
 
 
 _SERVICE_ACCOUNT_KEY_DICT = {
