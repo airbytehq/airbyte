@@ -18,7 +18,7 @@ Connectors
 
 Other
 
-- Upgraded the AI model powering your agents for improved response quality.
+- Upgraded the AI model powering Chats and Automations for improved response quality. This does not affect the MCP or SDK if you bring your own LLM.
 
 ## June 17, 2026
 
