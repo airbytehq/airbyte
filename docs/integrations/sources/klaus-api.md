@@ -38,7 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.2.14 | 2026-06-19 | [](https://github.com/airbytehq/airbyte/pull/) | Fix stuck incremental cursor by aligning cursor_granularity (PT1S) with second-precision datetime_format |
+| 0.2.14 | 2026-06-19 | [80290](https://github.com/airbytehq/airbyte/pull/80290) | Fix stuck incremental cursor by aligning cursor_granularity (PT1S) with second-precision datetime_format |
 | 0.2.13 | 2025-05-24 | [60703](https://github.com/airbytehq/airbyte/pull/60703) | Update dependencies |
 | 0.2.12 | 2025-05-10 | [59813](https://github.com/airbytehq/airbyte/pull/59813) | Update dependencies |
 | 0.2.11 | 2025-05-03 | [58824](https://github.com/airbytehq/airbyte/pull/58824) | Update dependencies |
