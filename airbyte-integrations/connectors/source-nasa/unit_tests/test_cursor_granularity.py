@@ -33,6 +33,7 @@ def test_apod_cursor_advances_across_windows(requests_mock):
     With cursor_granularity=P1D and datetime_format=%Y-%m-%d, consecutive daily slices
     merge correctly and the persisted cursor advances to the most recent record date.
     """
+
     # Each monthly window returns one record dated at its start_date parameter.
     def _apod_response(request, context):
         qs = parse_qs(urlparse(request.url).query)
