@@ -9,7 +9,7 @@ check:
 
 definitions:
   # Authenticator Definitions
-  authenticator:
+  oauth_authenticator:
     type: OAuthAuthenticator
     refresh_request_body: {}
     token_refresh_endpoint: https://www.googleapis.com/oauth2/v3/token
@@ -17,6 +17,19 @@ definitions:
     client_id: '{{ config["credentials"]["client_id"] }}'
     client_secret: '{{ config["credentials"]["client_secret"] }}'
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+
+  service_account_authenticator:
+    type: CustomAuthenticator
+    class_name: source_google_ads.components.GoogleAdsServiceAccountAuthenticator
+
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client:
+        $ref: "#/definitions/oauth_authenticator"
+      Service:
+        $ref: "#/definitions/service_account_authenticator"
 
   base_requester:
     type: HttpRequester

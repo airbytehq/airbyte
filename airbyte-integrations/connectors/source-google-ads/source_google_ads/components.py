@@ -7,16 +7,19 @@ import json
 import logging
 import re
 import threading
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from datetime import datetime, timedelta
 from itertools import groupby
 from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import anyascii
 import requests
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from google.oauth2 import service_account
 from requests.adapters import HTTPAdapter
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.composite_raw_decoder import JsonParser
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
@@ -41,6 +44,7 @@ logger = logging.getLogger("airbyte")
 # This is an idle timeout per recv() call, not a total request timeout,
 # so streaming responses that keep sending data are unaffected.
 DEFAULT_HTTP_TIMEOUT = 300  # 5 minutes
+GOOGLE_ADS_OAUTH_SCOPE = "https://www.googleapis.com/auth/adwords"
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
@@ -56,6 +60,62 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
         kwargs.setdefault("timeout", self.timeout)
         return super().send(request, **kwargs)
+
+
+@dataclass
+class GoogleAdsServiceAccountAuthenticator(DeclarativeAuthenticator):
+    config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._credentials: Optional[service_account.Credentials] = None
+        self._lock = threading.Lock()
+        self._request = GoogleAuthRequest()
+
+    @property
+    def auth_header(self) -> str:
+        return "Authorization"
+
+    @property
+    def token(self) -> str:
+        credentials = self._get_or_refresh_credentials()
+        return f"Bearer {credentials.token}"
+
+    def _get_or_refresh_credentials(self) -> service_account.Credentials:
+        with self._lock:
+            if self._credentials is None:
+                self._credentials = self._build_credentials()
+            if not self._credentials.valid:
+                self._credentials.refresh(self._request)
+            return self._credentials
+
+    def _build_credentials(self) -> service_account.Credentials:
+        credentials_config = self.config["credentials"]
+        info = credentials_config.get("service_account_info")
+        if info is None:
+            raise AirbyteTracedException(
+                message="Service account credentials are missing the `service_account_info` field.",
+                failure_type=FailureType.config_error,
+            )
+        if isinstance(info, str):
+            try:
+                info = json.loads(info)
+            except json.JSONDecodeError as e:
+                raise AirbyteTracedException(
+                    message="The `service_account_info` field is not valid JSON.",
+                    failure_type=FailureType.config_error,
+                ) from e
+        if not isinstance(info, Mapping):
+            raise AirbyteTracedException(
+                message="The `service_account_info` field must be a JSON object.",
+                failure_type=FailureType.config_error,
+            )
+
+        credentials = service_account.Credentials.from_service_account_info(info, scopes=[GOOGLE_ADS_OAUTH_SCOPE])
+        impersonated_email = credentials_config.get("impersonated_email")
+        if impersonated_email:
+            credentials = credentials.with_subject(impersonated_email)
+        return credentials
 
 
 def _mount_timeout_adapter(requester: Any) -> None:

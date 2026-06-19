@@ -3,6 +3,10 @@
 #
 
 
+import atexit
+import json
+import os
+import tempfile
 from enum import Enum
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
@@ -22,6 +26,65 @@ from .utils import logger
 
 
 API_VERSION = "v23"
+SERVICE_ACCOUNT_AUTH_TYPE = "Service"
+
+
+def _remove_temp_file(path: str) -> None:
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+
+
+def _materialize_service_account_credentials(credentials: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    if "json_key_file_path" in credentials:
+        return credentials
+
+    info = credentials.get("service_account_info")
+    if info is None:
+        raise AirbyteTracedException(
+            message="Service account credentials are missing the `service_account_info` field. Please provide the JSON key contents in the connector configuration.",
+            failure_type=FailureType.config_error,
+        )
+
+    if isinstance(info, str):
+        try:
+            info_dict = json.loads(info)
+        except json.JSONDecodeError as e:
+            raise AirbyteTracedException(
+                message="The `service_account_info` field is not valid JSON. Paste the full contents of your service account key file.",
+                failure_type=FailureType.config_error,
+            ) from e
+        if not isinstance(info_dict, Mapping):
+            raise AirbyteTracedException(
+                message="The `service_account_info` field must be a JSON object containing service account key material.",
+                failure_type=FailureType.config_error,
+            )
+    elif isinstance(info, Mapping):
+        info_dict = dict(info)
+    else:
+        raise AirbyteTracedException(
+            message="The `service_account_info` field must be a JSON string or object containing service account key material.",
+            failure_type=FailureType.config_error,
+        )
+
+    key_file = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+    try:
+        os.chmod(key_file.name, 0o600)
+        json.dump(info_dict, key_file)
+    finally:
+        key_file.close()
+
+    credentials["json_key_file_path"] = key_file.name
+    credentials.pop("service_account_info", None)
+    atexit.register(_remove_temp_file, key_file.name)
+    return credentials
+
+
+def _prepare_credentials_for_sdk(credentials: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    if credentials.get("auth_type") == SERVICE_ACCOUNT_AUTH_TYPE or "service_account_info" in credentials:
+        credentials = _materialize_service_account_credentials(credentials)
+    return {key: value for key, value in credentials.items() if key != "auth_type"}
 
 
 def on_give_up(details):
@@ -67,7 +130,7 @@ class GoogleAds:
     @staticmethod
     def get_google_ads_client(credentials) -> GoogleAdsClient:
         try:
-            return GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+            return GoogleAdsClient.load_from_dict(_prepare_credentials_for_sdk(credentials), version=API_VERSION)
         except exceptions.RefreshError as e:
             message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e

@@ -25,6 +25,37 @@ FULL_REFRESH_CUSTOM_TABLE = [
 ]
 
 
+class MigrateAuthType:
+    OAUTH_AUTH_TYPE = "Client"
+    message_repository: MessageRepository = InMemoryMessageRepository()
+
+    @classmethod
+    def should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        credentials = config.get("credentials")
+        if not isinstance(credentials, Mapping):
+            return False
+        return "auth_type" not in credentials
+
+    @classmethod
+    def update_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        config["credentials"]["auth_type"] = cls.OAUTH_AUTH_TYPE
+        return config
+
+    @classmethod
+    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_config = cls.update_config(config)
+        source.write_config(migrated_config, config_path)
+        return migrated_config
+
+    @classmethod
+    def migrate(cls, args: List[str], source: Source) -> None:
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        if config_path:
+            config = source.read_config(config_path)
+            if cls.should_migrate(config):
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))
+
+
 class MigrateCustomQuery:
     """
     This class stands for migrating the config at runtime.
