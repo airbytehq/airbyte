@@ -11,14 +11,15 @@ Fix: set cursor_granularity to PT1S for all DatetimeBasedCursor blocks using "%s
 """
 
 import datetime
+from pathlib import Path
 
 import isodate
 import pytest
 import yaml
+
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     CustomFormatConcurrentStreamStateConverter,
 )
-from pathlib import Path
 
 
 def _load_manifest(manifest_path: Path) -> dict:
@@ -50,9 +51,7 @@ def test_all_epoch_cursors_use_pt1s_granularity(manifest_path: Path) -> None:
         fmt = cursor.get("datetime_format", "")
         granularity = cursor.get("cursor_granularity", "")
         if fmt == "%s":
-            assert granularity == "PT1S", (
-                f"cursor_granularity must be PT1S for epoch-second format, got {granularity}"
-            )
+            assert granularity == "PT1S", f"cursor_granularity must be PT1S for epoch-second format, got {granularity}"
 
 
 @pytest.mark.parametrize(
@@ -85,10 +84,6 @@ def test_epoch_second_interval_recovery(granularity_iso: str, expect_recovery: b
     recovered = parsed + granularity
 
     if expect_recovery:
-        assert recovered == boundary, (
-            f"Expected boundary recovery: {recovered} != {boundary}"
-        )
+        assert recovered == boundary, f"Expected boundary recovery: {recovered} != {boundary}"
     else:
-        assert recovered != boundary, (
-            f"Expected broken recovery but got exact match (test premise invalid)"
-        )
+        assert recovered != boundary, f"Expected broken recovery but got exact match (test premise invalid)"
