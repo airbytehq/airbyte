@@ -83,7 +83,7 @@ function buildCompositeEntry(entry, connectorType) {
     dockerImageTag: entry.dockerImageTag || "",
     supportLevel: entry.supportLevel || "community",
     sourceType: entry.sourceType || "",
-    iconUrl: entry.iconUrl || "",
+    iconUrl: entry.iconUrl || (dockerRepository ? `https://connectors.airbyte.com/files/metadata/${dockerRepository}/latest/icon.svg` : ""),
     documentationUrl: entry.documentationUrl || "",
     spec: entry.spec || null,
     remoteRegistries: entry.remoteRegistries || {},
