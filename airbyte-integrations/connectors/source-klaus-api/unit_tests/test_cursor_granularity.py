@@ -53,8 +53,7 @@ def test_manifest_cursor_granularity_matches_datetime_format():
     inc = manifest["definitions"]["streams"]["reviews"]["incremental_sync"]
 
     assert inc["cursor_granularity"] == "PT1S", (
-        f"cursor_granularity must be PT1S to match the second-precision "
-        f"datetime_format, got {inc['cursor_granularity']!r}"
+        f"cursor_granularity must be PT1S to match the second-precision datetime_format, got {inc['cursor_granularity']!r}"
     )
     assert "%" in inc["datetime_format"] and "%f" not in inc["datetime_format"], (
         "datetime_format should be second-precision (no %f microsecond directive)"
@@ -80,11 +79,7 @@ def test_reviews_cursor_advances_across_windows(saved_cursor, record_cursor):
     """With PT1S granularity, the cursor must advance past the saved state
     after an incremental sync that returns newer records."""
     catalog = CatalogBuilder().with_stream("reviews", SyncMode.incremental).build()
-    state = (
-        StateBuilder()
-        .with_stream_state("reviews", {"lastUpdatedISO": saved_cursor})
-        .build()
-    )
+    state = StateBuilder().with_stream_state("reviews", {"lastUpdatedISO": saved_cursor}).build()
     source = YamlDeclarativeSource(
         path_to_yaml=str(_manifest_path()),
         catalog=catalog,
@@ -94,11 +89,7 @@ def test_reviews_cursor_advances_across_windows(saved_cursor, record_cursor):
 
     def _reviews_callback(request, context):
         context.status_code = 200
-        return {
-            "conversations": [
-                {"lastUpdatedISO": record_cursor, "id": "conv-1"}
-            ]
-        }
+        return {"conversations": [{"lastUpdatedISO": record_cursor, "id": "conv-1"}]}
 
     with rm.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}{_REVIEWS_PATH}", json=_reviews_callback)
@@ -110,9 +101,6 @@ def test_reviews_cursor_advances_across_windows(saved_cursor, record_cursor):
     final_cursor = final_state.stream.stream_state.__dict__.get("lastUpdatedISO", "")
 
     assert final_cursor > saved_cursor, (
-        f"per-stream cursor did not advance past saved value "
-        f"(stuck at {final_cursor!r}, saved was {saved_cursor!r})"
+        f"per-stream cursor did not advance past saved value (stuck at {final_cursor!r}, saved was {saved_cursor!r})"
     )
-    assert final_cursor == record_cursor, (
-        f"expected cursor to advance to {record_cursor!r}, got {final_cursor!r}"
-    )
+    assert final_cursor == record_cursor, f"expected cursor to advance to {record_cursor!r}, got {final_cursor!r}"
