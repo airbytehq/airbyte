@@ -13,6 +13,7 @@ import pathlib
 import pytest
 import yaml
 
+
 MANIFEST_PATH = pathlib.Path(__file__).resolve().parent.parent / "manifest.yaml"
 
 
@@ -61,8 +62,7 @@ def test_cursor_granularity_matches_datetime_format(manifest):
         expected = GRANULARITY_BY_FORMAT.get(fmt)
         if expected:
             assert granularity == expected, (
-                f"{location}: cursor_granularity={granularity!r} does not match "
-                f"datetime_format={fmt!r} (expected {expected!r})"
+                f"{location}: cursor_granularity={granularity!r} does not match datetime_format={fmt!r} (expected {expected!r})"
             )
 
 
@@ -72,8 +72,7 @@ def test_cursor_granularity_is_not_microseconds(manifest):
     for location, inc in syncs:
         granularity = inc.get("cursor_granularity", "")
         assert granularity != "PT0.000001S", (
-            f"{location}: cursor_granularity is PT0.000001S (microseconds) which "
-            f"is incompatible with day-precision datetime_format"
+            f"{location}: cursor_granularity is PT0.000001S (microseconds) which is incompatible with day-precision datetime_format"
         )
 
 
@@ -82,7 +81,4 @@ def test_both_manifest_locations_are_consistent(manifest):
     syncs = _collect_incremental_syncs(manifest)
     granularities = [(loc, inc.get("cursor_granularity")) for loc, inc in syncs]
     values = {g for _, g in granularities}
-    assert len(values) == 1, (
-        f"Inconsistent cursor_granularity across manifest locations: "
-        f"{granularities}"
-    )
+    assert len(values) == 1, f"Inconsistent cursor_granularity across manifest locations: {granularities}"
