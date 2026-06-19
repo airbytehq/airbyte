@@ -137,6 +137,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------------------|
+| 0.1.4   | 2026-06-19 | [80275](https://github.com/airbytehq/airbyte/pull/80275) | Fix incremental sync: tolerate `Z`-suffixed (UTC) cursor values and resolve cursor field per module instead of hardcoding `Modified_Time` |
 | 0.1.3   | 2024-07-30 | [42864](https://github.com/airbytehq/airbyte/pull/42864) | Migrate to Poetry                                                                  |
 | 0.1.2   | 2023-03-09 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT                                        |
 | 0.1.1   | 2023-03-13 | [23818](https://github.com/airbytehq/airbyte/pull/23818) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix |

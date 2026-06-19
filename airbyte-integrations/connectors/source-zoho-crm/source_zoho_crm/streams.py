@@ -11,12 +11,19 @@ from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+from dateutil import parser as date_parser
 
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
+
+
+def parse_iso(value):
+    if not isinstance(value, str):
+        return value
+    return date_parser.isoparse(value)
 
 
 # 204 and 304 status codes are valid successful responses,
@@ -68,13 +75,24 @@ class ZohoCrmStream(HttpStream, ABC):
 
 
 class IncrementalZohoCrmStream(ZohoCrmStream):
-    cursor_field = "Modified_Time"
+    default_cursor_field = "Modified_Time"
+    _cursor_candidates = ["Modified_Time", "Action_Performed_Time", "Created_Time"]
 
     def __init__(self, authenticator: "requests.auth.AuthBase" = None, config: Mapping[str, Any] = None):
         super().__init__(authenticator)
         self._config = config
         self._state = {}
         self._start_datetime = self._config.get("start_datetime") or "1970-01-01T00:00:00+00:00"
+
+    @property
+    def cursor_field(self) -> str:
+        module = getattr(self, "module", None)
+        fields = getattr(module, "fields", None) or []
+        field_names = {field.api_name for field in fields}
+        for candidate in self._cursor_candidates:
+            if candidate in field_names:
+                return candidate
+        return self.default_cursor_field
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -87,19 +105,22 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
         self._state = value
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        cursor_field = self.cursor_field
         for record in super().read_records(*args, **kwargs):
-            current_cursor_value = datetime.datetime.fromisoformat(self.state[self.cursor_field])
-            latest_cursor_value = datetime.datetime.fromisoformat(record[self.cursor_field])
+            if cursor_field not in record:
+                yield record
+                continue
+            current_cursor_value = parse_iso(self.state[cursor_field])
+            latest_cursor_value = parse_iso(record[cursor_field])
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
-            self.state = {self.cursor_field: new_cursor_value.isoformat("T", "seconds")}
+            self.state = {cursor_field: new_cursor_value.isoformat("T", "seconds")}
             yield record
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         last_modified = stream_state.get(self.cursor_field, self._start_datetime)
-        # since API filters inclusively, we add 1 sec to prevent duplicate reads
-        last_modified_dt = datetime.datetime.fromisoformat(last_modified)
+        last_modified_dt = parse_iso(last_modified)
         last_modified_dt += datetime.timedelta(seconds=1)
         last_modified = last_modified_dt.isoformat("T", "seconds")
         return {"If-Modified-Since": last_modified}
