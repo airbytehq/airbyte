@@ -62,9 +62,7 @@ def test_notes_slice_boundaries_merge_with_p1d_granularity(manifest):
 
     assert granularity == "P1D"
 
-    # Simulate two consecutive slice boundaries
-    slice_start = datetime(2024, 1, 1)
-    # With step=P1M, next slice starts ~Feb 1
+    # With step=P1M, consecutive slices start on month boundaries
     next_slice_start = datetime(2024, 2, 1)
 
     # slice_end = next_slice_start - granularity (P1D = 1 day)
@@ -100,7 +98,6 @@ def test_granularity_format_alignment(granularity, should_merge):
     the formatted end loses precision below the day level.
     """
     datetime_format = "%Y-%m-%d"
-    slice_start = datetime(2024, 3, 1)
     next_slice_start = datetime(2024, 4, 1)
 
     if granularity == "P1D":
