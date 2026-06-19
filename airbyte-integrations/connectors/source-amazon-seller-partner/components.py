@@ -8,11 +8,11 @@ import json
 import logging
 import threading
 import time
-from xml.parsers.expat import ExpatError
 from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
 from io import StringIO
 from typing import Any, Callable, Dict, Generator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from xml.parsers.expat import ExpatError
 
 import backoff
 import dateparser
