@@ -47,7 +47,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
-| 0.3.33 | 2026-06-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix stuck incremental sync by aligning cursor_granularity (P1D) with day-precision datetime_format |
+| 0.3.33 | 2026-06-19 | [80285](https://github.com/airbytehq/airbyte/pull/80285) | Fix stuck incremental sync by aligning cursor_granularity (P1D) with day-precision datetime_format |
 | 0.3.32 | 2025-07-26 | [63834](https://github.com/airbytehq/airbyte/pull/63834) | Update dependencies |
 | 0.3.31 | 2025-07-19 | [63410](https://github.com/airbytehq/airbyte/pull/63410) | Update dependencies |
 | 0.3.30 | 2025-07-12 | [63258](https://github.com/airbytehq/airbyte/pull/63258) | Update dependencies |
