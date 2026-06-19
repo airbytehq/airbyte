@@ -12,7 +12,6 @@ import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFacto
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
-import io.debezium.connector.postgresql.connection.Lsn
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration

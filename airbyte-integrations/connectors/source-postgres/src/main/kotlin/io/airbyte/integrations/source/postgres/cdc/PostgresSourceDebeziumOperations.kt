@@ -217,8 +217,6 @@ class PostgresSourceDebeziumOperations(
         replicationSlotManager.advanceLsn(lsnToAdvanceTo)
     }
 
-
-
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
         commonPropertiesBuilder.withStreams(streams).buildMap()
 
