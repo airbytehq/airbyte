@@ -249,7 +249,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.0 | 2026-06-19 | [](https://github.com/airbytehq/airbyte/pull/) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
+| 6.0.0 | 2026-06-19 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
 | 5.1.1 | 2026-06-09 | [79606](https://github.com/airbytehq/airbyte/pull/79606) | Clean up cancelled RC; revert source to previous stable |
 | 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
 | 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
