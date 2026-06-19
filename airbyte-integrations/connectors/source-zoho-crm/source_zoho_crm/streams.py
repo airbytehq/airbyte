@@ -11,9 +11,8 @@ from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
-from dateutil import parser as date_parser
-
 from airbyte_cdk.sources.streams.http import HttpStream
+from dateutil import parser as date_parser
 
 from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException

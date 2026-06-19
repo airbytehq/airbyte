@@ -2,15 +2,14 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
-
-from types import SimpleNamespace
-from source_zoho_crm.streams import parse_iso
-
 from airbyte_cdk.models import SyncMode
+
+from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
+from source_zoho_crm.streams import parse_iso
 
 
 @pytest.fixture
@@ -77,6 +76,7 @@ def test_source_defined_cursor(stream_factory):
 def test_stream_checkpoint_interval(stream_factory):
     stream = stream_factory("Leads")
     assert stream.state_checkpoint_interval is None
+
 
 def _module_with_fields(*api_names):
     """Build a fake module whose .fields expose the given api_names."""
