@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.3.0 | 2026-06-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add the `ticket_activities` stream. |
+| 3.3.0 | 2026-06-19 | [80306](https://github.com/airbytehq/airbyte/pull/80306) | Add the `ticket_activities` stream. |
 | 3.2.19 | 2026-06-16 | [79864](https://github.com/airbytehq/airbyte/pull/79864) | Update dependencies |
 | 3.2.18 | 2026-06-09 | [79322](https://github.com/airbytehq/airbyte/pull/79322) | Update dependencies |
 | 3.2.17 | 2026-06-02 | [76596](https://github.com/airbytehq/airbyte/pull/76596) | Update dependencies |
