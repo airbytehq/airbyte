@@ -331,9 +331,9 @@ def test_custom_report_name_conversion(test_name, config, custom_report_config, 
             custom_stream = stream
             break
 
-    assert (
-        custom_stream is not None
-    ), f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
+    assert custom_stream is not None, (
+        f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
+    )
     assert custom_stream.name == expected_name
 
 
@@ -373,9 +373,7 @@ def test_asset_group_performance_report_ctr_transformation(config, mock_user_que
         "CostPerConversion": "25.0",
     }
     transformed_record = list(
-        stream.retriever.record_selector.filter_and_transform(
-            all_data=[record], stream_state={}, stream_slice={}, records_schema={}
-        )
+        stream.retriever.record_selector.filter_and_transform(all_data=[record], stream_state={}, stream_slice={}, records_schema={})
     )[0]
     assert transformed_record["Ctr"] == 10.0
     assert transformed_record["AccountId"] == 12345
