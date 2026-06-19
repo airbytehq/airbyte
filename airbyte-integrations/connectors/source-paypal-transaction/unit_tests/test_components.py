@@ -3,10 +3,14 @@
 import logging
 import time
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+import yaml
+
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition, AddFields
 
 
 @pytest.fixture
@@ -155,3 +159,68 @@ def test_date_formats_in_config(config):
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
     return patch("source_paypal_transactions.source.AirbyteLogger")
+
+
+@pytest.fixture(name="manifest")
+def manifest_fixture():
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    return yaml.safe_load(manifest_path.read_text())
+
+
+def test_manifest_transaction_id_add_field_is_string(manifest):
+    transactions = manifest["definitions"]["streams"]["transactions"]
+    transaction_id_fields = [
+        field
+        for transformation in transactions["transformations"]
+        if transformation["type"] == "AddFields"
+        for field in transformation["fields"]
+        if field["path"] == ["transaction_id"]
+    ]
+
+    assert len(transaction_id_fields) == 1
+    assert transaction_id_fields[0]["value_type"] == "string"
+
+
+@pytest.mark.parametrize(
+    ("record", "expected_transaction_id"),
+    [
+        pytest.param(
+            {"transaction_info": {"transaction_id": "35E87645934406417"}},
+            "35E87645934406417",
+            id="scientific-notation-like-id",
+        ),
+        pytest.param(
+            {"transaction_info": {"transaction_id": "1E2"}},
+            "1E2",
+            id="short-scientific-notation-like-id",
+        ),
+        pytest.param(
+            {"transaction_info": {"transaction_id": "99999999999"}},
+            "99999999999",
+            id="numeric-string",
+        ),
+        pytest.param(
+            {"transaction_info": {"transaction_id": "ABC123DEF"}},
+            "ABC123DEF",
+            id="alphanumeric-string",
+        ),
+        pytest.param({"transaction_info": {}}, "", id="missing-transaction-id"),
+    ],
+)
+def test_transaction_id_add_field_preserves_string_values(record, expected_transaction_id):
+    transaction_id_transform = AddFields(
+        fields=[
+            AddedFieldDefinition(
+                path=["transaction_id"],
+                value="{{ record['transaction_info']['transaction_id'] }}",
+                value_type=str,
+                parameters={},
+            )
+        ],
+        parameters={},
+    )
+
+    transaction_id_transform.transform(record, config={})
+
+    assert record["transaction_id"] == expected_transaction_id
+    assert isinstance(record["transaction_id"], str)
