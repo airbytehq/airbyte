@@ -201,15 +201,18 @@ properties:
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
 9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as
    INDIVIDUAL or HOUSEHOLD.
-10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select up to
-    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
-    and DELETED_DRAFT. Include ARCHIVED to report on archived campaigns.
-11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select up to
-    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
-    and DELETED_DRAFT.
-12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select up to six values
-    from: APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
-    DELETED_DRAFT. This filter is not supported for Product Item level reports.
+10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select
+    values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. Include ARCHIVED to report on archived campaigns. When more than six values are
+    selected, the connector automatically splits them across multiple Pinterest report requests.
+11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select
+    values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. When more than six values are selected, the connector automatically splits them
+    across multiple Pinterest report requests.
+12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select values from:
+    APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and DELETED_DRAFT.
+    When more than six values are selected, the connector automatically splits them across multiple
+    Pinterest report requests. This filter is not supported for Product Item level reports.
 13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
@@ -241,6 +244,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.4 | 2026-06-19 | [80303](https://github.com/airbytehq/airbyte/pull/80303) | Split Pinterest custom report status filters into multiple API calls when more than six values are selected. |
 | 2.2.3 | 2026-06-16 | [79987](https://github.com/airbytehq/airbyte/pull/79987) | Update dependencies |
 | 2.2.2 | 2026-06-15 | [79693](https://github.com/airbytehq/airbyte/pull/79693) | Handle Pinterest rate limits during report download target refresh and reduce default concurrency. |
 | 2.2.1 | 2026-06-10 | [78496](https://github.com/airbytehq/airbyte/pull/78496) | Refresh Pinterest async report download URLs immediately before fetching reports. |
