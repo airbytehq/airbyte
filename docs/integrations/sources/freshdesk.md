@@ -6,6 +6,7 @@ This page contains the setup guide and reference information for the [Freshdesk]
 
 - A Freshdesk account with an [API key](https://support.freshdesk.com/support/solutions/articles/215517). The API key belongs to the agent whose credentials are used, and that agent must have access to the resources you want to sync.
 - Your Freshdesk [domain](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) in the format `yourcompany.freshdesk.com`.
+- To sync **Ticket Activities**, an account admin must have enabled Freshdesk's scheduled ticket activities export. Freshdesk makes historical exports available through `/api/v2/export/ticket_activities?created_at=YYYY-MM-DD`.
 
 ## Set up the Freshdesk connector in Airbyte
 
@@ -59,6 +60,7 @@ Several output streams are available from this source:
 - [Solution Folders](https://developers.freshdesk.com/api/#solution_folder_attributes)
 - [Surveys](https://developers.freshdesk.com/api/#surveys)
 - [Tickets](https://developers.freshdesk.com/api/#tickets) \(Native Incremental Sync\)
+- [Ticket Activities](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) \(Incremental Sync\)
 - [Ticket Fields](https://developers.freshdesk.com/api/#ticket-fields)
 - [Time Entries](https://developers.freshdesk.com/api/#time-entries)
 
@@ -88,6 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.3.0 | 2026-06-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add the `ticket_activities` stream. |
 | 3.2.19 | 2026-06-16 | [79864](https://github.com/airbytehq/airbyte/pull/79864) | Update dependencies |
 | 3.2.18 | 2026-06-09 | [79322](https://github.com/airbytehq/airbyte/pull/79322) | Update dependencies |
 | 3.2.17 | 2026-06-02 | [76596](https://github.com/airbytehq/airbyte/pull/76596) | Update dependencies |
