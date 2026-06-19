@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.0.2 | 2026-07-03 | [80302](https://github.com/airbytehq/airbyte/pull/80302) | Serialize nested Export stream properties as JSON strings |
 | 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
