@@ -39,6 +39,7 @@ def test_notes_cursor_advances_across_windows(requests_mock):
     pinned at the start. With the fix (P1D granularity), intervals merge and the
     cursor advances to reflect the most recent record seen.
     """
+
     # Mock the notes endpoint: return one record per window with updatedAt = updatedFrom date
     def _notes_response(request, context):
         qs = parse_qs(urlparse(request.url).query)
@@ -86,6 +87,7 @@ def test_notes_cursor_advances_across_windows(requests_mock):
 @freeze_time("2022-11-16 12:00:00+00:00")
 def test_notes_cursor_does_not_stay_stuck_at_start(requests_mock):
     """Even starting from the very beginning, cursor must advance to the latest record."""
+
     def _notes_response(request, context):
         qs = parse_qs(urlparse(request.url).query)
         updated_from = qs.get("updatedFrom", ["2022-01-01"])[0]
