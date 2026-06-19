@@ -129,7 +129,6 @@ def test_issues_fields_stream(config, mock_fields_response):
     assert len(responses.calls) == 1
 
 
-
 @responses.activate
 def test_issues_link_types_stream(config, issues_link_types_response):
     responses.add(

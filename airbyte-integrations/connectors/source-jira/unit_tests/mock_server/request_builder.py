@@ -61,7 +61,6 @@ class JiraRequestBuilder:
         """Create a request builder for the /field endpoint."""
         return cls(domain, "field", api_version="v3")
 
-
     @classmethod
     def issue_custom_field_contexts_endpoint(cls, domain: str, field_id: str) -> "JiraRequestBuilder":
         """Create a request builder for the /field/{fieldId}/context endpoint."""
