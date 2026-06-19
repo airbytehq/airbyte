@@ -100,16 +100,10 @@ def test_reviews_cursor_advances_across_windows(requests_mock):
     requests_mock.get(reviews_url, json=_reviews_response)
 
     saved_cursor = "2024-02-01T00:00:00Z"
-    state_1 = (
-        StateBuilder()
-        .with_stream_state("reviews", {"lastUpdatedISO": saved_cursor})
-        .build()
-    )
+    state_1 = StateBuilder().with_stream_state("reviews", {"lastUpdatedISO": saved_cursor}).build()
 
     output_1 = _read_reviews(TEST_CONFIG, state_1)
 
     final_cursor = output_1.most_recent_state.stream_state.__dict__.get("lastUpdatedISO")
     assert final_cursor is not None, "expected lastUpdatedISO in final state"
-    assert final_cursor > saved_cursor, (
-        f"sync-1 cursor did not advance (stuck at {final_cursor})"
-    )
+    assert final_cursor > saved_cursor, f"sync-1 cursor did not advance (stuck at {final_cursor})"
