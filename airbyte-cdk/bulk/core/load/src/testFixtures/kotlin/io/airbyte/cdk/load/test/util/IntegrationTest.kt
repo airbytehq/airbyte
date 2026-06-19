@@ -27,8 +27,10 @@ import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -259,9 +261,17 @@ abstract class IntegrationTest(
 
     enum class UncleanSyncEndBehavior {
         /**
-         * End the sync normally (i.e. by closing stdin), but don't send a COMPLETE status message.
+         * End the sync normally (i.e. by signaling end-of-input on the data channel), but don't
+         * send a COMPLETE status message.
          */
         TERMINATE_WITH_NO_STREAM_STATUS,
+
+        /**
+         * Emit a STREAM_STATUS: INCOMPLETE trace for the stream, then signal end-of-input on the
+         * data channel. Simulates a source that failed mid-sync; in SOCKET mode this trace reaches
+         * the destination directly (the orchestrator does not filter it).
+         */
+        EMIT_STREAM_INCOMPLETE,
 
         // TODO no test actually uses this right now, should we just remove it?
         UNPARSEABLE_MESSAGE,
@@ -338,6 +348,30 @@ abstract class IntegrationTest(
                 }
                 when (syncEndBehavior) {
                     UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS -> destination.shutdown()
+                    UncleanSyncEndBehavior.EMIT_STREAM_INCOMPLETE -> {
+                        val incompleteTrace =
+                            AirbyteMessage()
+                                .withType(AirbyteMessage.Type.TRACE)
+                                .withTrace(
+                                    AirbyteTraceMessage()
+                                        .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                        .withEmittedAt(System.currentTimeMillis().toDouble())
+                                        .withStreamStatus(
+                                            AirbyteStreamStatusTraceMessage()
+                                                .withStreamDescriptor(
+                                                    StreamDescriptor()
+                                                        .withNamespace(stream.unmappedNamespace)
+                                                        .withName(stream.unmappedName)
+                                                )
+                                                .withStatus(AirbyteStreamStatus.INCOMPLETE)
+                                        )
+                                )
+                        destination.sendMessage(
+                            InputMessageOther(incompleteTrace),
+                            broadcast = true
+                        )
+                        destination.shutdown()
+                    }
                     UncleanSyncEndBehavior.UNPARSEABLE_MESSAGE -> {
                         destination.sendMessage("{\"unparseable")
                         destination.shutdown()

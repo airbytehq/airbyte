@@ -18,6 +18,10 @@ The Airbyte connector for [Flexmail](https://flexmail.be/) enables seamless data
 | sources | id | DefaultPaginator | ✅ |  ❌  |
 | webhook_events |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,9 @@ The Airbyte connector for [Flexmail](https://flexmail.be/) enables seamless data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-16 | [79831](https://github.com/airbytehq/airbyte/pull/79831) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79315](https://github.com/airbytehq/airbyte/pull/79315) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78708](https://github.com/airbytehq/airbyte/pull/78708) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77222](https://github.com/airbytehq/airbyte/pull/77222) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [75762](https://github.com/airbytehq/airbyte/pull/75762) | Update dependencies |
 | 0.0.46 | 2026-03-24 | [75317](https://github.com/airbytehq/airbyte/pull/75317) | Update dependencies |

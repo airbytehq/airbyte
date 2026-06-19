@@ -28,6 +28,10 @@ Visit `https://www.algolia.com/doc/rest-api/search/#section/Authentication` for 
 | logs | sha1 | No pagination | ✅ |  ✅  |
 | indexes_settings |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,9 @@ Visit `https://www.algolia.com/doc/rest-api/search/#section/Authentication` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.41 | 2026-06-16 | [79772](https://github.com/airbytehq/airbyte/pull/79772) | Update dependencies |
+| 0.0.40 | 2026-06-09 | [79205](https://github.com/airbytehq/airbyte/pull/79205) | Update dependencies |
+| 0.0.39 | 2026-06-02 | [78580](https://github.com/airbytehq/airbyte/pull/78580) | Update dependencies |
 | 0.0.38 | 2026-04-28 | [77155](https://github.com/airbytehq/airbyte/pull/77155) | Update dependencies |
 | 0.0.37 | 2026-04-21 | [76506](https://github.com/airbytehq/airbyte/pull/76506) | Update dependencies |
 | 0.0.36 | 2026-03-17 | [74973](https://github.com/airbytehq/airbyte/pull/74973) | Update dependencies |

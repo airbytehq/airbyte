@@ -23,6 +23,10 @@ Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 | events | id | DefaultPaginator | ✅ |  ❌  |
 | properties | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,9 @@ Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 
 | Version | Date | Pull Request | Subject |
 |---------| ------------ | --- | ---------------- |
+| 0.0.55 | 2026-06-16 | [79919](https://github.com/airbytehq/airbyte/pull/79919) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79377](https://github.com/airbytehq/airbyte/pull/79377) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78779](https://github.com/airbytehq/airbyte/pull/78779) | Update dependencies |
 | 0.0.52 | 2026-04-28 | [77320](https://github.com/airbytehq/airbyte/pull/77320) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76640](https://github.com/airbytehq/airbyte/pull/76640) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75031](https://github.com/airbytehq/airbyte/pull/75031) | Update dependencies |

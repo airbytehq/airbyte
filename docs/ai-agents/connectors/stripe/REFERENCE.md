@@ -33,6 +33,17 @@ The Stripe connector supports the following entities and actions.
 
 Returns a list of your customers. The customers are returned sorted by creation date, with the most recent customers appearing first.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -118,6 +129,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new customer object.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -182,6 +204,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Customers Get
 
 Retrieves a Customer object.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -259,6 +295,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates the specified customer by setting the values of the parameters passed.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "update",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -335,6 +385,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Permanently deletes a customer. It cannot be undone.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -383,6 +447,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Customers API Search
 
 Search for customers using Stripe's Search Query Language.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -467,6 +545,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Customers Context Store Search
 
 Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account_balance": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -587,6 +685,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoices List
 
 Returns a list of invoices
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoices",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -737,6 +846,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a draft invoice for a given customer. The invoice remains a draft until you finalize it, which allows you to pay or send the invoice to your customers.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoices",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -861,6 +981,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoices Get
 
 Retrieves the invoice with the given ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoices",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -997,6 +1131,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoices API Search
 
 Search for invoices using Stripe's Search Query Language
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoices",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1140,6 +1288,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoices Context Store Search
 
 Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account_country": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1379,6 +1547,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Stripe automatically finalizes drafts before sending and attempting payment on invoices. However, if you'd like to finalize a draft invoice manually, you can do so using this method.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoice_finalizations",
+  "action": "create",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1516,6 +1698,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoice Sends Create
 
 Stripe will automatically send invoices to customers according to your subscriptions settings. However, if you'd like to manually send an invoice to your customer out of the normal schedule, you can do so.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoice_sends",
+  "action": "create",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1655,6 +1851,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of charges you've previously created. The charges are returned in sorted order, with the most recent charges appearing first.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "charges",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1761,6 +1968,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves the details of a charge that has previously been created
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "charges",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1856,6 +2077,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Charges API Search
 
 Search for charges using Stripe's Search Query Language
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "charges",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1959,6 +2194,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Charges Context Store Search
 
 Search and filter charges records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "charges",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "amount": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2120,6 +2375,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 By default, returns a list of subscriptions that have not been canceled
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2241,6 +2507,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new subscription on an existing customer. Each customer can have up to 500 active or scheduled subscriptions.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2325,6 +2602,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Subscriptions Get
 
 Retrieves the subscription with the given ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2422,6 +2713,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates an existing subscription on a customer to match the specified parameters. When changing prices or quantities, we optionally prorate the price we charge next month to make up for any price changes.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "update",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2518,6 +2823,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Cancels a customer's subscription immediately. The customer will not be charged again for the subscription. Any pending invoice items that you've created will still be charged for at the end of the period, unless manually deleted.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2613,6 +2932,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Subscriptions API Search
 
 Search for subscriptions using Stripe's Search Query Language
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2716,6 +3049,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Subscriptions Context Store Search
 
 Search and filter subscriptions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "application": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2877,6 +3230,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all refunds you've previously created. The refunds are returned in sorted order, with the most recent refunds appearing first.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "refunds",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2954,6 +3318,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 When you create a new refund, you must specify a Charge or a PaymentIntent object on which to create it. Creating a new refund will refund a charge that has previously been created but not yet refunded.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "refunds",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3009,6 +3384,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Refunds Get
 
 Retrieves the details of an existing refund
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "refunds",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3076,6 +3465,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Refunds Context Store Search
 
 Search and filter refunds records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "refunds",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "amount": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3167,6 +3576,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of your products. The products are returned sorted by creation date, with the most recent products appearing first.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "products",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3246,6 +3666,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new product object. Your product's name, description, and other information will be displayed in all product and invoice displays.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "products",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3301,6 +3732,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Products Get
 
 Retrieves the details of an existing product. Supply the unique product ID and Stripe will return the corresponding product information.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "products",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3369,6 +3814,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates the specific product by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "products",
+  "action": "update",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3436,6 +3895,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Deletes a product. Deleting a product is only possible if it has no prices associated with it.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "products",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3484,6 +3957,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Products API Search
 
 Search for products using Stripe's Search Query Language.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "products",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3562,6 +4049,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves the current account balance, based on the authentication that was used to make the request.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "balance",
+  "action": "get"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3606,6 +4104,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Balance Transactions List
 
 Returns a list of transactions that have contributed to the Stripe account balance (e.g., charges, transfers, and so forth). The transactions are returned in sorted order, with the most recent transactions appearing first.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "balance_transactions",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -3681,6 +4190,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves the balance transaction with the given ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "balance_transactions",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3744,6 +4267,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Payment Intents List
 
 Returns a list of PaymentIntents. The payment intents are returned sorted by creation date, with the most recent payment intents appearing first.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_intents",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -3820,6 +4354,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a PaymentIntent object. After the PaymentIntent is created, attach a payment method and confirm to continue the payment.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_intents",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3873,6 +4418,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Payment Intents Get
 
 Retrieves the details of a PaymentIntent that has previously been created.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_intents",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3939,6 +4498,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates properties on a PaymentIntent object without confirming.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_intents",
+  "action": "update",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4003,6 +4576,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Payment Intents API Search
 
 Search for payment intents using Stripe's Search Query Language.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_intents",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4079,6 +4666,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Confirm that your customer intends to pay with current or provided payment method. Upon confirmation, the PaymentIntent will attempt to initiate a payment.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_intent_confirmations",
+  "action": "create",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4145,6 +4746,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Payment Intent Cancellations Create
 
 You can cancel a PaymentIntent object when it's in one of these statuses - requires_payment_method, requires_capture, requires_confirmation, requires_action, or processing.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_intent_cancellations",
+  "action": "create",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4213,6 +4828,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new price for an existing product. The price can be recurring for use in subscriptions or one-time for use in one-off charges.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "prices",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4268,6 +4894,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a Checkout Session object. You can use it to create a payment page hosted on Stripe that customers can use to complete their purchase.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "checkout_sessions",
+  "action": "create"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4320,6 +4957,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Payment Method Attachments Create
 
 Attaches a PaymentMethod object to a Customer. To use this PaymentMethod as the default for invoice or subscription payments, set invoice_settings.default_payment_method on the Customer.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payment_method_attachments",
+  "action": "create",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4377,6 +5028,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Disputes List
 
 Returns a list of your disputes. The disputes are returned sorted by creation date, with the most recent disputes appearing first.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "disputes",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -4451,6 +5113,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves the dispute with the given ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "disputes",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4515,6 +5191,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Payouts List
 
 Returns a list of existing payouts sent to third-party bank accounts or payouts that Stripe sent to you. The payouts return in sorted order, with the most recently created payouts appearing first.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payouts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -4604,6 +5291,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Payouts Get
 
 Retrieves the details of an existing payout. Supply the unique payout ID from either a payout creation request or the payout list, and Stripe will return the corresponding payout information.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "payouts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

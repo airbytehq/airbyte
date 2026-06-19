@@ -17,6 +17,10 @@ Docs : https://mailosaur.com/docs
 | Servers | id | No pagination | ✅ |  ❌  |
 | Transactions | timestamp | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,9 @@ Docs : https://mailosaur.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-16 | [79928](https://github.com/airbytehq/airbyte/pull/79928) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79394](https://github.com/airbytehq/airbyte/pull/79394) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78819](https://github.com/airbytehq/airbyte/pull/78819) | Update dependencies |
 | 0.0.50 | 2026-04-28 | [77343](https://github.com/airbytehq/airbyte/pull/77343) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76649](https://github.com/airbytehq/airbyte/pull/76649) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75830](https://github.com/airbytehq/airbyte/pull/75830) | Update dependencies |

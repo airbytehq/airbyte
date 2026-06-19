@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-cloudbeds
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.2@sha256:1bfcca53335b2669b02414180fe9ad96b0abd9c95d6cbf50089c1d881fc07801
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.1@sha256:f71ff70e2761f634c080233f6d718bb4bcf96fa310351d56e98ba58d43ab1c9f
   connectorSubtype: api
   connectorType: source
   definitionId: 021d2bd7-40de-43b8-8a93-21e8b731eceb
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-cloudbeds
   githubIssueLabel: source-cloudbeds
   icon: icon.svg

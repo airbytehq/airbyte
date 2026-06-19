@@ -67,6 +67,190 @@ Classes
         Returns:
             AbandonedCheckoutsListResult
 
+<a id="ArticlesQuery"></a>
+
+`ArticlesQuery(connector: ShopifyConnector)`
+:   Query class for Articles entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ArticlesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ArticlesSearchData]`
+    :   Search articles records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ArticlesSearchFilter):
+        - id: Unique identifier for the article
+        - title: Title of the article
+        - handle: URL-friendly handle for the article
+        - author: Name of the author of the article
+        - blog_id: Identifier of the blog the article belongs to
+        - body_html: HTML content of the article body
+        - summary_html: Summary of the article in HTML
+        - tags: Comma-separated list of tags for the article
+        - published_at: ISO 8601 timestamp when the article was published
+        - created_at: ISO 8601 timestamp when the article was created
+        - updated_at: ISO 8601 timestamp when the article was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ArticlesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, blog_id: str, article_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Article`
+    :   Retrieves a single article by ID from a blog
+        
+        Args:
+            blog_id: The blog ID
+            article_id: The article ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Article
+
+    `list(self, blog_id: str, limit: int | None = None, since_id: int | None = None, created_at_min: str | None = None, created_at_max: str | None = None, updated_at_min: str | None = None, updated_at_max: str | None = None, published_status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Article], ArticlesListResultMeta]`
+    :   Returns a list of articles from a specific blog
+        
+        Args:
+            blog_id: The blog ID
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            created_at_min: Show articles created after date (ISO 8601 format)
+            created_at_max: Show articles created before date (ISO 8601 format)
+            updated_at_min: Show articles last updated after date (ISO 8601 format)
+            updated_at_max: Show articles last updated before date (ISO 8601 format)
+            published_status: Filter by published status (published, unpublished, any)
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticlesListResult
+
+<a id="BalanceTransactionsQuery"></a>
+
+`BalanceTransactionsQuery(connector: ShopifyConnector)`
+:   Query class for BalanceTransactions entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: BalanceTransactionsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BalanceTransactionsSearchData]`
+    :   Search balance_transactions records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (BalanceTransactionsSearchFilter):
+        - id: Unique identifier of the balance transaction
+        - type_: Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+        - amount: Gross amount of the transaction
+        - fee: Total fees deducted from the transaction
+        - net: Net amount of the transaction
+        - currency: ISO 4217 currency code of the transaction
+        - payout_id: Identifier of the payout the transaction was paid out in
+        - payout_status: Status of the associated payout
+        - source_type: Type of the resource that led to this transaction
+        - source_order_id: Identifier of the source order, if applicable
+        - processed_at: ISO 8601 timestamp when the transaction was processed
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            BalanceTransactionsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, limit: int | None = None, since_id: int | None = None, payout_id: int | None = None, payout_status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[BalanceTransaction], BalanceTransactionsListResultMeta]`
+    :   Returns a list of Shopify Payments balance transactions
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            payout_id: Filter to transactions in a specific payout
+            payout_status: Filter by payout status
+            **kwargs: Additional parameters
+        
+        Returns:
+            BalanceTransactionsListResult
+
+<a id="BlogsQuery"></a>
+
+`BlogsQuery(connector: ShopifyConnector)`
+:   Query class for Blogs entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: BlogsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BlogsSearchData]`
+    :   Search blogs records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (BlogsSearchFilter):
+        - id: Unique identifier for the blog
+        - title: Title of the blog
+        - handle: URL-friendly handle for the blog
+        - commentable: Whether readers can post comments (no, moderate, yes)
+        - tags: Comma-separated tags from the blog's articles
+        - created_at: ISO 8601 timestamp when the blog was created
+        - updated_at: ISO 8601 timestamp when the blog was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            BlogsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, blog_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Blog`
+    :   Retrieves a single blog by ID
+        
+        Args:
+            blog_id: The blog ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Blog
+
+    `list(self, limit: int | None = None, since_id: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Blog], BlogsListResultMeta]`
+    :   Returns a list of blogs for the store
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogsListResult
+
 <a id="CollectsQuery"></a>
 
 `CollectsQuery(connector: ShopifyConnector)`
@@ -401,6 +585,71 @@ Classes
         
         Returns:
             DiscountCodesListResult
+
+<a id="DisputesQuery"></a>
+
+`DisputesQuery(connector: ShopifyConnector)`
+:   Query class for Disputes entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: DisputesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DisputesSearchData]`
+    :   Search disputes records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (DisputesSearchFilter):
+        - id: Unique identifier for the dispute
+        - order_id: Identifier of the order the dispute belongs to
+        - type_: Whether the dispute is an inquiry or chargeback
+        - amount: Disputed amount
+        - currency: ISO 4217 currency code of the dispute amount
+        - reason: Reason for the dispute provided by the cardholder's bank
+        - network_reason_code: Network reason code from the cardholder's bank
+        - status: Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+        - evidence_due_by: ISO 8601 deadline for evidence submission
+        - initiated_at: ISO 8601 timestamp when the dispute was initiated
+        - finalized_on: ISO 8601 timestamp when the dispute was resolved
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            DisputesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, dispute_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Dispute`
+    :   Retrieves a single Shopify Payments dispute by ID
+        
+        Args:
+            dispute_id: The dispute ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Dispute
+
+    `list(self, limit: int | None = None, since_id: int | None = None, status: str | None = None, initiated_at: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Dispute], DisputesListResultMeta]`
+    :   Returns a list of Shopify Payments disputes (chargebacks and inquiries)
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            status: Filter by dispute status
+            initiated_at: Filter by initiated date (ISO 8601 format)
+            **kwargs: Additional parameters
+        
+        Returns:
+            DisputesListResult
 
 <a id="DraftOrdersQuery"></a>
 
@@ -756,6 +1005,111 @@ Classes
         Returns:
             LocationsListResult
 
+<a id="MetafieldArticlesQuery"></a>
+
+`MetafieldArticlesQuery(connector: ShopifyConnector)`
+:   Query class for MetafieldArticles entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MetafieldArticlesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldArticlesSearchData]`
+    :   Search metafield_articles records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MetafieldArticlesSearchFilter):
+        - id: Unique identifier for the metafield
+        - namespace: Container namespace for the metafield
+        - key: Identifier key for the metafield
+        - value: The metafield value
+        - type_: The metafield's information type
+        - description: Human-readable description of the metafield
+        - owner_id: Identifier of the article that owns this metafield
+        - owner_resource: Resource type that owns this metafield (e.g. `article`)
+        - created_at: ISO 8601 timestamp when the metafield was created
+        - updated_at: ISO 8601 timestamp when the metafield was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MetafieldArticlesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, blog_id: str, article_id: str, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldArticlesListResultMeta]`
+    :   Returns a list of metafields for a specific article
+        
+        Args:
+            blog_id: The blog ID
+            article_id: The article ID
+            limit: Maximum number of results to return (max 250)
+            **kwargs: Additional parameters
+        
+        Returns:
+            MetafieldArticlesListResult
+
+<a id="MetafieldBlogsQuery"></a>
+
+`MetafieldBlogsQuery(connector: ShopifyConnector)`
+:   Query class for MetafieldBlogs entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MetafieldBlogsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldBlogsSearchData]`
+    :   Search metafield_blogs records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MetafieldBlogsSearchFilter):
+        - id: Unique identifier for the metafield
+        - namespace: Container namespace for the metafield
+        - key: Identifier key for the metafield
+        - value: The metafield value
+        - type_: The metafield's information type
+        - description: Human-readable description of the metafield
+        - owner_id: Identifier of the blog that owns this metafield
+        - owner_resource: Resource type that owns this metafield (e.g. `blog`)
+        - created_at: ISO 8601 timestamp when the metafield was created
+        - updated_at: ISO 8601 timestamp when the metafield was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MetafieldBlogsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, blog_id: str, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldBlogsListResultMeta]`
+    :   Returns a list of metafields for a specific blog
+        
+        Args:
+            blog_id: The blog ID
+            limit: Maximum number of results to return (max 250)
+            **kwargs: Additional parameters
+        
+        Returns:
+            MetafieldBlogsListResult
+
 <a id="MetafieldCustomersQuery"></a>
 
 `MetafieldCustomersQuery(connector: ShopifyConnector)`
@@ -975,6 +1329,58 @@ Classes
         
         Returns:
             MetafieldOrdersListResult
+
+<a id="MetafieldPagesQuery"></a>
+
+`MetafieldPagesQuery(connector: ShopifyConnector)`
+:   Query class for MetafieldPages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MetafieldPagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldPagesSearchData]`
+    :   Search metafield_pages records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MetafieldPagesSearchFilter):
+        - id: Unique identifier for the metafield
+        - namespace: Container namespace for the metafield
+        - key: Identifier key for the metafield
+        - value: The metafield value
+        - type_: The metafield's information type
+        - description: Human-readable description of the metafield
+        - owner_id: Identifier of the page that owns this metafield
+        - owner_resource: Resource type that owns this metafield (e.g. `page`)
+        - created_at: ISO 8601 timestamp when the metafield was created
+        - updated_at: ISO 8601 timestamp when the metafield was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MetafieldPagesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, page_id: str, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldPagesListResultMeta]`
+    :   Returns a list of metafields for a specific page
+        
+        Args:
+            page_id: The page ID
+            limit: Maximum number of results to return (max 250)
+            **kwargs: Additional parameters
+        
+        Returns:
+            MetafieldPagesListResult
 
 <a id="MetafieldProductImagesQuery"></a>
 
@@ -1330,6 +1736,49 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: OrdersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrdersSearchData]`
+    :   Search orders records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (OrdersSearchFilter):
+        - id: Unique identifier for the order
+        - name: Shopify-assigned display name for the order (e.g. `#1001`)
+        - email: Email address associated with the order
+        - phone: Phone number associated with the order
+        - order_number: Sequential order number displayed in the Shopify admin
+        - financial_status: Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+        - fulfillment_status: Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+        - currency: ISO 4217 currency code for the order totals
+        - total_price: Total price of the order including taxes and discounts
+        - subtotal_price: Subtotal of the order before shipping and taxes
+        - total_tax: Total tax amount applied to the order
+        - total_discounts: Total discount amount applied to the order
+        - total_weight: Total weight of all items in the order, in grams
+        - cancel_reason: Reason the order was cancelled, if applicable
+        - cancelled_at: ISO 8601 timestamp when the order was cancelled, if applicable
+        - closed_at: ISO 8601 timestamp when the order was closed, if applicable
+        - tags: Comma-separated tags attached to the order
+        - note: Merchant-provided note on the order
+        - processed_at: ISO 8601 timestamp when the order was processed
+        - created_at: ISO 8601 timestamp when the order was created
+        - updated_at: ISO 8601 timestamp when the order was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            OrdersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, order_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Order`
     :   Retrieves a single order by ID
         
@@ -1357,6 +1806,71 @@ Classes
         
         Returns:
             OrdersListResult
+
+<a id="PagesQuery"></a>
+
+`PagesQuery(connector: ShopifyConnector)`
+:   Query class for Pages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: PagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[PagesSearchData]`
+    :   Search pages records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (PagesSearchFilter):
+        - id: Unique identifier for the page
+        - title: Title of the page
+        - handle: URL-friendly handle for the page
+        - author: Name of the page author
+        - body_html: HTML content of the page
+        - published_at: ISO 8601 timestamp when the page was published
+        - created_at: ISO 8601 timestamp when the page was created
+        - updated_at: ISO 8601 timestamp when the page was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            PagesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, page_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Page`
+    :   Retrieves a single page by ID
+        
+        Args:
+            page_id: The page ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Page
+
+    `list(self, limit: int | None = None, since_id: int | None = None, created_at_min: str | None = None, created_at_max: str | None = None, updated_at_min: str | None = None, updated_at_max: str | None = None, published_status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Page], PagesListResultMeta]`
+    :   Returns a list of static pages for the store
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            created_at_min: Show pages created after date (ISO 8601 format)
+            created_at_max: Show pages created before date (ISO 8601 format)
+            updated_at_min: Show pages last updated after date (ISO 8601 format)
+            updated_at_max: Show pages last updated before date (ISO 8601 format)
+            published_status: Filter by published status (published, unpublished, any)
+            **kwargs: Additional parameters
+        
+        Returns:
+            PagesListResult
 
 <a id="PriceRulesQuery"></a>
 
@@ -1558,6 +2072,40 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ProductsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductsSearchData]`
+    :   Search products records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ProductsSearchFilter):
+        - id: Unique identifier for the product
+        - title: Product title
+        - body_html: Product description in HTML
+        - vendor: Product vendor or manufacturer
+        - product_type: Product type used for categorization
+        - handle: URL-friendly handle for the product
+        - status: Product status (`active`, `archived`, or `draft`)
+        - tags: Comma-separated tags attached to the product
+        - published_scope: Publishing scope (`web` or `global`)
+        - published_at: ISO 8601 timestamp when the product was published
+        - created_at: ISO 8601 timestamp when the product was created
+        - updated_at: ISO 8601 timestamp when the product was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ProductsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, product_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Product`
     :   Retrieves a single product by ID
@@ -1775,7 +2323,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1787,6 +2335,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation

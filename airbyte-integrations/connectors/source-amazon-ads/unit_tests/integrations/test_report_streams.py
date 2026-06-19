@@ -1,10 +1,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import gzip
+from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
 import requests_mock
+import yaml
 
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
@@ -99,6 +101,74 @@ class TestDisplayReportStreams:
             {"cursor": {"reportDate": start_date.strftime("%Y-%m-%d")}, "partition": {"parent_slice": {}, "profileId": 1}}
         ]
         assert len(output.records) == 1
+
+    def test_given_file_when_read_brands_campaigns_report_then_return_cost_records(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        report_id = "report-id-brands-campaigns"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        report_data = gzip.compress(b'[{"campaignId": "c1", "cost": 12.34, "clicks": 5, "impressions": 100}]')
+        requests_mock.get(
+            download_url,
+            content=report_data,
+            status_code=200,
+        )
+        output = self._read(config, "sponsored_brands_campaigns_report_stream", SyncMode.incremental)
+        created_report_request = next(
+            request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports")
+        )
+
+        assert created_report_request["configuration"]["reportTypeId"] == "sbCampaigns"
+        assert created_report_request["configuration"]["groupBy"] == ["campaign"]
+        assert "cost" in created_report_request["configuration"]["columns"]
+        assert len(output.records) == 1
+        assert output.records[0].record.data["cost"] == 12.34
+
+    def test_given_file_when_read_brands_adgroups_report_then_return_cost_records(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        report_id = "report-id-brands-adgroups"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        report_data = gzip.compress(b'[{"adGroupId": "a1", "adGroupName": "group", "cost": 4.56, "clicks": 3, "impressions": 50}]')
+        requests_mock.get(
+            download_url,
+            content=report_data,
+            status_code=200,
+        )
+        output = self._read(config, "sponsored_brands_adgroups_report_stream", SyncMode.incremental)
+        created_report_request = next(
+            request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports")
+        )
+
+        assert created_report_request["configuration"]["reportTypeId"] == "sbAdGroup"
+        assert created_report_request["configuration"]["groupBy"] == ["adGroup"]
+        assert "cost" in created_report_request["configuration"]["columns"]
+        assert len(output.records) == 1
+        assert output.records[0].record.data["cost"] == 4.56
 
     def test_given_file_when_read_display_report_then_return_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
@@ -286,6 +356,8 @@ class TestDisplayReportStreams:
         "stream_name",
         [
             "sponsored_brands_v3_report_stream_daily",
+            "sponsored_brands_campaigns_report_stream_daily",
+            "sponsored_brands_adgroups_report_stream_daily",
             "sponsored_display_campaigns_report_stream_daily",
             "sponsored_display_adgroups_report_stream_daily",
             "sponsored_display_productads_report_stream_daily",
@@ -339,7 +411,10 @@ class TestDisplayReportStreams:
         "stream_name",
         [
             "sponsored_brands_v3_report_stream_daily",
+            "sponsored_brands_campaigns_report_stream_daily",
+            "sponsored_brands_adgroups_report_stream_daily",
             "sponsored_display_campaigns_report_stream_daily",
+            "sponsored_display_targets_report_stream_daily",
             "sponsored_products_campaigns_report_stream_daily",
         ],
     )
@@ -413,3 +488,35 @@ class TestDisplayReportStreams:
         assert output.records[0].record.data["reportDate"] is not None
         # Verify cursor state uses 'reportDate' field
         assert output.most_recent_state.stream_state.states[0]["cursor"]["reportDate"] is not None
+
+
+_MANIFEST_PATH = Path(__file__).parent.parent.parent / "manifest.yaml"
+
+_ALL_DAILY_STREAMS = [
+    "sponsored_brands_v3_report_stream_daily",
+    "sponsored_brands_campaigns_report_stream_daily",
+    "sponsored_brands_adgroups_report_stream_daily",
+    "sponsored_display_campaigns_report_stream_daily",
+    "sponsored_display_adgroups_report_stream_daily",
+    "sponsored_display_productads_report_stream_daily",
+    "sponsored_display_targets_report_stream_daily",
+    "sponsored_display_asins_report_stream_daily",
+    "sponsored_products_campaigns_report_stream_daily",
+    "sponsored_products_adgroups_report_stream_daily",
+    "sponsored_products_keywords_report_stream_daily",
+    "sponsored_products_targets_report_stream_daily",
+    "sponsored_products_productads_report_stream_daily",
+    "sponsored_products_asins_keywords_report_stream_daily",
+    "sponsored_products_asins_targets_report_stream_daily",
+]
+
+
+@pytest.mark.parametrize("stream_name", _ALL_DAILY_STREAMS)
+def test_daily_stream_schema_has_date_in_properties(stream_name: str) -> None:
+    """Verify that the `date` field used as PK/cursor is inside `properties`."""
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    schema = manifest["schemas"][stream_name]
+    assert "date" in schema["properties"], (
+        f"{stream_name}: 'date' field is missing from the schema's 'properties' block. "
+        "It may be misplaced at the schema root level due to a YAML indentation error."
+    )

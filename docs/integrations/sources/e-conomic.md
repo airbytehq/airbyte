@@ -45,6 +45,10 @@ The Airbyte connector for e-conomic enables seamless integration with the e-cono
 | sent_orders | orderNumber | DefaultPaginator | ✅ |  ❌  |
 | archived_orders | orderNumber | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -52,6 +56,9 @@ The Airbyte connector for e-conomic enables seamless integration with the e-cono
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-06-16 | [79852](https://github.com/airbytehq/airbyte/pull/79852) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79314](https://github.com/airbytehq/airbyte/pull/79314) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [78631](https://github.com/airbytehq/airbyte/pull/78631) | Update dependencies |
 | 0.0.51 | 2026-04-28 | [77213](https://github.com/airbytehq/airbyte/pull/77213) | Update dependencies |
 | 0.0.50 | 2026-04-21 | [76558](https://github.com/airbytehq/airbyte/pull/76558) | Update dependencies |
 | 0.0.49 | 2026-03-31 | [75774](https://github.com/airbytehq/airbyte/pull/75774) | Update dependencies |

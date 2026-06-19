@@ -26,6 +26,10 @@ To get started, register and request your appKey from the [CIMIS website](https:
 
 ⚠️ Note that `Juilan` in the `data` stream represents the day (in Julia format).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,9 @@ To get started, register and request your appKey from the [CIMIS website](https:
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.57 | 2026-06-16 | [79790](https://github.com/airbytehq/airbyte/pull/79790) | Update dependencies |
+| 0.0.56 | 2026-06-09 | [79249](https://github.com/airbytehq/airbyte/pull/79249) | Update dependencies |
+| 0.0.55 | 2026-06-02 | [78615](https://github.com/airbytehq/airbyte/pull/78615) | Update dependencies |
 | 0.0.54 | 2026-04-28 | [77186](https://github.com/airbytehq/airbyte/pull/77186) | Update dependencies |
 | 0.0.53 | 2026-04-21 | [76560](https://github.com/airbytehq/airbyte/pull/76560) | Update dependencies |
 | 0.0.52 | 2026-03-31 | [75786](https://github.com/airbytehq/airbyte/pull/75786) | Update dependencies |
