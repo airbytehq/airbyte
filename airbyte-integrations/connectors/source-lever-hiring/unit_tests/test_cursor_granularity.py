@@ -113,13 +113,7 @@ def test_opportunities_cursor_advances_across_syncs(requests_mock):
     state_blob = final_state.state.stream.stream_state
     state_dict = state_blob.__dict__
     cursor_value = state_dict.get("updatedAt")
-    assert cursor_value is not None, (
-        f"Cursor value 'updatedAt' should be present in state. "
-        f"State keys: {list(state_dict.keys())}"
-    )
+    assert cursor_value is not None, f"Cursor value 'updatedAt' should be present in state. State keys: {list(state_dict.keys())}"
 
     cursor_int = int(cursor_value) if isinstance(cursor_value, str) else cursor_value
-    assert cursor_int >= ts_record_2, (
-        f"Cursor should have advanced to at least {ts_record_2} "
-        f"but is stuck at {cursor_int}"
-    )
+    assert cursor_int >= ts_record_2, f"Cursor should have advanced to at least {ts_record_2} but is stuck at {cursor_int}"
