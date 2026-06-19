@@ -7,7 +7,7 @@ from conftest import get_source
 
 def test_streams_config_based(config):
     streams = get_source(config).streams(config)
-    assert len(streams) == 77
+    assert len(streams) == 81
 
 
 def test_source_check_connection_ok(config, logger_mock, mock_auth_token, mock_user_query, mock_account_query):
