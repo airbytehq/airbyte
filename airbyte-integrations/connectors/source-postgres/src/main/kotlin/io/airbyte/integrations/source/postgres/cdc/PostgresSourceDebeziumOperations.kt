@@ -35,11 +35,13 @@ import io.airbyte.cdk.read.cdc.DebeziumRecordValue
 import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
+import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
+import io.airbyte.integrations.source.postgres.config.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDoubleFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresFloatFieldType
@@ -140,11 +142,6 @@ class PostgresSourceDebeziumOperations(
     }
 
     override fun startup(offset: DebeziumOffset) {
-        // Need to validate replication slot even on cold start.
-        // Debezium will retry in a loop if its invalid.
-        // TODO: Honor configured InvalidCdcCursorPositionBehavior
-        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15680
-        validate(offset)
         advanceReplicationSlot(offset)
     }
 
@@ -193,6 +190,19 @@ class PostgresSourceDebeziumOperations(
                     "Error deserializing incumbent state value: ${e.message}"
                 )
             }
+        val lsn = position(debeziumOffset).lsn
+        if (lsn != null) {
+            val result = replicationSlotManager.checkSlotValidity(lsn)
+            if (result is ReplicationSlotManager.SlotValidationResult.Invalid) {
+                log.warn { "Replication slot validation failed: ${result.reason}" }
+                return when (cdcConfig.invalidCdcCursorPositionBehavior) {
+                    InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
+                        AbortDebeziumWarmStartState(result.reason)
+                    InvalidCdcCursorPositionBehavior.RESET_SYNC ->
+                        ResetDebeziumWarmStartState(result.reason)
+                }
+            }
+        }
         return ValidDebeziumWarmStartState(debeziumOffset, null)
     }
 
@@ -207,12 +217,7 @@ class PostgresSourceDebeziumOperations(
         replicationSlotManager.advanceLsn(lsnToAdvanceTo)
     }
 
-    private fun validate(offset: DebeziumOffset) {
-        val lsn =
-            position(offset).lsn
-                ?: throw IllegalArgumentException("Offset does not contain LSN: $offset")
-        replicationSlotManager.validate(lsn)
-    }
+
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
         commonPropertiesBuilder.withStreams(streams).buildMap()
