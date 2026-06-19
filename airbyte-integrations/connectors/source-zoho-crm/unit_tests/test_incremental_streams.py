@@ -6,10 +6,10 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import SyncMode
-
 from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
 from source_zoho_crm.streams import parse_iso
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture
