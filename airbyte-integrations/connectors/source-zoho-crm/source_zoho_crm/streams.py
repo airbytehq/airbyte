@@ -19,6 +19,7 @@ from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -67,7 +68,7 @@ class ZohoCrmStream(HttpStream, ABC):
             # Any of former two can result in 204 and empty body what blocks us
             # from generating stream schema and, therefore, a stream.
             self.logger.warning(
-                f"Could not retrieve fields Metadata for module {self.module.api_name}. " f"This stream will not be available for syncs."
+                f"Could not retrieve fields Metadata for module {self.module.api_name}. This stream will not be available for syncs."
             )
             return None
         except UnknownDataTypeException as exc:
