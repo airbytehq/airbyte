@@ -1438,6 +1438,33 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tickets"
+    ticket_activities:
+      type: DeclarativeStream
+      name: ticket_activities
+      primary_key:
+        - _airbyte_ticket_activity_id
+      retriever:
+        type: CustomRetriever
+        class_name: source_declarative_manifest.components.TicketActivitiesRetriever
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: performed_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.get('start_date') or day_delta(-3650,
+            '%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%d-%m-%Y %H:%M:%S %z"
+        step: P1D
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_activities"
     time_entries:
       type: DeclarativeStream
       name: time_entries
@@ -1521,6 +1548,7 @@ streams:
   - $ref: "#/definitions/streams/surveys"
   - $ref: "#/definitions/streams/ticket_fields"
   - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/ticket_activities"
   - $ref: "#/definitions/streams/time_entries"
 
 spec:
@@ -1737,11 +1765,15 @@ metadata:
     surveys: false
     ticket_fields: false
     tickets: false
+    ticket_activities: false
     time_entries: false
   yamlComponents:
     streams:
       tickets:
         - paginator
+        - incrementalSync
+      ticket_activities:
+        - retriever
         - incrementalSync
     global:
       - authenticator
@@ -3689,6 +3721,39 @@ schemas:
           - object
           - "null"
       stats:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
+  ticket_activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _airbyte_ticket_activity_id:
+        type: string
+      export_date:
+        type:
+          - string
+          - "null"
+        format: date
+      performed_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      ticket_id:
+        type:
+          - integer
+          - "null"
+      performer_type:
+        type:
+          - string
+          - "null"
+      performer_id:
+        type:
+          - integer
+          - "null"
+      activity:
         type:
           - object
           - "null"
