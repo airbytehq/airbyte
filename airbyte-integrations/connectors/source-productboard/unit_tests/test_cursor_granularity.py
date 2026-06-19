@@ -44,8 +44,7 @@ def test_notes_cursor_granularity_matches_datetime_format(manifest):
 
     assert incremental_sync["datetime_format"] == "%Y-%m-%d"
     assert incremental_sync["cursor_granularity"] == "P1D", (
-        f"cursor_granularity must be P1D for day-precision datetime_format, "
-        f"got {incremental_sync['cursor_granularity']}"
+        f"cursor_granularity must be P1D for day-precision datetime_format, " f"got {incremental_sync['cursor_granularity']}"
     )
 
 
