@@ -435,20 +435,21 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                 }
             }
 
-            if (upperBound.isGreater(currentPosition)) {
-                return null
+            if (currentPosition.isGreaterOrEqual(upperBound)) {
+                // Close because the current event is at or past the sync upper bound.
+                return when (eventType) {
+                    EventType.TOMBSTONE,
+                    EventType.HEARTBEAT ->
+                        CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
+                    EventType.KEY_JSON_INVALID,
+                    EventType.VALUE_JSON_INVALID,
+                    EventType.RECORD_EMITTED,
+                    EventType.RECORD_DISCARDED_BY_DESERIALIZE,
+                    EventType.RECORD_DISCARDED_BY_STREAM_ID ->
+                        CloseReason.RECORD_REACHED_TARGET_POSITION
+                }
             }
-            // Close because the current event is past the sync upper bound.
-            return when (eventType) {
-                EventType.TOMBSTONE,
-                EventType.HEARTBEAT -> CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
-                EventType.KEY_JSON_INVALID,
-                EventType.VALUE_JSON_INVALID,
-                EventType.RECORD_EMITTED,
-                EventType.RECORD_DISCARDED_BY_DESERIALIZE,
-                EventType.RECORD_DISCARDED_BY_STREAM_ID ->
-                    CloseReason.RECORD_REACHED_TARGET_POSITION
-            }
+            return null // Keep processing.
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {

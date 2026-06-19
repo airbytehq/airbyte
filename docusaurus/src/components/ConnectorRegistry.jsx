@@ -2,32 +2,78 @@ import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
 import { useEffect, useState } from "react";
-import { REGISTRY_URL } from "../constants";
+import { COMPOSITE_REGISTRY_URL } from "../constants";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
 
-async function fetchCatalog(url, setter) {
-  const response = await fetch(url);
-  const registry = await response.json();
-  setter(registry);
+const GITHUB_REPO_NAME = "airbytehq/airbyte";
+const CONNECTORS_PATH = "airbyte-integrations/connectors";
+
+function buildCompositeEntry(entry, connectorType) {
+  const dockerRepository = entry.dockerRepository || "";
+  const connectorName = dockerRepository.replace("airbyte/", "");
+  const definitionId =
+    entry.sourceDefinitionId || entry.destinationDefinitionId || "";
+  const availability = entry.availability || [];
+
+  const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
+  const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
+  const issueUrl = `https://github.com/${GITHUB_REPO_NAME}/issues?q=is:open+is:issue+label:${issuesLabel}`;
+
+  return {
+    connector_type: connectorType,
+    definitionId,
+    is_oss: availability.includes("oss"),
+    is_cloud: availability.includes("cloud"),
+    github_url: githubUrl,
+    issue_url: issueUrl,
+
+    name: entry.name || "",
+    dockerRepository,
+    dockerImageTag: entry.dockerImageTag || "",
+    supportLevel: entry.supportLevel || "community",
+    iconUrl: entry.iconUrl || (dockerRepository ? `https://connectors.airbyte.com/files/metadata/${dockerRepository}/latest/icon.svg` : ""),
+    documentationUrl: entry.documentationUrl || "",
+  };
+}
+
+async function fetchCatalog(setter) {
+  try {
+    const response = await fetch(COMPOSITE_REGISTRY_URL);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch composite registry: ${response.statusText}`,
+      );
+    }
+    const compositeRegistry = await response.json();
+    const sources = compositeRegistry.sources || [];
+    const destinations = compositeRegistry.destinations || [];
+    setter([
+      ...sources.map((entry) => buildCompositeEntry(entry, "source")),
+      ...destinations.map((entry) => buildCompositeEntry(entry, "destination")),
+    ]);
+  } catch (error) {
+    console.error("Failed to fetch connector registry:", error);
+    setter([]);
+  }
 }
 
 /*
 Sorts connectors by release stage and then name
 */
 function connectorSort(a, b) {
-  if (a.supportLevel_oss !== b.supportLevel_oss) {
-    if (a.supportLevel_oss === "certified") return -3;
-    if (b.supportLevel_oss === "certified") return 3;
-    if (a.supportLevel_oss === "community") return -2;
-    if (b.supportLevel_oss === "community") return 2;
-    if (a.supportLevel_oss === "archived") return -1;
-    if (b.supportLevel_oss === "archived") return 1;
+  if (a.supportLevel !== b.supportLevel) {
+    if (a.supportLevel === "certified") return -3;
+    if (b.supportLevel === "certified") return 3;
+    if (a.supportLevel === "community") return -2;
+    if (b.supportLevel === "community") return 2;
+    if (a.supportLevel === "archived") return -1;
+    if (b.supportLevel === "archived") return 1;
   }
 
-  if (a.name_oss < b.name_oss) return -1;
-  if (a.name_oss > b.name_oss) return 1;
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
 }
 
 function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnectors = [] }) {
@@ -51,13 +97,13 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
             }
             
             const isEnterpriseConnector = enterpriseConnectors.some(
-              ec => ec && c && (ec.definitionId === c.definitionId || ec.name_oss === c.name_oss)
+              ec => ec && c && (ec.definitionId === c.definitionId || ec.name === c.name)
             );
             
-            return !isEnterpriseConnector && c.supportLevel_oss === connectorSupportLevel;
+            return !isEnterpriseConnector && c.supportLevel === connectorSupportLevel;
           })
           .map((connector) => {
-            const docsLink = connector.documentationUrl_oss?.replace(
+            const docsLink = connector.documentationUrl?.replace(
               "https://docs.airbyte.com",
               "",
             ); // not using documentationUrl so we can have relative links
@@ -66,13 +112,13 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
               <tr key={`${connector.definitionId}`}>
                 <td>
                   <div className={styles.connectorName}>
-                    {connector.iconUrl_oss && (
+                    {connector.iconUrl && (
                       <div className={styles.connectorIconBackground}>
-                        <img src={connector.iconUrl_oss} style={iconStyle} />
+                        <img src={connector.iconUrl} style={iconStyle} />
                       </div>
                     )}
 
-                    <a href={docsLink}>{connector.name_oss}</a>
+                    <a href={docsLink}>{connector.name}</a>
                   </div>
                 </td>
                 {/* min width to prevent wrapping */}
@@ -85,13 +131,13 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
                     }}
                   >
                     <a href={docsLink}>📕</a>
-                    {connector.supportLevel_oss != "archived" &&
+                    {connector.supportLevel != "archived" &&
                     connector.github_url  ? (
                       <a href={connector.github_url}>⚙️</a>
                     ) : (
                       ""
                     )}
-                    {connector.supportLevel_oss != "archived" ? (
+                    {connector.supportLevel != "archived" ? (
                       <a href={connector.issue_url}>🐛</a>
                     ) : null}
                   </div>
@@ -102,8 +148,8 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
                   <td>
                     <small>
                       <code>
-                        {connector.dockerRepository_oss}:
-                      {connector.dockerImageTag_oss}
+                        {connector.dockerRepository}:
+                      {connector.dockerImageTag}
                     </code>
                     </small>
                   </td>
@@ -118,20 +164,20 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
 
 export default function ConnectorRegistry({ type }) {
   const pluginData = usePluginData("enterprise-connectors-plugin");
-  const [registry, setRegistry] = useState([]);
+  // `null` = loading, `[]` = fetch failed / empty, populated array = loaded.
+  const [registry, setRegistry] = useState(null);
   const [enterpriseConnectors, setEnterpriseConnectors] = useState([]);
 
   useEffect(() => {
-    fetchCatalog(REGISTRY_URL, setRegistry);
+    fetchCatalog(setRegistry);
   }, []);
 
   useEffect(() => {
-    if (registry.length > 0) {
+    if (registry && registry.length > 0) {
       const enterpriseFromRegistry = registry.filter(
         (c) =>
           c.connector_type === type &&
-          (c.documentationUrl_oss?.includes("/integrations/enterprise-connectors/") ||
-           c.documentationUrl_cloud?.includes("/integrations/enterprise-connectors/"))
+          c.documentationUrl?.includes("/integrations/enterprise-connectors/"),
       );
 
       const enterpriseFromPlugin = pluginData.enterpriseConnectors.length > 0
@@ -142,10 +188,8 @@ export default function ConnectorRegistry({ type }) {
 
               const info = registry.find(
                 (c) =>
-                  c.name_oss?.includes(_name) ||
-                  c.name_cloud?.includes(_name) ||
-                  c.documentationUrl_oss?.includes(_name) ||
-                  c.documentationUrl_cloud?.includes(_name),
+                  c.name?.includes(_name) ||
+                  c.documentationUrl?.includes(_name),
               );
               return info;
             })
@@ -161,12 +205,14 @@ export default function ConnectorRegistry({ type }) {
     }
   }, [registry, pluginData, type]);
 
-  if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;
+  if (registry === null) return <div>{`Loading ${type}s...`}</div>;
+  if (registry.length === 0)
+    return <div>{`Failed to load ${type}s. Check your network connection and try again.`}</div>;
 
   const connectors = registry
     .filter((c) => c.connector_type === type)
-    .filter((c) => c.name_oss)
-    .filter((c) => c.supportLevel_oss); // at least one connector is missing a support level
+    .filter((c) => c.name)
+    .filter((c) => c.supportLevel); // at least one connector is missing a support level
 
   return (
     <Tabs>

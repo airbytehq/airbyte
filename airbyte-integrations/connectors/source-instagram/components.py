@@ -17,52 +17,73 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient, HttpMethod
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 GRAPH_URL = "https://graph.facebook.com/v23.0"
+logger = logging.getLogger("airbyte.HttpClient.MediaInsights")
 
 
 def get_http_response(name: str, path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
     http_logger = logging.getLogger(f"airbyte.HttpClient.{name}")
-    try:
-        url = f"{GRAPH_URL}/{path}"
-        token = config["access_token"]
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-        params = {
-            **request_params,
-        }
-        factor = 5
-        backoff_parameters = backoff_config = {"backoff": factor}
-        backoff_strategy = ExponentialBackoffStrategy(factor=factor, parameters=backoff_parameters, config=backoff_config)
-        error_handler = DefaultErrorHandler(config={}, parameters={}, backoff_strategies=[backoff_strategy])
-        http_client = HttpClient(
-            name=name,
-            logger=http_logger,
-            use_cache=False,
-            error_handler=error_handler,
-        )
-        _, response = http_client.send_request(
-            http_method=HttpMethod.GET.name,
-            url=url,
-            request_kwargs={},
-            headers=headers,
-            params=params,
-        )
-        response.raise_for_status()
-    except requests.HTTPError as http_err:
-        error = f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}"
-        http_logger.error(f"Error getting children data: {error}")
-        raise Exception(error)
-    except Exception as err:
-        error = f"An error occurred: {err}"
-        http_logger.error(f"Error getting children data: {error}")
-        raise Exception(error)
+    url = f"{GRAPH_URL}/{path}"
+    token = config["access_token"]
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    params = {
+        **request_params,
+    }
+    factor = 5
+    backoff_parameters = backoff_config = {"backoff": factor}
+    backoff_strategy = ExponentialBackoffStrategy(factor=factor, parameters=backoff_parameters, config=backoff_config)
+    rate_limit_filter = HttpResponseFilter(
+        config={},
+        parameters={},
+        action=ResponseAction.RATE_LIMITED,
+        predicate="{{ 'error' in response and response.get('error', {}).get('code') == 4 }}",
+        error_message="Rate limit exceeded for Instagram Graph API.",
+    )
+    instagram_rate_limit_filter = HttpResponseFilter(
+        config={},
+        parameters={},
+        action=ResponseAction.RATE_LIMITED,
+        predicate="{{ 'error' in response and response.get('error', {}).get('code') == 80002 }}",
+        error_message="Rate limit exceeded for Instagram Graph API.",
+    )
+    too_many_calls_filter = HttpResponseFilter(
+        config={},
+        parameters={},
+        action=ResponseAction.RATE_LIMITED,
+        error_message_contains="too many calls",
+        error_message="Rate limit exceeded for Instagram Graph API.",
+    )
+    error_handler = DefaultErrorHandler(
+        config={},
+        parameters={},
+        response_filters=[rate_limit_filter, instagram_rate_limit_filter, too_many_calls_filter],
+        backoff_strategies=[backoff_strategy],
+    )
+    http_client = HttpClient(
+        name=name,
+        logger=http_logger,
+        use_cache=False,
+        error_handler=error_handler,
+    )
+    _, response = http_client.send_request(
+        http_method=HttpMethod.GET.name,
+        url=url,
+        request_kwargs={},
+        headers=headers,
+        params=params,
+    )
     return response.json()
 
 
@@ -142,7 +163,11 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
         if children:
             children_ids = [child.get("id") for child in children.get("data")]
             for children_id in children_ids:
-                media_data = get_http_response(f"MediaInsights.{children_id}", children_id, {"fields": fields}, config=config)
+                try:
+                    media_data = get_http_response(f"MediaInsights.{children_id}", children_id, {"fields": fields}, config=config)
+                except (AirbyteTracedException, BaseBackoffException) as e:  # CDK exceptions from HttpClient after retries exhausted
+                    logger.warning(f"Skipping carousel child media {children_id} for parent media {record.get('id', 'unknown')}: {e}")
+                    continue
                 media_data = InstagramClearUrlTransformation().transform(media_data)
                 if media_data.get("timestamp"):
                     dt = datetime.strptime(media_data["timestamp"], "%Y-%m-%dT%H:%M:%S%z")

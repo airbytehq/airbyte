@@ -99,6 +99,10 @@ Page size limits per stream:
 
 The Forms, Responses, and Webhooks streams make separate API calls for each form in your account. The connector first fetches the list of form IDs using the [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/), then queries each form individually. If you have many forms, consider using the **Form IDs** configuration option to limit the sync to only the forms you need.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -106,6 +110,12 @@ The Forms, Responses, and Webhooks streams make separate API calls for each form
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.8-rc.5 | 2026-04-16 | [76418](https://github.com/airbytehq/airbyte/pull/76418) | Increase max_concurrency to 75, no api_budget (reviewed/explored, relying on CDK 429 backoff) |
+| 1.4.8-rc.4 | 2026-04-15 | [76363](https://github.com/airbytehq/airbyte/pull/76363) | Remove API budget, set concurrency to 25 |
+| 1.4.8-rc.3 | 2026-04-14 | [76319](https://github.com/airbytehq/airbyte/pull/76319) | Adjust default_concurrency from 3 to 2 for tuning retry |
+| 1.4.8-rc.2 | 2026-04-13 | [76270](https://github.com/airbytehq/airbyte/pull/76270) | Adjust default_concurrency from 4 to 3 for tuning retry |
+| 1.4.8-rc.1 | 2026-04-09 | [76204](https://github.com/airbytehq/airbyte/pull/76204) | Add concurrency_level and HTTPAPIBudget for concurrent stream reads |
+| 1.4.7 | 2026-04-02 | [76030](https://github.com/airbytehq/airbyte/pull/76030) | Promoted release candidate to GA |
 | 1.4.7-rc.2 | 2026-03-31 | [75898](https://github.com/airbytehq/airbyte/pull/75898) | Update CDK to 7.15.0 |
 | 1.4.7-rc.1 | 2026-03-26 | [75506](https://github.com/airbytehq/airbyte/pull/75506) | Upgrade CDK version to 7.13.0 |
 | 1.4.6 | 2026-03-03 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |

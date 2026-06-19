@@ -347,7 +347,7 @@ class SnowflakeDirectLoadSqlGenerator(
             |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            |    TRIM_SPACE = TRUE
+            |    TRIM_SPACE = ${config.trimSpace.toString().uppercase()}
             |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             |    REPLACE_INVALID_CHARACTERS = TRUE
             |    ESCAPE = NONE

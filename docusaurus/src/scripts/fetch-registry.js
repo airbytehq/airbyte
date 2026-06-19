@@ -1,19 +1,33 @@
 /**
  * Utility to manage connector registry - fetching, caching, and extracting minimal data.
- * This is a separate utility so it can be reused by multiple scripts.
+ *
+ * Fetches the composite connector registry from the CDN and projects each
+ * entry into the flat shape that the rest of the docs code (remark plugins,
+ * sidebar, ConnectorRegistry.jsx) consumes.
+ *
+ * The composite registry is a server-side superset of the OSS and Cloud
+ * registries, keyed by definitionId (cloud preferred when present), and
+ * exposes an `availability` field indicating which registries each connector
+ * appears in — the only bit we carry through as separate `is_oss` / `is_cloud`
+ * booleans.
  */
 const fs = require("fs");
 const https = require("https");
-const { DATA_DIR, REGISTRY_CACHE_PATH, REGISTRY_URL } = require("./constants");
+const {
+  DATA_DIR,
+  REGISTRY_CACHE_PATH,
+  COMPOSITE_REGISTRY_URL,
+} = require("./constants");
 
-function fetchConnectorRegistryFromRemote() {
+const GITHUB_REPO_NAME = "airbytehq/airbyte";
+const CONNECTORS_PATH = "airbyte-integrations/connectors";
+
+function fetchJsonFromUrl(url) {
   return new Promise((resolve, reject) => {
-    console.log("Fetching connector registry data...");
-
     https
-      .get(REGISTRY_URL, (response) => {
+      .get(url, (response) => {
         if (response.statusCode !== 200) {
-          reject(new Error(`Failed to fetch registry: ${response.statusCode}`));
+          reject(new Error(`Failed to fetch ${url}: ${response.statusCode}`));
           return;
         }
 
@@ -25,57 +39,105 @@ function fetchConnectorRegistryFromRemote() {
 
         response.on("end", () => {
           try {
-            const registry = JSON.parse(data);
-            resolve(registry);
+            resolve(JSON.parse(data));
           } catch (error) {
             reject(
-              new Error(`Failed to parse registry data: ${error.message}`),
+              new Error(`Failed to parse data from ${url}: ${error.message}`),
             );
           }
         });
       })
       .on("error", (error) => {
-        reject(new Error(`Network error: ${error.message}`));
+        reject(new Error(`Network error fetching ${url}: ${error.message}`));
       });
   });
 }
 
+/**
+ * Project a single composite registry entry into the shape used by downstream
+ * consumers. The composite registry has one entry per definitionId (cloud
+ * preferred when present), so we expose a single flat set of connector fields
+ * plus `is_oss` / `is_cloud` availability booleans.
+ */
+function buildCompositeEntry(entry, connectorType) {
+  const dockerRepository = entry.dockerRepository || "";
+  const connectorName = dockerRepository.replace("airbyte/", "");
+  const definitionId =
+    entry.sourceDefinitionId || entry.destinationDefinitionId || "";
+  const availability = entry.availability || [];
+
+  const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
+  const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
+  const issueUrl = `https://github.com/${GITHUB_REPO_NAME}/issues?q=is:open+is:issue+label:${issuesLabel}`;
+
+  return {
+    connector_type: connectorType,
+    definitionId,
+    is_oss: availability.includes("oss"),
+    is_cloud: availability.includes("cloud"),
+    github_url: githubUrl,
+    issue_url: issueUrl,
+
+    name: entry.name || "",
+    dockerRepository,
+    dockerImageTag: entry.dockerImageTag || "",
+    supportLevel: entry.supportLevel || "community",
+    sourceType: entry.sourceType || "",
+    iconUrl: entry.iconUrl || (dockerRepository ? `https://connectors.airbyte.com/files/metadata/${dockerRepository}/latest/icon.svg` : ""),
+    documentationUrl: entry.documentationUrl || "",
+    spec: entry.spec || null,
+    remoteRegistries: entry.remoteRegistries || {},
+    packageInfo: entry.packageInfo || null,
+    generated: entry.generated || null,
+  };
+}
+
+async function fetchConnectorRegistriesFromRemote() {
+  console.log("Fetching composite connector registry...");
+  const compositeRegistry = await fetchJsonFromUrl(COMPOSITE_REGISTRY_URL);
+  const sources = compositeRegistry.sources || [];
+  const destinations = compositeRegistry.destinations || [];
+  console.log(
+    `Fetched ${sources.length + destinations.length} connectors ` +
+      `(${sources.length} sources, ${destinations.length} destinations)`,
+  );
+  return [
+    ...sources.map((entry) => buildCompositeEntry(entry, "source")),
+    ...destinations.map((entry) => buildCompositeEntry(entry, "destination")),
+  ];
+}
+
 function extractMinimalRegistryData(fullRegistry) {
   return fullRegistry.map((connector) => ({
-    id: connector.name_oss || connector.name_cloud
-      .toLowerCase()
+    id: connector.name
+      ?.toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, ""),
     // Properties used by sidebar-connectors.js
-    docUrl:
-      connector.documentationUrl_cloud || connector.documentationUrl_oss || "",
-    supportLevel:
-      connector.supportLevel_cloud || connector.supportLevel_oss || "community",
-    // Properties used by remark/utils.js and remark/specDecoration.js
-    dockerRepository_oss: connector.dockerRepository_oss || "",
-    spec_oss: connector.spec_oss
-      ? {
-          connectionSpecification: connector.spec_oss.connectionSpecification,
-        }
-      : null,
-    // Properties used by remark/utils.js for buildArchivedRegistryEntry
-    name_oss: connector.name_oss || connector.name || "",
+    docUrl: connector.documentationUrl || "",
+    // Core connector fields (consumed by remark plugins, sidebar, the
+    // client-side catalog page, etc.).
+    connector_type: connector.connector_type || "",
+    definitionId: connector.definitionId || "",
     is_oss: connector.is_oss || false,
     is_cloud: connector.is_cloud || false,
-    iconUrl_oss: connector.iconUrl_oss || "",
-    supportLevel_oss: connector.supportLevel_oss || "community",
-    documentationUrl_oss: connector.documentationUrl_oss || "",
-    // Properties used by remark/connectorList.js (isPypiConnector)
-    remoteRegistries_oss: connector.remoteRegistries_oss || {},
-    // Properties used by remark/docsHeaderDecoration.js for HeaderDecoration component
-    dockerImageTag_oss: connector.dockerImageTag_oss || "",
     github_url: connector.github_url || "",
     issue_url: connector.issue_url || "",
-    definitionId: connector.definitionId || "",
-    packageInfo_oss: connector.packageInfo_oss || null,
-    packageInfo_cloud: connector.packageInfo_cloud || null,
-    generated_oss: connector.generated_oss || null,
-    generated_cloud: connector.generated_cloud || null,
+    name: connector.name || "",
+    dockerRepository: connector.dockerRepository || "",
+    dockerImageTag: connector.dockerImageTag || "",
+    supportLevel: connector.supportLevel || "community",
+    sourceType: connector.sourceType || "",
+    iconUrl: connector.iconUrl || "",
+    documentationUrl: connector.documentationUrl || "",
+    // Strip `spec` down to only the subset remark/specDecoration.js consumes
+    // so the cached JSON stays small.
+    spec: connector.spec
+      ? { connectionSpecification: connector.spec.connectionSpecification }
+      : null,
+    remoteRegistries: connector.remoteRegistries || {},
+    packageInfo: connector.packageInfo || null,
+    generated: connector.generated || null,
   }));
 }
 
@@ -87,8 +149,8 @@ async function fetchRegistry() {
     return minimalRegistry;
   }
 
-  // Fetch if cache doesn't exist
-  const fullRegistry = await fetchConnectorRegistryFromRemote();
+  // Fetch both registries and merge if cache doesn't exist
+  const fullRegistry = await fetchConnectorRegistriesFromRemote();
   const minimalRegistry = extractMinimalRegistryData(fullRegistry);
 
   // Ensure data directory exists
@@ -108,6 +170,6 @@ async function fetchRegistry() {
 
 module.exports = {
   fetchRegistry,
-  fetchConnectorRegistryFromRemote,
+  fetchConnectorRegistriesFromRemote,
   extractMinimalRegistryData,
 };

@@ -1,4 +1,4 @@
-version: 5.11.1
+version: 5.11.2
 
 type: DeclarativeSource
 
@@ -4974,6 +4974,7 @@ spec:
         type: string
         description: Attribution window for views.
         enum:
+          - none
           - 1_HOUR
           - 3_HOUR
           - 6_HOUR
@@ -4998,13 +4999,7 @@ spec:
     oauth_config_specification:
       oauth_user_input_from_connector_config_specification:
         type: object
-        properties:
-          client_id:
-            type: string
-            path_in_connector_config: ["client_id"]
-          client_secret:
-            type: string
-            path_in_connector_config: ["client_secret"]
+        properties: {}
       complete_oauth_output_specification:
         type: object
         properties:
@@ -10692,3 +10687,19 @@ schemas:
           - "null"
           - number
         description: Total time viewers spend on viewing content in milliseconds.
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT10S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 10

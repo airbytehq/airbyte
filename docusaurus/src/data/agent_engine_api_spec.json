@@ -1,18 +1,15 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Agent Engine API",
-    "summary": "Airbyte's Agent Engine API retrieves data on behalf of your customers and feeds it to your agentic workflows.",
-    "description": "\nThis is the public API documentation for Airbyte's Agent Engine. Use the API to manage authentication, connectors, and customers, and power their agentic workflows.\n\nIf you are a member of multiple Agent Engine organizations, add the `X-Organization-Id: organization's UUID` header to your requests. It specifies which organization you are making requests to. If you only belong to one organization, you don't need to set this header.\n\nThe API contains several types of endpoints.\n\n- Authentication: Generate tokens to make other API requests.\n- Connectors: Create and manage end-user connectors, and execute operations with connectors.\n- Customers: manage customer workspaces and retrieve workspace statistics.\n- Data replication: configure connection templates and destination definitions for data replication use cases.\n\nSome endpoints are separated into Advanced categories. These endpoints are more specialized and should not be required for day-to-day use of the API.\n",
-    "version": "0.9.0",
-    "x-logo": {
-      "url": "https://cdn.prod.website-files.com/605e01bc25f7e19a82e74788/6335a39da8c96ba75520b156_Logo.svg"
-    }
+    "title": "Airbyte Agent API",
+    "summary": "Airbyte's Agent API retrieves data on behalf of your workspaces and feeds it to your agentic workflows.",
+    "description": "\nThis is the public API documentation for Airbyte's Agent API. Use the API to manage authentication, connectors, and workspaces, and power their agentic workflows.\n\nIf you are a member of multiple Airbyte Agents organizations, add the `X-Organization-Id: organization's UUID` header to your requests. It specifies which organization you are making requests to. If you only belong to one organization, you don't need to set this header.\n\nThe API contains several types of endpoints.\n\n- Authentication: Generate tokens to make other API requests.\n- Connectors: Create and manage end-user connectors, and execute operations with connectors.\n- Workspaces: manage workspaces and retrieve workspace statistics.\n- Data replication: configure connection templates and destination definitions for data replication use cases.\n\nSome endpoints are separated into Advanced categories. These endpoints are more specialized and should not be required for day-to-day use of the API.\n",
+    "version": "0.9.0"
   },
   "servers": [
     {
       "url": "https://api.airbyte.ai",
-      "description": "Agent Engine API"
+      "description": "Airbyte Agent API"
     }
   ],
   "paths": {
@@ -483,6 +480,24 @@
             "description": "The workspace ID to list sources for."
           },
           {
+            "name": "workspace_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Workspace name to list sources for.",
+              "title": "Workspace Name"
+            },
+            "description": "Workspace name to list sources for."
+          },
+          {
             "name": "customer_name",
             "in": "query",
             "required": false,
@@ -495,10 +510,12 @@
                   "type": "null"
                 }
               ],
-              "description": "Customer name to list sources for. Previously named external_user_id.",
+              "description": "Deprecated. Use workspace_name instead.",
+              "deprecated": true,
               "title": "Customer Name"
             },
-            "description": "Customer name to list sources for. Previously named external_user_id."
+            "description": "Deprecated. Use workspace_name instead.",
+            "deprecated": true
           },
           {
             "name": "external_user_id",
@@ -513,11 +530,11 @@
                   "type": "null"
                 }
               ],
-              "description": "Deprecated. Use customer_name instead.",
+              "description": "Deprecated. Use workspace_name instead.",
               "deprecated": true,
               "title": "External User Id"
             },
-            "description": "Deprecated. Use customer_name instead.",
+            "description": "Deprecated. Use workspace_name instead.",
             "deprecated": true
           },
           {
@@ -915,12 +932,12 @@
           }
         ],
         "responses": {
-          "200": {
+          "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectorSourceDeleteResponse"
+                  "$ref": "#/components/schemas/ConnectorSourceDeleteAcceptedResponse"
                 }
               }
             }
@@ -1141,6 +1158,98 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/connectors/{id}/inspect": {
+      "get": {
+        "tags": ["Connectors"],
+        "summary": "Inspect connector metadata and readiness",
+        "description": "Return metadata, context-store readiness, and available skills for a configured connector.",
+        "operationId": "get_integrations_connectors_id_inspect",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorInspectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Connector not found."
           },
           "422": {
             "description": "Unprocessable entity",
@@ -2797,11 +2906,454 @@
         }
       }
     },
+    "/api/v1/skills": {
+      "get": {
+        "tags": ["Skills"],
+        "summary": "List skills",
+        "description": "Return a paginated list of skills available to the caller's organization and workspace.",
+        "operationId": "list_skills",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization, workspace, connector, or skill not found."
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skills/docs": {
+      "get": {
+        "tags": ["Skills"],
+        "summary": "Read skill docs",
+        "description": "Retrieve documentation for a skill, optionally scoped to a specific section.",
+        "operationId": "get_skills_docs",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Skill ID.",
+              "title": "Id"
+            },
+            "description": "Skill ID."
+          },
+          {
+            "name": "section",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Omit to return metadata, execution guidance, and available sections. Pass an exact section ID to return that section.",
+              "title": "Section"
+            },
+            "description": "Omit to return metadata, execution guidance, and available sections. Pass an exact section ID to return that section."
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillDocsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization, workspace, connector, or skill not found."
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skills/search": {
+      "get": {
+        "tags": ["Skills"],
+        "summary": "Search skills",
+        "description": "Search skills by keyword query, returning a paginated list of matching results.",
+        "operationId": "list_skills_search",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Query"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization, workspace, connector, or skill not found."
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/workspaces": {
       "get": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "List Workspaces",
-        "description": "List external users for the authenticated organization with cursor-based pagination.\n\n- **name_contains**: Optional filter by external user name (case-insensitive partial match)\n- **status**: Optional filter by external user status (active or inactive). If not specified, returns all external users.\n- **limit**: Maximum number of external users to return (default: 20, max: 100)\n- **cursor**: Pagination cursor from previous response's `next` URL\n- **next**: URL for next page (null if no more results)",
+        "description": "List workspaces for the authenticated organization with cursor-based pagination.\n\n- **name_contains**: Optional filter by workspace name (case-insensitive partial match)\n- **status**: Optional filter by workspace status (active or inactive). If not specified, returns all workspaces.\n- **limit**: Maximum number of workspaces to return (default: 20, max: 100)\n- **cursor**: Pagination cursor from previous response's `next` URL\n- **next**: URL for next page (null if no more results)",
         "operationId": "list_workspaces",
         "security": [
           {
@@ -2822,10 +3374,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter external users by name (case-insensitive partial match)",
+              "description": "Filter workspaces by name (case-insensitive partial match)",
               "title": "Name Contains"
             },
-            "description": "Filter external users by name (case-insensitive partial match)"
+            "description": "Filter workspaces by name (case-insensitive partial match)"
           },
           {
             "name": "status",
@@ -2840,10 +3392,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter external users by status (active or inactive). Returns all if not specified.",
+              "description": "Filter workspaces by status (active or inactive). Returns all if not specified.",
               "title": "Status"
             },
-            "description": "Filter external users by status (active or inactive). Returns all if not specified."
+            "description": "Filter workspaces by status (active or inactive). Returns all if not specified."
           },
           {
             "name": "limit",
@@ -2853,11 +3405,11 @@
               "type": "integer",
               "maximum": 100,
               "minimum": 1,
-              "description": "Maximum number of external users to return",
+              "description": "Maximum number of workspaces to return",
               "default": 20,
               "title": "Limit"
             },
-            "description": "Maximum number of external users to return"
+            "description": "Maximum number of workspaces to return"
           },
           {
             "name": "cursor",
@@ -2946,9 +3498,9 @@
     },
     "/api/v1/workspaces/stats": {
       "get": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Get Workspace Stats",
-        "description": "Get external user statistics for the authenticated organization.\n\nReturns the count of active and inactive external users.",
+        "description": "Get workspace statistics for the authenticated organization.\n\nReturns the count of active and inactive workspaces.",
         "operationId": "get_workspaces_stats",
         "security": [
           {
@@ -3025,9 +3577,9 @@
     },
     "/api/v1/workspaces/{workspace_id}": {
       "get": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Get Workspace",
-        "description": "Get a single external user by ID.",
+        "description": "Get a single workspace by ID.",
         "operationId": "get_workspaces_workspace_id",
         "security": [
           {
@@ -3112,9 +3664,9 @@
         }
       },
       "put": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Update Workspace",
-        "description": "Update an external user's name, status, and/or cache setting.\n- Set `name` to update the external user name\n- Set `status` to 'active' or 'inactive' to change the external user status\n- When setting status to 'inactive', all active connections for the external user will be automatically disabled\n- Set `cache_enabled` to true/false to enable or disable Context Store caching for this external user",
+        "description": "Update a workspace's name, status, color, and/or cache setting.\n- Set `name` to update the workspace name\n- Set `status` to 'active' or 'inactive' to change the workspace status\n- When setting status to 'inactive', all active connections for the workspace will be automatically disabled\n- Set `color` to change the workspace display color\n- Set `cache_enabled` to true/false to enable or disable Context Store caching for this workspace",
         "operationId": "update_workspaces_workspace_id",
         "security": [
           {
@@ -3209,9 +3761,9 @@
         }
       },
       "delete": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Delete Workspace",
-        "description": "Delete an external user. Removes the external user from the Data Replication Platform and soft-deletes locally.",
+        "description": "Delete a workspace. Removes the workspace from the Data Replication Platform and soft-deletes locally.",
         "operationId": "delete_workspaces_workspace_id",
         "security": [
           {
@@ -3479,6 +4031,18 @@
               }
             ],
             "title": "Error Code"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
           }
         },
         "type": "object",
@@ -3517,7 +4081,8 @@
           "cancelled",
           "failed",
           "succeeded",
-          "inconclusive"
+          "inconclusive",
+          "skipped"
         ],
         "title": "CheckStatus"
       },
@@ -3845,6 +4410,55 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Params"
+          },
+          "select_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Select Fields",
+            "description": "Allowlist of dot-notation field paths to include in the response. Takes priority over exclude_fields if both are provided."
+          },
+          "exclude_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Fields",
+            "description": "Blocklist of dot-notation field paths to remove from the response. Ignored when select_fields is provided."
+          },
+          "skip_truncation": {
+            "type": "boolean",
+            "title": "Skip Truncation",
+            "description": "Disable automatic truncation of long text fields in list/search responses.",
+            "default": true
+          },
+          "intent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent",
+            "description": "Optional short natural-language reason or intended result for this action."
           }
         },
         "type": "object",
@@ -3866,6 +4480,16 @@
           },
           "execution_metadata": {
             "$ref": "#/components/schemas/ExecutionMetadata"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextStoreInactivityWarning"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3877,6 +4501,223 @@
         ],
         "title": "ConnectorExecuteResponse",
         "description": "Standardized response envelope for connector execution."
+      },
+      "ConnectorInspectConfiguredCacheEntity": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity",
+            "description": "Configured cache entity name exposed to agents."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Current cache stream status."
+          },
+          "ready_for_search": {
+            "type": "boolean",
+            "title": "Ready For Search",
+            "description": "Whether execute can use context_store_search for this entity now."
+          },
+          "supported": {
+            "type": "boolean",
+            "title": "Supported",
+            "description": "Whether the configured cache entity is declared in the connector definition."
+          },
+          "entity_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Count",
+            "description": "Approximate number of indexed entities, when available."
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At",
+            "description": "Timestamp when cache metadata was last updated, when available."
+          },
+          "semantic_search_status": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorInspectSemanticSearchStatus"
+            },
+            "type": "array",
+            "title": "Semantic Search Status",
+            "description": "Semantic-search index state, one entry per semantically-indexed field; empty when the entity has no semantic search."
+          }
+        },
+        "type": "object",
+        "required": ["entity", "status", "ready_for_search", "supported"],
+        "title": "ConnectorInspectConfiguredCacheEntity"
+      },
+      "ConnectorInspectContextStoreReadiness": {
+        "properties": {
+          "connector_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Id",
+            "description": "Connector instance ID."
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id",
+            "description": "Connector source definition ID."
+          },
+          "supported_context_store_entities": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorInspectSupportedContextStoreEntity"
+            },
+            "type": "array",
+            "title": "Supported Context Store Entities",
+            "description": "Context Store entities declared by the connector definition."
+          },
+          "configured_cache_entities": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorInspectConfiguredCacheEntity"
+            },
+            "type": "array",
+            "title": "Configured Cache Entities",
+            "description": "Cache entities configured for this connector instance."
+          }
+        },
+        "type": "object",
+        "required": ["connector_id", "source_definition_id"],
+        "title": "ConnectorInspectContextStoreReadiness"
+      },
+      "ConnectorInspectResponse": {
+        "properties": {
+          "connector_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Id",
+            "description": "Connector instance ID."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Connector display name."
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id",
+            "description": "Workspace that owns this connector."
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id",
+            "description": "Organization that owns this connector."
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id",
+            "description": "Connector source definition ID."
+          },
+          "source_definition_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Definition Name",
+            "description": "Connector source definition name, when available."
+          },
+          "source_config_template_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Config Template Id",
+            "description": "Source config template ID used by this connector."
+          },
+          "docs_skill_id": {
+            "type": "string",
+            "title": "Docs Skill Id",
+            "description": "Skill ID to pass to read_skill_docs for connector usage docs."
+          },
+          "context_store_readiness": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConnectorInspectContextStoreReadiness"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Context Store search readiness for this connector, or null when readiness metadata is unavailable."
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "description": "Non-fatal metadata issues encountered while inspecting this connector."
+          }
+        },
+        "type": "object",
+        "required": [
+          "connector_id",
+          "name",
+          "workspace_id",
+          "organization_id",
+          "source_definition_id",
+          "source_config_template_id",
+          "docs_skill_id"
+        ],
+        "title": "ConnectorInspectResponse"
+      },
+      "ConnectorInspectSemanticSearchStatus": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "Field whose embeddings back semantic search for this entity."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["INDEXING", "READY"],
+            "title": "Status",
+            "description": "READY once the field's embeddings are built; INDEXING while they are still being generated."
+          }
+        },
+        "type": "object",
+        "required": ["field", "status"],
+        "title": "ConnectorInspectSemanticSearchStatus"
+      },
+      "ConnectorInspectSupportedContextStoreEntity": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity",
+            "description": "Connector entity that supports Context Store search."
+          },
+          "suggested": {
+            "type": "boolean",
+            "title": "Suggested",
+            "description": "Whether this entity is suggested as a primary Context Store search target.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": ["entity"],
+        "title": "ConnectorInspectSupportedContextStoreEntity"
       },
       "ConnectorSourceCheckConfigRequest": {
         "properties": {
@@ -3892,10 +4733,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (maps to workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -4016,7 +4857,7 @@
           }
         },
         "type": "object",
-        "required": ["customer_name"],
+        "required": ["workspace_name"],
         "title": "ConnectorSourceCheckConfigRequest",
         "description": "Request model for checking connector source configuration before creation."
       },
@@ -4102,6 +4943,21 @@
             ],
             "title": "Replication Config",
             "description": "The configuration for the replication connector."
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Entity selection to apply to the source. Omitting preserves existing selection; explicit [] clears it."
           }
         },
         "type": "object",
@@ -4122,10 +4978,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (maps to workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -4246,7 +5102,7 @@
           }
         },
         "type": "object",
-        "required": ["customer_name"],
+        "required": ["workspace_name"],
         "title": "ConnectorSourceCreateRequest",
         "description": "Request model for creating a connector source.\n\nUses `replication_config` instead of `source_config` for clearer semantics.\nFor REPLICATION mode: pass the full config in `replication_config`\nFor MULTI/DIRECT mode: pass `credentials` + `environment` + optional `replication_config` overrides\nFor OAuth: pass `secret_id` from OAuth callback instead of credentials"
       },
@@ -4268,6 +5124,21 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Replication Config"
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "User-selected entity/mode pairs that constrain stream selection."
           },
           "created_at": {
             "anyOf": [
@@ -4298,22 +5169,17 @@
         "required": ["id", "name", "source_template", "replication_config"],
         "title": "ConnectorSourceCreateResponse"
       },
-      "ConnectorSourceDeleteResponse": {
+      "ConnectorSourceDeleteAcceptedResponse": {
         "properties": {
-          "id": {
+          "job_id": {
             "type": "string",
             "format": "uuid",
-            "title": "Id"
-          },
-          "deleted_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Deleted At"
+            "title": "Job Id"
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
-        "title": "ConnectorSourceDeleteResponse"
+        "required": ["job_id"],
+        "title": "ConnectorSourceDeleteAcceptedResponse"
       },
       "ConnectorSourceGetResponse": {
         "properties": {
@@ -4333,6 +5199,21 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Replication Config"
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "User-selected entity/mode pairs that constrain stream selection."
           },
           "created_at": {
             "anyOf": [
@@ -4445,6 +5326,21 @@
             ],
             "title": "Replication Config",
             "description": "The configuration for the replication connector."
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Entity selection to apply to the source. Omitting preserves existing selection; explicit [] clears it."
           }
         },
         "type": "object",
@@ -4468,6 +5364,21 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Replication Config"
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "User-selected entity/mode pairs that constrain stream selection."
           },
           "created_at": {
             "anyOf": [
@@ -4547,6 +5458,69 @@
         "type": "string",
         "enum": ["source", "destination"],
         "title": "ConnectorType"
+      },
+      "ContextStoreInactivityWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "deactivated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deactivated At"
+          },
+          "reactivated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reactivated At"
+          },
+          "stale_since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stale Since"
+          },
+          "status_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Url"
+          }
+        },
+        "type": "object",
+        "required": ["code", "message"],
+        "title": "ContextStoreInactivityWarning",
+        "description": "Structured warning attached to a search response when the Context Store was inactivity-paused.\n\nEmitted when a search reactivates an inactivity-disabled source (or when a prior search already\nreactivated it and table creation has not yet returned the streams to READY). The timestamps are\nthe durable transition clocks; ``stale_since`` is the preserved last cache update, so the data\nmay be stale until the next update completes."
       },
       "CronExpressionDescribeRequest": {
         "properties": {
@@ -4694,6 +5668,28 @@
           "mode": {
             "$ref": "#/components/schemas/SourceConfigTemplateMode",
             "default": "REPLICATION"
+          },
+          "is_experimental": {
+            "type": "boolean",
+            "title": "Is Experimental",
+            "default": false
+          },
+          "runtime_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Runtime execution mode (live: resolved from the direct connector registry on each request)."
+          },
+          "supports_context_store": {
+            "type": "boolean",
+            "title": "Supports Context Store",
+            "description": "Supports Context Store. Derived from live runtime_mode; False when 'direct_only'.",
+            "default": true
           },
           "created_at": {
             "anyOf": [
@@ -5370,6 +6366,16 @@
         "title": "RowFilteringMapperConfig",
         "description": "Configuration for row filtering mapper - uses snake_case.\n\nFilters rows based on a condition. Only rows where the specified field\nequals the provided value are kept."
       },
+      "RuntimeMode": {
+        "type": "string",
+        "enum": [
+          "direct_only",
+          "context_store_only",
+          "direct_and_context_store"
+        ],
+        "title": "RuntimeMode",
+        "description": "Runtime execution mode for a connector: whether it runs Direct, Context Store, or both."
+      },
       "ScopeType": {
         "type": "string",
         "enum": ["global", "organization"],
@@ -5398,20 +6404,325 @@
             "format": "uuid",
             "title": "Workspace Id"
           },
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           }
         },
         "type": "object",
-        "required": ["organization_id", "workspace_id", "customer_name"],
+        "required": ["organization_id", "workspace_id", "workspace_name"],
         "title": "ScopedTokenInfoGetResponse"
       },
-      "SonarCatalogSchemaType": {
+      "SkillContentBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["heading", "paragraph", "list", "code", "table"],
+            "title": "Type",
+            "description": "Block variant. Use text/level for headings, text for paragraphs, items for lists, code/language for code, and headers/rows for tables."
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text",
+            "description": "Text content for heading and paragraph blocks."
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level",
+            "description": "Heading level for heading blocks."
+          },
+          "items": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items",
+            "description": "List items for list blocks."
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Programming or data language for code blocks."
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code",
+            "description": "Code or structured example content for code blocks."
+          },
+          "headers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headers",
+            "description": "Column headers for table blocks."
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rows",
+            "description": "Table rows for table blocks."
+          }
+        },
+        "type": "object",
+        "required": ["type"],
+        "title": "SkillContentBlock"
+      },
+      "SkillDocsResponse": {
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/SkillMetadata",
+            "description": "Metadata for the requested skill."
+          },
+          "outline": {
+            "items": {
+              "$ref": "#/components/schemas/SkillOutlineSection"
+            },
+            "type": "array",
+            "title": "Outline",
+            "description": "Available sections for this skill."
+          },
+          "section_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Id",
+            "description": "Requested section ID, or null for the default docs response."
+          },
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/SkillContentBlock"
+            },
+            "type": "array",
+            "title": "Content",
+            "description": "Rendered docs content blocks."
+          }
+        },
+        "type": "object",
+        "required": ["metadata", "outline"],
+        "title": "SkillDocsResponse"
+      },
+      "SkillFreshness": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": ["static", "live", "degraded", "unknown"],
+            "title": "State",
+            "description": "Freshness of the docs: static means bundled docs, live means runtime metadata was available, degraded means runtime metadata was partially unavailable, and unknown means freshness is checked when docs are read.",
+            "default": "live"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At",
+            "description": "ISO timestamp for the freshness check, when available."
+          }
+        },
+        "type": "object",
+        "title": "SkillFreshness"
+      },
+      "SkillKind": {
         "type": "string",
-        "enum": ["structured", "unstructured", "dynamic", "customizable"],
-        "title": "SonarCatalogSchemaType"
+        "enum": ["static", "connector_source"],
+        "title": "SkillKind"
+      },
+      "SkillListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SkillMetadata"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Page of matching skills."
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Opaque signed cursor for the next page. Do not introspect or modify it."
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "SkillListResponse"
+      },
+      "SkillMetadata": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable skill ID. Pass this value to read_skill_docs."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SkillKind",
+            "description": "Skill category, such as static docs or connector-specific docs."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Human-readable skill title."
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary",
+            "description": "Short summary of what the skill documents."
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "Search and categorization tags for the skill."
+          },
+          "provenance": {
+            "type": "string",
+            "title": "Provenance",
+            "description": "Source used to generate these docs, such as static markdown or a connector source definition."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version/fingerprint for the docs source."
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/SkillFreshness",
+            "description": "Runtime freshness state for this metadata."
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "description": "Non-fatal issues encountered while building or reading the docs."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "provenance",
+          "version",
+          "freshness"
+        ],
+        "title": "SkillMetadata"
+      },
+      "SkillOutlineSection": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Section ID. Pass this as section to read_skill_docs for the exact section content."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Human-readable section title."
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary",
+            "description": "Short summary of the section content."
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available",
+            "description": "Whether this section can currently be read with read_skill_docs.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": ["id", "title"],
+        "title": "SkillOutlineSection"
       },
       "SourceConfigTemplateMode": {
         "type": "string",
@@ -5596,6 +6907,28 @@
           "mode": {
             "$ref": "#/components/schemas/SourceConfigTemplateMode",
             "default": "REPLICATION"
+          },
+          "is_experimental": {
+            "type": "boolean",
+            "title": "Is Experimental",
+            "default": false
+          },
+          "runtime_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Runtime execution mode (live: resolved from the direct connector registry on each request)."
+          },
+          "supports_context_store": {
+            "type": "boolean",
+            "title": "Supports Context Store",
+            "description": "Supports Context Store. Derived from live runtime_mode; False when 'direct_only'.",
+            "default": true
           },
           "created_at": {
             "anyOf": [
@@ -5870,6 +7203,28 @@
             "$ref": "#/components/schemas/SourceConfigTemplateMode",
             "default": "REPLICATION"
           },
+          "is_experimental": {
+            "type": "boolean",
+            "title": "Is Experimental",
+            "default": false
+          },
+          "runtime_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Runtime execution mode (live: resolved from the direct connector registry on each request)."
+          },
+          "supports_context_store": {
+            "type": "boolean",
+            "title": "Supports Context Store",
+            "description": "Supports Context Store. Derived from live runtime_mode; False when 'direct_only'.",
+            "default": true
+          },
           "created_at": {
             "anyOf": [
               {
@@ -5893,6 +7248,36 @@
               }
             ],
             "title": "Updated At"
+          },
+          "auth_tooltip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auth Tooltip",
+            "description": "Short, non-technical guidance on how to authenticate the connector, sourced from x-airbyte-auth-tooltip in the connector YAML. A single string renders the same message for every auth method; a mapping keyed by the credentials discriminator value (e.g. the const on `credentials.auth_type` or `credentials.option_title`) renders a different message per auth method."
+          },
+          "connector_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Name",
+            "description": "Connector slug from the direct connector registry (e.g. 'salesforce', 'zendesk-support')."
           }
         },
         "type": "object",
@@ -5926,6 +7311,18 @@
               }
             ],
             "title": "Icon"
+          },
+          "connector_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Name",
+            "description": "Connector slug from the direct connector registry (e.g. 'salesforce', 'zendesk-support')."
           },
           "organization_id": {
             "anyOf": [
@@ -5962,24 +7359,26 @@
             ],
             "description": "\nCustomizations for the source template. If stream_whitelist is provided, only the specified streams will be synced.\nIf stream_customizations are provided, and stream fields specified will override the default settings for only that\nfield. Where any streams fields are not specified, the default settings will be used.\n"
           },
-          "has_source_definition_catalog": {
-            "type": "boolean",
-            "title": "Has Source Definition Catalog",
-            "default": false
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
           },
-          "catalog_type": {
+          "runtime_mode": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/SonarCatalogSchemaType"
+                "$ref": "#/components/schemas/RuntimeMode"
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Runtime execution mode (live: resolved from the direct connector registry on each request)."
           },
-          "mode": {
-            "$ref": "#/components/schemas/SourceConfigTemplateMode",
-            "default": "REPLICATION"
+          "supports_context_store": {
+            "type": "boolean",
+            "title": "Supports Context Store",
+            "description": "Supports Context Store. Derived from live runtime_mode; False when 'direct_only'.",
+            "default": true
           },
           "created_at": {
             "anyOf": [
@@ -6145,6 +7544,28 @@
             "$ref": "#/components/schemas/SourceConfigTemplateMode",
             "default": "REPLICATION"
           },
+          "is_experimental": {
+            "type": "boolean",
+            "title": "Is Experimental",
+            "default": false
+          },
+          "runtime_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Runtime execution mode (live: resolved from the direct connector registry on each request)."
+          },
+          "supports_context_store": {
+            "type": "boolean",
+            "title": "Supports Context Store",
+            "description": "Supports Context Store. Derived from live runtime_mode; False when 'direct_only'.",
+            "default": true
+          },
           "created_at": {
             "anyOf": [
               {
@@ -6267,6 +7688,18 @@
             ],
             "title": "Icon"
           },
+          "connector_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Name",
+            "description": "Connector slug from the direct connector registry (e.g. 'salesforce', 'zendesk-support')."
+          },
           "organization_id": {
             "anyOf": [
               {
@@ -6302,24 +7735,26 @@
             ],
             "description": "\nCustomizations for the source template. If stream_whitelist is provided, only the specified streams will be synced.\nIf stream_customizations are provided, and stream fields specified will override the default settings for only that\nfield. Where any streams fields are not specified, the default settings will be used.\n"
           },
-          "has_source_definition_catalog": {
-            "type": "boolean",
-            "title": "Has Source Definition Catalog",
-            "default": false
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
           },
-          "catalog_type": {
+          "runtime_mode": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/SonarCatalogSchemaType"
+                "$ref": "#/components/schemas/RuntimeMode"
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Runtime execution mode (live: resolved from the direct connector registry on each request)."
           },
-          "mode": {
-            "$ref": "#/components/schemas/SourceConfigTemplateMode",
-            "default": "REPLICATION"
+          "supports_context_store": {
+            "type": "boolean",
+            "title": "Supports Context Store",
+            "description": "Supports Context Store. Derived from live runtime_mode; False when 'direct_only'.",
+            "default": true
           },
           "created_at": {
             "anyOf": [
@@ -6587,13 +8022,13 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier of the deleted external user"
+            "description": "Unique identifier of the deleted workspace"
           },
           "deleted_at": {
             "type": "string",
             "format": "date-time",
             "title": "Deleted At",
-            "description": "Timestamp when the external user was deleted"
+            "description": "Timestamp when the workspace was deleted"
           }
         },
         "type": "object",
@@ -6606,22 +8041,22 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier for the external user"
+            "description": "Unique identifier for the workspace"
           },
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Name of the external user"
+            "description": "Name of the workspace"
           },
           "organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Organization Id",
-            "description": "Organization that owns this external user"
+            "description": "Organization that owns this workspace"
           },
           "status": {
             "$ref": "#/components/schemas/WorkspaceStatus",
-            "description": "The status of the external user (active or inactive)"
+            "description": "The status of the workspace (active or inactive)"
           },
           "cache_enabled": {
             "anyOf": [
@@ -6638,19 +8073,40 @@
           "tombstone": {
             "type": "boolean",
             "title": "Tombstone",
-            "description": "Whether this external user has been deleted"
+            "description": "Whether this workspace has been deleted"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/WorkspaceVisibility",
+            "description": "Workspace visibility (shared or private)"
+          },
+          "is_editable": {
+            "type": "boolean",
+            "title": "Is Editable",
+            "description": "Whether workspace settings and membership can be edited"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Optional display color"
           },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "title": "Created At",
-            "description": "Timestamp when the external user was created"
+            "description": "Timestamp when the workspace was created"
           },
           "updated_at": {
             "type": "string",
             "format": "date-time",
             "title": "Updated At",
-            "description": "Timestamp when the external user was last updated"
+            "description": "Timestamp when the workspace was last updated"
           }
         },
         "type": "object",
@@ -6661,6 +8117,9 @@
           "status",
           "cache_enabled",
           "tombstone",
+          "visibility",
+          "is_editable",
+          "color",
           "created_at",
           "updated_at"
         ],
@@ -6672,22 +8131,22 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier for the external user"
+            "description": "Unique identifier for the workspace"
           },
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Name of the external user"
+            "description": "Name of the workspace"
           },
           "organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Organization Id",
-            "description": "Organization that owns this external user"
+            "description": "Organization that owns this workspace"
           },
           "status": {
             "$ref": "#/components/schemas/WorkspaceStatus",
-            "description": "The status of the external user (active or inactive)"
+            "description": "The status of the workspace (active or inactive)"
           },
           "cache_enabled": {
             "anyOf": [
@@ -6704,19 +8163,45 @@
           "tombstone": {
             "type": "boolean",
             "title": "Tombstone",
-            "description": "Whether this external user has been deleted"
+            "description": "Whether this workspace has been deleted"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/WorkspaceVisibility",
+            "description": "Workspace visibility (shared or private)"
+          },
+          "is_editable": {
+            "type": "boolean",
+            "title": "Is Editable",
+            "description": "Whether workspace settings and membership can be edited"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Optional display color"
           },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "title": "Created At",
-            "description": "Timestamp when the external user was created"
+            "description": "Timestamp when the workspace was created"
           },
           "updated_at": {
             "type": "string",
             "format": "date-time",
             "title": "Updated At",
-            "description": "Timestamp when the external user was last updated"
+            "description": "Timestamp when the workspace was last updated"
+          },
+          "can_manage": {
+            "type": "boolean",
+            "title": "Can Manage",
+            "description": "Whether the current caller can manage workspace settings and members"
           }
         },
         "type": "object",
@@ -6727,8 +8212,12 @@
           "status",
           "cache_enabled",
           "tombstone",
+          "visibility",
+          "is_editable",
+          "color",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "can_manage"
         ],
         "title": "WorkspaceListItem"
       },
@@ -6764,17 +8253,17 @@
           "active_count": {
             "type": "integer",
             "title": "Active Count",
-            "description": "Number of active external users"
+            "description": "Number of active workspaces"
           },
           "inactive_count": {
             "type": "integer",
             "title": "Inactive Count",
-            "description": "Number of inactive external users"
+            "description": "Number of inactive workspaces"
           },
           "total_count": {
             "type": "integer",
             "title": "Total Count",
-            "description": "Total number of external users"
+            "description": "Total number of workspaces"
           }
         },
         "type": "object",
@@ -6798,7 +8287,7 @@
               }
             ],
             "title": "Name",
-            "description": "New name for the external user"
+            "description": "New name for the workspace"
           },
           "status": {
             "anyOf": [
@@ -6810,6 +8299,18 @@
               }
             ],
             "description": "Set status to active or inactive"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Optional display color"
           },
           "cache_enabled": {
             "anyOf": [
@@ -6833,22 +8334,22 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier for the external user"
+            "description": "Unique identifier for the workspace"
           },
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Name of the external user"
+            "description": "Name of the workspace"
           },
           "organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Organization Id",
-            "description": "Organization that owns this external user"
+            "description": "Organization that owns this workspace"
           },
           "status": {
             "$ref": "#/components/schemas/WorkspaceStatus",
-            "description": "The status of the external user (active or inactive)"
+            "description": "The status of the workspace (active or inactive)"
           },
           "cache_enabled": {
             "anyOf": [
@@ -6865,19 +8366,40 @@
           "tombstone": {
             "type": "boolean",
             "title": "Tombstone",
-            "description": "Whether this external user has been deleted"
+            "description": "Whether this workspace has been deleted"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/WorkspaceVisibility",
+            "description": "Workspace visibility (shared or private)"
+          },
+          "is_editable": {
+            "type": "boolean",
+            "title": "Is Editable",
+            "description": "Whether workspace settings and membership can be edited"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Optional display color"
           },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "title": "Created At",
-            "description": "Timestamp when the external user was created"
+            "description": "Timestamp when the workspace was created"
           },
           "updated_at": {
             "type": "string",
             "format": "date-time",
             "title": "Updated At",
-            "description": "Timestamp when the external user was last updated"
+            "description": "Timestamp when the workspace was last updated"
           }
         },
         "type": "object",
@@ -6888,17 +8410,25 @@
           "status",
           "cache_enabled",
           "tombstone",
+          "visibility",
+          "is_editable",
+          "color",
           "created_at",
           "updated_at"
         ],
         "title": "WorkspaceUpdateResponse"
       },
+      "WorkspaceVisibility": {
+        "type": "string",
+        "enum": ["shared", "private"],
+        "title": "WorkspaceVisibility"
+      },
       "app__api__account__applications__schemas__ScopedTokenCreateRequest": {
         "properties": {
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -6919,15 +8449,15 @@
           }
         },
         "type": "object",
-        "required": ["customer_name"],
+        "required": ["workspace_name"],
         "title": "ScopedTokenCreateRequest"
       },
       "app__api__account__applications__schemas__WidgetTokenCreateRequest": {
         "properties": {
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -6979,7 +8509,7 @@
           }
         },
         "type": "object",
-        "required": ["customer_name", "allowed_origin"],
+        "required": ["workspace_name", "allowed_origin"],
         "title": "WidgetTokenCreateRequest"
       }
     },
@@ -7008,12 +8538,16 @@
       "description": "Retrieve scoped token details and manage organization OAuth credentials."
     },
     {
-      "name": "Customers",
-      "description": "List, retrieve, update, and delete external users; get external user statistics."
+      "name": "Workspaces",
+      "description": "List, retrieve, update, and delete workspaces with filtering and cursor-based pagination; get workspace statistics."
     },
     {
       "name": "Data replication",
       "description": "Configure connection templates and destination definitions for data replication."
+    },
+    {
+      "name": "Skills",
+      "description": "Discover and retrieve documentation for connector skills."
     }
   ]
 }

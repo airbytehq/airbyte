@@ -26,6 +26,8 @@ This page guides you through setting up the BigQuery destination connector.
   [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and
   the
   [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+- If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+  Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 ## Setup guide
 
@@ -250,6 +252,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.19 | 2026-05-21 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Promoting release candidate 3.0.19-rc.1 to a main version. |
+| 3.0.19-rc.1 | 2026-05-19 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |

@@ -204,6 +204,13 @@ class JdbcSelectQuerier(
     }
 }
 
+private val throwNoResultsIllegalState = {
+    throw IllegalStateException("Query unexpectedly produced no results")
+}
+private val throwMultipleResultsIllegalState = {
+    throw IllegalStateException("Query unexpectedly produced multiple results")
+}
+
 /**
  * Convenience function for executing a query that is expected to return exactly one row and
  * extracting a single value from that row.
@@ -222,19 +229,23 @@ fun <T> querySingleValue(
     query: String,
     bindParameters: ((PreparedStatement) -> Unit)? = null,
     withResultSet: (ResultSet) -> T,
-    noResultsCase: () -> Unit = {
-        throw IllegalStateException("Query unexpectedly produced no results: [$query]")
-    },
-    multipleResultsCase: () -> Unit = {
-        throw IllegalStateException("Query unexpectedly produced more than one result: [$query]")
-    },
+    noResultsCase: () -> Unit = throwNoResultsIllegalState,
+    multipleResultsCase: () -> Unit = throwMultipleResultsIllegalState,
 ): T {
     jdbcConnectionFactory.get().use { connection ->
         connection.prepareStatement(query).use { stmt ->
             bindParameters?.invoke(stmt)
             stmt.executeQuery().use { rs ->
-                if (!rs.next()) noResultsCase()
-                if (!rs.isLast) multipleResultsCase()
+                if (!rs.next()) {
+                    noResultsCase()
+                    // if non-throwing noResultsCase was supplied, we still need to throw
+                    throwNoResultsIllegalState()
+                }
+                if (!rs.isLast) {
+                    multipleResultsCase()
+                    // if non-throwing multipleResultsCase was supplied, we still need to throw
+                    throwMultipleResultsIllegalState()
+                }
                 return withResultSet(rs)
             }
         }

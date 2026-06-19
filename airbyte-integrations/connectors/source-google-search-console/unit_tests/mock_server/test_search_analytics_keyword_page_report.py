@@ -166,7 +166,7 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         assert records[0].record.data["query"] == "test query", "Expected specific query in record"
         assert records[0].record.data["date"] == "2024-01-01", "Expected specific date in record"
 
-        # Verify transformations added site_url and search_type
+        # Verify transformations added site_url, search_type, and search_appearance
         for record in records:
             assert record.record.data["site_url"] == "https://example.com/"
             assert "date" in record.record.data
@@ -174,6 +174,72 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
             assert "device" in record.record.data
             assert "query" in record.record.data
             assert "page" in record.record.data
+            assert "search_appearance" in record.record.data, "search_appearance field should be present in record"
+            assert record.record.data["search_appearance"] in (
+                "AMP_TOP_STORIES",
+                "INSTANT_APP",
+            ), f"Unexpected search_appearance value: {record.record.data['search_appearance']}"
+
+    @HttpMocker()
+    def test_search_appearance_distinguishes_records(self, http_mocker: HttpMocker) -> None:
+        """Test that records from different search appearance types are distinguishable.
+
+        This verifies the fix: before this change, search_appearance was not added to
+        the output records, making records from different search appearance types
+        indistinguishable.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [
+                            {"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["RICH_RESULT"], "clicks": 20, "impressions": 200, "ctr": 0.1, "position": 2.0},
+                        ]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                # Return the same row for all partitions so that only search_appearance
+                # distinguishes them
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row(
+                                "2024-01-01",
+                                "usa",
+                                "DESKTOP",
+                                "test query",
+                                "https://example.com/page1",
+                            ),
+                        ]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # Collect search_appearance values from all records
+        search_appearances = {r.record.data["search_appearance"] for r in records if "search_appearance" in r.record.data}
+
+        # Should have records from at least one search appearance type
+        assert len(search_appearances) >= 1, f"Expected records with distinct search_appearance values, got: {search_appearances}"
+        # Verify all search_appearance values come from the parent stream
+        for sa in search_appearances:
+            assert sa in ("AMP_TOP_STORIES", "RICH_RESULT"), f"Unexpected search_appearance: {sa}"
 
     @patch("airbyte_cdk.sources.streams.http.rate_limiting.time.sleep", lambda x: None)
     @HttpMocker()
@@ -346,3 +412,241 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         # Verify state message was emitted with updated cursor
         state_messages = output.state_messages
         assert len(state_messages) > 0, "Expected state message to be emitted"
+
+    @HttpMocker()
+    def test_empty_or_null_search_appearance_partitions_are_skipped(self, http_mocker: HttpMocker) -> None:
+        """Parent `search_appearances` records with empty/null/missing `keys[0]` must NOT become keyword partitions.
+
+        The parent stream queries GSC with `dimensions: ["searchAppearance"]`. For traffic
+        without a specific rich-result classification (e.g., plain organic blue links),
+        Google returns rows with an empty-string or missing `keys[0]`. Without the
+        declarative `RecordFilter` on the parent stream, those rows become keyword
+        partitions with empty/null `search_appearance`; the resulting keyword API
+        request has a malformed `dimensionFilterGroups` that GSC silently ignores,
+        producing duplicate "umbrella" rows aggregated across all appearance types.
+
+        The fix drops these parent rows so that the keyword stream only queries GSC
+        for actual appearance types (e.g., `PRODUCT_SNIPPETS`).
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        keyword_filter_expressions: List[Any] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                # Mix of junk parent rows (empty / null / missing keys) and one valid row.
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [
+                            {"keys": [""], "clicks": 5, "impressions": 50, "ctr": 0.1, "position": 1.0},
+                            {"keys": [None], "clicks": 5, "impressions": 50, "ctr": 0.1, "position": 1.0},
+                            {"clicks": 5, "impressions": 50, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["PRODUCT_SNIPPETS"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 2.0},
+                        ]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                # Record the `expression` used in the searchAppearance filter so the test can
+                # assert that no keyword request was made for the empty/null parent partitions.
+                for group in body.get("dimensionFilterGroups", []):
+                    filters = group.get("filters", [])
+                    # Spec says `filters` MUST be a list; the fix enforces this.
+                    assert isinstance(filters, list), f"dimensionFilterGroups[].filters must be a list, got {type(filters).__name__}"
+                    for f in filters:
+                        if f.get("dimension") == "searchAppearance":
+                            keyword_filter_expressions.append(f.get("expression"))
+
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query", "https://example.com/page1")]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # The keyword stream must only have been queried for the valid PRODUCT_SNIPPETS partition
+        # (may be called multiple times per date slice, but never with empty/null expression).
+        assert keyword_filter_expressions, "Expected at least one keyword request for the valid parent partition"
+        assert set(keyword_filter_expressions) == {"PRODUCT_SNIPPETS"}, (
+            f"Expected keyword stream to only query PRODUCT_SNIPPETS partition, "
+            f"got searchAppearance filter expressions: {keyword_filter_expressions}"
+        )
+        # All emitted records carry the PRODUCT_SNIPPETS appearance (no NULL / empty umbrella rows).
+        assert len(records) >= 1
+        for record in records:
+            assert (
+                record.record.data["search_appearance"] == "PRODUCT_SNIPPETS"
+            ), f"Unexpected search_appearance in record: {record.record.data.get('search_appearance')}"
+
+    @HttpMocker()
+    def test_dimension_filter_groups_filters_is_an_array(self, http_mocker: HttpMocker) -> None:
+        """`dimensionFilterGroups[].filters` must be an array per the GSC API spec.
+
+        See https://developers.google.com/webmaster-tools/v1/searchanalytics/query —
+        the `filters` property is `array[ApiDimensionFilter]`. The API tolerated a
+        single-dict form historically, but that is non-spec and should be corrected.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        captured_filter_groups: List[List[Dict[str, Any]]] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [{"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                captured_filter_groups.append(body.get("dimensionFilterGroups"))
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query", "https://example.com/page1")]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        self._read_stream(config)
+
+        assert captured_filter_groups, "Expected at least one keyword page report request to be made"
+        for filter_groups in captured_filter_groups:
+            assert isinstance(filter_groups, list) and len(filter_groups) >= 1
+            for group in filter_groups:
+                filters = group.get("filters")
+                assert isinstance(
+                    filters, list
+                ), f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
+                assert len(filters) >= 1
+                for f in filters:
+                    assert f.get("dimension") == "searchAppearance"
+                    assert f.get("operator") == "equals"
+                    assert f.get("expression") == "AMP_TOP_STORIES"
+
+    @HttpMocker()
+    def test_multi_site_does_not_cartesian_product_keyword_requests(self, http_mocker: HttpMocker) -> None:
+        """With multiple `site_urls` configured, the keyword stream must NOT cartesian-product
+        the child `site_url` `ListPartitionRouter` with the parent substream's own
+        `site_url` partitioning.
+
+        The parent `search_appearances_stream` is already partitioned by `site_url`, so each
+        parent slice already carries a per-site context. If the child keyword stream also adds
+        its own outer `ListPartitionRouter` over `site_urls`, the CDK combines the two routers
+        as a cartesian product — causing each `(site_url, searchAppearance)` pair to be
+        fetched N times where N is the number of configured sites, and emitting duplicate
+        records across sites.
+
+        The fix sources `site_url` from `parent_slice` (matching the pattern already used
+        for `search_type`), so each `(site_url, searchAppearance)` pair is fetched exactly once.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        site_a = "https://example-a.com/"
+        site_b = "https://example-b.com/"
+        config = ConfigBuilder().with_site_urls([site_a, site_b]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        # Capture (site_url_from_path, search_type_from_body, search_appearance_expression)
+        # for each keyword request. The parent partitions by `(site_url, search_type)` with
+        # search_types of web/news/image/video, so each (site, appearance) legitimately maps
+        # to one request per search_type. The regression we guard against is the cartesian
+        # product of the CHILD outer `site_urls` router with the parent — which would
+        # re-issue every one of those triples N times where N is the number of configured sites.
+        keyword_request_triples: List[tuple] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            # Parent stream: return the SAME searchAppearance for every parent slice (any site,
+            # any search_type). This is exactly the scenario the reviewer flagged: two sites
+            # that discover a common `searchAppearance` value.
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [{"keys": ["PRODUCT_SNIPPETS"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                # Extract the site_url the HTTP path is scoped to. The manifest path is
+                # `/sites/{sanitize_url(site_url)}/searchAnalytics/query`, so we can recover
+                # it from the request URL.
+                match = re.match(
+                    r"https://www\.googleapis\.com/webmasters/v3/sites/([^/]+)/searchAnalytics/query",
+                    request.url,
+                )
+                assert match is not None, f"Unexpected request URL shape: {request.url}"
+                site_from_path = match.group(1)
+                search_type_from_body = body.get("type")
+
+                for group in body.get("dimensionFilterGroups", []):
+                    for f in group.get("filters", []):
+                        if f.get("dimension") == "searchAppearance":
+                            keyword_request_triples.append((site_from_path, search_type_from_body, f.get("expression")))
+
+                return json.dumps(_build_search_analytics_response([_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "q", "p")]))
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # Each `(site_url, search_type, searchAppearance)` triple must be fetched at most
+        # once per date slice. With `start_date=2024-01-01`, `end_date=2024-01-03`, and
+        # `step: P3D` in the manifest, there is exactly one date slice per parent partition,
+        # so we expect exactly one request per triple.
+        triple_counts: Dict[tuple, int] = {}
+        for triple in keyword_request_triples:
+            triple_counts[triple] = triple_counts.get(triple, 0) + 1
+
+        # Pre-fix (cartesian product) behavior would produce N requests per triple where N is
+        # the number of configured sites. Post-fix must produce exactly 1.
+        for triple, count in triple_counts.items():
+            assert count == 1, (
+                f"Keyword stream issued {count} requests for {triple}; expected exactly 1. "
+                f"Multi-site cartesian-product regression — the child `site_url` router was "
+                f"combined with the parent's own `site_url` partitioning. All triple counts: {triple_counts}"
+            )
+
+        # Both sites must be represented and every request must carry the shared
+        # `PRODUCT_SNIPPETS` appearance.
+        observed_sites = {triple[0] for triple in keyword_request_triples}
+        assert len(observed_sites) == 2, f"Expected keyword requests for both configured sites, got: {observed_sites}"
+        observed_expressions = {triple[2] for triple in keyword_request_triples}
+        assert observed_expressions == {"PRODUCT_SNIPPETS"}, observed_expressions
+
+        # Emitted records must carry both configured `site_url` values, sourced from the
+        # parent slice. Record count scales with parent search_types, but each record's
+        # `site_url` must match the request URL's path (never a mis-scoped cross product).
+        record_site_urls = {record.record.data.get("site_url") for record in records}
+        assert record_site_urls == {
+            site_a,
+            site_b,
+        }, f"Expected emitted records for both configured sites, got site_urls: {record_site_urls}"

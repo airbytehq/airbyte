@@ -26,6 +26,17 @@ The Google-Drive connector supports the following entities and actions.
 
 Lists the user's files. Returns a paginated list of files.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -147,6 +158,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a file's metadata by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "get",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -262,6 +287,23 @@ To create a folder, set mimeType to 'application/vnd.google-apps.folder'.
 To create a Google Doc, use 'application/vnd.google-apps.document'.
 To create a Google Sheet, use 'application/vnd.google-apps.spreadsheet'.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "mimeType": "<str>",
+    "parents": [],
+    "description": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -386,6 +428,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Updates a file's metadata. Use addParents/removeParents query parameters
 to move a file between folders.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "description": "<str>",
+    "mimeType": "<str>",
+    "fileId": "<str>",
+    "addParents": "<str>",
+    "removeParents": "<str>",
+    "supportsAllDrives": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -515,6 +577,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Permanently deletes a file owned by the user without moving it to the trash.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "delete",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -553,6 +629,21 @@ Downloads the binary content of a file. This works for non-Google Workspace file
 (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
 use the export action instead.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "download",
+  "params": {
+    "fileId": "<str>",
+    "alt": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -599,6 +690,27 @@ Uploads a new file to Google Drive with both metadata and file content.
 The file content must be base64-encoded in the file_content parameter.
 Suitable for files up to 5MB. For larger files, use the Drive UI.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files_upload",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "file_content": "<str>",
+    "mimeType": "<str>",
+    "parents": [],
+    "description": "<str>",
+    "file_mime_type": "<str>",
+    "uploadType": "<str>",
+    "supportsAllDrives": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -742,6 +854,21 @@ Common export formats:
 Note: Export has a 10MB limit. For larger files, use the Drive UI.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files_export",
+  "action": "download",
+  "params": {
+    "fileId": "<str>",
+    "mimeType": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -789,6 +916,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Drives List
 
 Lists the user's shared drives
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "drives",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -852,6 +990,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a shared drive's metadata by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "drives",
+  "action": "get",
+  "params": {
+    "driveId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -912,6 +1064,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Permissions List
 
 Lists a file's or shared drive's permissions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "permissions",
+  "action": "list",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -984,6 +1150,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a permission by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "permissions",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "permissionId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1051,6 +1232,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments List
 
 Lists a file's comments
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "comments",
+  "action": "list",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1132,6 +1327,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a comment by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "comments",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "commentId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1208,6 +1418,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists a comment's replies
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "replies",
+  "action": "list",
+  "params": {
+    "fileId": "<str>",
+    "commentId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1276,6 +1501,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a reply by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "replies",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "commentId": "<str>",
+    "replyId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1340,6 +1581,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Revisions List
 
 Lists a file's revisions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "revisions",
+  "action": "list",
+  "params": {
+    "fileId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1409,6 +1664,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets a revision's metadata by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "revisions",
+  "action": "get",
+  "params": {
+    "fileId": "<str>",
+    "revisionId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1474,12 +1744,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists the changes for a user or shared drive
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "changes",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
-await google_drive.changes.list(
-    page_token="<str>"
-)
+await google_drive.changes.list()
 ```
 
 #### API
@@ -1490,10 +1769,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "changes",
-    "action": "list",
-    "params": {
-        "pageToken": "<str>"
-    }
+    "action": "list"
 }'
 ```
 
@@ -1502,7 +1778,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `pageToken` | `string` | Yes | Token for the page of changes to retrieve (from changes.getStartPageToken or previous response) |
+| `pageToken` | `string` | No | Token for the page of changes to retrieve (from changes.getStartPageToken or previous response) |
 | `pageSize` | `integer` | No | Maximum number of changes to return (1-1000) |
 | `driveId` | `string` | No | The shared drive from which changes are returned |
 | `includeItemsFromAllDrives` | `boolean` | No | Whether to include changes from all drives |
@@ -1544,6 +1820,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Changes Start Page Token Get
 
 Gets the starting pageToken for listing future changes
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "changes_start_page_token",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 
@@ -1590,6 +1877,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### About Get
 
 Gets information about the user, the user's Drive, and system capabilities
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "about",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 
