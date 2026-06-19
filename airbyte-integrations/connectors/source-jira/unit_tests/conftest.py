@@ -111,10 +111,6 @@ def issue_fields_response():
     return json.loads(load_file("issue_fields.json"))
 
 
-@fixture
-def issues_field_configurations_response():
-    return json.loads(load_file("issues_field_configurations.json"))
-
 
 @fixture
 def issues_link_types_response():
