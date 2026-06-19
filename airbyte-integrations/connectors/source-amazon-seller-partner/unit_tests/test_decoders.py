@@ -4,8 +4,9 @@ import gzip
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from components import GzipXmlDecoder
+
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 VALID_XML_SINGLE_MESSAGE = """<?xml version="1.0" encoding="iso-8859-1"?>
