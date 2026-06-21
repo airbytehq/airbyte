@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
+import gzip
 import inspect
 from unittest.mock import MagicMock, Mock
 
@@ -15,8 +16,10 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
 try:
+    from google.resumable_media._helpers import _DoNothingHash
     from google.resumable_media.requests.download import _GzipDecoder
 except ImportError:
+    _DoNothingHash = None
     _GzipDecoder = None
 
 
@@ -143,23 +146,52 @@ def test_get_matching_files_sanitize_signed_urls(logger, sanitize_value, expecte
 
 
 @pytest.mark.skipif(_GzipDecoder is None, reason="google-resumable-media _GzipDecoder not available")
-def test_gzip_decoder_accepts_max_length_kwarg():
-    """Regression test for urllib3 2.6.x / google-resumable-media compatibility.
+@pytest.mark.parametrize(
+    "csv_payload,max_length",
+    [
+        pytest.param(
+            b"id,name,value\n1,Alice,100\n2,Bob,200\n3,Charlie,300\n",
+            8192,
+            id="typical_csv_with_large_max_length",
+        ),
+        pytest.param(
+            b"col_a,col_b\nx,y\n",
+            16,
+            id="small_csv_with_tight_max_length",
+        ),
+        pytest.param(
+            b"id,name,value\n" + b"999,row,data\n" * 200,
+            4096,
+            id="larger_payload_partial_decompress",
+        ),
+    ],
+)
+def test_gzip_decoder_decompress_with_max_length(csv_payload, max_length):
+    """Behavioral regression test: google-resumable-media _GzipDecoder with max_length kwarg.
 
-    urllib3 2.6.0+ calls decompress(data, max_length=...) on response decoders.
-    google-resumable-media <2.8.1 overrode decompress() without accepting
-    max_length, causing TypeError on gzip-encoded GCS responses.
-    See: https://github.com/airbytehq/airbyte/issues/74241
+    urllib3 >=2.6.0 calls decompress(data, max_length=<int>) on HTTP response
+    decoders. google-resumable-media <2.8.1 overrode decompress() without
+    accepting the max_length keyword, raising TypeError on gzip-encoded GCS
+    downloads. This test exercises the actual decompress call path that fails
+    with google-resumable-media 2.8.0 and passes with >=2.8.1.
+    See: https://github.com/airbytehq/oncall/issues/11500
     """
-    sig = inspect.signature(_GzipDecoder.decompress)
-    params = sig.parameters
+    compressed = gzip.compress(csv_payload)
+    decoder = _GzipDecoder(_DoNothingHash())
 
-    accepts_max_length = "max_length" in params
-    accepts_var_keyword = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values())
+    # This is the exact call pattern urllib3 >=2.6.0 uses on response decoders.
+    # With google-resumable-media <2.8.1 this raises:
+    #   TypeError: _GzipDecoder.decompress() got an unexpected keyword argument 'max_length'
+    result = decoder.decompress(compressed, max_length=max_length)
 
-    assert accepts_max_length or accepts_var_keyword, (
-        f"_GzipDecoder.decompress{sig} does not accept max_length. "
-        "urllib3 >=2.6.0 passes max_length as a keyword argument to response "
-        "decoders; this will cause TypeError on gzip-encoded GCS downloads. "
-        "Upgrade google-resumable-media to >=2.8.1."
+    # max_length may truncate the output; collect remaining bytes if needed.
+    # The zlib DecompressObj behind _GzipDecoder buffers unconsumed input.
+    if hasattr(decoder, "unconsumed_tail") or len(result) < len(csv_payload):
+        # Drain any remaining data (mimics urllib3 read loop)
+        remainder = decoder.decompress(b"", max_length=0)
+        result += remainder
+
+    assert csv_payload.startswith(result) or result == csv_payload, (
+        f"Decompressed output does not match original payload. "
+        f"Got {len(result)} bytes, expected {len(csv_payload)} bytes."
     )
