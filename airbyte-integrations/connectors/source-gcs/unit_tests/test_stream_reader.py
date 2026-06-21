@@ -192,9 +192,9 @@ def test_gzip_decoder_decompress_with_max_length(csv_payload, max_length):
         remainder = decoder.decompress(b"", max_length=0)
         result += remainder
 
-    assert csv_payload.startswith(result) or result == csv_payload, (
-        f"Decompressed output does not match original payload. Got {len(result)} bytes, expected {len(csv_payload)} bytes."
-    )
+    assert (
+        csv_payload.startswith(result) or result == csv_payload
+    ), f"Decompressed output does not match original payload. Got {len(result)} bytes, expected {len(csv_payload)} bytes."
 
 
 # ---------------------------------------------------------------------------
