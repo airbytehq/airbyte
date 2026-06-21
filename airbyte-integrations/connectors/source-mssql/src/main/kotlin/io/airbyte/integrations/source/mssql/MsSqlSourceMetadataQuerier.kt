@@ -319,11 +319,12 @@ class MsSqlSourceMetadataQuerier(
                 val fallbackResults = mutableListOf<AllClusteredIndexKeysRow>()
                 memoizedTableNames.forEach { table ->
                     val tableSql = CLUSTERED_INDEX_QUERY_FMTSTR
-                        .format("'${table.schema}'")
+                        .format("?")
                         .replace("ORDER BY", "AND t.name = ?\n        ORDER BY")
                     try {
                         base.conn.prepareStatement(tableSql).use { stmt: PreparedStatement ->
-                            stmt.setString(1, table.name)
+                            stmt.setString(1, table.schema)
+                            stmt.setString(2, table.name)
                             stmt.executeQuery().use { rs: ResultSet ->
                                 while (rs.next()) {
                                     fallbackResults.add(
@@ -549,11 +550,12 @@ class MsSqlSourceMetadataQuerier(
                 val fallbackResults = mutableListOf<AllPrimaryKeysRow>()
                 memoizedTableNames.forEach { table ->
                     val tableSql = PK_QUERY_FMTSTR
-                        .format("'${table.schema}'")
+                        .format("?")
                         .replace(";", " AND kcu.TABLE_NAME = ?;")
                     try {
                         base.conn.prepareStatement(tableSql).use { stmt: PreparedStatement ->
-                            stmt.setString(1, table.name)
+                            stmt.setString(1, table.schema)
+                            stmt.setString(2, table.name)
                             stmt.executeQuery().use { rs: ResultSet ->
                                 while (rs.next()) {
                                     fallbackResults.add(
