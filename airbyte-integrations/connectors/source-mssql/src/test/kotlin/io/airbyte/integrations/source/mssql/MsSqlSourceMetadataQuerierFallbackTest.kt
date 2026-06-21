@@ -1,17 +1,19 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql
 
-import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.*
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 class MsSqlSourceMetadataQuerierFallbackTest {
 
@@ -36,7 +38,8 @@ class MsSqlSourceMetadataQuerierFallbackTest {
         every { mockConn.metaData } returns mockDatabaseMetaData
         every { mockConn.catalog } returns "db"
         every { mockConn.close() } just Runs
-        every { mockDatabaseMetaData.getTables(any(), any(), any(), any()) } returns mockTablesResultSet
+        every { mockDatabaseMetaData.getTables(any(), any(), any(), any()) } returns
+            mockTablesResultSet
         every { mockTablesResultSet.next() } returnsMany listOf(true, false, false)
         every { mockTablesResultSet.getString("TABLE_CAT") } returns "db"
         every { mockTablesResultSet.getString("TABLE_SCHEM") } returns "dbo"
@@ -46,7 +49,8 @@ class MsSqlSourceMetadataQuerierFallbackTest {
 
         // Throw the specific exception on the bulk query
         every { mockConn.createStatement() } returns mockStatement
-        every { mockStatement.executeQuery(any()) } throws RuntimeException("Insufficient filtering condition")
+        every { mockStatement.executeQuery(any()) } throws
+            RuntimeException("Insufficient filtering condition")
         every { mockStatement.close() } just Runs
 
         // Mock the PreparedStatement fallback
@@ -101,7 +105,8 @@ class MsSqlSourceMetadataQuerierFallbackTest {
         every { mockConn.metaData } returns mockDatabaseMetaData
         every { mockConn.catalog } returns "db"
         every { mockConn.close() } just Runs
-        every { mockDatabaseMetaData.getTables(any(), any(), any(), any()) } returns mockTablesResultSet
+        every { mockDatabaseMetaData.getTables(any(), any(), any(), any()) } returns
+            mockTablesResultSet
         every { mockTablesResultSet.next() } returnsMany listOf(true, false, false)
         every { mockTablesResultSet.getString("TABLE_CAT") } returns "db"
         every { mockTablesResultSet.getString("TABLE_SCHEM") } returns "dbo"
@@ -111,7 +116,8 @@ class MsSqlSourceMetadataQuerierFallbackTest {
 
         // First createStatement call returns a statement that throws
         every { mockConn.createStatement() } returns mockStatement
-        every { mockStatement.executeQuery(any()) } throws RuntimeException("Insufficient filtering condition")
+        every { mockStatement.executeQuery(any()) } throws
+            RuntimeException("Insufficient filtering condition")
         every { mockStatement.close() } just Runs
 
         // PrepareStatement is called during fallback

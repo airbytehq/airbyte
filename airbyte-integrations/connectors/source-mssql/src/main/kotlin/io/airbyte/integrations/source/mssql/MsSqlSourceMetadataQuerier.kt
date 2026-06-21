@@ -314,13 +314,17 @@ class MsSqlSourceMetadataQuerier(
                 }
                 .toMap()
         } catch (e: Exception) {
-            if (e.message?.contains("Insufficient filtering condition", ignoreCase = true) == true) {
-                log.warn { "Insufficient filtering condition error during bulk clustered index discovery. Falling back to table-by-table iterative discovery." }
+            if (
+                e.message?.contains("Insufficient filtering condition", ignoreCase = true) == true
+            ) {
+                log.warn {
+                    "Insufficient filtering condition error during bulk clustered index discovery. Falling back to table-by-table iterative discovery."
+                }
                 val fallbackResults = mutableListOf<AllClusteredIndexKeysRow>()
                 memoizedTableNames.forEach { table ->
-                    val tableSql = CLUSTERED_INDEX_QUERY_FMTSTR
-                        .format("?")
-                        .replace("ORDER BY", "AND t.name = ?\n        ORDER BY")
+                    val tableSql =
+                        CLUSTERED_INDEX_QUERY_FMTSTR.format("?")
+                            .replace("ORDER BY", "AND t.name = ?\n        ORDER BY")
                     try {
                         base.conn.prepareStatement(tableSql).use { stmt: PreparedStatement ->
                             stmt.setString(1, table.schema)
@@ -340,14 +344,18 @@ class MsSqlSourceMetadataQuerier(
                             }
                         }
                     } catch (innerE: Exception) {
-                        log.warn { "Failed to discover clustered index keys for table ${table.schema}.${table.name}: ${innerE.message}" }
+                        log.warn {
+                            "Failed to discover clustered index keys for table ${table.schema}.${table.name}: ${innerE.message}"
+                        }
                     }
                 }
                 return@lazy fallbackResults
                     .groupBy {
                         findTableName(
                             StreamIdentifier.from(
-                                StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema),
+                                StreamDescriptor()
+                                    .withName(it.tableName)
+                                    .withNamespace(it.tableSchema),
                             ),
                         )
                     }
@@ -545,13 +553,16 @@ class MsSqlSourceMetadataQuerier(
                 }
                 .toMap()
         } catch (e: Exception) {
-            if (e.message?.contains("Insufficient filtering condition", ignoreCase = true) == true) {
-                log.warn { "Insufficient filtering condition error during bulk primary key discovery. Falling back to table-by-table iterative discovery." }
+            if (
+                e.message?.contains("Insufficient filtering condition", ignoreCase = true) == true
+            ) {
+                log.warn {
+                    "Insufficient filtering condition error during bulk primary key discovery. Falling back to table-by-table iterative discovery."
+                }
                 val fallbackResults = mutableListOf<AllPrimaryKeysRow>()
                 memoizedTableNames.forEach { table ->
-                    val tableSql = PK_QUERY_FMTSTR
-                        .format("?")
-                        .replace(";", " AND kcu.TABLE_NAME = ?;")
+                    val tableSql =
+                        PK_QUERY_FMTSTR.format("?").replace(";", " AND kcu.TABLE_NAME = ?;")
                     try {
                         base.conn.prepareStatement(tableSql).use { stmt: PreparedStatement ->
                             stmt.setString(1, table.schema)
@@ -563,7 +574,9 @@ class MsSqlSourceMetadataQuerier(
                                             rs.getString("table_schema"),
                                             rs.getString("table_name"),
                                             rs.getString("constraint_name"),
-                                            rs.getInt("ordinal_position").takeUnless { rs.wasNull() },
+                                            rs.getInt("ordinal_position").takeUnless {
+                                                rs.wasNull()
+                                            },
                                             rs.getString("column_name").takeUnless { rs.wasNull() },
                                         )
                                     )
@@ -571,14 +584,18 @@ class MsSqlSourceMetadataQuerier(
                             }
                         }
                     } catch (innerE: Exception) {
-                        log.warn { "Failed to discover primary keys for table ${table.schema}.${table.name}: ${innerE.message}" }
+                        log.warn {
+                            "Failed to discover primary keys for table ${table.schema}.${table.name}: ${innerE.message}"
+                        }
                     }
                 }
                 return@lazy fallbackResults
                     .groupBy {
                         findTableName(
                             StreamIdentifier.from(
-                                StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema),
+                                StreamDescriptor()
+                                    .withName(it.tableName)
+                                    .withNamespace(it.tableSchema),
                             ),
                         )
                     }
