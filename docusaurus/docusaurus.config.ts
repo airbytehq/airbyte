@@ -38,12 +38,17 @@ const darkCodeTheme = prismThemes.dracula;
 const config: Config = {
   future: {
     v4: true,
-    experimental_faster: true,
+    faster: true,
   },
   markdown: {
     mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: "throw",
+    },
+    mdx1Compat: {
+      comments: true,
+      admonitions: true,
+      headingIds: true,
     },
   },
   themes: [
