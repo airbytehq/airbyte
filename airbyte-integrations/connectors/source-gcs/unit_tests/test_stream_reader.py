@@ -3,7 +3,7 @@
 import datetime
 import gzip
 import io
-from unittest.mock import MagicMock, Mock, PropertyMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 import pytz
