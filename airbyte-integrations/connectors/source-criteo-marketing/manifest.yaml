@@ -20,6 +20,7 @@ definitions:
         type: RequestBodyJsonObject
         value:
           format: json
+          advertiserIds: "{{ config['advertiser_ids'] }}"
           endDate: >-
             {{ stream_interval.end_time if stream_interval is defined else
             (config.get('end_date') or now_utc().strftime('%Y-%m-%d')) }}
@@ -416,7 +417,19 @@ spec:
       - client_secret
       - start_date
       - currency
+      - advertiser_ids
     properties:
+      advertiser_ids:
+        type: string
+        title: Advertiser IDs
+        description: >-
+          The comma-separated list of advertiser IDs to include in the
+          statistics report. You can find your advertiser ID in the Criteo
+          Management Center.
+        order: 5
+        examples:
+          - "12345"
+          - "12345,67890"
       currency:
         type: string
         description: Currency to be used on the report
