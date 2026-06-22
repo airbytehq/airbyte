@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
@@ -15,7 +16,7 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -53,6 +54,10 @@ def _payment_methods_request(customer_id: str) -> StripeRequestBuilder:
 
 def _events_request() -> StripeRequestBuilder:
     return StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
+
+
+def _payment_method_request(payment_method_id: str) -> StripeRequestBuilder:
+    return StripeRequestBuilder._for_endpoint(f"payment_methods/{payment_method_id}", _ACCOUNT_ID, _CLIENT_SECRET)
 
 
 def _config() -> ConfigBuilder:
@@ -271,6 +276,30 @@ class IncrementalTest(TestCase):
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert most_recent_state.stream_state.updated == str(cursor_value)
+
+    @HttpMocker()
+    def test_given_hydrated_mode_when_read_then_refresh_record_from_payment_method_endpoint(self, http_mocker: HttpMocker) -> None:
+        state_datetime = _NOW - timedelta(days=5)
+        cursor_value = int(state_datetime.timestamp()) + 1
+        payment_method = _a_payment_method().with_id("pm_hydrated").build()
+
+        http_mocker.get(
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_response().with_record(_an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, payment_method)).build(),
+        )
+        http_mocker.get(
+            _payment_method_request("pm_hydrated").build(),
+            HttpResponse(json.dumps(payment_method), 200),
+        )
+
+        output = self._read(
+            _config().with_event_based_incremental_sync_mode("hydrated_events"),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+        )
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "pm_hydrated"
+        assert output.records[0].record.data["updated"] == cursor_value
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
