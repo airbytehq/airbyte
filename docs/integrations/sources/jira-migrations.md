@@ -2,7 +2,7 @@
 
 ## Upgrading to 6.0.0
 
-Atlassian is removing the `GET /rest/api/3/fieldconfiguration` endpoint in July 2026 (see [RFC-103](https://community.developer.atlassian.com/t/rfc-103-jira-field-configuration-overhaul-admin-experience-and-api-changes/)). This version removes the `issue_field_configurations` stream entirely, with no replacement stream.
+Atlassian is removing the `GET /rest/api/3/fieldconfiguration` endpoint in July 2026 (see [RFC-103](https://community.developer.atlassian.com/t/rfc-103-jira-field-configuration-overhaul-admin-experience-and-api-changes/)). This version removes the `issue_field_configurations` stream entirely, with no replacement stream. After upgrading, this stream will no longer be available for syncing.
 
 ### Who is affected
 

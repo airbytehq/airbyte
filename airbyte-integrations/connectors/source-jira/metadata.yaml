@@ -47,8 +47,8 @@ data:
   releases:
     breakingChanges:
       6.0.0:
-        message: "The `issue_field_configurations` stream has been removed. Atlassian is removing the underlying `GET /rest/api/3/fieldconfiguration` endpoint in July 2026. Users syncing this stream must disable it before upgrading. For more information, see our migration documentation for source Jira."
-        upgradeDeadline: "2026-07-31"
+        message: "The `issue_field_configurations` stream has been removed because Atlassian is removing the underlying `GET /rest/api/3/fieldconfiguration` endpoint in July 2026. This stream will no longer be available after upgrading. Users syncing this stream must disable it before upgrading. For more information, see our migration documentation for source Jira."
+        upgradeDeadline: "2026-08-01"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["issue_field_configurations"]
