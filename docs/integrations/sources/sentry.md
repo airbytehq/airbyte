@@ -70,6 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.26 | 2026-06-17 | [80190](https://github.com/airbytehq/airbyte/pull/80190) | Fix projects stream to use org-scoped endpoint (Sentry deprecated non-org-scoped `/projects/`) |
 | 0.9.25 | 2026-06-16 | [80036](https://github.com/airbytehq/airbyte/pull/80036) | Update dependencies |
 | 0.9.24 | 2026-06-09 | [79482](https://github.com/airbytehq/airbyte/pull/79482) | Update dependencies |
 | 0.9.23 | 2026-06-02 | [78975](https://github.com/airbytehq/airbyte/pull/78975) | Update dependencies |

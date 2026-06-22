@@ -141,7 +141,7 @@ definitions:
             stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: projects/
+          path: organizations/{{ config['organization'] }}/projects/
           http_method: GET
         record_selector:
           type: RecordSelector
