@@ -19,6 +19,12 @@ data:
     - title: Reference
       url: https://developers.google.com/webmaster-tools/v1/api_reference_index
       type: api_reference
+    - title: Google Search documentation updates
+      url: https://developers.google.com/search/updates
+      type: api_release_history
+    - title: Authorize Requests
+      url: https://developers.google.com/webmaster-tools/v1/how-tos/authorizing
+      type: authentication_guide
   erdUrl: https://dbdocs.io/airbyteio/source-google-search-console?view=relationships
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
