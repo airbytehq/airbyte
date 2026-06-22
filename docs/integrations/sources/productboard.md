@@ -40,6 +40,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.60 | 2026-06-19 | [80283](https://github.com/airbytehq/airbyte/pull/80283) | Fix stuck incremental cursor on `notes` stream by aligning cursor_granularity (P1D) with day-precision datetime_format |
 | 0.0.59 | 2026-06-16 | [79994](https://github.com/airbytehq/airbyte/pull/79994) | Update dependencies |
 | 0.0.58 | 2026-06-09 | [79435](https://github.com/airbytehq/airbyte/pull/79435) | Update dependencies |
 | 0.0.57 | 2026-06-02 | [78913](https://github.com/airbytehq/airbyte/pull/78913) | Update dependencies |
