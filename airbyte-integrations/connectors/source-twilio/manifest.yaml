@@ -361,6 +361,13 @@ definitions:
 
   conferences_stream:
     $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    retriever:
+      $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: "https://api.twilio.com{{ stream_partition['subresource_uri'] }}"
+        request_parameters:
+          Status: completed
     schema_loader:
       type: InlineSchemaLoader
       schema:

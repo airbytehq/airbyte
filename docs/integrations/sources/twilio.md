@@ -148,6 +148,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.4 | 2026-06-22 | [](https://github.com/airbytehq/airbyte/pull/) | Add `Status=completed` filter to conferences stream to preserve data replication after Twilio's July 2026 API default change |
 | 1.0.3 | 2026-06-16 | [80075](https://github.com/airbytehq/airbyte/pull/80075) | Update dependencies |
 | 1.0.2 | 2026-06-09 | [79553](https://github.com/airbytehq/airbyte/pull/79553) | Update dependencies |
 | 1.0.1 | 2026-06-02 | [79027](https://github.com/airbytehq/airbyte/pull/79027) | Update dependencies |
