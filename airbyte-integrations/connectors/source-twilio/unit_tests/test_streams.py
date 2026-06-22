@@ -226,6 +226,57 @@ class TestIncrementalTwilioStream:
         assert "fewer Alert records per slice" in output.get_formatted_error_message()
 
 
+class TestConferencesStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conferences_sends_status_completed_parameter(self, requests_mock):
+        """The conferences stream must send Status=completed so that completed
+        conferences continue to be returned after Twilio's July 2026 API change
+        (which changes the default to only return in-progress conferences).
+        """
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        def _match_status_completed(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            return q.get("Status") == ["completed"]
+
+        conferences_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF1",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T10:00:00Z",
+                        "status": "completed",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_status_completed,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conferences", SyncMode.full_refresh).records
+
+        assert conferences_matcher.called, "Conferences endpoint was not called with Status=completed"
+        assert len(records) == 1
+        assert records[0].record.data["status"] == "completed"
+
+
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_message_media_filters_num_media_zero(self, requests_mock):
