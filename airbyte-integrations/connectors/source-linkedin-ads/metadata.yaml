@@ -16,8 +16,14 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   externalDocumentationUrls:
     - title: Changelog
-      url: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes?view=li-lms-2024-10
+      url: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes
       type: api_release_history
+    - title: API Version Deprecation Table
+      url: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/migrations
+      type: api_deprecations
+    - title: LinkedIn Marketing API Versioning
+      url: https://learn.microsoft.com/en-us/linkedin/marketing/versioning
+      type: api_reference
   githubIssueLabel: source-linkedin-ads
   icon: linkedin.svg
   license: ELv2
