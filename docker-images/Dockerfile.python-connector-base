@@ -35,7 +35,13 @@ RUN mkdir -p ${PIP_CACHE_DIR} && chown -R airbyte:airbyte ${PIP_CACHE_DIR}
 RUN pip install --upgrade \
       pip==24.0 \
       setuptools==78.1.1 \
-      poetry==1.8.4
+      poetry==1.8.4 && \
+    # Remove vulnerable embedded wheel from virtualenv seed
+    # (GHSA-8rrh-rw8j-w5fx - path traversal in wheel unpack)
+    # This file is unused because POETRY_VIRTUALENVS_CREATE=false
+    find /usr/local/lib -path '*/virtualenv/seed/wheels/embed/wheel-*' -delete && \
+    # Clean pip cache to reduce image size and remove cached vulnerable packages
+    rm -rf /root/.cache/pip
 
 # Install system dependencies 
 RUN apt-get update && \
