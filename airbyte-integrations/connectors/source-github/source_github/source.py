@@ -8,9 +8,9 @@ from urllib.parse import urlparse
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.declarative.auth.token_pool_authenticator import TokenPoolAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_rotation_strategies import RateLimitAwareRotation
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
