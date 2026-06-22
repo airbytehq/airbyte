@@ -148,7 +148,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.0.4 | 2026-06-16 | [78359](https://github.com/airbytehq/airbyte/pull/78359) | Fix `messages` incremental state handling so syncs resume from the saved `date_sent` cursor. |
+| 1.0.5 | 2026-06-19 | [78359](https://github.com/airbytehq/airbyte/pull/78359) | Fix `messages` incremental state handling so syncs resume from the saved `date_sent` cursor. |
+| 1.0.4 | 2026-06-19 | [80282](https://github.com/airbytehq/airbyte/pull/80282) | Fix `messages` and `recordings` incremental state getting stuck near the start date by aligning `cursor_granularity` with the second-precision `datetime_format`. |
 | 1.0.3 | 2026-06-16 | [80075](https://github.com/airbytehq/airbyte/pull/80075) | Update dependencies |
 | 1.0.2 | 2026-06-09 | [79553](https://github.com/airbytehq/airbyte/pull/79553) | Update dependencies |
 | 1.0.1 | 2026-06-02 | [79027](https://github.com/airbytehq/airbyte/pull/79027) | Update dependencies |

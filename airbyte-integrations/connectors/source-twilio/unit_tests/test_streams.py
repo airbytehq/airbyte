@@ -233,6 +233,46 @@ class TestIncrementalTwilioStream:
         assert len(records) == 1
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_cursor_advances_across_windows(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+
+        windows = []
+
+        def _messages(request, context):
+            lower = parse_qs(urlparse(request.url).query, keep_blank_values=True).get("DateSent>", ["1970-01-01 00:00:00Z"])[0]
+            windows.append(lower)
+            context.status_code = 200
+            return {"messages": [{"sid": "SM", "date_sent": lower.replace(" ", "T")}]}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_messages)
+
+        saved_cursor = "2022-08-16 00:00:00Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [
+                        {
+                            "partition": {"parent_slice": {}, "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": saved_cursor},
+                        }
+                    ],
+                    "state": {"date_sent": saved_cursor},
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        assert len(set(windows)) >= 3, f"expected multiple date windows, got {sorted(set(windows))}"
+        newest_record = max(windows)
+        final = output.most_recent_state.stream_state.__dict__
+        assert final["state"]["date_sent"] == newest_record
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_pagination_limit_error_message(self, requests_mock):
         requests_mock.get(
             f"{MONITOR_BASE}/Alerts",
