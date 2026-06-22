@@ -1,0 +1,59 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 200
+  allowedHosts:
+    hosts:
+      - api.github.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.1@sha256:f71ff70e2761f634c080233f6d718bb4bcf96fa310351d56e98ba58d43ab1c9f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b6984de0-5a56-4d62-95c7-44843d4f2dab
+  dockerImageTag: 0.1.0
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+  dockerRepository: airbyte/source-github-gen2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/github-gen2
+  externalDocumentationUrls:
+    - title: GitHub REST API reference
+      url: https://docs.github.com/en/rest
+      type: api_reference
+  githubIssueLabel: source-github-gen2
+  icon: github.svg
+  license: ELv2
+  name: "GitHub (Beta, Gen-2)"
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-github-gen2
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - repositories
+      - pull_requests
+      - issues
+      - commits
+      - comments
+      - stargazers
+      - workflow_runs
+      - branches
+  supportLevel: community
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GITHUB_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

@@ -1,0 +1,20 @@
+connector_image: airbyte/source-github-gen2:dev
+test_strictness_level: low
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: workflow_runs
+            bypass_reason: "test repository has no GitHub Actions workflows"
+        fail_on_extra_columns: false

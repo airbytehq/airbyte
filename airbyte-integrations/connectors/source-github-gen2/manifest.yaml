@@ -1,0 +1,1333 @@
+version: "6.1.0"
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+  - repositories
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  requester:
+    type: HttpRequester
+    url_base: "https://{{ config.get('api_url', 'api.github.com') }}"
+    http_method: GET
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_token'] }}"
+    request_headers:
+      Accept: "application/vnd.github+json"
+      X-GitHub-Api-Version: "2022-11-28"
+
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 100
+      start_from_page: 1
+    page_size_option:
+      type: RequestOption
+      field_name: per_page
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: page
+      inject_into: request_parameter
+
+  repository_partition_router:
+    type: ListPartitionRouter
+    cursor_field: repository
+    values: "{{ config['repositories'] }}"
+
+  base_repo_retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester"
+    paginator:
+      $ref: "#/definitions/paginator"
+    partition_router:
+      $ref: "#/definitions/repository_partition_router"
+
+  incremental_sync_with_since:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats: ["%Y-%m-%dT%H:%M:%SZ"]
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+    start_time_option:
+      type: RequestOption
+      field_name: since
+      inject_into: request_parameter
+
+  incremental_sync_commits:
+    type: DatetimeBasedCursor
+    cursor_field: commit_committer_date
+    cursor_datetime_formats: ["%Y-%m-%dT%H:%M:%SZ"]
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+    start_time_option:
+      type: RequestOption
+      field_name: since
+      inject_into: request_parameter
+
+  incremental_sync_workflow_runs:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats: ["%Y-%m-%dT%H:%M:%SZ"]
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+    start_time_option:
+      type: RequestOption
+      field_name: created
+      inject_into: request_parameter
+
+  repositories_stream:
+    type: DeclarativeStream
+    name: repositories
+    primary_key: [id]
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}"
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/repository_partition_router"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [owner_id]
+        value: "{{ record.get('owner', {}).get('id') }}"
+      - path: [owner_login]
+        value: "{{ record.get('owner', {}).get('login') }}"
+      - path: [owner_type]
+        value: "{{ record.get('owner', {}).get('type') }}"
+      - path: [license_key]
+        value: "{{ record.get('license', {}).get('key') if record.get('license') else
+          None }}"
+      - path: [license_name]
+        value: "{{ record.get('license', {}).get('name') if record.get('license')
+          else None }}"
+      - path: [organization_id]
+        value: "{{ record.get('organization', {}).get('id') if record.get('organization')
+          else None }}"
+      - path: [organization_login]
+        value: "{{ record.get('organization', {}).get('login') if record.get('organization')
+          else None }}"
+    - type: RemoveFields
+      field_pointers: [[owner], [license], [organization], [permissions]]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        additionalProperties: true
+        properties:
+          id: {type: integer}
+          node_id: {type: [string, "null"]}
+          name: {type: [string, "null"]}
+          full_name: {type: [string, "null"]}
+          private: {type: [boolean, "null"]}
+          owner_id: {type: [integer, "null"]}
+          owner_login: {type: [string, "null"]}
+          owner_type: {type: [string, "null"]}
+          description: {type: [string, "null"]}
+          fork: {type: [boolean, "null"]}
+          created_at: {type: [string, "null"]}
+          updated_at: {type: [string, "null"]}
+          pushed_at: {type: [string, "null"]}
+          homepage: {type: [string, "null"]}
+          size: {type: [integer, "null"]}
+          stargazers_count: {type: [integer, "null"]}
+          watchers_count: {type: [integer, "null"]}
+          language: {type: [string, "null"]}
+          forks_count: {type: [integer, "null"]}
+          open_issues_count: {type: [integer, "null"]}
+          default_branch: {type: [string, "null"]}
+          archived: {type: [boolean, "null"]}
+          disabled: {type: [boolean, "null"]}
+          visibility: {type: [string, "null"]}
+          license_key: {type: [string, "null"]}
+          license_name: {type: [string, "null"]}
+          topics: {type: [array, "null"], items: {type: string}}
+          organization_id: {type: [integer, "null"]}
+          organization_login: {type: [string, "null"]}
+
+  pull_requests_stream:
+    type: DeclarativeStream
+    name: pull_requests
+    primary_key: [id]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/pulls"
+        request_parameters:
+          state: all
+          sort: updated
+          direction: desc
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_with_since"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [user_id]
+        value: "{{ record.get('user', {}).get('id') }}"
+      - path: [user_login]
+        value: "{{ record.get('user', {}).get('login') }}"
+      - path: [head_ref]
+        value: "{{ record.get('head', {}).get('ref') }}"
+      - path: [head_sha]
+        value: "{{ record.get('head', {}).get('sha') }}"
+      - path: [head_repo_id]
+        value: "{{ record.get('head', {}).get('repo', {}).get('id') if record.get('head',
+          {}).get('repo') else None }}"
+      - path: [head_repo_full_name]
+        value: "{{ record.get('head', {}).get('repo', {}).get('full_name') if record.get('head',
+          {}).get('repo') else None }}"
+      - path: [base_ref]
+        value: "{{ record.get('base', {}).get('ref') }}"
+      - path: [base_sha]
+        value: "{{ record.get('base', {}).get('sha') }}"
+      - path: [base_repo_id]
+        value: "{{ record.get('base', {}).get('repo', {}).get('id') if record.get('base',
+          {}).get('repo') else None }}"
+      - path: [base_repo_full_name]
+        value: "{{ record.get('base', {}).get('repo', {}).get('full_name') if record.get('base',
+          {}).get('repo') else None }}"
+      - path: [milestone_id]
+        value: "{{ record.get('milestone', {}).get('id') if record.get('milestone')
+          else None }}"
+      - path: [milestone_number]
+        value: "{{ record.get('milestone', {}).get('number') if record.get('milestone')
+          else None }}"
+      - path: [milestone_title]
+        value: "{{ record.get('milestone', {}).get('title') if record.get('milestone')
+          else None }}"
+      - path: [assignee_id]
+        value: "{{ record.get('assignee', {}).get('id') if record.get('assignee')
+          else None }}"
+      - path: [assignee_ids]
+        value: "{{ record.get('assignees', []) | map(attribute='id') | list }}"
+      - path: [requested_reviewer_ids]
+        value: "{{ record.get('requested_reviewers', []) | map(attribute='id') | list
+          }}"
+      - path: [label_names]
+        value: "{{ record.get('labels', []) | map(attribute='name') | list }}"
+      - path: [merged_by_id]
+        value: "{{ record.get('merged_by', {}).get('id') if record.get('merged_by')
+          else None }}"
+      - path: [_review_key]
+        value: "{{ stream_slice.repository }}::{{ record['number'] }}"
+    - type: RemoveFields
+      field_pointers: [[user], [head], [base], [milestone], [assignee], [assignees],
+        [requested_reviewers], [requested_teams], [labels], [merged_by], [_links],
+        [auto_merge]]
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+        id:
+          type: number
+        node_id:
+          type:
+          - string
+          - 'null'
+        html_url:
+          type:
+          - string
+          - 'null'
+        diff_url:
+          type:
+          - string
+          - 'null'
+        patch_url:
+          type:
+          - string
+          - 'null'
+        issue_url:
+          type:
+          - string
+          - 'null'
+        number:
+          type:
+          - number
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        locked:
+          type:
+          - boolean
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        body:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type: string
+        closed_at:
+          type:
+          - string
+          - 'null'
+        merged_at:
+          type:
+          - string
+          - 'null'
+        merge_commit_sha:
+          type:
+          - string
+          - 'null'
+        draft:
+          type:
+          - boolean
+          - 'null'
+        commits_url:
+          type:
+          - string
+          - 'null'
+        review_comments_url:
+          type:
+          - string
+          - 'null'
+        review_comment_url:
+          type:
+          - string
+          - 'null'
+        comments_url:
+          type:
+          - string
+          - 'null'
+        statuses_url:
+          type:
+          - string
+          - 'null'
+        author_association:
+          type:
+          - string
+          - 'null'
+        repository:
+          type:
+          - string
+          - 'null'
+        user_id:
+          type:
+          - number
+          - 'null'
+        user_login:
+          type:
+          - string
+          - 'null'
+        head_ref:
+          type:
+          - string
+          - 'null'
+        head_sha:
+          type:
+          - string
+          - 'null'
+        head_repo_id:
+          type:
+          - number
+          - 'null'
+        head_repo_full_name:
+          type:
+          - string
+          - 'null'
+        base_ref:
+          type:
+          - string
+          - 'null'
+        base_sha:
+          type:
+          - string
+          - 'null'
+        base_repo_id:
+          type:
+          - number
+          - 'null'
+        base_repo_full_name:
+          type:
+          - string
+          - 'null'
+        assignee_id:
+          type:
+          - number
+          - 'null'
+        assignee_ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type:
+            - number
+            - 'null'
+        requested_reviewer_ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type:
+            - number
+            - 'null'
+        label_names:
+          type:
+          - array
+          - 'null'
+          items:
+            type:
+            - string
+            - 'null'
+      required:
+      - id
+      - updated_at
+
+  issues_stream:
+    type: DeclarativeStream
+    name: issues
+    primary_key: [id]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/issues"
+        request_parameters:
+          state: all
+          sort: updated
+          direction: asc
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_with_since"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [user_id]
+        value: "{{ record.get('user', {}).get('id') }}"
+      - path: [user_login]
+        value: "{{ record.get('user', {}).get('login') }}"
+      - path: [milestone_id]
+        value: "{{ record.get('milestone', {}).get('id') if record.get('milestone')
+          else None }}"
+      - path: [milestone_number]
+        value: "{{ record.get('milestone', {}).get('number') if record.get('milestone')
+          else None }}"
+      - path: [milestone_title]
+        value: "{{ record.get('milestone', {}).get('title') if record.get('milestone')
+          else None }}"
+      - path: [assignee_id]
+        value: "{{ record.get('assignee', {}).get('id') if record.get('assignee')
+          else None }}"
+      - path: [assignee_ids]
+        value: "{{ record.get('assignees', []) | map(attribute='id') | list }}"
+      - path: [label_names]
+        value: "{{ record.get('labels', []) | map(attribute='name') | list }}"
+      - path: [is_pull_request]
+        value: "{{ record.get('pull_request') is not none }}"
+    - type: RemoveFields
+      field_pointers: [[user], [milestone], [assignee], [assignees], [labels], [pull_request],
+        [reactions], [performed_via_github_app]]
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+        repository_url:
+          type:
+          - string
+          - 'null'
+        labels_url:
+          type:
+          - string
+          - 'null'
+        comments_url:
+          type:
+          - string
+          - 'null'
+        events_url:
+          type:
+          - string
+          - 'null'
+        html_url:
+          type:
+          - string
+          - 'null'
+        id:
+          type: number
+        node_id:
+          type:
+          - string
+          - 'null'
+        number:
+          type:
+          - number
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        locked:
+          type:
+          - boolean
+          - 'null'
+        comments:
+          type:
+          - number
+          - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type: string
+        author_association:
+          type:
+          - string
+          - 'null'
+        issue_field_values:
+          type:
+          - array
+          - 'null'
+        draft:
+          type:
+          - boolean
+          - 'null'
+        body:
+          type:
+          - string
+          - 'null'
+        timeline_url:
+          type:
+          - string
+          - 'null'
+        repository:
+          type:
+          - string
+          - 'null'
+        user_id:
+          type:
+          - number
+          - 'null'
+        user_login:
+          type:
+          - string
+          - 'null'
+        assignee_ids:
+          type:
+          - array
+          - 'null'
+        label_names:
+          type:
+          - array
+          - 'null'
+          items:
+            type:
+            - string
+            - 'null'
+        is_pull_request:
+          type:
+          - boolean
+          - 'null'
+      required:
+      - id
+      - updated_at
+
+  commits_stream:
+    type: DeclarativeStream
+    name: commits
+    primary_key: [sha]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/commits"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_commits"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [author_id]
+        value: "{{ record.get('author', {}).get('id') if record.get('author') else
+          None }}"
+      - path: [author_login]
+        value: "{{ record.get('author', {}).get('login') if record.get('author') else
+          None }}"
+      - path: [committer_id]
+        value: "{{ record.get('committer', {}).get('id') if record.get('committer')
+          else None }}"
+      - path: [committer_login]
+        value: "{{ record.get('committer', {}).get('login') if record.get('committer')
+          else None }}"
+      - path: [commit_message]
+        value: "{{ record.get('commit', {}).get('message') }}"
+      - path: [commit_author_name]
+        value: "{{ record.get('commit', {}).get('author', {}).get('name') }}"
+      - path: [commit_author_email]
+        value: "{{ record.get('commit', {}).get('author', {}).get('email') }}"
+      - path: [commit_author_date]
+        value: "{{ record.get('commit', {}).get('author', {}).get('date') }}"
+      - path: [commit_committer_name]
+        value: "{{ record.get('commit', {}).get('committer', {}).get('name') }}"
+      - path: [commit_committer_email]
+        value: "{{ record.get('commit', {}).get('committer', {}).get('email') }}"
+      - path: [commit_committer_date]
+        value: "{{ record.get('commit', {}).get('committer', {}).get('date') }}"
+      - path: [commit_comment_count]
+        value: "{{ record.get('commit', {}).get('comment_count') }}"
+      - path: [commit_verified]
+        value: "{{ record.get('commit', {}).get('verification', {}).get('verified')
+          }}"
+    - type: RemoveFields
+      field_pointers: [[author], [committer], [commit], [parents]]
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        sha:
+          type: string
+        node_id:
+          type:
+          - string
+          - 'null'
+        url:
+          type:
+          - string
+          - 'null'
+        html_url:
+          type:
+          - string
+          - 'null'
+        comments_url:
+          type:
+          - string
+          - 'null'
+        repository:
+          type:
+          - string
+          - 'null'
+        author_id:
+          type:
+          - number
+          - 'null'
+        author_login:
+          type:
+          - string
+          - 'null'
+        committer_id:
+          type:
+          - number
+          - 'null'
+        committer_login:
+          type:
+          - string
+          - 'null'
+        commit_message:
+          type:
+          - string
+          - 'null'
+        commit_author_name:
+          type:
+          - string
+          - 'null'
+        commit_author_email:
+          type:
+          - string
+          - 'null'
+        commit_author_date:
+          type:
+          - string
+          - 'null'
+        commit_committer_name:
+          type:
+          - string
+          - 'null'
+        commit_committer_email:
+          type:
+          - string
+          - 'null'
+        commit_committer_date:
+          type: string
+        commit_comment_count:
+          type:
+          - number
+          - 'null'
+        commit_verified:
+          type:
+          - boolean
+          - 'null'
+      required:
+      - sha
+      - commit_committer_date
+
+  comments_stream:
+    type: DeclarativeStream
+    name: comments
+    primary_key: [id]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/issues/comments"
+        request_parameters:
+          sort: updated
+          direction: asc
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_with_since"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [user_id]
+        value: "{{ record.get('user', {}).get('id') }}"
+      - path: [user_login]
+        value: "{{ record.get('user', {}).get('login') }}"
+      - path: [issue_number]
+        value: "{{ record.get('issue_url', '').split('/')[-1] if record.get('issue_url')
+          else None }}"
+    - type: RemoveFields
+      field_pointers: [[user], [performed_via_github_app], [reactions]]
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+        html_url:
+          type:
+          - string
+          - 'null'
+        issue_url:
+          type:
+          - string
+          - 'null'
+        id:
+          type: number
+        node_id:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type: string
+        body:
+          type:
+          - string
+          - 'null'
+        author_association:
+          type:
+          - string
+          - 'null'
+        repository:
+          type:
+          - string
+          - 'null'
+        user_id:
+          type:
+          - number
+          - 'null'
+        user_login:
+          type:
+          - string
+          - 'null'
+        issue_number:
+          type:
+          - number
+          - 'null'
+      required:
+      - id
+      - updated_at
+
+  review_comments_stream:
+    type: DeclarativeStream
+    name: review_comments
+    primary_key: [id]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/pulls/comments"
+        request_parameters:
+          sort: updated
+          direction: asc
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_with_since"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [user_id]
+        value: "{{ record.get('user', {}).get('id') }}"
+      - path: [user_login]
+        value: "{{ record.get('user', {}).get('login') }}"
+      - path: [pull_request_number]
+        value: "{{ record.get('pull_request_url', '').split('/')[-1] if record.get('pull_request_url')
+          else None }}"
+    - type: RemoveFields
+      field_pointers: [[user], [_links], [reactions]]
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+        pull_request_review_id:
+          type:
+          - number
+          - 'null'
+        id:
+          type: number
+        node_id:
+          type:
+          - string
+          - 'null'
+        diff_hunk:
+          type:
+          - string
+          - 'null'
+        path:
+          type:
+          - string
+          - 'null'
+        commit_id:
+          type:
+          - string
+          - 'null'
+        original_commit_id:
+          type:
+          - string
+          - 'null'
+        body:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type: string
+        html_url:
+          type:
+          - string
+          - 'null'
+        pull_request_url:
+          type:
+          - string
+          - 'null'
+        line:
+          type:
+          - number
+          - 'null'
+        original_line:
+          type:
+          - number
+          - 'null'
+        side:
+          type:
+          - string
+          - 'null'
+        author_association:
+          type:
+          - string
+          - 'null'
+        original_position:
+          type:
+          - number
+          - 'null'
+        position:
+          type:
+          - number
+          - 'null'
+        subject_type:
+          type:
+          - string
+          - 'null'
+        repository:
+          type:
+          - string
+          - 'null'
+        user_id:
+          type:
+          - number
+          - 'null'
+        user_login:
+          type:
+          - string
+          - 'null'
+        pull_request_number:
+          type:
+          - number
+          - 'null'
+      required:
+      - id
+      - updated_at
+
+  reviews_stream:
+    type: DeclarativeStream
+    name: reviews
+    primary_key: [id]
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.parent_slice_key.split('::')[0] }}/pulls/{{
+          stream_slice.parent_slice_key.split('::')[1] }}/reviews"
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: "#/definitions/pull_requests_stream"
+          parent_key: _review_key
+          partition_field: parent_slice_key
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.parent_slice_key.split('::')[0] }}"
+      - path: [pull_request_number]
+        value: "{{ stream_slice.parent_slice_key.split('::')[1] | int }}"
+      - path: [user_id]
+        value: "{{ record.get('user', {}).get('id') }}"
+      - path: [user_login]
+        value: "{{ record.get('user', {}).get('login') }}"
+    - type: RemoveFields
+      field_pointers: [[user], [_links]]
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        id:
+          type: number
+        node_id:
+          type:
+          - string
+          - 'null'
+        body:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        html_url:
+          type:
+          - string
+          - 'null'
+        pull_request_url:
+          type:
+          - string
+          - 'null'
+        author_association:
+          type:
+          - string
+          - 'null'
+        submitted_at:
+          type:
+          - string
+          - 'null'
+        commit_id:
+          type:
+          - string
+          - 'null'
+        repository:
+          type:
+          - string
+          - 'null'
+        pull_request_number:
+          type:
+          - number
+          - 'null'
+        user_id:
+          type:
+          - number
+          - 'null'
+        user_login:
+          type:
+          - string
+          - 'null'
+      required:
+      - id
+
+  stargazers_stream:
+    type: DeclarativeStream
+    name: stargazers
+    primary_key: [user_id, repository]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/stargazers"
+        request_headers:
+          Accept: "application/vnd.github.star+json"
+          X-GitHub-Api-Version: "2022-11-28"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [user_id]
+        value: "{{ record.get('user', {}).get('id') }}"
+      - path: [user_login]
+        value: "{{ record.get('user', {}).get('login') }}"
+      - path: [user_type]
+        value: "{{ record.get('user', {}).get('type') }}"
+    - type: RemoveFields
+      field_pointers: [[user]]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        additionalProperties: true
+        properties:
+          starred_at: {type: [string, "null"]}
+          repository: {type: [string, "null"]}
+          user_id: {type: integer}
+          user_login: {type: [string, "null"]}
+          user_type: {type: [string, "null"]}
+
+  branches_stream:
+    type: DeclarativeStream
+    name: branches
+    primary_key: [name, repository]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/branches"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [commit_sha]
+        value: "{{ record.get('commit', {}).get('sha') }}"
+    - type: RemoveFields
+      field_pointers: [[commit], [protection]]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        additionalProperties: true
+        properties:
+          name: {type: string}
+          repository: {type: string}
+          commit_sha: {type: [string, "null"]}
+          protected: {type: [boolean, "null"]}
+
+  tags_stream:
+    type: DeclarativeStream
+    name: tags
+    primary_key: [name, repository]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/tags"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [commit_sha]
+        value: "{{ record.get('commit', {}).get('sha') }}"
+    - type: RemoveFields
+      field_pointers: [[commit]]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        additionalProperties: true
+        properties:
+          name: {type: string}
+          repository: {type: string}
+          commit_sha: {type: [string, "null"]}
+          zipball_url: {type: [string, "null"]}
+          tarball_url: {type: [string, "null"]}
+          node_id: {type: [string, "null"]}
+
+  releases_stream:
+    type: DeclarativeStream
+    name: releases
+    primary_key: [id]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/releases"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [author_id]
+        value: "{{ record.get('author', {}).get('id') }}"
+      - path: [author_login]
+        value: "{{ record.get('author', {}).get('login') }}"
+    - type: RemoveFields
+      field_pointers: [[author], [assets], [reactions]]
+    schema:
+      $schema: http://json-schema.org/schema#
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+        assets_url:
+          type:
+          - string
+          - 'null'
+        upload_url:
+          type:
+          - string
+          - 'null'
+        html_url:
+          type:
+          - string
+          - 'null'
+        id:
+          type: number
+        node_id:
+          type:
+          - string
+          - 'null'
+        tag_name:
+          type:
+          - string
+          - 'null'
+        target_commitish:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        draft:
+          type:
+          - boolean
+          - 'null'
+        immutable:
+          type:
+          - boolean
+          - 'null'
+        prerelease:
+          type:
+          - boolean
+          - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type:
+          - string
+          - 'null'
+        published_at:
+          type:
+          - string
+          - 'null'
+        tarball_url:
+          type:
+          - string
+          - 'null'
+        zipball_url:
+          type:
+          - string
+          - 'null'
+        body:
+          type:
+          - string
+          - 'null'
+        repository:
+          type:
+          - string
+          - 'null'
+        author_id:
+          type:
+          - number
+          - 'null'
+        author_login:
+          type:
+          - string
+          - 'null'
+      required:
+      - id
+
+  workflow_runs_stream:
+    type: DeclarativeStream
+    name: workflow_runs
+    primary_key: [id]
+    retriever:
+      $ref: "#/definitions/base_repo_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/repos/{{ stream_slice.repository }}/actions/runs"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [workflow_runs]
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_workflow_runs"
+    transformations:
+    - type: AddFields
+      fields:
+      - path: [repository]
+        value: "{{ stream_slice.repository }}"
+      - path: [actor_id]
+        value: "{{ record.get('actor', {}).get('id') if record.get('actor') else None
+          }}"
+      - path: [actor_login]
+        value: "{{ record.get('actor', {}).get('login') if record.get('actor') else
+          None }}"
+      - path: [triggering_actor_id]
+        value: "{{ record.get('triggering_actor', {}).get('id') if record.get('triggering_actor')
+          else None }}"
+      - path: [triggering_actor_login]
+        value: "{{ record.get('triggering_actor', {}).get('login') if record.get('triggering_actor')
+          else None }}"
+      - path: [head_commit_message]
+        value: "{{ record.get('head_commit', {}).get('message') if record.get('head_commit')
+          else None }}"
+      - path: [head_commit_timestamp]
+        value: "{{ record.get('head_commit', {}).get('timestamp') if record.get('head_commit')
+          else None }}"
+    - type: RemoveFields
+      field_pointers: [[actor], [triggering_actor], [head_commit], [head_repository],
+        [repository], [pull_requests]]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        additionalProperties: true
+        properties:
+          id: {type: integer}
+          node_id: {type: [string, "null"]}
+          name: {type: [string, "null"]}
+          head_branch: {type: [string, "null"]}
+          head_sha: {type: [string, "null"]}
+          run_number: {type: [integer, "null"]}
+          event: {type: [string, "null"]}
+          status: {type: [string, "null"]}
+          conclusion: {type: [string, "null"]}
+          workflow_id: {type: [integer, "null"]}
+          created_at: {type: [string, "null"]}
+          updated_at: {type: [string, "null"]}
+          run_started_at: {type: [string, "null"]}
+          run_attempt: {type: [integer, "null"]}
+          repository: {type: [string, "null"]}
+          actor_id: {type: [integer, "null"]}
+          actor_login: {type: [string, "null"]}
+          triggering_actor_id: {type: [integer, "null"]}
+          triggering_actor_login: {type: [string, "null"]}
+          head_commit_message: {type: [string, "null"]}
+          head_commit_timestamp: {type: [string, "null"]}
+          html_url: {type: [string, "null"]}
+          display_title: {type: [string, "null"]}
+
+streams:
+- $ref: "#/definitions/repositories_stream"
+- $ref: "#/definitions/pull_requests_stream"
+- $ref: "#/definitions/issues_stream"
+- $ref: "#/definitions/commits_stream"
+- $ref: "#/definitions/comments_stream"
+- $ref: "#/definitions/review_comments_stream"
+- $ref: "#/definitions/reviews_stream"
+- $ref: "#/definitions/stargazers_stream"
+- $ref: "#/definitions/branches_stream"
+- $ref: "#/definitions/tags_stream"
+- $ref: "#/definitions/releases_stream"
+- $ref: "#/definitions/workflow_runs_stream"
+
+spec:
+  type: Spec
+  documentation_url: "https://docs.airbyte.com/integrations/sources/github-gen2"
+  connection_specification:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    title: "GitHub (Beta, Gen-2)"
+    type: object
+    required: [access_token, repositories]
+    additionalProperties: true
+    properties:
+      access_token:
+        type: string
+        title: "Personal Access Token"
+        description: "GitHub Personal Access Token with repo scope."
+        airbyte_secret: true
+        order: 0
+      repositories:
+        type: array
+        title: "Repositories"
+        description: "List of GitHub repositories in owner/repo format."
+        items: {type: string}
+        examples: ["airbytehq/airbyte", "airbytehq/integration-test"]
+        order: 1
+      start_date:
+        type: string
+        title: "Start Date"
+        description: "Start date for incremental streams (ISO 8601). Defaults to 2010-01-01."
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples: ["2024-01-01T00:00:00Z"]
+        order: 2
+        format: date-time
+      api_url:
+        type: string
+        title: "API URL"
+        description: "GitHub API URL. Override for GitHub Enterprise."
+        default: "api.github.com"
+        examples: ["api.github.com"]
+        order: 3
