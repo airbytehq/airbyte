@@ -72,6 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.3.54 | 2026-06-19 | [80289](https://github.com/airbytehq/airbyte/pull/80289) | Fix incremental cursor getting stuck by aligning cursor_granularity to epoch-second precision |
 | 0.3.53 | 2026-06-16 | [79944](https://github.com/airbytehq/airbyte/pull/79944) | Update dependencies |
 | 0.3.52 | 2026-06-09 | [79403](https://github.com/airbytehq/airbyte/pull/79403) | Update dependencies |
 | 0.3.51 | 2026-06-02 | [78820](https://github.com/airbytehq/airbyte/pull/78820) | Update dependencies |
