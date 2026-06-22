@@ -716,9 +716,7 @@ internal class SnowflakeAirbyteClientTest {
         every { statement.close() } just Runs
 
         every { statement.executeQuery(sql) } throws
-            SnowflakeSQLException(
-                "Insufficient privileges to operate on schema 'TEST_SCHEMA'"
-            )
+            SnowflakeSQLException("Insufficient privileges to operate on schema 'TEST_SCHEMA'")
         every { connection.close() } just Runs
 
         val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
