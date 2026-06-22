@@ -417,6 +417,16 @@ definitions:
         oauth2_access_token:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
+        oauth2_authorization_code:
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          grant_type: refresh_token
+          expires_in_name: expires_in
+          access_token_name: access_token
+          refresh_request_body: {}
+          token_refresh_endpoint: https://identity.xero.com/connect/token
         oauth2_confidential_application:
           type: OAuthAuthenticator
           scopes:
@@ -531,6 +541,34 @@ spec:
         type: object
         oneOf:
           - type: object
+            title: Authenticate via Xero (OAuth)
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2_authorization_code
+                order: 0
+                title: Authentication Method
+              client_id:
+                type: string
+                description: Your Xero application's Client ID.
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: Your Xero application's Client Secret.
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: The refresh token used to renew the expired access token.
+                title: Refresh Token
+                airbyte_secret: true
+          - type: object
             title: OAuth Custom Connection
             required:
               - auth_type
@@ -576,6 +614,64 @@ spec:
         order: 2
         title: Authentication Method
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2_authorization_code
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: >-
+          https://login.xero.com/identity/connect/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}&response_type=code
+        scope: >-
+          offline_access accounting.transactions.read accounting.reports.read
+          accounting.budgets.read accounting.reports.tenninetynine.read
+          accounting.journals.read accounting.settings.read
+          accounting.contacts.read accounting.attachments.read assets.read
+          files.read projects.read openid
+        access_token_url: https://identity.xero.com/connect/token
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 
 metadata:
   autoImportSchema:
