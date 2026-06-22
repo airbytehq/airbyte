@@ -41,8 +41,13 @@ INCREMENTALITY_WINDOW = "incrementality"
 # It still has http status 200 but the object can not be constructed from what was fetched from API.
 # Also, it does not happen while making a call to the API, but later - when parsing the result,
 # that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
+#
+# `TypeError` ("string indices must be integers, not 'str'") surfaces from SDK v25
+# ObjectParser.parse_single() when the API returns a malformed non-dict response
+# (e.g. HTML error page whose text contains the substring "data").  Same root
+# cause as FacebookBadObjectError — transient, retryable.
 
-backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
+backoff_policy = retry_pattern(backoff.expo, (FacebookBadObjectError, TypeError), max_tries=10, factor=5)
 
 
 # ----------------------------- batching -------------------------------------
@@ -556,14 +561,26 @@ class InsightAsyncJob(AsyncJob):
 
         try:
             result_cursor = id_job.get_result(params={"limit": self.page_size})
-        except FacebookBadObjectError as e:
+        except (FacebookBadObjectError, TypeError) as e:
             raise AirbyteTracedException(
                 message="Facebook Insights API returned an invalid response during data retrieval.",
                 internal_message=f"Failed to fetch ID-collection results for level={level}: {e}",
                 failure_type=FailureType.transient_error,
             ) from e
 
-        ids = {row[pk_name] for row in result_cursor if pk_name in row}
+        ids: set[str] = set()
+        try:
+            for row in result_cursor:
+                if not isinstance(row, dict):
+                    continue
+                if pk_name in row:
+                    ids.add(row[pk_name])
+        except TypeError as e:
+            raise AirbyteTracedException(
+                message="Facebook Insights API returned an invalid response during data retrieval.",
+                internal_message=f"Malformed row while iterating ID-collection results for level={level}: {e}",
+                failure_type=FailureType.transient_error,
+            ) from e
         logger.info(f"[Split:{level}] collected {len(ids)} {pk_name}(s)")
         return list(ids)
 
