@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pytest
 from source_s3.source import SourceS3Spec
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
@@ -442,3 +444,41 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
     else:
         actual_config = LegacyConfigTransformer.convert(parsed_legacy_config)
         assert actual_config == expected_config
+
+
+def _csv_legacy_config(newlines_in_values):
+    return {
+        "dataset": "test_data",
+        "provider": {"storage": "S3", "bucket": "test_bucket"},
+        "format": {"filetype": "csv", "newlines_in_values": newlines_in_values},
+        "path_pattern": "**/*.csv",
+    }
+
+
+def test_newlines_in_values_logs_warning_and_is_dropped(caplog):
+    """
+    Regression test for issue #76853: the v3-only `newlines_in_values` CSV option has no v4
+    equivalent. It must still be dropped from the migrated config (no such field exists in v4),
+    but the drop must no longer be silent -- a warning has to be emitted so users understand why.
+    """
+    parsed_legacy_config = SourceS3Spec(**_csv_legacy_config(newlines_in_values=True))
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        actual_config = LegacyConfigTransformer.convert(parsed_legacy_config)
+
+    csv_format = actual_config["streams"][0]["format"]
+    assert "newlines_in_values" not in csv_format
+
+    warnings = [record.getMessage() for record in caplog.records if record.levelno == logging.WARNING]
+    assert any("newlines_in_values" in message for message in warnings)
+
+
+def test_no_warning_when_newlines_in_values_disabled(caplog):
+    """The warning must only fire when the option was actually enabled (its v3 default is False)."""
+    parsed_legacy_config = SourceS3Spec(**_csv_legacy_config(newlines_in_values=False))
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        LegacyConfigTransformer.convert(parsed_legacy_config)
+
+    warnings = [record.getMessage() for record in caplog.records if record.levelno == logging.WARNING]
+    assert not any("newlines_in_values" in message for message in warnings)
