@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import paramiko
 import pytest
 from paramiko.ssh_exception import SSHException
-from source_sftp_bulk.client import SFTPClient, _parse_private_key
+from source_sftp_bulk.client import KEEPALIVE_INTERVAL, SFTPClient, _parse_private_key
 
 from airbyte_cdk import AirbyteTracedException
 
@@ -139,3 +139,19 @@ def test_parse_private_key_all_struct_errors_raises_config_error():
         with pytest.raises(AirbyteTracedException) as exc_info:
             _parse_private_key("invalid-key-content")
         assert "Private key format is not recognized" in exc_info.value.message
+
+
+def test_connect_sets_keepalive_on_transport():
+    """_connect() enables SSH keepalive on the transport to prevent firewall/NAT drops."""
+    mock_transport = MagicMock()
+    with (
+        patch.object(paramiko, "Transport", return_value=mock_transport),
+        patch.object(paramiko, "SFTPClient", MagicMock()),
+    ):
+        SFTPClient(
+            host="localhost",
+            username="username",
+            password="password",
+            port=123,
+        )
+        mock_transport.set_keepalive.assert_called_once_with(KEEPALIVE_INTERVAL)

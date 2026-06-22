@@ -40,6 +40,10 @@ def _parse_private_key(private_key: str) -> paramiko.PKey:
 # set default timeout to 300 seconds
 REQUEST_TIMEOUT = 300
 
+# SSH keepalive interval in seconds; prevents firewalls/NAT from dropping
+# idle connections during long file transfers.
+KEEPALIVE_INTERVAL = 60
+
 logger = logging.getLogger("airbyte")
 
 
@@ -80,6 +84,7 @@ class SFTPClient:
             self.transport = paramiko.Transport((self.host, self.port))
             self.transport.use_compression(True)
             self.transport.connect(username=self.username, password=self.password, hostkey=None, pkey=self.key)
+            self.transport.set_keepalive(KEEPALIVE_INTERVAL)
             self._connection = paramiko.SFTPClient.from_transport(self.transport)
 
             # get 'socket' to set the timeout
