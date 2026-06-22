@@ -103,6 +103,10 @@ The Granola API enforces rate limits. For Enterprise API keys, limits are applie
 
 The connector uses the API's burst limit to manage request volume and retries requests when a `429 Too Many Requests` response is received.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Granola API](https://docs.granola.ai/introduction). All API requests use the `https://public-api.granola.ai` endpoint.
@@ -121,6 +125,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.4 | 2026-06-16 | [79886](https://github.com/airbytehq/airbyte/pull/79886) | Update dependencies |
+| 0.2.3 | 2026-06-09 | [79357](https://github.com/airbytehq/airbyte/pull/79357) | Update dependencies |
+| 0.2.2 | 2026-06-02 | [77288](https://github.com/airbytehq/airbyte/pull/77288) | Update dependencies |
 | 0.2.1 | 2026-05-15 | [78117](https://github.com/airbytehq/airbyte/pull/78117) | Update API key setup instructions |
 | 0.2.0 | 2026-05-07 | [77861](https://github.com/airbytehq/airbyte/pull/77861) | Promoted release candidate to GA |
 | 0.2.0-rc.4 | 2026-05-01 | [77698](https://github.com/airbytehq/airbyte/pull/77698) | Revert default_concurrency from 6 to 5 (optimal value from tuning) and add HTTP API budget matching Granola's documented rate limit (25 req/5s burst) |

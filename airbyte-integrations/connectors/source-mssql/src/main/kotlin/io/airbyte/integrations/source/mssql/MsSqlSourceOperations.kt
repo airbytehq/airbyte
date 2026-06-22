@@ -83,7 +83,22 @@ class MsSqlSourceOperations :
                         if (type.precision!! < 25) FloatFieldType else DoubleFieldType
                     JDBCType.DOUBLE -> DoubleFieldType
                     JDBCType.NUMERIC,
-                    JDBCType.DECIMAL -> BigDecimalFieldType
+                    JDBCType.DECIMAL -> {
+                        // Preliminary, non-breaking detection ahead of
+                        // https://github.com/airbytehq/airbyte/pull/77672, which will remap
+                        // NUMERIC/DECIMAL columns with scale 0 from Airbyte `number` to `integer`.
+                        // The mapping is intentionally left unchanged here; we only log so the
+                        // impact can be measured before the remapping ships.
+                        if (type.scale == 0) {
+                            log.info {
+                                "Discovered ${type.typeName ?: "DECIMAL/NUMERIC"} column with " +
+                                    "scale 0 (precision=${type.precision}). A future connector " +
+                                    "version will map such columns to Airbyte integer instead of " +
+                                    "number."
+                            }
+                        }
+                        BigDecimalFieldType
+                    }
                     JDBCType.CHAR,
                     JDBCType.VARCHAR,
                     JDBCType.LONGVARCHAR,

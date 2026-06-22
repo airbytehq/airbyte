@@ -214,18 +214,22 @@ Expand to see details about Google Search Console connector limitations and trou
 
 #### Rate limiting
 
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+The Search Console API enforces two distinct types of quota on Search Analytics queries. The connector retries automatically when either type is exceeded, but with different backoff durations. For full details, see Google's [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
-While Google's public documentation states that the Search Console API allows up to 1,200 requests per minute, most Google Cloud projects start with a lower default quota of 60 requests per minute. This is especially common for new projects or projects without billing enabled.
+**QPS (queries per minute) quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site, but most new Google Cloud projects start with a lower default of 60 requests per minute. When exceeded, the connector retries with a 60-second backoff.
 
-To check your actual quota limits:
+**Load quota**: Limits the internal resources consumed by queries. Complex queries — particularly those that group or filter by both `page` and `query` dimensions, or that span long date ranges — consume more load. Google measures load quota in 10-minute (short-term) and daily (long-term) windows. When exceeded, the connector retries with a 15-minute backoff, consistent with Google's recommendation to wait 15 minutes before retrying.
+
+To check your actual QPS quota limits:
 
 1. Go to your [Google Cloud Console](https://console.cloud.google.com/).
 2. Navigate to **APIs & Services** then **Quotas**.
 3. Search for "Search Console API".
 4. Look for "Requests per minute per user" to see your current limit.
 
-If you need higher limits, you can enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **API Requests Per Minute** setting in the connector to match your actual quota.
+If you need higher QPS limits, enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **Search Analytics API Requests Per Minute** setting in the connector to match your actual quota.
+
+If you hit load quota limits, reduce the complexity of your queries. Avoid grouping or filtering by both `page` and `query` simultaneously, use shorter date ranges, and avoid requerying the same data repeatedly.
 
 #### Data retention
 
@@ -237,6 +241,10 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -244,12 +252,16 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.2 | 2026-05-20 | [78289](https://github.com/airbytehq/airbyte/pull/78289) | Reduce `search_analytics_*` paginator `page_size` from `25000` to `5000` to lower peak worker memory on high-volume tenants. See airbytehq/oncall#12246 for context. |
+| 2.1.1 | 2026-06-16 | [79906](https://github.com/airbytehq/airbyte/pull/79906) | Update dependencies |
+| 2.1.0 | 2026-06-12 | [79146](https://github.com/airbytehq/airbyte/pull/79146) | Handle 403 "Search Analytics load quota exceeded" as rate-limited with a 15-minute backoff instead of config error |
+| 2.0.4 | 2026-06-09 | [79344](https://github.com/airbytehq/airbyte/pull/79344) | Update dependencies |
+| 2.0.3 | 2026-06-01 | [78545](https://github.com/airbytehq/airbyte/pull/78545) | Adds jitter to backoff strategy |
+| 2.0.2 | 2026-05-21 | [78289](https://github.com/airbytehq/airbyte/pull/78289) | Reduce `search_analytics_*` paginator `page_size` from `25000` to `5000` to lower peak worker memory on high-volume tenants. See airbytehq/oncall#12246 for context. |
 | 2.0.1 | 2026-05-18 | [78157](https://github.com/airbytehq/airbyte/pull/78157) | Restore `default_concurrency` to `num_workers`-driven configuration (`{{ config.get('num_workers', 3) }}`) and keep `max_concurrency` at `100`; cancels the Phase 1 concurrency tuning rollout introduced in 2.0.1-rc.1 |
-| 2.0.0 | 2026-04-20 | [76306](https://github.com/airbytehq/airbyte/pull/76306) | Append `search_appearance` to existing primary keys of keyword report streams; drop duplicate unfiltered keyword rows caused by empty/null `searchAppearance` partitions; fix multi-site duplication by removing the cartesian-product over `site_urls` on keyword streams; wrap `dimensionFilterGroups.filters` in an array to match the Google Search Console API spec. This is a **breaking change** for the `search_analytics_keyword_page_report`, `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams. See the [migration guide](https://docs.airbyte.com/integrations/sources/google-search-console-migrations) for details. |
+| 2.0.0 | 2026-05-04 | [76306](https://github.com/airbytehq/airbyte/pull/76306) | Append `search_appearance` to existing primary keys of keyword report streams; drop duplicate unfiltered keyword rows caused by empty/null `searchAppearance` partitions; fix multi-site duplication by removing the cartesian-product over `site_urls` on keyword streams; wrap `dimensionFilterGroups.filters` in an array to match the Google Search Console API spec. This is a **breaking change** for the `search_analytics_keyword_page_report`, `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams. See the [migration guide](https://docs.airbyte.com/integrations/sources/google-search-console-migrations) for details. |
 | 1.10.33 | 2026-04-28 | [77276](https://github.com/airbytehq/airbyte/pull/77276) | Update dependencies |
 | 1.10.32 | 2026-04-21 | [76624](https://github.com/airbytehq/airbyte/pull/76624) | Update dependencies |
-| 1.10.31 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
+| 1.10.31 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
 | 1.10.30 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.10.29 | 2026-04-01 | [75582](https://github.com/airbytehq/airbyte/pull/75582) | Add `oauth_connector_input_specification` with granular scopes |
 | 1.10.28 | 2026-03-31 | [75699](https://github.com/airbytehq/airbyte/pull/75699) | Update dependencies |

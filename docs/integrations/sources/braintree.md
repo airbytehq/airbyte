@@ -65,6 +65,10 @@ The connector is restricted by normal Braintree [requests limitation](https://de
 
 The Braintree connector should not run into Braintree API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -72,6 +76,8 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 0.3.32 | 2026-06-09 | [79226](https://github.com/airbytehq/airbyte/pull/79226) | Update dependencies |
+| 0.3.31 | 2026-06-02 | [78571](https://github.com/airbytehq/airbyte/pull/78571) | Update dependencies |
 | 0.3.30 | 2026-04-28 | [77150](https://github.com/airbytehq/airbyte/pull/77150) | Update dependencies |
 | 0.3.29 | 2026-04-21 | [65051](https://github.com/airbytehq/airbyte/pull/65051) | Update dependencies |
 | 0.3.28 | 2025-02-01 | [52894](https://github.com/airbytehq/airbyte/pull/52894) | Update dependencies |

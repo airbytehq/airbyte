@@ -26,6 +26,10 @@ Finnhub is a financial data platform that provides real-time stock market, forex
 | earnings_surprises | symbol.period | No pagination | ✅ |  ❌  |
 | stock_quote |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,9 @@ Finnhub is a financial data platform that provides real-time stock market, forex
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-06-16 | [79842](https://github.com/airbytehq/airbyte/pull/79842) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79305](https://github.com/airbytehq/airbyte/pull/79305) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78686](https://github.com/airbytehq/airbyte/pull/78686) | Update dependencies |
 | 0.0.47 | 2026-04-28 | [77244](https://github.com/airbytehq/airbyte/pull/77244) | Update dependencies |
 | 0.0.46 | 2026-04-21 | [76598](https://github.com/airbytehq/airbyte/pull/76598) | Update dependencies |
 | 0.0.45 | 2026-03-17 | [74943](https://github.com/airbytehq/airbyte/pull/74943) | Update dependencies |

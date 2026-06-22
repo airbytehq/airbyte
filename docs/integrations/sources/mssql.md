@@ -86,7 +86,23 @@ When both fields are provided, the connector authenticates with `ActiveDirectory
 Entra ID authentication requires an encrypted connection. Set **Encryption** to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`. The connector fails the configuration check if encryption is disabled while Entra ID fields are set.
 :::
 
-## Change Data Capture \(CDC\)
+## MSSQL Replication Modes
+
+### Incremental Syncs
+
+MSSQL `datetime2(7)` type stores timestamps with up to 7 decimal places, but since most destinations don't support the
+extra precision, Airbyte truncates them to 6 (microseconds). Because of that, the saved cursor can land just behind the
+newest rows in your table. To make sure none of them get skipped, each incremental sync reads everything _above_ the
+saved cursor, then saves the new max value as the cursor for the next sync.
+
+:::note
+
+Because each sync picks up everything newer than the last saved point, you may see some duplicate rows. If possible, we do recommend
+using `Incremental - Append + Deduped` for supported syncs. For more information, please visit our [Sync Mode](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/) page.
+
+:::
+
+### Change Data Capture \(CDC\)
 
 We use
 [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017)
@@ -99,7 +115,7 @@ from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 Please read the [CDC docs](../../platform/understanding-airbyte/cdc) for an overview of how Airbyte
 approaches CDC.
 
-### Should I use CDC for MSSQL?
+#### Should I use CDC for MSSQL?
 
 - If you need a record of deletions and can accept the limitations posted below, CDC is the way to
   go!
@@ -135,9 +151,9 @@ approaches CDC.
 - Read more on CDC limitations in the
   [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
 
-### Setting up CDC for MSSQL
+#### Setting up CDC for MSSQL
 
-#### 1. Enable CDC on database and tables
+##### 1. Enable CDC on database and tables
 
 MS SQL Server provides some built-in stored procedures to enable CDC.
 
@@ -188,7 +204,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 For further detail, see the
 [Microsoft docs on enabling and disabling CDC](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/enable-and-disable-change-data-capture-sql-server?view=sql-server-ver15).
 
-#### 2. Enable snapshot isolation
+##### 2. Enable snapshot isolation
 
 - When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of
   your database. To avoid acquiring table locks, Airbyte uses _snapshot isolation_, allowing
@@ -199,7 +215,7 @@ For further detail, see the
     SET ALLOW_SNAPSHOT_ISOLATION ON;
   ```
 
-#### 3. Create a user and grant appropriate permissions
+##### 3. Create a user and grant appropriate permissions
 
 - Rather than use _sysadmin_ or _db_owner_ credentials, we recommend creating a new user with the
   relevant CDC access for use with Airbyte. First let's create the login and user and add to the
@@ -239,7 +255,7 @@ For further detail, see the
     GRANT VIEW SERVER STATE TO {user name};
     ```
 
-#### 4. Extend the retention period of CDC data
+##### 4. Extend the retention period of CDC data
 
 - In SQL Server, by default, only three days of data are retained in the change tables. Unless you
   are running very frequent syncs, we suggest increasing this retention so that in case of a failure
@@ -284,7 +300,7 @@ GO
 
 ```
 
-#### 5. Ensure the SQL Server Agent is running
+##### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs) for CDC. It is therefore vital that the Agent is operational in order for CDC to work effectively. You can check the status of the SQL Server Agent as follows:
 
@@ -462,6 +478,10 @@ update public.actor set configuration =jsonb_set(configuration, '{replication_me
 WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'CDC');
 ```
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -469,15 +489,20 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.7       | 2026-05-12 | [78033](https://github.com/airbytehq/airbyte/pull/78033)                                                          | Re-release the Java connector base image revert after the 4.4.6 publish failure.                                                               |
+| 4.4.12      | 2026-06-16 | [80156](https://github.com/airbytehq/airbyte/pull/80156)                                                          | Log a message when a `DECIMAL`/`NUMERIC` column with scale 0 is discovered, ahead of an upcoming `number` -> `integer` remapping. No functional change. |
+| 4.4.11      | 2026-06-11 | [79128](https://github.com/airbytehq/airbyte/pull/79128)                                                          | Fix incremental sync failure when the saved state has a null cursor (table was empty on prior CDK version).                                     |
+| 4.4.10      | 2026-06-10 | [79149](https://github.com/airbytehq/airbyte/pull/79149)                                                          | Update cursor-based incremental query to prevent missing rows with high-precision datetime cursors.                                             |
+| 4.4.9       | 2026-06-02 | [77998](https://github.com/airbytehq/airbyte/pull/77998)                                                          | Validate CDC access per configured stream to prevent zero-LSN errors caused by missing permissions.                                             |
+| 4.4.8       | 2026-05-26 | [78415](https://github.com/airbytehq/airbyte/pull/78415)                                                          | Classify Azure read-replica error 3947 as transient so affected syncs retry instead of failing.                                                 |
+| 4.4.7       | 2026-05-12 | [78033](https://github.com/airbytehq/airbyte/pull/78033)                                                          | Re-release the Java connector base image revert after the 4.4.6 publish failure.                                                                |
 | 4.4.6       | 2026-05-07 | [77856](https://github.com/airbytehq/airbyte/pull/77856)                                                          | Revert the Java connector base image to resolve connection issues and remove registry rollback overrides.                                       |
 | 4.4.5       | 2026-05-07 | [77843](https://github.com/airbytehq/airbyte/pull/77843)                                                          | Roll back source mssql to 4.4.3 to investigate a potential connection issue.                                                                    |
-| 4.4.4       | 2026-05-01 | [77665](https://github.com/airbytehq/airbyte/pull/77665)                                                          | Fix sampling sync failure on empty tables in Full Refresh mode (NULL upper bound).                                                              |
+| 4.4.4       | 2026-05-07 | [77665](https://github.com/airbytehq/airbyte/pull/77665)                                                          | Fix sampling sync failure on empty tables in Full Refresh mode (NULL upper bound).                                                              |
 | 4.4.3       | 2026-05-05 | [77786](https://github.com/airbytehq/airbyte/pull/77786)                                                          | Make the hidden additional properties fields in spec optional. No functional change.                                                            |
-| 4.4.2       | 2026-04-27 | [77036](https://github.com/airbytehq/airbyte/pull/77036)                                                          | Fix `TABLESAMPLE` failure on views and tables without an ordered column in cursor-incremental syncs.                                            |
+| 4.4.2       | 2026-04-29 | [77036](https://github.com/airbytehq/airbyte/pull/77036)                                                          | Fix `TABLESAMPLE` failure on views and tables without an ordered column in cursor-incremental syncs.                                            |
 | 4.4.1       | 2026-04-23 | [76857](https://github.com/airbytehq/airbyte/pull/76857)                                                          | Fix `Invalid column name` error when sampling system-versioned temporal tables that have `HIDDEN` period columns.                               |
 | 4.4.0       | 2026-04-23 | [76143](https://github.com/airbytehq/airbyte/pull/76143)                                                          | Add Microsoft Entra ID service principal authentication for both JDBC and CDC paths.                                                            |
-| 4.3.6       | 2026-04-02 | [74729](https://github.com/airbytehq/airbyte/pull/74729)                                                          | Fix snapshot partitions restarting from the beginning of the table instead of resuming from the last checkpoint.                                |
+| 4.3.6       | 2026-04-20 | [74729](https://github.com/airbytehq/airbyte/pull/74729)                                                          | Fix snapshot partitions restarting from the beginning of the table instead of resuming from the last checkpoint.                                |
 | 4.3.5       | 2026-02-23 | [73606](https://github.com/airbytehq/airbyte/pull/73606)                                                          | Fix CDC cursor overflow.                                                                                                                        |
 | 4.3.4       | 2026-02-17 | [72935](https://github.com/airbytehq/airbyte/pull/72935)                                                          | Update LSN validation to correctly detect when saved offset has been truncated.                                                                 |
 | 4.3.3       | 2026-02-03 | [71821](https://github.com/airbytehq/airbyte/pull/71821)                                                          | Require a manual refresh when schema history is missing, bump CDK version.                                                                      |

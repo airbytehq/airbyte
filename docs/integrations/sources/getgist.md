@@ -20,6 +20,10 @@ An Airbyte connector for [Gist](https://getgist.com/) would enable data syncing 
 | teams | id | DefaultPaginator | ✅ |  ❌  |
 | teammates | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -27,6 +31,9 @@ An Airbyte connector for [Gist](https://getgist.com/) would enable data syncing 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-16 | [79861](https://github.com/airbytehq/airbyte/pull/79861) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79292](https://github.com/airbytehq/airbyte/pull/79292) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78711](https://github.com/airbytehq/airbyte/pull/78711) | Update dependencies |
 | 0.0.50 | 2026-04-28 | [77260](https://github.com/airbytehq/airbyte/pull/77260) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76603](https://github.com/airbytehq/airbyte/pull/76603) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75668](https://github.com/airbytehq/airbyte/pull/75668) | Update dependencies |

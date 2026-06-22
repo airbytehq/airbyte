@@ -47,6 +47,10 @@ This Source is capable of syncing the following core Streams:
 | `tickets`       | `_id`       | DefaultPaginator | ✅                 | ❌                   |
 | `users`         | `_id`       | DefaultPaginator | ✅                 | ❌                   |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -54,6 +58,9 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request | Subject                                              |
 | ------- | ---------- | ------------ | ---------------------------------------------------- |
+| 0.0.57 | 2026-06-16 | [79973](https://github.com/airbytehq/airbyte/pull/79973) | Update dependencies |
+| 0.0.56 | 2026-06-09 | [79426](https://github.com/airbytehq/airbyte/pull/79426) | Update dependencies |
+| 0.0.55 | 2026-06-02 | [78904](https://github.com/airbytehq/airbyte/pull/78904) | Update dependencies |
 | 0.0.54 | 2026-04-28 | [77387](https://github.com/airbytehq/airbyte/pull/77387) | Update dependencies |
 | 0.0.53 | 2026-04-21 | [76704](https://github.com/airbytehq/airbyte/pull/76704) | Update dependencies |
 | 0.0.52 | 2026-03-31 | [75844](https://github.com/airbytehq/airbyte/pull/75844) | Update dependencies |

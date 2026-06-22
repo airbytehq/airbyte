@@ -73,6 +73,10 @@ Report streams use `date` as the cursor field and default to `(date, campaignId)
 - For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
 - Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Apple Ads Campaign Management API v5](https://developer.apple.com/documentation/apple_ads). Airbyte calls `https://api.searchads.apple.com/api/v5` and sends the selected Apple Ads organization in the `X-AP-Context` header as `orgId={orgId}`.
@@ -99,6 +103,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.7 | 2026-06-16 | [79764](https://github.com/airbytehq/airbyte/pull/79764) | Update dependencies |
+| 1.1.6 | 2026-06-09 | [79235](https://github.com/airbytehq/airbyte/pull/79235) | Update dependencies |
+| 1.1.5 | 2026-06-02 | [78565](https://github.com/airbytehq/airbyte/pull/78565) | Update dependencies |
 | 1.1.4 | 2026-05-12 | [78029](https://github.com/airbytehq/airbyte/pull/78029) | Refresh expired OAuth access tokens before retrying failed Apple Ads API requests |
 | 1.1.3 | 2026-05-05 | [76973](https://github.com/airbytehq/airbyte/pull/76973) | Fix `ads_report_daily` broken incremental sync, remove incorrect keyword error predicate, and enable concurrent partition processing to reduce heartbeat timeouts |
 | 1.1.2 | 2026-04-28 | [77141](https://github.com/airbytehq/airbyte/pull/77141) | Update dependencies |

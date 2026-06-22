@@ -12,7 +12,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 5.1.0
+  dockerImageTag: 5.1.1
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   externalDocumentationUrls:
@@ -21,6 +21,9 @@ data:
       type: api_release_history
     - title: Jira Platform API Changelog
       url: https://developer.atlassian.com/cloud/jira/platform/changelog/
+      type: api_release_history
+    - title: Jira Software API Changelog
+      url: https://developer.atlassian.com/cloud/jira/software/changelog/
       type: api_release_history
     - title: Jira Cloud Platform API OpenAPI specification
       url: https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json

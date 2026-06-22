@@ -51,6 +51,10 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | task_lists | id | DefaultPaginator | ✅ |  ❌  |
 | checklist_templates | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -58,6 +62,9 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 1.0.8 | 2026-06-16 | [79865](https://github.com/airbytehq/airbyte/pull/79865) | Update dependencies |
+| 1.0.7 | 2026-06-09 | [79313](https://github.com/airbytehq/airbyte/pull/79313) | Update dependencies |
+| 1.0.6 | 2026-06-02 | [78681](https://github.com/airbytehq/airbyte/pull/78681) | Update dependencies |
 | 1.0.5 | 2026-04-28 | [77221](https://github.com/airbytehq/airbyte/pull/77221) | Update dependencies |
 | 1.0.4 | 2026-04-21 | [76592](https://github.com/airbytehq/airbyte/pull/76592) | Update dependencies |
 | 1.0.3 | 2026-03-31 | [75721](https://github.com/airbytehq/airbyte/pull/75721) | Update dependencies |

@@ -21,6 +21,10 @@ Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 | transactions |  | DefaultPaginator | ✅ |  ✅  |
 | payouts | payoutId | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,9 @@ Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2026-06-16 | [79858](https://github.com/airbytehq/airbyte/pull/79858) | Update dependencies |
+| 0.0.37 | 2026-06-09 | [79323](https://github.com/airbytehq/airbyte/pull/79323) | Update dependencies |
+| 0.0.36 | 2026-06-02 | [78678](https://github.com/airbytehq/airbyte/pull/78678) | Update dependencies |
 | 0.0.35 | 2026-04-28 | [77198](https://github.com/airbytehq/airbyte/pull/77198) | Update dependencies |
 | 0.0.34 | 2026-04-21 | [76572](https://github.com/airbytehq/airbyte/pull/76572) | Update dependencies |
 | 0.0.33 | 2026-03-31 | [75781](https://github.com/airbytehq/airbyte/pull/75781) | Update dependencies |

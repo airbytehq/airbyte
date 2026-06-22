@@ -37,9 +37,9 @@ Follow the [Marketo documentation for creating a custom service for use with a R
 
 Make sure to follow the "**Credentials for API Access"** section in the Marketo docs to generate a **Client ID** and **Client Secret.** Once generated, copy those credentials and keep them handy for use in the Airbyte UI later.
 
-#### Step 1.5: Obtain your Endpoint and Identity URLs provided by Marketo
+#### Step 1.5: Obtain your Endpoint URL
 
-Follow the [Marketo documentation for obtaining your base URL](https://developers.marketo.com/rest-api/base-url/). Specifically, copy your **Endpoint** without "/rest" and keep them handy for use in the Airbyte UI.
+Follow the [Marketo documentation for obtaining your base URL](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/base-url). In Marketo, navigate to **Admin** > **Integration** > **Web Services** and copy the **Endpoint** URL under the **REST API** section, without the trailing `/rest`. For example, if the endpoint is `https://000-AAA-000.mktorest.com/rest`, use `https://000-AAA-000.mktorest.com`.
 
 After you have your Endpoint URL, Client ID, and Client Secret, you can configure the Marketo connector in Airbyte.
 
@@ -120,12 +120,19 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 ## Data type map
 
-| Integration Type | Airbyte Type | Notes                                                                           |
-| :--------------- | :----------- | :------------------------------------------------------------------------------ |
-| `array`          | `array`      | primitive arrays are converted into arrays of the types described in this table |
-| `int`, `long`    | `number`     |                                                                                 |
-| `object`         | `object`     |                                                                                 |
-| `string`         | `string`     |                                                                                 |
+| Integration Type | Airbyte Type | Notes |
+| :--------------- | :----------- | :---- |
+| `string`, `text`, `url`, `phone`, `email`, `reference` | `string` | |
+| `integer`, `percent`, `score` | `integer` | |
+| `float`, `currency` | `number` | |
+| `boolean` | `boolean` | |
+| `date` | `string` | Format: `date` |
+| `datetime` | `string` | Format: `date-time` |
+| `array` | `array` | Primitive arrays are converted into arrays of the types described in this table. |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -134,7 +141,8 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 2.0.0 | 2026-04-22 | [76476](https://github.com/airbytehq/airbyte/pull/76476) | Fix `leads` stream to filter Bulk Lead Extract on `updatedAt` so incremental syncs capture updates to pre-existing leads. See the [migration guide](/integrations/sources/marketo-migrations) for details. |
+| 2.0.1 | 2026-06-04 | [78428](https://github.com/airbytehq/airbyte/pull/78428) | Stream Marketo bulk export downloads to reduce memory usage for large CSV exports. |
+| 2.0.0 | 2026-05-07 | [76892](https://github.com/airbytehq/airbyte/pull/76892) | Fix `leads` stream to filter Bulk Lead Extract on `updatedAt` so incremental syncs capture updates to pre-existing leads. See the [migration guide](/integrations/sources/marketo-migrations) for details. |
 | 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
 | 1.6.1 | 2026-03-25 | [74088](https://github.com/airbytehq/airbyte/pull/74088) | Fix CSV column misalignment when syncing leads containing CJK characters |
 | 1.6.0 | 2026-03-19 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |

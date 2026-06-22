@@ -45,6 +45,10 @@ Documentation: https://rootly.com/api#/
 | retrospective_configurations | id | DefaultPaginator | ✅ |  ✅  |
 | retrospective_processes | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -52,6 +56,9 @@ Documentation: https://rootly.com/api#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.56 | 2026-06-16 | [80047](https://github.com/airbytehq/airbyte/pull/80047) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79507](https://github.com/airbytehq/airbyte/pull/79507) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [78948](https://github.com/airbytehq/airbyte/pull/78948) | Update dependencies |
 | 0.0.53 | 2026-04-28 | [77412](https://github.com/airbytehq/airbyte/pull/77412) | Update dependencies |
 | 0.0.52 | 2026-04-21 | [76735](https://github.com/airbytehq/airbyte/pull/76735) | Update dependencies |
 | 0.0.51 | 2026-03-31 | [75852](https://github.com/airbytehq/airbyte/pull/75852) | Update dependencies |

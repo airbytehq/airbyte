@@ -249,10 +249,10 @@ spec:
           matching the same date range and marketplace, it can reuse that report
           instead of creating a new one. This setting controls how old (in hours)
           a completed report can be and still be reused. Set to 0 to always create
-          new reports. Maximum is 24 hours."
+          new reports. Maximum is 72 hours."
         default: 0
         minimum: 0
-        maximum: 24
+        maximum: 72
         order: 14
       financial_events_step:
         title: Financial Events Step Size
@@ -333,6 +333,20 @@ spec:
         minimum: 1
         maximum: 100
         order: 17
+      report_stream_lookback_window_in_hours:
+        title: Report Stream Lookback Window (Hours)
+        description: >-
+          Number of hours to re-fetch for incremental report streams on each sync.
+          Increase this value if Amazon continues updating report data after the
+          previous sync has completed. Duplicates from the lookback window are
+          handled by destination deduplication. Set to 0 to disable. This does
+          not apply to GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH or
+          GET_VENDOR_SALES_REPORT, which use monthly or date-only report
+          boundaries.
+        type: integer
+        default: 0
+        minimum: 0
+        order: 18
       failed_retry_wait_time_in_seconds:
         title: Failed Report Retry Wait Time (Seconds)
         description: >-
@@ -346,7 +360,7 @@ spec:
         default: 1800
         minimum: 1
         maximum: 14400
-        order: 18
+        order: 19
       creation_requester_429_max_retries:
         title: Report Creation 429 Max Retries
         description: >-
@@ -357,7 +371,22 @@ spec:
         type: integer
         default: 5
         minimum: 0
-        order: 19
+        order: 20
+      stop_sync_on_rate_limit:
+        title: Stop Sync When Report Streams Are Rate Limited
+        description: >-
+          Only applies to report streams. When enabled, the source stops
+          retrying immediately once the rate limit retry budget is exhausted
+          and fails with an actionable configuration error. This is useful
+          when persistent rate limiting indicates the connector configuration
+          needs adjustment (such as reducing the number of report streams or
+          increasing the sync interval). When disabled (default), the source
+          applies its backoff and retry strategy; if all retry attempts are
+          exhausted, a transient error is thrown and the sync may be
+          rescheduled automatically.
+        type: boolean
+        default: false
+        order: 21
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -1149,6 +1178,7 @@ definitions:
         # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days
         step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1184,6 +1214,7 @@ definitions:
         # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days
         step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1220,6 +1251,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1262,6 +1294,7 @@ definitions:
         # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days
         step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1304,6 +1337,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1345,6 +1379,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1387,6 +1422,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1429,6 +1465,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1474,6 +1511,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1524,6 +1562,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1574,6 +1613,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1616,6 +1656,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1658,6 +1699,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1711,6 +1753,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1753,6 +1796,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1795,6 +1839,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1837,6 +1882,7 @@ definitions:
         # The maximum step for this stream is 60 days or lower when the customer configures the period_in_days
         step: "P{{ min( config.get('period_in_days', 365), 60 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1878,6 +1924,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1920,6 +1967,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1970,6 +2018,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2012,6 +2061,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2062,6 +2112,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2104,6 +2155,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2146,6 +2198,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2188,6 +2241,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2230,6 +2284,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2272,6 +2327,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2314,6 +2370,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2356,6 +2413,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2400,6 +2458,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2446,6 +2505,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2496,6 +2556,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 24) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2504,7 +2565,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        lookback_window: "P1D"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -2547,6 +2607,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2840,6 +2901,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: "P1D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2946,6 +3008,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: "P1D"
         cursor_granularity: "PT1S"
+        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"

@@ -58,14 +58,17 @@ validates your connection using the `user_account_analytics` stream, which requi
    data on and after this date. If you don't set a date, the connector defaults to the maximum
    lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
    streams can look back up to 913 days.
-7. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
-   and campaigns streams, specifying a status will filter out records that do not match the
-   specified ones. If a status is not specified, the source will default to records with a status of
-   either ACTIVE or PAUSED.
+7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
+   `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
+   status filters out records that do not match. If no status is specified, the source defaults to
+   `ACTIVE` and `PAUSED`.
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
 9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
-10. Click **Set up source**.
+10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
+    connector makes during a sync. The default is 2. Higher values speed up syncs but increase
+    rate-limit pressure. If you encounter rate-limit errors, reduce this value.
+11. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -85,14 +88,17 @@ validates your connection using the `user_account_analytics` stream, which requi
    data on and after this date. If you don't set a date, the connector defaults to the maximum
    lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
    streams can look back up to 913 days.
-7. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
-   and campaigns streams, specifying a status will filter out records that do not match the
-   specified ones. If a status is not specified, the source will default to records with a status of
-   either ACTIVE or PAUSED.
+7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
+   `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
+   status filters out records that do not match. If no status is specified, the source defaults to
+   `ACTIVE` and `PAUSED`.
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
 9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
-10. Click **Set up source**.
+10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
+    connector makes during a sync. The default is 2. Higher values speed up syncs but increase
+    rate-limit pressure. If you encounter rate-limit errors, reduce this value.
+11. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -105,7 +111,7 @@ The Pinterest source connector supports the following
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Account analytics](https://developers.pinterest.com/docs/api/v5/#operation/user_account/analytics)
   \(Incremental\)
@@ -195,7 +201,16 @@ properties:
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
 9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as
    INDIVIDUAL or HOUSEHOLD.
-10. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
+10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT. Include ARCHIVED to report on archived campaigns.
+11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT.
+12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select up to six values
+    from: APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. This filter is not supported for Product Item level reports.
+13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
 For more detailed information and guidelines on creating custom reports, please refer to the
@@ -205,9 +220,19 @@ For more detailed information and guidelines on creating custom reports, please 
 
 The connector is restricted by the Pinterest
 [rate limits](https://developers.pinterest.com/docs/reference/rate-limits/). The Pinterest API
-enforces rate limits per endpoint category. For example, analytics endpoints allow 300 requests per
-minute with standard access, while general read endpoints allow 1,000 requests per minute. For
-details, see the [Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
+enforces rate limits per endpoint category. For example, the `ads_analytics` category allows 300
+requests per minute with standard access, while `ads_read` and `org_read` categories allow 1,000
+requests per minute. For details, see the
+[Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
+
+When the connector encounters a rate-limit response, it automatically waits using the
+`X-RateLimit-Reset` header and retries the request. You can reduce the **Number of concurrent
+workers** setting (default: 2, range: 1–40) to lower rate-limit pressure at the cost of slower
+syncs.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -216,6 +241,16 @@ details, see the [Pinterest rate limits documentation](https://developers.pinter
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.3 | 2026-06-16 | [79987](https://github.com/airbytehq/airbyte/pull/79987) | Update dependencies |
+| 2.2.2 | 2026-06-15 | [79693](https://github.com/airbytehq/airbyte/pull/79693) | Handle Pinterest rate limits during report download target refresh and reduce default concurrency. |
+| 2.2.1 | 2026-06-10 | [78496](https://github.com/airbytehq/airbyte/pull/78496) | Refresh Pinterest async report download URLs immediately before fetching reports. |
+| 2.2.0 | 2026-06-10 | [79655](https://github.com/airbytehq/airbyte/pull/79655) | Promotes to stable release. |
+| 2.2.0-rc.1 | 2026-06-09 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added optional custom report status filters so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |
+| 2.1.30 | 2026-06-09 | [79465](https://github.com/airbytehq/airbyte/pull/79465) | Update dependencies |
+| 2.1.29 | 2026-06-02 | [75841](https://github.com/airbytehq/airbyte/pull/75841) | Update dependencies |
+| 2.1.28 | 2026-06-01 | [78538](https://github.com/airbytehq/airbyte/pull/78538) | Promoted release candidate to GA |
+| 2.1.28-rc.4 | 2026-05-27 | [78466](https://github.com/airbytehq/airbyte/pull/78466) | Remove the HTTP API budget while keeping default concurrency at 4 for continued tuning. |
+| 2.1.28-rc.3 | 2026-05-26 | [78432](https://github.com/airbytehq/airbyte/pull/78432) | Set default concurrency to 4 and use the standard num_workers override while preserving the Pinterest API budget. |
 | 2.1.28-rc.2 | 2026-05-21 | [78345](https://github.com/airbytehq/airbyte/pull/78345) | Increase default concurrency to 5 for the source-pinterest Phase 1 tuning cohort. |
 | 2.1.28-rc.1 | 2026-05-18 | [76952](https://github.com/airbytehq/airbyte/pull/76952) | Concurrency tuning (Path A): bump `default_concurrency` default to 4 via the `num_threads` fallback. No user-visible spec changes. |
 | 2.1.27 | 2026-04-07 | [75485](https://github.com/airbytehq/airbyte/pull/75485) | Add maxLength validation to account_id field to reject values longer than 18 characters at config time |
@@ -299,7 +334,7 @@ details, see the [Pinterest rate limits documentation](https://developers.pinter
 | 0.8.0 | 2023-11-16 | [32592](https://github.com/airbytehq/airbyte/pull/32592) | Make start_date optional; add suggested streams; add missing fields |
 | 0.7.2 | 2023-11-08 | [32299](https://github.com/airbytehq/airbyte/pull/32299) | added default `AvailabilityStrategy`, fixed bug which cases duplicated requests, added new streams: Catalogs, CatalogsFeeds, CatalogsProductGroups, Audiences, Keywords, ConversionTags, CustomerLists, CampaignTargetingReport, AdvertizerReport, AdvertizerTargetingReport, AdGroupReport, AdGroupTargetingReport, PinPromotionReport, PinPromotionTargetingReport, ProductGroupReport, ProductGroupTargetingReport, ProductItemReport, KeywordReport |
 | 0.7.1 | 2023-11-01 | [32078](https://github.com/airbytehq/airbyte/pull/32078) | handle non json response |
-| 0.7.0 | 2023-10-25 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | Migrated to base image, removed token based authentication mthod becuase access_token is valid for 1 day only |
+| 0.7.0 | 2023-10-25 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | Migrated to base image, removed token based authentication method because access_token is valid for 1 day only |
 | 0.6.0 | 2023-07-25 | [28672](https://github.com/airbytehq/airbyte/pull/28672) | Add report stream for `CAMPAIGN` level |
 | 0.5.3 | 2023-07-05 | [27964](https://github.com/airbytehq/airbyte/pull/27964) | Add `id` field to `owner` field in `ad_accounts` stream |
 | 0.5.2 | 2023-06-02 | [26949](https://github.com/airbytehq/airbyte/pull/26949) | Update `BoardPins` stream with `note` property |

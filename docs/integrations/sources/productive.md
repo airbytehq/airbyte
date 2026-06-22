@@ -76,6 +76,10 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 | widgets | id | DefaultPaginator | ✅ |  ❌  |
 | workflow_statuses | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -83,6 +87,8 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.50 | 2026-06-16 | [79996](https://github.com/airbytehq/airbyte/pull/79996) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [78899](https://github.com/airbytehq/airbyte/pull/78899) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77358](https://github.com/airbytehq/airbyte/pull/77358) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [76727](https://github.com/airbytehq/airbyte/pull/76727) | Update dependencies |
 | 0.0.46 | 2026-03-31 | [75873](https://github.com/airbytehq/airbyte/pull/75873) | Update dependencies |

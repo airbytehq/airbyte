@@ -257,6 +257,10 @@ The below table contains the configuraiton parameters available for this connect
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -264,6 +268,9 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.36 | 2026-06-16 | [79986](https://github.com/airbytehq/airbyte/pull/79986) | Update dependencies |
+| 2.6.35 | 2026-06-09 | [79456](https://github.com/airbytehq/airbyte/pull/79456) | Update dependencies |
+| 2.6.34 | 2026-06-02 | [78907](https://github.com/airbytehq/airbyte/pull/78907) | Update dependencies |
 | 2.6.33 | 2026-04-28 | [77335](https://github.com/airbytehq/airbyte/pull/77335) | Update dependencies |
 | 2.6.32 | 2026-04-21 | [76710](https://github.com/airbytehq/airbyte/pull/76710) | Update dependencies |
 | 2.6.31 | 2026-04-07 | [76135](https://github.com/airbytehq/airbyte/pull/76135) | Fix undefined `security_context` variable in payments generator utility script |

@@ -31,6 +31,10 @@ You have to give your login email and password used with `when-i-work` account f
 | positions | id | No pagination | ✅ |  ❌  |
 | openshiftapprovalrequests | uid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,9 @@ You have to give your login email and password used with `when-i-work` account f
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.55 | 2026-06-16 | [80064](https://github.com/airbytehq/airbyte/pull/80064) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79535](https://github.com/airbytehq/airbyte/pull/79535) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [79011](https://github.com/airbytehq/airbyte/pull/79011) | Update dependencies |
 | 0.0.52 | 2026-04-28 | [77460](https://github.com/airbytehq/airbyte/pull/77460) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76820](https://github.com/airbytehq/airbyte/pull/76820) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75722](https://github.com/airbytehq/airbyte/pull/75722) | Update dependencies |

@@ -23,6 +23,10 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 - Sonar cloud User Token
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,9 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.49 | 2026-06-16 | [80037](https://github.com/airbytehq/airbyte/pull/80037) | Update dependencies |
+| 0.2.48 | 2026-06-09 | [79495](https://github.com/airbytehq/airbyte/pull/79495) | Update dependencies |
+| 0.2.47 | 2026-06-02 | [78947](https://github.com/airbytehq/airbyte/pull/78947) | Update dependencies |
 | 0.2.46 | 2026-04-28 | [77439](https://github.com/airbytehq/airbyte/pull/77439) | Update dependencies |
 | 0.2.45 | 2026-04-21 | [75890](https://github.com/airbytehq/airbyte/pull/75890) | Update dependencies |
 | 0.2.44 | 2026-03-24 | [75384](https://github.com/airbytehq/airbyte/pull/75384) | Update dependencies |

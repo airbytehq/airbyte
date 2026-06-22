@@ -18,6 +18,10 @@ Fetches data on users, expenses, transactions, vendors, and budgets from Brex AP
 | expenses | id | DefaultPaginator | ✅ |  ✅  |
 | budgets | budget_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,9 @@ Fetches data on users, expenses, transactions, vendors, and budgets from Brex AP
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-06-16 | [79777](https://github.com/airbytehq/airbyte/pull/79777) | Update dependencies |
+| 0.0.45 | 2026-06-09 | [79211](https://github.com/airbytehq/airbyte/pull/79211) | Update dependencies |
+| 0.0.44 | 2026-06-02 | [78569](https://github.com/airbytehq/airbyte/pull/78569) | Update dependencies |
 | 0.0.43 | 2026-04-28 | [77182](https://github.com/airbytehq/airbyte/pull/77182) | Update dependencies |
 | 0.0.42 | 2026-04-21 | [76525](https://github.com/airbytehq/airbyte/pull/76525) | Update dependencies |
 | 0.0.41 | 2026-03-31 | [75651](https://github.com/airbytehq/airbyte/pull/75651) | Update dependencies |

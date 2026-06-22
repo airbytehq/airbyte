@@ -39,6 +39,10 @@ There is no requirements to setup this source.
 
 This source requires no setup.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -46,6 +50,8 @@ This source requires no setup.
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.34 | 2026-06-09 | [79442](https://github.com/airbytehq/airbyte/pull/79442) | Update dependencies |
+| 0.2.33 | 2026-06-02 | [78871](https://github.com/airbytehq/airbyte/pull/78871) | Update dependencies |
 | 0.2.32 | 2026-04-28 | [77373](https://github.com/airbytehq/airbyte/pull/77373) | Update dependencies |
 | 0.2.31 | 2026-04-21 | [65014](https://github.com/airbytehq/airbyte/pull/65014) | Update dependencies |
 | 0.2.30 | 2025-02-01 | [52954](https://github.com/airbytehq/airbyte/pull/52954) | Update dependencies |

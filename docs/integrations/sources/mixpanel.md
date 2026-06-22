@@ -76,6 +76,10 @@ Syncing large date windows may take longer due to these rate limits. You can adj
 
 The Mixpanel source connector supports `US` and `EU` data residency regions. It doesn't support Mixpanel's India data residency endpoints.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

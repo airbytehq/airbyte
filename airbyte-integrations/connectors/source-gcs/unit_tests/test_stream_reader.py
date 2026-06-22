@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
+import inspect
 from unittest.mock import MagicMock, Mock
 
 import pytest
@@ -11,6 +12,12 @@ from source_gcs.config import ServiceAccountCredentials
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+
+
+try:
+    from google.resumable_media.requests.download import _GzipDecoder
+except ImportError:
+    _GzipDecoder = None
 
 
 def test_get_matching_files_with_no_prefix(logger, mocked_reader):
@@ -133,3 +140,26 @@ def test_get_matching_files_sanitize_signed_urls(logger, sanitize_value, expecte
     if sanitize_value:
         assert "X-Goog-Credential" not in (files[0].displayed_uri or "")
         assert "X-Goog-Signature" not in (files[0].displayed_uri or "")
+
+
+@pytest.mark.skipif(_GzipDecoder is None, reason="google-resumable-media _GzipDecoder not available")
+def test_gzip_decoder_accepts_max_length_kwarg():
+    """Regression test for urllib3 2.6.x / google-resumable-media compatibility.
+
+    urllib3 2.6.0+ calls decompress(data, max_length=...) on response decoders.
+    google-resumable-media <2.8.1 overrode decompress() without accepting
+    max_length, causing TypeError on gzip-encoded GCS responses.
+    See: https://github.com/airbytehq/airbyte/issues/74241
+    """
+    sig = inspect.signature(_GzipDecoder.decompress)
+    params = sig.parameters
+
+    accepts_max_length = "max_length" in params
+    accepts_var_keyword = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values())
+
+    assert accepts_max_length or accepts_var_keyword, (
+        f"_GzipDecoder.decompress{sig} does not accept max_length. "
+        "urllib3 >=2.6.0 passes max_length as a keyword argument to response "
+        "decoders; this will cause TypeError on gzip-encoded GCS downloads. "
+        "Upgrade google-resumable-media to >=2.8.1."
+    )

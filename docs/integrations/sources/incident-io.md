@@ -53,6 +53,10 @@ The Incident.io source connector supports the following [sync modes](https://doc
 
 The Incident.io API has a default rate limit of 1,200 requests per minute per API key. If the connector encounters rate limiting, it retries with exponential backoff.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -60,11 +64,15 @@ The Incident.io API has a default rate limit of 1,200 requests per minute per AP
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.29 | 2026-06-16 | [79887](https://github.com/airbytehq/airbyte/pull/79887) | Update dependencies |
+| 0.1.28 | 2026-06-09 | [79368](https://github.com/airbytehq/airbyte/pull/79368) | Update dependencies |
+| 0.1.27 | 2026-06-03 | [78426](https://github.com/airbytehq/airbyte/pull/78426) | Add `external_issue_reference` field to the follow-ups stream |
+| 0.1.26 | 2026-06-02 | [78742](https://github.com/airbytehq/airbyte/pull/78742) | Update dependencies |
 | 0.1.25 | 2026-04-28 | [77315](https://github.com/airbytehq/airbyte/pull/77315) | Update dependencies |
 | 0.1.24 | 2026-04-21 | [76661](https://github.com/airbytehq/airbyte/pull/76661) | Update dependencies |
 | 0.1.23 | 2026-03-17 | [75081](https://github.com/airbytehq/airbyte/pull/75081) | Update dependencies |
 | 0.1.22 | 2026-03-10 | [74503](https://github.com/airbytehq/airbyte/pull/74503) | Update dependencies |
-| 0.1.21 | 2026-02-26 | [74072](https://github.com/airbytehq/airbyte/pull/74072) | feat: source-incident-io: use incident_roles v2 + add escalations stream |
+| 0.1.21 | 2026-02-26 | [74072](https://github.com/airbytehq/airbyte/pull/74072) | Migrate to incident_roles v2 endpoint and add escalations stream |
 | 0.1.20 | 2026-02-24 | [73520](https://github.com/airbytehq/airbyte/pull/73520) | Update dependencies |
 | 0.1.19 | 2026-02-10 | [73089](https://github.com/airbytehq/airbyte/pull/73089) | Update dependencies |
 | 0.1.18 | 2026-02-03 | [72760](https://github.com/airbytehq/airbyte/pull/72760) | Update dependencies |

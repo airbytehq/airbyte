@@ -121,6 +121,10 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 - [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -128,6 +132,9 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.28 | 2026-06-16 | [79931](https://github.com/airbytehq/airbyte/pull/79931) | Update dependencies |
+| 2.1.27 | 2026-06-09 | [79396](https://github.com/airbytehq/airbyte/pull/79396) | Update dependencies |
+| 2.1.26 | 2026-06-02 | [78809](https://github.com/airbytehq/airbyte/pull/78809) | Update dependencies |
 | 2.1.25 | 2026-04-28 | [77289](https://github.com/airbytehq/airbyte/pull/77289) | Update dependencies |
 | 2.1.24 | 2026-04-21 | [76663](https://github.com/airbytehq/airbyte/pull/76663) | Update dependencies |
 | 2.1.23 | 2026-04-17 | [76453](https://github.com/airbytehq/airbyte/pull/76453) | Promoted release candidate to GA |

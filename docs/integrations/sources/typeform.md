@@ -99,6 +99,10 @@ Page size limits per stream:
 
 The Forms, Responses, and Webhooks streams make separate API calls for each form in your account. The connector first fetches the list of form IDs using the [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/), then queries each form individually. If you have many forms, consider using the **Form IDs** configuration option to limit the sync to only the forms you need.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

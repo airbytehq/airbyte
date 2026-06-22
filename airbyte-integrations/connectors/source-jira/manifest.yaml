@@ -14913,11 +14913,11 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 3
+        default: 5
         examples:
         - 1
         - 2
-        - 3
+        - 5
         description: The number of worker threads to use for the sync.
         order: 6
   advanced_auth:
