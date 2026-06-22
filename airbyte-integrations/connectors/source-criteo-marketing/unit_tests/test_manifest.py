@@ -42,9 +42,9 @@ def test_ad_spend_daily_request_body_contains_advertiser_ids(manifest):
     linked_body = manifest["definitions"]["linked"]["HttpRequester"]["request_body"]["value"]
     assert "advertiserIds" in linked_body, "request body must include advertiserIds key"
     value = linked_body["advertiserIds"]
-    assert "config['advertiser_ids']" in value or 'config["advertiser_ids"]' in value, (
-        f"advertiserIds must reference config advertiser_ids, got: {value}"
-    )
+    assert (
+        "config['advertiser_ids']" in value or 'config["advertiser_ids"]' in value
+    ), f"advertiserIds must reference config advertiser_ids, got: {value}"
 
 
 @pytest.mark.parametrize(
