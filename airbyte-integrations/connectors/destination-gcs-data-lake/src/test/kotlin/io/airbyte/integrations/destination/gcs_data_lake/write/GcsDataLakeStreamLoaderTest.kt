@@ -50,9 +50,9 @@ internal class GcsDataLakeStreamLoaderTest {
     }
 
     /**
-     * Tests the fix for the bug where setIdentifierFields fails with
-     * IllegalArgumentException when the PK field is optional in the existing table.
-     * The fix ensures requireColumn() is called for each PK field before setIdentifierFields().
+     * Tests the fix for the bug where setIdentifierFields fails with IllegalArgumentException when
+     * the PK field is optional in the existing table. The fix ensures requireColumn() is called for
+     * each PK field before setIdentifierFields().
      */
     @Test
     fun testStartCallsRequireColumnBeforeSetIdentifierFields() {
@@ -210,7 +210,10 @@ internal class GcsDataLakeStreamLoaderTest {
                 tableSchema =
                     makeTableSchema(
                         objectSchema,
-                        Dedupe(primaryKey = listOf(listOf("org_id"), listOf("transaction_id")), cursor = listOf("org_id"))
+                        Dedupe(
+                            primaryKey = listOf(listOf("org_id"), listOf("transaction_id")),
+                            cursor = listOf("org_id")
+                        )
                     ),
             )
 
