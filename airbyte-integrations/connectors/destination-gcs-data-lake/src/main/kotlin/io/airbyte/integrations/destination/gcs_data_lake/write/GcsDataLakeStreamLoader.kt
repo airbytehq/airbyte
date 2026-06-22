@@ -145,7 +145,9 @@ class GcsDataLakeStreamLoader(
             // (it will set identifier fields after schema evolution in
             // computeOrExecuteSchemaUpdate)
             if (table.history().isEmpty() || table.schema().identifierFieldIds().isEmpty()) {
-                table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
+                val updateSchema = table.updateSchema()
+                primaryKeyNames.forEach { updateSchema.requireColumn(it) }
+                updateSchema.setIdentifierFields(primaryKeyNames).commit()
                 // Refresh to get the updated schema with identifier fields
                 table.refresh()
             } else {
