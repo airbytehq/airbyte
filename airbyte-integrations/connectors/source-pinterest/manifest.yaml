@@ -910,7 +910,7 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/boards_schema"
     $parameters:
-      path: "{{ 'boards?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards' }}"
+      path: "{{ 'boards?ad_account_id=' + config['account_id'].strip() if config.get('account_id', '').strip() else 'boards' }}"
 
   catalogs_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs/list
@@ -920,7 +920,7 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/catalogs_schema"
     $parameters:
-      path: "{{ 'catalogs?ad_account_id=' + config['account_id'] if config.get('account_id') else 'catalogs' }}"
+      path: "{{ 'catalogs?ad_account_id=' + config['account_id'].strip() if config.get('account_id', '').strip() else 'catalogs' }}"
 
   catalogs_feeds_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/feeds/list
@@ -934,7 +934,7 @@ definitions:
         field_pointers:
           - ["credentials"]
     $parameters:
-      path: "{{ 'catalogs/feeds?ad_account_id=' + config['account_id'] if config.get('account_id') else 'catalogs/feeds' }}"
+      path: "{{ 'catalogs/feeds?ad_account_id=' + config['account_id'].strip() if config.get('account_id', '').strip() else 'catalogs/feeds' }}"
 
   catalogs_product_groups_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs_product_groups/list
@@ -944,7 +944,7 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/catalogs_product_groups_schema"
     $parameters:
-      path: "{{ 'catalogs/product_groups?ad_account_id=' + config['account_id'] if config.get('account_id') else 'catalogs/product_groups' }}"
+      path: "{{ 'catalogs/product_groups?ad_account_id=' + config['account_id'].strip() if config.get('account_id', '').strip() else 'catalogs/product_groups' }}"
 
   ad_accounts_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/ad_accounts-list and https://developers.pinterest.com/docs/api/v5/ad_accounts-get
@@ -961,7 +961,7 @@ definitions:
           type: CustomRecordExtractor
           class_name: source_declarative_manifest.components.AdAccountRecordExtractor
     $parameters:
-      path: "{{ 'ad_accounts/' + config['account_id'] if config.get('account_id') else 'ad_accounts' }}"
+      path: "{{ 'ad_accounts/' + config['account_id'].strip() if config.get('account_id', '').strip() else 'ad_accounts' }}"
 
   board_sections_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list
@@ -972,7 +972,7 @@ definitions:
       schema: "#/definitions/board_sections_schema"
     retriever: "#/definitions/board_based_retriever"
     $parameters:
-      path: "{{ 'boards/' + stream_slice.id + '/sections?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.id + '/sections' }}"
+      path: "{{ 'boards/' + stream_slice.id + '/sections?ad_account_id=' + config['account_id'].strip() if config.get('account_id', '').strip() else 'boards/' + stream_slice.id + '/sections' }}"
 
   board_pins_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/boards/list_pins
@@ -983,7 +983,7 @@ definitions:
       schema: "#/definitions/board_pins_schema"
     retriever: "#/definitions/board_based_retriever"
     $parameters:
-      path: "{{ 'boards/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.id + '/pins' }}"
+      path: "{{ 'boards/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'].strip() if config.get('account_id', '').strip() else 'boards/' + stream_slice.id + '/pins' }}"
 
   board_section_pins_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list_pins
@@ -1002,7 +1002,7 @@ definitions:
             stream: "#/definitions/board_sections_stream"
             partition_field: "id"
     $parameters:
-      path: "{{ 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins' }}"
+      path: "{{ 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'].strip() if config.get('account_id', '').strip() else 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins' }}"
 
   audiences_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list
@@ -5077,6 +5077,8 @@ spec:
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
         maxLength: 18 # Pinterest account IDs are at most 18 characters
+        pattern: "^[0-9]+$"
+        pattern_descriptor: "Numeric Pinterest account ID (digits only)"
         examples: ["1234567890"]
       num_workers:
         type: integer
