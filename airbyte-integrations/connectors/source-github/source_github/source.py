@@ -130,7 +130,7 @@ class SourceGithub(AbstractSource):
         raise Exception("Invalid config format")
 
     def _get_authenticator(self, config: Mapping[str, Any]):
-        # TK-TODO: Pin to stable CDK release after airbytehq/airbyte-python-cdk#1057 is merged and released.
+        # TK-TODO: Pin to stable CDK release after airbytehq/airbyte-python-cdk#1057 is merged and released.  # IGNORE:TK
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
         return TokenPoolAuthenticator(
