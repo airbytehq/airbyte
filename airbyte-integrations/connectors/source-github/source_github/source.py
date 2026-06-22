@@ -3,11 +3,20 @@
 #
 import logging
 from os import getenv
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    FailureType,
+    Status,
+)
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -59,8 +68,59 @@ from .streams import (
 from .utils import read_full_refresh
 
 
-class SourceGithub(AbstractSource):
+class _NonConcurrentReadAdapter(AbstractSource):
+    """Adapter routing `read()` through `AbstractSource`'s non-concurrent implementation.
+
+    During Step 1 migration from `AbstractSource` to `YamlDeclarativeSource`,
+    all streams are still non-concurrent Python `Stream` objects.
+    `ConcurrentDeclarativeSource.read()` expects concurrent `AbstractStream`
+    objects, so this adapter provides the `AbstractSource.read()` behaviour
+    needed for non-concurrent streams.
+    """
+
     continue_sync_on_stream_failure = True
+
+    def __init__(self, source: "SourceGithub") -> None:
+        self._source = source
+
+    @property
+    def name(self) -> str:
+        return self._source.name
+
+    @property
+    def message_repository(self):  # type: ignore[override]
+        return self._source._message_repository
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        return self._source.check_connection(logger, config)
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        return self._source.streams(config)
+
+
+class SourceGithub(YamlDeclarativeSource):
+    continue_sync_on_stream_failure = True
+
+    def __init__(self) -> None:
+        super().__init__(path_to_yaml="manifest.yaml")
+
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        check_succeeded, error = self.check_connection(logger, config)
+        if not check_succeeded:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        return AirbyteCatalog(streams=[stream.as_airbyte_stream() for stream in self.streams(config=config)])
+
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Optional[List[AirbyteStateMessage]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        return _NonConcurrentReadAdapter(self).read(logger, config, catalog, state)
 
     @staticmethod
     def _get_org_repositories(

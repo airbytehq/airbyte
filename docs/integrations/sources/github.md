@@ -179,6 +179,10 @@ This connector outputs the following incremental streams:
 - `teams`
 - `users`
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -230,10 +234,6 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 </details>
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
@@ -241,6 +241,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.33 | 2026-06-16 | [80133](https://github.com/airbytehq/airbyte/pull/80133) | Switch base class from AbstractSource to YamlDeclarativeSource (Step 1 of declarative migration) |
 | 2.1.32 | 2026-06-16 | [79802](https://github.com/airbytehq/airbyte/pull/79802) | Update dependencies |
 | 2.1.31 | 2026-06-08 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
 | 2.1.30 | 2026-06-09 | [79312](https://github.com/airbytehq/airbyte/pull/79312) | Update dependencies |
