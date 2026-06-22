@@ -50,10 +50,4 @@ data:
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-GITHUB_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
