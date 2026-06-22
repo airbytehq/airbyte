@@ -23,6 +23,11 @@ class GithubStreamABCBackoffStrategy(BackoffStrategy):
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
         if isinstance(response_or_exception, requests.Response):
+            # Feed rate-limit headers to the authenticator for state tracking
+            auth = self.stream._http_client._session.auth
+            if hasattr(auth, "on_http_response"):
+                auth.on_http_response(response_or_exception)
+
             min_backoff_time = 60.0
             retry_after = response_or_exception.headers.get("Retry-After")
             if retry_after is not None:

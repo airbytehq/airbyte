@@ -8,10 +8,11 @@ from urllib.parse import urlparse
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.auth.token_pool_authenticator import TokenPoolAuthenticator
+from airbyte_cdk.sources.declarative.auth.token_rotation_strategies import RateLimitAwareRotation
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 from . import constants
 from .streams import (
@@ -129,9 +130,23 @@ class SourceGithub(AbstractSource):
         raise Exception("Invalid config format")
 
     def _get_authenticator(self, config: Mapping[str, Any]):
+        # TK-TODO: Pin to stable CDK release after airbytehq/airbyte-python-cdk#1057 is merged and released.  # IGNORE:TK
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
-        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens)
+        return TokenPoolAuthenticator(
+            tokens=constants.TOKEN_SEPARATOR.join(tokens),
+            config=config,
+            parameters={},
+            token_separator=constants.TOKEN_SEPARATOR,
+            auth_method="token",
+            rotation_strategy=RateLimitAwareRotation(
+                tokens=tokens,
+                parameters={},
+                ratelimit_remaining_header="x-ratelimit-remaining",
+                ratelimit_reset_header="x-ratelimit-reset",
+                max_wait_seconds=7200,
+            ),
+        )
 
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)

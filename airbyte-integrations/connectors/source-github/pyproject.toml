@@ -17,7 +17,8 @@ include = "source_github"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
-airbyte-cdk = "^7.12.0"
+# TK-TODO: Pin to stable CDK release after airbytehq/airbyte-python-cdk#1057 is merged and released.  # IGNORE:TK
+airbyte-cdk = {git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "devin/1750005100-token-pool-authenticator"}
 sgqlc = "==16.3"
 
 [tool.poetry.scripts]
