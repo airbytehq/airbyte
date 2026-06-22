@@ -7,6 +7,7 @@ https://developers.criteo.com/marketing-solutions/reference/getadsetreport
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
+| `advertiser_ids` | `string` | Advertiser IDs. The comma-separated list of advertiser IDs to include in the statistics report. |  |
 | `currency` | `string` | Currency. Currency to be used on the report |  |
 | `end_date` | `string` | EndDate. End date of the report |  |
 | `client_id` | `string` | OAuth Client ID.  |  |
@@ -30,6 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-06-22 | [80334](https://github.com/airbytehq/airbyte/pull/80334) | Add required `advertiser_ids` config field to fix broken `ad_spend_daily` stream |
 | 0.0.7 | 2026-06-16 | [79780](https://github.com/airbytehq/airbyte/pull/79780) | Update dependencies |
 | 0.0.6 | 2026-06-09 | [79277](https://github.com/airbytehq/airbyte/pull/79277) | Update dependencies |
 | 0.0.5 | 2026-06-02 | [78651](https://github.com/airbytehq/airbyte/pull/78651) | Update dependencies |
