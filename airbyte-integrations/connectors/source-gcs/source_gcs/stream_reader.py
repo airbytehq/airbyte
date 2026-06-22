@@ -195,7 +195,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         magic = blob_reader.read(2)
         blob_reader.seek(0)
 
-        if magic[:2] == self._GZIP_MAGIC:
+        if magic == self._GZIP_MAGIC:
             stream: IOBase = gzip.GzipFile(fileobj=blob_reader)
         else:
             logger.info(
