@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mysql
 
 import kotlin.random.Random
+import kotlin.random.nextInt
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
