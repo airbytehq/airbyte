@@ -55,7 +55,6 @@ Chats are best for interactive, one-off work where you want to iterate with the 
 - **Cross-system questions**: Ask questions that span multiple connectors. For example, match Salesforce accounts to HubSpot contacts or Zendesk tickets.
 - **Drafting content**: Use replies as a starting point for emails, follow-ups, status updates, or internal notes.
 
-
 ## Tips for effective conversations
 
 - **Be specific about the outcome**: Tell the agent what you want back. "List the 10 highest-value open Salesforce deals, sorted by amount, with owner and close date" works better than "Show all deals."
