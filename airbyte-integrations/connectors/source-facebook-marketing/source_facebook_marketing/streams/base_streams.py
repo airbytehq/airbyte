@@ -18,7 +18,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_facebook_marketing.streams.common import traced_exception
 
-from .common import deep_merge
+from .common import deep_merge, sanitize_circular_references
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -198,6 +198,7 @@ class FBMarketingStream(Stream, ABC):
             ):
                 if isinstance(record, AbstractObject):
                     record = record.export_all_data()  # convert FB object to dict
+                record = sanitize_circular_references(record)
                 self.fix_date_time(record)
                 self.add_account_id(record, stream_slice["account_id"])
                 yield record
@@ -408,6 +409,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
                 max_cursor_value = max(max_cursor_value, record_cursor_value) if max_cursor_value else record_cursor_value
                 record = record.export_all_data()
+                record = sanitize_circular_references(record)
                 self.fix_date_time(record)
                 self.add_account_id(record, stream_slice["account_id"])
                 yield record
