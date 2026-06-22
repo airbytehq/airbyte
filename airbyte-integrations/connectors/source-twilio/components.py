@@ -72,14 +72,21 @@ class TwilioStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if self._has_global_messages_state(stream_state):
+            return stream_state["state"]
+
         for state in stream_state.get("states", []):
             state["partition"]["parent_slice"] = {}
         return stream_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
-            return True
-        return False
+        return self._has_global_messages_state(stream_state) or (
+            bool(stream_state) and any("parent_slice" not in state["partition"] for state in stream_state.get("states", []))
+        )
+
+    @staticmethod
+    def _has_global_messages_state(stream_state: Mapping[str, Any]) -> bool:
+        return "date_sent" in stream_state.get("state", {})
 
 
 class TwilioAlertsStateMigration(StateMigration):
