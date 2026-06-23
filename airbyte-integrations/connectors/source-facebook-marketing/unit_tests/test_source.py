@@ -8,7 +8,6 @@ from unittest.mock import call
 
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
-from pydantic.v1 import ValidationError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig, TimeIncrementPeriod
 
@@ -20,6 +19,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
+    FailureType,
     Status,
     SyncMode,
 )
@@ -185,7 +185,7 @@ class TestSourceFacebookMarketing:
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
 
-    def test_get_custom_insights_streams_rejects_deprecated_breakdown(self, config):
+    def test_custom_insights_rejects_deprecated_breakdown(self, config, fb_marketing):
         config["custom_insights"] = [
             {
                 "name": "test_dma",
@@ -194,8 +194,13 @@ class TestSourceFacebookMarketing:
                 "action_breakdowns": ["action_type"],
             },
         ]
-        with pytest.raises(ValidationError, match="deprecated by Meta"):
-            ConnectorConfig.parse_obj(config)
+        with pytest.raises(AirbyteTracedException, match="deprecated") as exc_info:
+            fb_marketing._validate_and_transform(config)
+
+        assert exc_info.value.failure_type == FailureType.config_error
+        # The stream name and the replacement breakdown are surfaced so the user knows exactly what to fix.
+        assert "test_dma" in exc_info.value.message
+        assert "comscore_market" in exc_info.value.message
 
     def test_read_missing_stream(self, config, api, logger_mock, fb_marketing):
         catalog = ConfiguredAirbyteCatalog(

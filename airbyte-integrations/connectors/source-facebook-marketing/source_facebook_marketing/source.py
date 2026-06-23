@@ -73,6 +73,20 @@ class SourceFacebookMarketing(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
 
+        # `dma` was removed from the breakdowns enum, so a Custom Insights config still using it would
+        # otherwise fail enum validation with an opaque error. Surface a clear, actionable config error first.
+        for insight in config.get("custom_insights") or []:
+            deprecated = sorted({b for b in (insight.get("breakdowns") or []) if b in DEPRECATED_BREAKDOWNS})
+            if deprecated:
+                replacements = ", ".join(f"`{b}` → `{DEPRECATED_BREAKDOWNS[b]}`" for b in deprecated)
+                raise AirbyteTracedException(
+                    message=(
+                        f"Custom Insights stream `{insight.get('name')}` uses breakdown(s) that Meta has deprecated: "
+                        f"{replacements}. Update the connector configuration to use the replacement breakdown(s)."
+                    ),
+                    failure_type=FailureType.config_error,
+                )
+
         config = ConnectorConfig.parse_obj(config)
 
         default_ads_insights_action_breakdowns = (
@@ -337,13 +351,6 @@ class SourceFacebookMarketing(AbstractSource):
                 )
                 raise AirbyteTracedException(
                     message=message,
-                    failure_type=FailureType.config_error,
-                )
-            deprecated_in_use = set(insight.breakdowns or []) & DEPRECATED_BREAKDOWNS.keys()
-            if deprecated_in_use:
-                replacements = ", ".join(f"`{b}` → `{DEPRECATED_BREAKDOWNS[b]}`" for b in sorted(deprecated_in_use))
-                raise AirbyteTracedException(
-                    message=f"Custom Insights stream `{insight.name}` uses deprecated breakdown(s): {replacements}. Update the connector configuration to use the replacement breakdown(s).",
                     failure_type=FailureType.config_error,
                 )
             stream = AdsInsights(

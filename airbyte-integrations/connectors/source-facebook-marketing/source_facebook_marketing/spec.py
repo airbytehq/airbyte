@@ -130,17 +130,6 @@ class InsightConfig(BaseModel):
         default=[],
     )
 
-    @validator("breakdowns", pre=True)
-    def reject_deprecated_breakdowns(cls, v):
-        """Reject deprecated breakdowns with a clear message before enum validation."""
-        if v:
-            for item in v:
-                name = item if isinstance(item, str) else getattr(item, "value", str(item))
-                if name in DEPRECATED_BREAKDOWNS:
-                    replacement = DEPRECATED_BREAKDOWNS[name]
-                    raise ValueError(f"Breakdown `{name}` is deprecated by Meta. Use `{replacement}` instead.")
-        return v
-
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
