@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cd671e85-accc-4f85-8f79-b55294e95a11
-  dockerImageTag: 0.0.45
+  dockerImageTag: 0.0.46
   dockerRepository: airbyte/source-countercyclical
   githubIssueLabel: source-countercyclical
   icon: icon.svg
