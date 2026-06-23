@@ -742,6 +742,14 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
             {"after": 200, "id": 25000},
             id="test_next_page_on_next_chunk_of_records",
         ),
+        pytest.param(
+            {"paging": {"next": {"after": "400"}}},
+            200,
+            {"id": "5000"},
+            {"after": "200"},
+            {"after": 400},
+            id="test_handles_string_after_cursor_from_hubspot",
+        ),
     ],
 )
 def test_crm_search_pagination_strategy(
