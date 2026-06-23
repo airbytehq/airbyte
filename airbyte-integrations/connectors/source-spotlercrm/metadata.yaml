@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 039127b5-9ff5-433e-950c-ae8d0a8912d4
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-spotlercrm
   githubIssueLabel: source-spotlercrm
   icon: icon.svg
