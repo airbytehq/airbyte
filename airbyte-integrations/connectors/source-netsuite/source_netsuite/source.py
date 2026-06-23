@@ -27,6 +27,7 @@ def _extract_netsuite_error(response: requests.Response) -> str:
             detail = error_details[0].get("detail", response.text)
             return f"{code}: {detail}"
     except (ValueError, KeyError, AttributeError):
+        # Response body is not JSON or has unexpected structure; fall back to raw text below
         pass
     return response.text or str(response.status_code)
 

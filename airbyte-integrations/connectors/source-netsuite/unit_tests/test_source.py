@@ -7,7 +7,6 @@ import logging
 
 import pytest
 import requests
-import requests_mock as rm
 from source_netsuite.constraints import META_PATH, RECORD_PATH
 from source_netsuite.source import SourceNetsuite, _extract_netsuite_error
 
