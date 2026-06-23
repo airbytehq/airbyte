@@ -24,7 +24,7 @@ Administrators can invite new members by email.
 2. Enter one or more email addresses. You can type or paste multiple addresses separated by commas, semicolons, or spaces.
 3. Click **Send invites**.
 
-Invited users receive an email with a link to join the organization. Once they sign in for the first time, their status changes from **Invited** to **Active**, and Airbyte creates a private workspace for them (see [Private workspaces](#private-workspaces) below).
+Invited users receive an email with a link to join the organization. Once they sign in for the first time, their status changes from **Invited** to **Active**.
 
 ## Roles
 
@@ -54,25 +54,14 @@ An organization must always have at least one administrator. You cannot remove o
 
 Removing a user revokes their access to the organization immediately. To cancel a pending invitation instead, click the delete icon next to the invited user's row.
 
-## Private workspaces
-
-When a new user signs in to the organization for the first time, Airbyte automatically creates a private workspace for them. This workspace belongs to the user and provides a personal space for their connectors, Chats, and Automations.
-
-Private workspaces behave like any other workspace:
-
-- Connectors, Chats, and Automations in a private workspace are separate from those in other workspaces.
-- The workspace owner has full access to their private workspace.
-- Organization administrators can see, modify, and delete any workspace, including private workspaces.
-- Regular members can only see workspaces they are assigned to, plus their own private workspace and the default workspace.
-
 ## Workspace membership
 
-On the Team plan, administrators control which workspaces each member can access. This prevents data leakage between workspaces.
+On the Team plan, administrators control which workspaces each member can access.
 
 - **Administrators** can see and manage all workspaces in the organization.
-- **Members** can see the default workspace, their own private workspace, and any workspaces they have been explicitly assigned to.
+- **Members** can be assigned to specific workspaces by an administrator.
 
-To manage workspace membership, see [Workspaces](../concepts/architecture/workspaces.md).
+Administrators can manage workspace membership from the workspace members page. For details on workspace structure, see [Workspaces](../concepts/architecture/workspaces.md).
 
 ## Related topics
 

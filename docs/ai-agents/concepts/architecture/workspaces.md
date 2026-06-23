@@ -37,8 +37,6 @@ There are two ways to create a workspace:
 - **Web app** ([Team and Custom plans](../../admin/billing.md#team)): Open the workspace picker in the sidebar and click **New workspace**. Enter a name and click **Create**.
 - **API**: The first time you mint a [scoped token](../../interfaces/api/authentication#scoped-token) against a new `workspace_name`, Airbyte creates the workspace for you. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
 
-Airbyte also creates a private workspace automatically for each new user who signs in to a Team-plan organization. See [Private workspaces](../../admin/users.md#private-workspaces).
-
 ## Scoped tokens
 
 A scoped token limits access to a single workspace. If you just use the `default` workspace (most cases), you can skip scoped tokens entirely and authenticate with an [application token](../../interfaces/api/authentication#application-token). Generate a scoped token when you need to hand a token to a component that should only see one workspace's connectors.
@@ -50,9 +48,9 @@ For details on generating and using scoped tokens, see [Authentication](../../in
 On [Team and Custom plans](../../admin/billing.md#team), administrators control which workspaces each member can access.
 
 - **Administrators** can see and manage all workspaces.
-- **Members** can see the default workspace, their own private workspace, and any workspaces they have been explicitly assigned to.
+- **Members** can be assigned to specific workspaces by an administrator.
 
-Chats, Automations, and connectors are workspace-specific. A member who is not assigned to a workspace cannot see its data. This prevents data leakage between workspaces.
+Chats, Automations, and connectors are workspace-specific. Workspace membership lets administrators control which members can access which workspaces.
 
 For details on managing users and assigning workspace membership, see [Users](../../admin/users.md).
 
