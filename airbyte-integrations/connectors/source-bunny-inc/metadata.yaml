@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6aa362e3-6107-4fdc-9209-130a60e8725c
-  dockerImageTag: 0.0.44
+  dockerImageTag: 0.0.45
   dockerRepository: airbyte/source-bunny-inc
   githubIssueLabel: source-bunny-inc
   icon: icon.svg
