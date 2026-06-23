@@ -1,5 +1,19 @@
 # Airbyte Agents release notes
 
+## June 23, 2026
+
+Web app
+
+- You can now add team members directly when creating a new workspace, so everyone has access from the start.
+- The workspace picker shows an "Admin" badge on workspaces where you have admin privileges.
+- Switching workspaces while in a chat shows a toast confirming which workspace you switched to.
+- Member lists in workspace settings are now sorted alphabetically.
+
+Connectors
+
+- Gong call transcripts now support semantic search, allowing your agent to find relevant conversations based on meaning rather than exact keyword matches.
+- Your agent can now search GitHub data using more natural field names, and sorting results by fields like creation date works correctly.
+
 ## June 19, 2026
 
 Web app
