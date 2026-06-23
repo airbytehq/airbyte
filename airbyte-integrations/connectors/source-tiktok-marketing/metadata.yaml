@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 5.1.2
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   externalDocumentationUrls:
@@ -38,14 +38,14 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
-      5.1.0:
+      6.0.0:
         message:
           Source-defined primary keys for TikTok Marketing report streams now include
           `advertiser_id` so Incremental + Deduped syncs correctly distinguish records
           across advertiser partitions. Users will need to refresh the source schema and
           reset the impacted streams after upgrading.
           For more information, see our migration documentation for source TikTok Marketing.
-        upgradeDeadline: "2026-05-15"
+        upgradeDeadline: "2026-08-15"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
