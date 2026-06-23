@@ -32,7 +32,7 @@ Each member has a role that determines what they can do in the organization.
 
 | Capability | Admin | Member |
 |---|---|---|
-| Use Chats and Automations | Yes | Yes |
+| Use Chats | Yes | Yes |
 | Manage connectors in assigned workspaces | Yes | Yes |
 | View all workspaces | Yes | No |
 | Create, modify, and delete workspaces | Yes | No |

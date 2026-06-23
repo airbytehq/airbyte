@@ -27,7 +27,7 @@ Administrators can add connectors from the web app.
 
 ## Workspaces
 
-On the [Team and Custom plans](../../admin/billing.md#team), a workspace picker appears in the sidebar. Use it to switch between workspaces, create new ones, and see which workspace is currently active. Chats, Automations, and connectors are scoped to the active workspace. See [Workspaces](../../concepts/architecture/workspaces) for details.
+On the [Team and Custom plans](../../admin/billing.md#team), a workspace picker appears in the sidebar. Use it to switch between workspaces, create new ones, and see which workspace is currently active. Chats and connectors are scoped to the active workspace. See [Workspaces](../../concepts/architecture/workspaces) for details.
 
 ## Related administration
 

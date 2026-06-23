@@ -50,7 +50,7 @@ On [Team and Custom plans](../../admin/billing.md#team), administrators control 
 - **Administrators** can see and manage all workspaces.
 - **Members** can be assigned to specific workspaces by an administrator.
 
-Chats, Automations, and connectors are workspace-specific. Workspace membership lets administrators control which members can access which workspaces.
+Chats and connectors are workspace-specific. Workspace membership lets administrators control which members can access which workspaces.
 
 For details on managing users and assigning workspace membership, see [Users](../../admin/users.md).
 
