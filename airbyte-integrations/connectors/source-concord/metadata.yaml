@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dc50b4e6-862e-4b49-8ed7-3c988f4b1db0
-  dockerImageTag: 0.0.43
+  dockerImageTag: 0.0.44
   dockerRepository: airbyte/source-concord
   githubIssueLabel: source-concord
   icon: icon.svg
