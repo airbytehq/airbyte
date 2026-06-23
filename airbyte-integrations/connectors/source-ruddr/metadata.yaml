@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6e87d8e2-47bc-4a0a-a175-62e2b926bb07
-  dockerImageTag: 0.0.49
+  dockerImageTag: 0.0.50
   dockerRepository: airbyte/source-ruddr
   githubIssueLabel: source-ruddr
   icon: icon.svg
