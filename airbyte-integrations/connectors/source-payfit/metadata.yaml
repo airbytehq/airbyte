@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 786c6867-8a22-4e5f-a605-0a59dc3ea00f
-  dockerImageTag: 0.0.41
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-payfit
   githubIssueLabel: source-payfit
   icon: icon.svg
