@@ -67,6 +67,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.32 | 2026-06-23 | [78601](https://github.com/airbytehq/airbyte/pull/78601) | Update dependencies |
 | 0.7.31 | 2026-04-28 | [72688](https://github.com/airbytehq/airbyte/pull/72688) | Update dependencies |
 | 0.7.30 | 2026-03-31 | [75406](https://github.com/airbytehq/airbyte/pull/75406) | Upgrade CDK to v7.14.0 and use weight-based rate limiting for Dashboard REST API streams |
 | 0.7.29 | 2026-03-03 | [70841](https://github.com/airbytehq/airbyte/pull/70841) | Add HTTPAPIBudget and concurrency_level |
