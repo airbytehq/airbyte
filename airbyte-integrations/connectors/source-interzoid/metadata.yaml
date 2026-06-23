@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c6905f33-f91a-4ef3-8e92-21d26c938691
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/source-interzoid
   githubIssueLabel: source-interzoid
   icon: icon.svg
