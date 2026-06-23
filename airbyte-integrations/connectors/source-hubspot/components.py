@@ -812,15 +812,18 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size >= self.RECORDS_LIMIT:
             return {"after": 0, "id": last_record[self.primary_key]}
 
-        # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (last_page_size < self.page_size) or last_page_size == 0 or not response.json().get("paging"):
+        after = response.json().get("paging", {}).get("next", {}).get("after")
+        if after is None:
             return None
 
         last_id_of_previous_chunk = last_page_token_value.get("id")
         if last_id_of_previous_chunk:
-            return {"after": last_page_token_value["after"] + last_page_size, self.primary_key: last_id_of_previous_chunk}
-        else:
-            return {"after": last_page_token_value["after"] + last_page_size}
+            return {
+                "after": after,
+                self.primary_key: last_id_of_previous_chunk,
+            }
+
+        return {"after": after}
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size

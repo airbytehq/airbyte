@@ -679,20 +679,37 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
     [
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 200, {"id": 5000}, {"after": 1000}, {"after": 1200}, id="test_next_page_on_first_chunk"
+            {"paging": {"next": {"after": 1200}}},
+            200,
+            {"id": 5000},
+            {"after": 1000},
+            {"after": 1200},
+            id="test_next_page_on_first_chunk",
         ),
         pytest.param(
             {"paging": {"next": {"after": 1200}}},
             100,
             {"id": 5000},
             {"after": 1000},
-            None,
-            id="test_stop_paging_when_last_page_is_less_than_page_size",
+            {"after": 1200},
+            id="test_continue_paging_when_last_page_is_less_than_page_size_but_after_exists",
         ),
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 0, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_last_page_size_is_zero"
+            {"paging": {"next": {"after": 1200}}},
+            0,
+            {"id": 5000},
+            {"after": 1000},
+            {"after": 1200},
+            id="test_continue_paging_when_last_page_size_is_zero_but_after_exists",
         ),
-        pytest.param({}, 200, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_no_after_in_response"),
+        pytest.param(
+            {},
+            200,
+            {"id": 5000},
+            {"after": 1000},
+            None,
+            id="test_stop_paging_when_no_after_in_response",
+        ),
         pytest.param(
             {"paging": {"next": {"after": 10000}}},
             200,
