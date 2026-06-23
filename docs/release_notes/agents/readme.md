@@ -1,5 +1,31 @@
 # Airbyte Agents release notes
 
+## June 19, 2026
+
+Web app
+
+- Chat connections to your agent are now more reliable. If the initial connection fails due to a temporary network issue, the app automatically retries instead of showing an error.
+
+SDK
+
+- Fixed an issue where connectors with an empty authentication header prefix would send a leading space in API requests, potentially causing authentication failures.
+
+Connectors
+
+- The Shopify connector is now generally available. You can connect your Shopify store to read orders, products, customers, inventory, and more.
+- Amazon Ads entities such as campaigns, ad groups, and keywords are now correctly linked to advertising profiles, so your agent can resolve data across multiple accounts more accurately.
+- Fixed an issue where certain connectors were not displayed correctly in your connector list and could not be used by your agent.
+
+Other
+
+- Upgraded the AI model powering Chats and Automations for improved response quality.
+
+## June 17, 2026
+
+Other
+
+- The Context Store now pauses automatically for connectors that haven't been searched recently. When you next search a paused connector, it resumes immediately and you'll see a notice while its data refreshes.
+
 ## June 16, 2026
 
 API

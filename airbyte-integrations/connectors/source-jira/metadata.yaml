@@ -22,6 +22,9 @@ data:
     - title: Jira Platform API Changelog
       url: https://developer.atlassian.com/cloud/jira/platform/changelog/
       type: api_release_history
+    - title: Jira Software API Changelog
+      url: https://developer.atlassian.com/cloud/jira/software/changelog/
+      type: api_release_history
     - title: Jira Cloud Platform API OpenAPI specification
       url: https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json
       type: openapi_spec
