@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: aaedb415-d131-468f-84ab-5319d72e02ed
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-freightview
   githubIssueLabel: source-freightview
   icon: icon.svg
