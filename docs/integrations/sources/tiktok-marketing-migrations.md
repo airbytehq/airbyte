@@ -2,6 +2,50 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # TikTok Marketing Migration Guide
 
+## Upgrading to 6.0.0
+
+The source-defined primary keys for the non-advertiser report streams now include `advertiser_id`, in addition to the entity identifier and the requested report dimensions. TikTok returns report records per advertiser partition, and `advertiser_id` is supplied as the request parameter rather than in the record body, so the previous keys could collapse distinct rows from different advertisers into one another during Incremental + Deduped syncs. The connector now injects `advertiser_id` into each affected record and includes it in the primary key so deduplication matches the real report grain.
+
+Because the primary key columns change, this is a breaking change for deduplicated destinations. Users syncing any of the impacted streams need to refresh the source schema and clear data for those streams after upgrading.
+
+The following streams are affected:
+
+- `ad_group_audience_reports_by_country_daily`
+- `ad_group_audience_reports_by_platform_daily`
+- `ad_group_audience_reports_daily`
+- `ad_groups_reports_by_country_daily`
+- `ad_groups_reports_by_country_hourly`
+- `ad_groups_reports_daily`
+- `ad_groups_reports_hourly`
+- `ad_groups_reports_lifetime`
+- `ads_audience_reports_by_country_daily`
+- `ads_audience_reports_by_platform_daily`
+- `ads_audience_reports_by_province_daily`
+- `ads_audience_reports_daily`
+- `ads_reports_by_country_daily`
+- `ads_reports_by_country_hourly`
+- `ads_reports_daily`
+- `ads_reports_hourly`
+- `ads_reports_lifetime`
+- `campaigns_audience_reports_by_country_daily`
+- `campaigns_audience_reports_by_platform_daily`
+- `campaigns_audience_reports_daily`
+- `campaigns_reports_daily`
+- `campaigns_reports_hourly`
+- `campaigns_reports_lifetime`
+
+### Migration steps
+
+1. Select **Connections** in the main nav bar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Schema** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK** and **Save changes**.
+3. Select the **Status** tab.
+   1. In the **Enabled streams** list, click the three dots on the right side of each affected stream listed above and select **Clear Data**.
+
+After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+
 ## Upgrading to 5.0.0
 
 The `currency` field in the `pixels` stream's `events` array has been corrected from `boolean` to `string` type. The TikTok API returns currency as a string value (e.g. `"USD"`), so the previous `boolean` type was incorrect and caused transform errors during syncs.
