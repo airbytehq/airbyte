@@ -29,7 +29,7 @@ If you have any **Custom Insights** streams that use `breakdowns=dma`, you must 
 4. Save and retest the source.
 
 :::note
-After upgrading to v6.0.0, syncs for Custom Insights streams that still reference `dma` will fail with a clear error message: *"Breakdown `dma` is deprecated by Meta. Use `comscore_market` instead."*
+After upgrading to v6.0.0, syncs for Custom Insights streams that still reference `dma` will fail with a configuration error because `dma` is no longer a valid breakdown option. Update your configuration to use `comscore_market` instead.
 :::
 
 ### Steps to upgrade built-in streams
