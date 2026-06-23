@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 751c2519-1446-416e-9736-9b98585f8125
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-google-tasks
   githubIssueLabel: source-google-tasks
   icon: icon.svg
