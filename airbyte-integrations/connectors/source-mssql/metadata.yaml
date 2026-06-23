@@ -48,10 +48,10 @@ data:
           column at discovery/schema-refresh time. If no such line appears in your logs, your streams
           contain no affected columns and the upgrade requires no action."
         upgradeDeadline: "2026-08-24"
+        deadlineAction: "auto_upgrade"
       4.0.0:
         message: "We have overhauled our MSSQL source connector and it is now supported by the Airbyte team! To benefit from new features, including terabyte-sized table support, reliability improvements, expanded datetime data types, and various bug fixes, please opt in to the 4.0.0 version."
         upgradeDeadline: "2024-04-07"
-        deadlineAction: "auto_upgrade"
       3.0.0:
         message: "Remapped columns of types: date, datetime, datetime2, datetimeoffset, smalldatetime, and time from `String` to their appropriate Airbyte types. Customers whose streams have columns with the affected data types must take action with their connections."
         upgradeDeadline: "2023-12-07"
