@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f25bd959-d48b-4ca5-88d2-79c52a263185
-  dockerImageTag: 0.0.32
+  dockerImageTag: 0.0.33
   dockerRepository: airbyte/source-spotify-ads
   githubIssueLabel: source-spotify-ads
   icon: icon.svg
