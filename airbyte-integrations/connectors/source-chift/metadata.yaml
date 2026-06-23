@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d03aa64c-21a9-4edc-97b9-5590600ee3d6
-  dockerImageTag: 0.0.16
+  dockerImageTag: 0.0.17
   dockerRepository: airbyte/source-chift
   githubIssueLabel: source-chift
   icon: icon.svg
