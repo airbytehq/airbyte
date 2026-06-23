@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a20aa64a-bb59-4782-97bf-afd6a241c737
-  dockerImageTag: 0.0.41
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-algolia
   githubIssueLabel: source-algolia
   icon: icon.svg
