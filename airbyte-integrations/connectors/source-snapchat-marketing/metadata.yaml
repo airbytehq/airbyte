@@ -63,7 +63,13 @@ data:
   externalDocumentationUrls:
     - title: Ads API announcements
       url: https://developers.snap.com/api/marketing-api/Ads-API/announcements
-      type: api_reference
+      type: api_release_history
+    - title: Breaking Changes Log
+      url: https://developers.snap.com/api/marketing-api/Ads-API/breaking-changes-log
+      type: api_deprecations
+    - title: Change Log
+      url: https://developers.snap.com/marketing-api/Ads-API/changelog
+      type: api_release_history
   suggestedStreams:
     streams:
       - campaigns
