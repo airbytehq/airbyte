@@ -3381,6 +3381,10 @@ api_budget:
   status_codes_for_ratelimit_hit: [429]
 
 streams:
+  # IMPORTANT: Stream ordering matters for CheckDynamicStream (see check: section above).
+  # The first stream in each ConditionalStreams block is used for the connectivity check.
+  # Do not reorder or prepend streams without verifying they are suitable for check.
+  #
   # Seller-only REST streams: only available for non-Vendor accounts.
   # The Orders/OrderItems endpoints (orders/v0/orders) and Finances API (finances/v0/*)
   # are seller-only per Amazon SP-API docs. Vendor accounts get HTTP 403.
