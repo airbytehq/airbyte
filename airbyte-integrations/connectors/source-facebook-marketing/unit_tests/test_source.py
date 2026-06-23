@@ -19,7 +19,6 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
-    FailureType,
     Status,
     SyncMode,
 )
@@ -185,22 +184,14 @@ class TestSourceFacebookMarketing:
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
 
-    def test_custom_insights_rejects_deprecated_breakdown(self, config, fb_marketing):
-        config["custom_insights"] = [
-            {
-                "name": "test_dma",
-                "fields": ["account_id"],
-                "breakdowns": ["dma"],
-                "action_breakdowns": ["action_type"],
-            },
-        ]
-        with pytest.raises(AirbyteTracedException, match="deprecated") as exc_info:
-            fb_marketing._validate_and_transform(config)
-
-        assert exc_info.value.failure_type == FailureType.config_error
-        # The stream name and the replacement breakdown are surfaced so the user knows exactly what to fix.
-        assert "test_dma" in exc_info.value.message
-        assert "comscore_market" in exc_info.value.message
+    def test_deprecated_dma_breakdown_removed_from_spec(self, fb_marketing):
+        # Meta replaced `dma` with `comscore_market` (oncall #12940). `dma` must no longer be a
+        # selectable breakdown, so a Custom Insights config still using it is rejected by the CDK's
+        # config-vs-spec validation. `comscore_market` remains available as the replacement.
+        spec = fb_marketing.spec(None).connectionSpecification
+        breakdowns_enum = spec["properties"]["custom_insights"]["items"]["properties"]["breakdowns"]["items"]["enum"]
+        assert "dma" not in breakdowns_enum
+        assert "comscore_market" in breakdowns_enum
 
     def test_read_missing_stream(self, config, api, logger_mock, fb_marketing):
         catalog = ConfiguredAirbyteCatalog(

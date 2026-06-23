@@ -32,8 +32,8 @@ base_breakdowns = dict(AdsInsights.Breakdowns.__dict__)
 base_breakdowns["user_segment_key"] = "user_segment_key"
 
 # Meta deprecated breakdowns=dma on June 22, 2026, replacing it with comscore_market.
-# Remove dma so users cannot configure Custom Insights with the broken breakdown.
-DEPRECATED_BREAKDOWNS = {"dma": "comscore_market"}
+# Remove dma so it can't be selected for Custom Insights; configs still using it are rejected
+# by the CDK's config-vs-spec validation with a config_error that lists comscore_market.
 base_breakdowns.pop("dma", None)
 ValidBreakdowns = Enum("ValidBreakdowns", base_breakdowns)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)

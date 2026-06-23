@@ -56,7 +56,6 @@ from source_facebook_marketing.streams import (
     Videos,
 )
 
-from .spec import DEPRECATED_BREAKDOWNS
 from .utils import validate_end_date, validate_start_date
 
 
@@ -72,20 +71,6 @@ class SourceFacebookMarketing(AbstractSource):
         config.setdefault("action_breakdowns_allow_empty", False)
         if config.get("end_date") == "":
             config.pop("end_date")
-
-        # `dma` was removed from the breakdowns enum, so a Custom Insights config still using it would
-        # otherwise fail enum validation with an opaque error. Surface a clear, actionable config error first.
-        for insight in config.get("custom_insights") or []:
-            deprecated = sorted({b for b in (insight.get("breakdowns") or []) if b in DEPRECATED_BREAKDOWNS})
-            if deprecated:
-                replacements = ", ".join(f"`{b}` → `{DEPRECATED_BREAKDOWNS[b]}`" for b in deprecated)
-                raise AirbyteTracedException(
-                    message=(
-                        f"Custom Insights stream `{insight.get('name')}` uses breakdown(s) that Meta has deprecated: "
-                        f"{replacements}. Update the connector configuration to use the replacement breakdown(s)."
-                    ),
-                    failure_type=FailureType.config_error,
-                )
 
         config = ConnectorConfig.parse_obj(config)
 
