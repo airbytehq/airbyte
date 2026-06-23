@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7b6be0f6-4139-42f8-a89e-2ca25560979a
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-ezofficeinventory
   githubIssueLabel: source-ezofficeinventory
   icon: icon.svg
