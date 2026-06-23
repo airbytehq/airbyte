@@ -310,6 +310,35 @@ def test_seller_streams_included_when_account_type_missing():
         assert seller_stream in stream_names, f"{seller_stream} should appear when account_type is not set (defaults to Seller)"
 
 
+@pytest.mark.parametrize(
+    "account_type,expected_first_stream",
+    [
+        pytest.param("Seller", "Orders", id="seller_first_stream_is_orders"),
+        pytest.param("Vendor", "VendorOrders", id="vendor_first_stream_is_vendor_orders"),
+    ],
+)
+def test_first_stream_ordering_for_check(account_type, expected_first_stream):
+    """CheckDynamicStream uses the first stream for connectivity check.
+
+    Seller accounts must resolve Orders first; Vendor accounts must resolve
+    VendorOrders first. If this test fails, the connectivity check will use
+    the wrong stream — see the IMPORTANT comment in manifest.yaml streams section.
+    """
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": account_type,
+    }
+    streams = get_source(config).streams(config)
+    assert streams[0].name == expected_first_stream, (
+        f"Expected first stream for {account_type} to be {expected_first_stream}, "
+        f"got {streams[0].name}. Stream ordering matters for CheckDynamicStream."
+    )
+
+
 mock_catalog = ConfiguredAirbyteCatalog(
     streams=[
         ConfiguredAirbyteStream(
