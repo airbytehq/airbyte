@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2724ccae-2503-4348-9f1c-b5645b54a985
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-e-conomic
   githubIssueLabel: source-e-conomic
   icon: icon.svg
