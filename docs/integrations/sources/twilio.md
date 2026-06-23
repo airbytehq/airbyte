@@ -4,11 +4,9 @@ This page contains the setup guide and reference information for the Twilio sour
 
 ## Prerequisites
 
-Twilio HTTP requests to the REST API are protected with HTTP Basic authentication. In short, you will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication.
-
-You can find your Account SID and Auth Token in the [Twilio Console](https://console.twilio.com/).
-
-Use credentials for the Twilio account whose resources you want to sync. Main account credentials can access main account resources and v2010 REST API resources for subaccounts. Subaccount credentials can access only that subaccount. Twilio notes that resources on product-specific subdomains, such as Studio and Conversations, must be accessed directly with credentials for the account that owns those resources.
+- A Twilio **Account SID** and **Auth Token**. Find both in the [Twilio Console](https://console.twilio.com/).
+- Use credentials for the Twilio account whose resources you want to sync. Main account credentials can access main account resources and v2010 REST API resources for subaccounts. Subaccount credentials can access only that subaccount.
+- Resources on product-specific subdomains (Studio, Conversations, Verify) must be accessed with credentials for the account that owns those resources.
 
 For more information, see the [Twilio API authentication documentation](https://www.twilio.com/docs/iam/api).
 
@@ -99,6 +97,14 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 Version `1.0.0` moves the `services` and `roles` streams from the deprecated Programmable Chat API to the Conversations API. If your connections sync either stream, refresh the source schema and clear data for those streams after upgrading. For the full list of schema changes and migration steps, see the [migration guide](./twilio-migrations.md#upgrading-to-100).
 
+## Limitations
+
+### 400-day data availability window
+
+The `messages`, `recordings`, and `message_media` streams only sync data from the last 400 days, regardless of the configured **Replication Start Date**. This matches [Twilio's default Message Log retention](https://www.twilio.com/en-us/blog/new-data-controls-twilio-messaging), which stores message records and media for up to 13 months (approximately 400 days). If your **Replication Start Date** is more than 400 days in the past, those streams begin from 400 days ago. Other streams respect the configured start date without this cap.
+
+To retrieve records older than 400 days, use Twilio's [Bulk Export API](https://www.twilio.com/docs/usage/bulkexport) outside of this connector.
+
 ## Performance considerations
 
 The Twilio connector gracefully handles rate limits using the `Retry-After` header with an exponential backoff fallback. For more information, see [Twilio's rate limit documentation](https://www.twilio.com/docs/usage/api#rate-limiting).
@@ -148,6 +154,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.5 | 2026-06-23 | [80703](https://github.com/airbytehq/airbyte/pull/80703) | Update dependencies |
+| 1.0.4 | 2026-06-22 | [80282](https://github.com/airbytehq/airbyte/pull/80282) | Fix `messages` and `recordings` incremental state getting stuck near the start date by aligning `cursor_granularity` with the second-precision `datetime_format`. |
 | 1.0.3 | 2026-06-16 | [80075](https://github.com/airbytehq/airbyte/pull/80075) | Update dependencies |
 | 1.0.2 | 2026-06-09 | [79553](https://github.com/airbytehq/airbyte/pull/79553) | Update dependencies |
 | 1.0.1 | 2026-06-02 | [79027](https://github.com/airbytehq/airbyte/pull/79027) | Update dependencies |
