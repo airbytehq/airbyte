@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 96f224c5-8e85-4427-b299-dbd5c52de47c
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-less-annoying-crm
   githubIssueLabel: source-less-annoying-crm
   icon: icon.svg
