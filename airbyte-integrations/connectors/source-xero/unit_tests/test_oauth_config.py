@@ -53,10 +53,7 @@ def _get_authenticators(manifest):
 )
 def test_spec_credentials_oneof_contains_auth_type(manifest, auth_type, expected_title, expected_required):
     credentials = _get_spec(manifest)["properties"]["credentials"]
-    matching = [
-        opt for opt in credentials["oneOf"]
-        if opt["properties"]["auth_type"].get("const") == auth_type
-    ]
+    matching = [opt for opt in credentials["oneOf"] if opt["properties"]["auth_type"].get("const") == auth_type]
     assert len(matching) == 1, f"Expected exactly one oneOf entry for {auth_type}"
     option = matching[0]
     assert option["title"] == expected_title
@@ -65,14 +62,9 @@ def test_spec_credentials_oneof_contains_auth_type(manifest, auth_type, expected
 
 def test_oauth2_authorization_code_secrets_are_marked(manifest):
     credentials = _get_spec(manifest)["properties"]["credentials"]
-    oauth_option = [
-        opt for opt in credentials["oneOf"]
-        if opt["properties"]["auth_type"].get("const") == "oauth2_authorization_code"
-    ][0]
+    oauth_option = [opt for opt in credentials["oneOf"] if opt["properties"]["auth_type"].get("const") == "oauth2_authorization_code"][0]
     for secret_field in ("client_id", "client_secret", "refresh_token"):
-        assert oauth_option["properties"][secret_field].get("airbyte_secret") is True, (
-            f"{secret_field} must be marked airbyte_secret"
-        )
+        assert oauth_option["properties"][secret_field].get("airbyte_secret") is True, f"{secret_field} must be marked airbyte_secret"
 
 
 def test_selective_authenticator_has_oauth2_authorization_code_branch(manifest):
