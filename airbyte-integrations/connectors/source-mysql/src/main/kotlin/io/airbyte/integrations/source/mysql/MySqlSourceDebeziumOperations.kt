@@ -38,6 +38,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
@@ -489,10 +490,16 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(
-                    MySqlSourceCdcBooleanConverter::class,
-                    MySqlSourceCdcTemporalConverter::class
-                )
+                .run {
+                    val converters =
+                        buildList<Class<out RelationalColumnCustomConverter>> {
+                            if (!configuration.treatTinyint1AsInteger) {
+                                add(MySqlSourceCdcBooleanConverter::class.java)
+                            }
+                            add(MySqlSourceCdcTemporalConverter::class.java)
+                        }
+                    withConverters(*converters.toTypedArray())
+                }
 
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }

@@ -33,6 +33,10 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 | surveys | id | No pagination | ✅ |  ✅  |
 | survey_responses | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,12 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 
 | Version          | Date       | Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.1.52 | 2026-06-23 | [80421](https://github.com/airbytehq/airbyte/pull/80421) | Update dependencies |
+| 0.1.51 | 2026-06-16 | [79787](https://github.com/airbytehq/airbyte/pull/79787) | Update dependencies |
+| 0.1.50 | 2026-06-09 | [79269](https://github.com/airbytehq/airbyte/pull/79269) | Update dependencies |
+| 0.1.49 | 2026-06-02 | [78659](https://github.com/airbytehq/airbyte/pull/78659) | Update dependencies |
+| 0.1.48 | 2026-04-28 | [77158](https://github.com/airbytehq/airbyte/pull/77158) | Update dependencies |
+| 0.1.47 | 2026-04-21 | [76537](https://github.com/airbytehq/airbyte/pull/76537) | Update dependencies |
 | 0.1.46 | 2026-03-31 | [75782](https://github.com/airbytehq/airbyte/pull/75782) | Update dependencies |
 | 0.1.45 | 2026-03-17 | [75104](https://github.com/airbytehq/airbyte/pull/75104) | Update dependencies |
 | 0.1.44 | 2026-02-24 | [73794](https://github.com/airbytehq/airbyte/pull/73794) | Update dependencies |

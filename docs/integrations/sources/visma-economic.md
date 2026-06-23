@@ -49,6 +49,10 @@ For more information, see the [e-conomic REST API documentation](https://restdoc
 | Full Refresh Sync | Yes        |       |
 | Incremental Sync  | No         |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -56,6 +60,12 @@ For more information, see the [e-conomic REST API documentation](https://restdoc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.60 | 2026-06-23 | [80673](https://github.com/airbytehq/airbyte/pull/80673) | Update dependencies |
+| 0.3.59 | 2026-06-16 | [80088](https://github.com/airbytehq/airbyte/pull/80088) | Update dependencies |
+| 0.3.58 | 2026-06-09 | [79544](https://github.com/airbytehq/airbyte/pull/79544) | Update dependencies |
+| 0.3.57 | 2026-06-02 | [79050](https://github.com/airbytehq/airbyte/pull/79050) | Update dependencies |
+| 0.3.56 | 2026-04-28 | [77477](https://github.com/airbytehq/airbyte/pull/77477) | Update dependencies |
+| 0.3.55 | 2026-04-21 | [76789](https://github.com/airbytehq/airbyte/pull/76789) | Update dependencies |
 | 0.3.54 | 2026-03-31 | [75738](https://github.com/airbytehq/airbyte/pull/75738) | Update dependencies |
 | 0.3.53 | 2026-03-17 | [75124](https://github.com/airbytehq/airbyte/pull/75124) | Increase check_connection memory from 2Gi to 4Gi to prevent OOM |
 | 0.3.52 | 2026-03-17 | [75055](https://github.com/airbytehq/airbyte/pull/75055) | Update dependencies |

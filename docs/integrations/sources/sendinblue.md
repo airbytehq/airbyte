@@ -27,6 +27,10 @@ Sendinblue APIs are under rate limits for the number of API calls allowed per AP
 
 - Sendinblue API KEY
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -34,6 +38,8 @@ Sendinblue APIs are under rate limits for the number of API calls allowed per AP
 
 | Version | Date       | Pull Request                                              | Subject                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------ |
+| 0.2.28 | 2026-04-28 | [77399](https://github.com/airbytehq/airbyte/pull/77399) | Update dependencies |
+| 0.2.27 | 2026-04-21 | [76742](https://github.com/airbytehq/airbyte/pull/76742) | Update dependencies |
 | 0.2.26 | 2026-03-31 | [75798](https://github.com/airbytehq/airbyte/pull/75798) | Update dependencies |
 | 0.2.25 | 2026-03-24 | [75120](https://github.com/airbytehq/airbyte/pull/75120) | Update dependencies |
 | 0.2.24 | 2026-02-24 | [73936](https://github.com/airbytehq/airbyte/pull/73936) | Update dependencies |

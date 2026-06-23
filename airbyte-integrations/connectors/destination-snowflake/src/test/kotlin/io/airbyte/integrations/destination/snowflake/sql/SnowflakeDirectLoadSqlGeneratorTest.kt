@@ -45,6 +45,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
         every { snowflakeConfiguration.legacyRawTablesOnly } returns false
+        every { snowflakeConfiguration.trimSpace } returns true
 
         every { snowflakeColumnManager.getMetaColumns() } returns
             linkedMapOf(
@@ -266,6 +267,37 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
             |    TRIM_SPACE = TRUE
+            |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            |    REPLACE_INVALID_CHARACTERS = TRUE
+            |    ESCAPE = NONE
+            |    ESCAPE_UNENCLOSED_FIELD = NONE
+            |)
+            |ON_ERROR = 'ABORT_STATEMENT'
+            |PURGE = TRUE
+            |files = ('test.csv.gz')
+        """.trimMargin()
+        assertEquals(expectedSql, sql)
+    }
+
+    @Test
+    fun testGenerateCopyFromStageWithTrimSpaceDisabled() {
+        every { snowflakeConfiguration.trimSpace } returns false
+
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val targetTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
+        val expectedSql =
+            """
+            |COPY INTO $targetTableName
+            |FROM '@$stagingTableName'
+            |FILE_FORMAT = (
+            |    TYPE = 'CSV'
+            |    COMPRESSION = GZIP
+            |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+            |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            |    TRIM_SPACE = FALSE
             |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             |    REPLACE_INVALID_CHARACTERS = TRUE
             |    ESCAPE = NONE

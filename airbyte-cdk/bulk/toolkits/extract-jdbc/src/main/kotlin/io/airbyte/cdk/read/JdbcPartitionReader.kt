@@ -17,7 +17,7 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -99,7 +99,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             return
         }
         while (PartitionReader.pendingStates.isNotEmpty()) {
-            var pendingMessage = PartitionReader.pendingStates.poll() ?: break
+            val pendingMessage = PartitionReader.pendingStates.poll() ?: break
             when (pendingMessage) {
                 is AirbyteStateMessage -> {
                     outputMessageRouter.acceptNonRecord(pendingMessage)
@@ -199,7 +199,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     lastRecord.set(row)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
-                        coroutineContext.ensureActive()
+                        currentCoroutineContext().ensureActive()
                     }
                 }
             }

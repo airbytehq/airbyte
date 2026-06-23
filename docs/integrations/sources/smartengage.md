@@ -24,6 +24,10 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 - SmartEngage API Key
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -31,6 +35,12 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.41 | 2026-06-23 | [80630](https://github.com/airbytehq/airbyte/pull/80630) | Update dependencies |
+| 0.2.40 | 2026-06-16 | [80027](https://github.com/airbytehq/airbyte/pull/80027) | Update dependencies |
+| 0.2.39 | 2026-06-09 | [79477](https://github.com/airbytehq/airbyte/pull/79477) | Update dependencies |
+| 0.2.38 | 2026-06-02 | [78988](https://github.com/airbytehq/airbyte/pull/78988) | Update dependencies |
+| 0.2.37 | 2026-04-28 | [77449](https://github.com/airbytehq/airbyte/pull/77449) | Update dependencies |
+| 0.2.36 | 2026-04-21 | [76745](https://github.com/airbytehq/airbyte/pull/76745) | Update dependencies |
 | 0.2.35 | 2026-03-31 | [75789](https://github.com/airbytehq/airbyte/pull/75789) | Update dependencies |
 | 0.2.34 | 2026-03-17 | [75117](https://github.com/airbytehq/airbyte/pull/75117) | Update dependencies |
 | 0.2.33 | 2026-03-03 | [67440](https://github.com/airbytehq/airbyte/pull/67440) | Update dependencies |

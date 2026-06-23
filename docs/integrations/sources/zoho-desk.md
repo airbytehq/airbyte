@@ -50,6 +50,10 @@ This directory contains the manifest-only connector for source-zoho-desk
 | list_user_groups | id | DefaultPaginator | ✅ |  ❌  |
 | dashboard_onhold_tickets | value | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -57,6 +61,12 @@ This directory contains the manifest-only connector for source-zoho-desk
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-06-23 | [80718](https://github.com/airbytehq/airbyte/pull/80718) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [80111](https://github.com/airbytehq/airbyte/pull/80111) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79574](https://github.com/airbytehq/airbyte/pull/79574) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [79071](https://github.com/airbytehq/airbyte/pull/79071) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77513](https://github.com/airbytehq/airbyte/pull/77513) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76827](https://github.com/airbytehq/airbyte/pull/76827) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75836](https://github.com/airbytehq/airbyte/pull/75836) | Update dependencies |
 | 0.0.47 | 2026-03-17 | [75045](https://github.com/airbytehq/airbyte/pull/75045) | Update dependencies |
 | 0.0.46 | 2026-03-10 | [74438](https://github.com/airbytehq/airbyte/pull/74438) | Update dependencies |

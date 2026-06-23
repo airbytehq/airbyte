@@ -37,6 +37,10 @@ This Source is capable of syncing the following Streams:
 3. In the API tab, click `Create API Kay`. Select `Private Key`.
 4. Use the created secret key to configure your source!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -44,6 +48,12 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.55 | 2026-06-23 | [80640](https://github.com/airbytehq/airbyte/pull/80640) | Update dependencies |
+| 0.3.54 | 2026-06-16 | [80017](https://github.com/airbytehq/airbyte/pull/80017) | Update dependencies |
+| 0.3.53 | 2026-06-09 | [79494](https://github.com/airbytehq/airbyte/pull/79494) | Update dependencies |
+| 0.3.52 | 2026-06-02 | [78961](https://github.com/airbytehq/airbyte/pull/78961) | Update dependencies |
+| 0.3.51 | 2026-04-28 | [77406](https://github.com/airbytehq/airbyte/pull/77406) | Update dependencies |
+| 0.3.50 | 2026-04-21 | [76749](https://github.com/airbytehq/airbyte/pull/76749) | Update dependencies |
 | 0.3.49 | 2026-03-17 | [74595](https://github.com/airbytehq/airbyte/pull/74595) | Update dependencies |
 | 0.3.48 | 2026-03-03 | [73972](https://github.com/airbytehq/airbyte/pull/73972) | Update dependencies |
 | 0.3.47 | 2026-02-17 | [73526](https://github.com/airbytehq/airbyte/pull/73526) | Update dependencies |

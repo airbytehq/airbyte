@@ -9,7 +9,6 @@ import com.ethlo.time.ParseConfig
 import io.airbyte.cdk.load.data.TemporalFormatters.DATE_TIME_FORMATTER
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.util.serializeToString
-import io.micronaut.context.annotation.Property
 import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -30,20 +29,12 @@ import java.time.temporal.TemporalQueries
  * [AirbyteValue]. In particular, this class will parse temporal types, and performs some
  * common-sense conversions among numeric types, as well as upcasting any value to StringValue.
  *
- * The [useFastTimestampParsing] flag controls timestamp parsing behavior:
- * - When false (default): uses the original try-ZonedDateTime/catch-fallback-to-LocalDateTime
- * pattern. Safe but slow due to exception-as-control-flow.
- * - When true: uses ethlo/itu for fast ISO-8601 parsing (~25x faster) with a JDK TemporalQueries
- * fallback for exotic formats. No exceptions on the hot path.
- *
- * Destinations opt in via the Micronaut property
- * `airbyte.destination.core.coercion.use-fast-timestamp-parsing`.
+ * Timestamp parsing uses ethlo/itu for fast ISO-8601 parsing with a JDK TemporalQueries fallback
+ * for exotic formats. Time parsing uses a single parse + TemporalQueries check. Both avoid
+ * exception-as-control-flow.
  */
 @Singleton
-class AirbyteValueCoercer(
-    @Property(name = "airbyte.destination.core.coercion.use-fast-timestamp-parsing")
-    private val useFastTimestampParsing: Boolean = false,
-) {
+class AirbyteValueCoercer {
     fun coerce(
         value: AirbyteValue,
         type: AirbyteType,
@@ -147,26 +138,17 @@ class AirbyteValueCoercer(
             is TimeWithTimezoneValue -> value
             else ->
                 requireType<StringValue, TimeWithTimezoneValue>(value) {
+                    // Single parse + temporal query to detect timezone, avoiding the old
+                    // try-OffsetTime.parse/catch-fallback-to-LocalTime pattern.
+                    val parsed = TemporalFormatters.TIME_FORMATTER.parse(it.value)
+                    val offset = parsed.query(TemporalQueries.offset())
                     val ot =
-                        if (useFastTimestampParsing) {
-                            // Single parse + temporal query to detect timezone, avoiding the
-                            // try-OffsetTime.parse/catch-fallback-to-LocalTime pattern.
-                            val parsed = TemporalFormatters.TIME_FORMATTER.parse(it.value)
-                            val offset = parsed.query(TemporalQueries.offset())
-                            if (offset != null) {
-                                // Has timezone offset (e.g. "12:00:00+01:00") — use it directly
-                                OffsetTime.from(parsed)
-                            } else {
-                                // No timezone (e.g. "12:00:00") — assume UTC
-                                LocalTime.from(parsed).atOffset(ZoneOffset.UTC)
-                            }
+                        if (offset != null) {
+                            // Has timezone offset (e.g. "12:00:00+01:00") — use it directly
+                            OffsetTime.from(parsed)
                         } else {
-                            try {
-                                OffsetTime.parse(it.value, TemporalFormatters.TIME_FORMATTER)
-                            } catch (_: Exception) {
-                                LocalTime.parse(it.value, TemporalFormatters.TIME_FORMATTER)
-                                    .atOffset(ZoneOffset.UTC)
-                            }
+                            // No timezone (e.g. "12:00:00") — assume UTC
+                            LocalTime.from(parsed).atOffset(ZoneOffset.UTC)
                         }
                     TimeWithTimezoneValue(ot)
                 }
@@ -201,28 +183,12 @@ class AirbyteValueCoercer(
                 }
         }
 
-    private fun offsetDateTime(it: StringValue): OffsetDateTime {
-        return if (useFastTimestampParsing) {
-            offsetDateTimeFast(it.value)
-        } else {
-            offsetDateTimeLegacy(it.value)
-        }
-    }
-
-    /** Legacy path: try ZonedDateTime.parse, catch, fall back to LocalDateTime.parse. */
-    private fun offsetDateTimeLegacy(s: String): OffsetDateTime {
-        return try {
-            ZonedDateTime.parse(s, DATE_TIME_FORMATTER).toOffsetDateTime()
-        } catch (e: Exception) {
-            LocalDateTime.parse(s, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
-        }
-    }
-
     /**
-     * Fast path: uses ethlo/itu for ISO-8601 (~25x faster, no exceptions), with a JDK
-     * TemporalQueries fallback for non-ISO formats.
+     * Parses a timestamp string into an OffsetDateTime. Uses ethlo/itu for ISO-8601 formats (~25x
+     * faster than JDK), with a JDK TemporalQueries fallback for non-ISO formats.
      */
-    private fun offsetDateTimeFast(s: String): OffsetDateTime {
+    private fun offsetDateTime(it: StringValue): OffsetDateTime {
+        val s = it.value
         if (looksLikeIso8601(s)) {
             // Fast path: ITU handles ISO-8601/RFC-3339 ~25x faster than JDK DateTimeFormatter,
             // and determines with/without timezone via position-based parsing (no exceptions).

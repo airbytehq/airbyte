@@ -16,6 +16,10 @@ See the [API docs](https://developers.hellosign.com/api/reference/authentication
 | signature_requests | signature_request_id | DefaultPaginator | ✅ |  ✅  |
 | templates | template_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,12 @@ See the [API docs](https://developers.hellosign.com/api/reference/authentication
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.54 | 2026-06-23 | [80428](https://github.com/airbytehq/airbyte/pull/80428) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [79814](https://github.com/airbytehq/airbyte/pull/79814) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79261](https://github.com/airbytehq/airbyte/pull/79261) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78638](https://github.com/airbytehq/airbyte/pull/78638) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77229](https://github.com/airbytehq/airbyte/pull/77229) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76570](https://github.com/airbytehq/airbyte/pull/76570) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75773](https://github.com/airbytehq/airbyte/pull/75773) | Update dependencies |
 | 0.0.47 | 2026-03-17 | [74472](https://github.com/airbytehq/airbyte/pull/74472) | Update dependencies |
 | 0.0.46 | 2026-02-24 | [73920](https://github.com/airbytehq/airbyte/pull/73920) | Update dependencies |

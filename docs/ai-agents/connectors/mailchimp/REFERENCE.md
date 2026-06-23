@@ -8,24 +8,35 @@ The Mailchimp connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Lists | [List](#lists-list), [Get](#lists-get), [Search](#lists-search) |
-| List Members | [List](#list-members-list), [Get](#list-members-get) |
-| Reports | [List](#reports-list), [Get](#reports-get), [Search](#reports-search) |
-| Email Activity | [List](#email-activity-list), [Search](#email-activity-search) |
-| Automations | [List](#automations-list) |
-| Tags | [List](#tags-list) |
-| Interest Categories | [List](#interest-categories-list), [Get](#interest-categories-get) |
-| Interests | [List](#interests-list), [Get](#interests-get) |
-| Segments | [List](#segments-list), [Get](#segments-get) |
-| Segment Members | [List](#segment-members-list) |
-| Unsubscribes | [List](#unsubscribes-list) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
+| Lists | [List](#lists-list), [Get](#lists-get), [Context Store Search](#lists-context-store-search) |
+| List Members | [List](#list-members-list), [Get](#list-members-get), [Context Store Search](#list-members-context-store-search) |
+| Reports | [List](#reports-list), [Get](#reports-get), [Context Store Search](#reports-context-store-search) |
+| Email Activity | [List](#email-activity-list), [Context Store Search](#email-activity-context-store-search) |
+| Automations | [List](#automations-list), [Context Store Search](#automations-context-store-search) |
+| Tags | [List](#tags-list), [Context Store Search](#tags-context-store-search) |
+| Interest Categories | [List](#interest-categories-list), [Get](#interest-categories-get), [Context Store Search](#interest-categories-context-store-search) |
+| Interests | [List](#interests-list), [Get](#interests-get), [Context Store Search](#interests-context-store-search) |
+| Segments | [List](#segments-list), [Get](#segments-get), [Context Store Search](#segments-context-store-search) |
+| Segment Members | [List](#segment-members-list), [Context Store Search](#segment-members-context-store-search) |
+| Unsubscribes | [List](#unsubscribes-list), [Context Store Search](#unsubscribes-context-store-search) |
 
 ## Campaigns
 
 ### Campaigns List
 
 Get all campaigns in an account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "campaigns",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -95,13 +106,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
 ### Campaigns Get
 
 Get information about a specific campaign
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -163,14 +188,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ab_split_opts": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await mailchimp.campaigns.search(
+await mailchimp.campaigns.context_store_search(
     query={"filter": {"eq": {"ab_split_opts": {}}}}
 )
 ```
@@ -183,7 +228,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ab_split_opts": {}}}}
     }
@@ -269,6 +314,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about all lists in the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "lists",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -336,13 +392,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
 ### Lists Get
 
 Get information about a specific list in your Mailchimp account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "lists",
+  "action": "get",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -406,14 +476,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Lists Search
+### Lists Context Store Search
 
 Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "lists",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "beamer_address": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await mailchimp.lists.search(
+await mailchimp.lists.context_store_search(
     query={"filter": {"eq": {"beamer_address": "<str>"}}}
 )
 ```
@@ -426,7 +516,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "lists",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"beamer_address": "<str>"}}}
     }
@@ -509,6 +599,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### List Members List
 
 Get information about members in a specific Mailchimp list
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "list_members",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -596,13 +700,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
 ### List Members Get
 
 Get information about a specific list member
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "list_members",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "subscriber_hash": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -676,11 +795,152 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### List Members Context Store Search
+
+Search and filter list members records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "list_members",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.list_members.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "list_members",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | The MD5 hash of the lowercase version of the list member's email address |
+| `email_address` | `string` | Email address for a subscriber |
+| `unique_email_id` | `string` | An identifier for the address across all of Mailchimp |
+| `contact_id` | `string` | As Mailchimp evolves beyond email, you may eventually have contacts without email addresses |
+| `full_name` | `string` | The contact's full name |
+| `web_id` | `integer` | The ID used in the Mailchimp web application |
+| `email_type` | `string` | Type of email this member asked to get |
+| `status` | `string` | Subscriber's current status |
+| `unsubscribe_reason` | `string` | A subscriber's reason for unsubscribing |
+| `consents_to_one_to_one_messaging` | `boolean` | Indicates whether a contact consents to 1:1 messaging |
+| `merge_fields` | `object` | A dictionary of merge fields where the keys are the merge tags |
+| `interests` | `object` | The key of this object's properties is the ID of the interest in question |
+| `stats` | `object` | Open and click rates for this subscriber |
+| `ip_signup` | `string` | IP address the subscriber signed up from |
+| `timestamp_signup` | `string` | The date and time the subscriber signed up for the list |
+| `ip_opt` | `string` | The IP address the subscriber used to confirm their opt-in status |
+| `timestamp_opt` | `string` | The date and time the subscriber confirmed their opt-in status |
+| `member_rating` | `integer` | Star rating for this member, between 1 and 5 |
+| `last_changed` | `string` | The date and time the member's info was last changed |
+| `language` | `string` | If set/detected, the subscriber's language |
+| `vip` | `boolean` | VIP status for subscriber |
+| `email_client` | `string` | The list member's email client |
+| `location` | `object` | Subscriber location information |
+| `source` | `string` | The source from which the subscriber was added to this list |
+| `tags_count` | `integer` | The number of tags applied to this member |
+| `tags` | `array` | Returns up to 50 tags applied to this member |
+| `list_id` | `string` | The list id |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The MD5 hash of the lowercase version of the list member's email address |
+| `data[].email_address` | `string` | Email address for a subscriber |
+| `data[].unique_email_id` | `string` | An identifier for the address across all of Mailchimp |
+| `data[].contact_id` | `string` | As Mailchimp evolves beyond email, you may eventually have contacts without email addresses |
+| `data[].full_name` | `string` | The contact's full name |
+| `data[].web_id` | `integer` | The ID used in the Mailchimp web application |
+| `data[].email_type` | `string` | Type of email this member asked to get |
+| `data[].status` | `string` | Subscriber's current status |
+| `data[].unsubscribe_reason` | `string` | A subscriber's reason for unsubscribing |
+| `data[].consents_to_one_to_one_messaging` | `boolean` | Indicates whether a contact consents to 1:1 messaging |
+| `data[].merge_fields` | `object` | A dictionary of merge fields where the keys are the merge tags |
+| `data[].interests` | `object` | The key of this object's properties is the ID of the interest in question |
+| `data[].stats` | `object` | Open and click rates for this subscriber |
+| `data[].ip_signup` | `string` | IP address the subscriber signed up from |
+| `data[].timestamp_signup` | `string` | The date and time the subscriber signed up for the list |
+| `data[].ip_opt` | `string` | The IP address the subscriber used to confirm their opt-in status |
+| `data[].timestamp_opt` | `string` | The date and time the subscriber confirmed their opt-in status |
+| `data[].member_rating` | `integer` | Star rating for this member, between 1 and 5 |
+| `data[].last_changed` | `string` | The date and time the member's info was last changed |
+| `data[].language` | `string` | If set/detected, the subscriber's language |
+| `data[].vip` | `boolean` | VIP status for subscriber |
+| `data[].email_client` | `string` | The list member's email client |
+| `data[].location` | `object` | Subscriber location information |
+| `data[].source` | `string` | The source from which the subscriber was added to this list |
+| `data[].tags_count` | `integer` | The number of tags applied to this member |
+| `data[].tags` | `array` | Returns up to 50 tags applied to this member |
+| `data[].list_id` | `string` | The list id |
+
+</details>
+
 ## Reports
 
 ### Reports List
 
 Get campaign reports
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "reports",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -747,13 +1007,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
 ### Reports Get
 
 Get report details for a specific sent campaign
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "reports",
+  "action": "get",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -819,14 +1093,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Reports Search
+### Reports Context Store Search
 
 Search and filter reports records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "reports",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ab_split": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await mailchimp.reports.search(
+await mailchimp.reports.context_store_search(
     query={"filter": {"eq": {"ab_split": {}}}}
 )
 ```
@@ -839,7 +1133,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "reports",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ab_split": {}}}}
     }
@@ -933,6 +1227,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of member's subscriber activity in a specific campaign
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "email_activity",
+  "action": "list",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -986,18 +1294,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
-### Email Activity Search
+### Email Activity Context Store Search
 
 Search and filter email activity records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "email_activity",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "action": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await mailchimp.email_activity.search(
+await mailchimp.email_activity.context_store_search(
     query={"filter": {"eq": {"action": "<str>"}}}
 )
 ```
@@ -1010,7 +1338,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "email_activity",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"action": "<str>"}}}
     }
@@ -1072,6 +1400,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a summary of an account's classic automations
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "automations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1126,7 +1465,101 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
+
+</details>
+
+### Automations Context Store Search
+
+Search and filter automations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "automations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.automations.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "automations",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | A string that uniquely identifies an Automation workflow |
+| `create_time` | `string` | The date and time the Automation was created |
+| `start_time` | `string` | The date and time the Automation was started |
+| `status` | `string` | The current status of the Automation |
+| `emails_sent` | `integer` | The total number of emails sent for the Automation |
+| `recipients` | `object` | List settings for the Automation |
+| `settings` | `object` | The settings for the Automation workflow |
+| `tracking` | `object` | The tracking options for the Automation |
+| `report_summary` | `object` | A summary of opens and clicks for sent campaigns |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | A string that uniquely identifies an Automation workflow |
+| `data[].create_time` | `string` | The date and time the Automation was created |
+| `data[].start_time` | `string` | The date and time the Automation was started |
+| `data[].status` | `string` | The current status of the Automation |
+| `data[].emails_sent` | `integer` | The total number of emails sent for the Automation |
+| `data[].recipients` | `object` | List settings for the Automation |
+| `data[].settings` | `object` | The settings for the Automation workflow |
+| `data[].tracking` | `object` | The tracking options for the Automation |
+| `data[].report_summary` | `object` | A summary of opens and clicks for sent campaigns |
 
 </details>
 
@@ -1135,6 +1568,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags List
 
 Search for tags on a list by name
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "tags",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1183,7 +1630,87 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
+
+</details>
+
+### Tags Context Store Search
+
+Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.tags.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | The unique id for the tag |
+| `name` | `string` | The name of the tag |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | The unique id for the tag |
+| `data[].name` | `string` | The name of the tag |
 
 </details>
 
@@ -1192,6 +1719,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Interest Categories List
 
 Get information about a list's interest categories
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interest_categories",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1244,13 +1785,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
 ### Interest Categories Get
 
 Get information about a specific interest category
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interest_categories",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "interest_category_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1302,11 +1858,112 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Interest Categories Context Store Search
+
+Search and filter interest categories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interest_categories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "list_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.interest_categories.context_store_search(
+    query={"filter": {"eq": {"list_id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "interest_categories",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"list_id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `list_id` | `string` | The unique list id for the category |
+| `id` | `string` | The id for the interest category |
+| `title` | `string` | The text description of this category |
+| `display_order` | `integer` | The order that the categories are displayed in the list |
+| `type` | `string` | Determines how this category's interests appear on signup forms |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].list_id` | `string` | The unique list id for the category |
+| `data[].id` | `string` | The id for the interest category |
+| `data[].title` | `string` | The text description of this category |
+| `data[].display_order` | `integer` | The order that the categories are displayed in the list |
+| `data[].type` | `string` | Determines how this category's interests appear on signup forms |
+
+</details>
+
 ## Interests
 
 ### Interests List
 
 Get a list of this category's interests
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interests",
+  "action": "list",
+  "params": {
+    "list_id": "<str>",
+    "interest_category_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1363,13 +2020,29 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
 ### Interests Get
 
 Get interests or group names for a specific category
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interests",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "interest_category_id": "<str>",
+    "interest_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1425,11 +2098,113 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Interests Context Store Search
+
+Search and filter interests records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interests",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "category_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.interests.context_store_search(
+    query={"filter": {"eq": {"category_id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "interests",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"category_id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `category_id` | `string` | The id for the interest category |
+| `list_id` | `string` | The ID for the list that this interest belongs to |
+| `id` | `string` | The ID for the interest |
+| `name` | `string` | The name of the interest |
+| `subscriber_count` | `string` | The number of subscribers associated with this interest |
+| `display_order` | `integer` | The display order for interests |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].category_id` | `string` | The id for the interest category |
+| `data[].list_id` | `string` | The ID for the list that this interest belongs to |
+| `data[].id` | `string` | The ID for the interest |
+| `data[].name` | `string` | The name of the interest |
+| `data[].subscriber_count` | `string` | The number of subscribers associated with this interest |
+| `data[].display_order` | `integer` | The display order for interests |
+
+</details>
+
 ## Segments
 
 ### Segments List
 
 Get information about all available segments for a specific list
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segments",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1490,13 +2265,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
 ### Segments Get
 
 Get information about a specific segment
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segments",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "segment_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1551,11 +2341,118 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Segments Context Store Search
+
+Search and filter segments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.segments.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "segments",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | The unique id for the segment |
+| `name` | `string` | The name of the segment |
+| `member_count` | `integer` | The number of active subscribers currently included in the segment |
+| `type` | `string` | The type of segment |
+| `created_at` | `string` | The date and time the segment was created |
+| `updated_at` | `string` | The date and time the segment was last updated |
+| `options` | `object` | The conditions of the segment |
+| `list_id` | `string` | The list id |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | The unique id for the segment |
+| `data[].name` | `string` | The name of the segment |
+| `data[].member_count` | `integer` | The number of active subscribers currently included in the segment |
+| `data[].type` | `string` | The type of segment |
+| `data[].created_at` | `string` | The date and time the segment was created |
+| `data[].updated_at` | `string` | The date and time the segment was last updated |
+| `data[].options` | `object` | The conditions of the segment |
+| `data[].list_id` | `string` | The list id |
+
+</details>
+
 ## Segment Members
 
 ### Segment Members List
 
 Get information about members in a saved segment
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segment_members",
+  "action": "list",
+  "params": {
+    "list_id": "<str>",
+    "segment_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1625,7 +2522,121 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
+
+</details>
+
+### Segment Members Context Store Search
+
+Search and filter segment members records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segment_members",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.segment_members.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "segment_members",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | The MD5 hash of the lowercase version of the list member's email address |
+| `email_address` | `string` | Email address for a subscriber |
+| `unique_email_id` | `string` | An identifier for the address across all of Mailchimp |
+| `email_type` | `string` | Type of email this member asked to get |
+| `status` | `string` | Subscriber's current status |
+| `merge_fields` | `object` | A dictionary of merge fields where the keys are the merge tags |
+| `interests` | `object` | The key of this object's properties is the ID of the interest in question |
+| `stats` | `object` | Open and click rates for this subscriber |
+| `ip_signup` | `string` | IP address the subscriber signed up from |
+| `timestamp_signup` | `string` | The date and time the subscriber signed up for the list |
+| `ip_opt` | `string` | The IP address the subscriber used to confirm their opt-in status |
+| `timestamp_opt` | `string` | The date and time the subscriber confirmed their opt-in status |
+| `member_rating` | `integer` | Star rating for this member, between 1 and 5 |
+| `last_changed` | `string` | The date and time the member's info was last changed |
+| `language` | `string` | If set/detected, the subscriber's language |
+| `vip` | `boolean` | VIP status for subscriber |
+| `email_client` | `string` | The list member's email client |
+| `location` | `object` | Subscriber location information |
+| `list_id` | `string` | The list id |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The MD5 hash of the lowercase version of the list member's email address |
+| `data[].email_address` | `string` | Email address for a subscriber |
+| `data[].unique_email_id` | `string` | An identifier for the address across all of Mailchimp |
+| `data[].email_type` | `string` | Type of email this member asked to get |
+| `data[].status` | `string` | Subscriber's current status |
+| `data[].merge_fields` | `object` | A dictionary of merge fields where the keys are the merge tags |
+| `data[].interests` | `object` | The key of this object's properties is the ID of the interest in question |
+| `data[].stats` | `object` | Open and click rates for this subscriber |
+| `data[].ip_signup` | `string` | IP address the subscriber signed up from |
+| `data[].timestamp_signup` | `string` | The date and time the subscriber signed up for the list |
+| `data[].ip_opt` | `string` | The IP address the subscriber used to confirm their opt-in status |
+| `data[].timestamp_opt` | `string` | The date and time the subscriber confirmed their opt-in status |
+| `data[].member_rating` | `integer` | Star rating for this member, between 1 and 5 |
+| `data[].last_changed` | `string` | The date and time the member's info was last changed |
+| `data[].language` | `string` | If set/detected, the subscriber's language |
+| `data[].vip` | `boolean` | VIP status for subscriber |
+| `data[].email_client` | `string` | The list member's email client |
+| `data[].location` | `object` | Subscriber location information |
+| `data[].list_id` | `string` | The list id |
 
 </details>
 
@@ -1634,6 +2645,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Unsubscribes List
 
 Get information about members who have unsubscribed from a specific campaign
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "unsubscribes",
+  "action": "list",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1690,7 +2715,101 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
+
+</details>
+
+### Unsubscribes Context Store Search
+
+Search and filter unsubscribes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "unsubscribes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "email_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await mailchimp.unsubscribes.context_store_search(
+    query={"filter": {"eq": {"email_id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "unsubscribes",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"email_id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `email_id` | `string` | The MD5 hash of the lowercase version of the list member's email address |
+| `email_address` | `string` | Email address for a subscriber |
+| `merge_fields` | `object` | A dictionary of merge fields where the keys are the merge tags |
+| `vip` | `boolean` | VIP status for subscriber |
+| `timestamp` | `string` | The date and time the member opted-out |
+| `reason` | `string` | If available, the reason listed by the member for unsubscribing |
+| `campaign_id` | `string` | The campaign id |
+| `list_id` | `string` | The list id |
+| `list_is_active` | `boolean` | The status of the list used |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].email_id` | `string` | The MD5 hash of the lowercase version of the list member's email address |
+| `data[].email_address` | `string` | Email address for a subscriber |
+| `data[].merge_fields` | `object` | A dictionary of merge fields where the keys are the merge tags |
+| `data[].vip` | `boolean` | VIP status for subscriber |
+| `data[].timestamp` | `string` | The date and time the member opted-out |
+| `data[].reason` | `string` | If available, the reason listed by the member for unsubscribing |
+| `data[].campaign_id` | `string` | The campaign id |
+| `data[].list_id` | `string` | The list id |
+| `data[].list_is_active` | `boolean` | The status of the list used |
 
 </details>
 

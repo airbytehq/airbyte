@@ -36,12 +36,12 @@ jobs:
           set -euo pipefail
 
           # Query the publish workflow run's jobs to find which source connectors
-          # had their registry entries published successfully.
-          # Job names follow the pattern: "Publish connector registry entries (source-xyz)"
+          # were published successfully.
+          # Job names follow the pattern: "Publish connectors (source-xyz)"
           PUBLISHED=$(gh api "repos/$REPO/actions/runs/$WORKFLOW_RUN_ID/jobs" \
             --paginate \
             --jq '[.jobs[]
-              | select(.name | startswith("Publish connector registry entries (source-"))
+              | select(.name | startswith("Publish connectors (source-"))
               | select(.conclusion == "success")
               | .name
               | capture("\\((?<connector>source-[^)]+)\\)")

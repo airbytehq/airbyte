@@ -10,13 +10,13 @@ The Google Drive source connector pulls data from a single folder in Google Driv
 
 - Drive folder link - The link to the Google Drive folder you want to sync files from (includes files located in subfolders)
 <!-- env:cloud -->
-- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
+- **For Airbyte Cloud:** A Google Workspace user with access to the Google Drive folder
   <!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source:**
   - A GCP project
   - Enable the Google Drive API in your GCP project
-  - Service Account Key with access to the Spreadsheet you want to replicate
+  - Service Account Key with access to the Google Drive folder you want to replicate
   <!-- /env:oss -->
 
 ## Setup guide
@@ -34,7 +34,7 @@ For **Airbyte Cloud** users, we highly recommend using OAuth, as it significantl
 For **Airbyte Open Source** users, we recommend using Service Account Key Authentication. Follow the steps below to create a service account, generate a key, and enable the Google Drive API.
 
 :::note
-If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/drive.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
+If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/drive.readonly`. If you also plan to sync the **Files Permissions** or **Identities** streams, include the additional Admin SDK scopes listed in [Replicate Permissions ACL](#replicate-permissions-acl). You will need to obtain your client ID, client secret, and refresh token for the connector setup.
 :::
 
 ### Set up the service account key (Airbyte Open Source)
@@ -60,7 +60,7 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Drive API**.
 4. Click **ENABLE**.
 
-If your folder is viewable by anyone with its link, no further action is needed. If not, give your Service account access to your folder. Check out [this video](https://youtu.be/GyomEw5a2NQ%22) for how to do this.
+If your folder is viewable by anyone with its link, no further action is needed. If not, give your service account access to your folder. Check out [this video](https://youtu.be/GyomEw5a2NQ) for how to do this.
 
 <!-- /env:oss -->
 
@@ -114,7 +114,7 @@ The Google Drive source connector supports the following [sync modes](https://do
 
 ## Path Patterns
 
-\(tl;dr -&gt; path pattern syntax using [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/). GLOBSTAR and SPLIT flags are enabled.\)
+Path patterns use [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/) syntax with the `GLOBSTAR` and `SPLIT` flags enabled.
 
 This connector can sync multiple files by using glob-style patterns, rather than requiring a specific path for every file. This enables:
 
@@ -168,7 +168,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -237,11 +237,7 @@ The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/l
 
 There are currently no options for JSONL parsing.
 
-### Document File Type Format (Experimental)
-
-:::warning
-The Document file type format is currently an experimental feature and not subject to SLAs. Use at your own risk.
-:::
+### Document File Type Format
 
 The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
 
@@ -306,16 +302,22 @@ If you are syncing **identities** (users and groups) from a different domain tha
 
 #### Streams
 
-#### 1. Files Permissions (ACLs)
+##### 1. Files Permissions (ACLs)
+
 This stream syncs file permissions (Access Control Lists) for files in your Google Drive. You should set up a stream name and globs.
 
-#### 2. Identities (Users and Groups)
+##### 2. Identities (Users and Groups)
+
 By default, this stream is enabled and retrieves information about **users and groups** in your Google Workspace. This helps you map file permissions (ACLs) to actual users and groups.
 
-#### Requirements:
+##### Requirements
+
 - Ensure the **Google Admin SDK API** is enabled.
 - The authenticated user must have the necessary Google Admin Directory permissions.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -324,11 +326,18 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.14 | 2026-03-31 | [75573](https://github.com/airbytehq/airbyte/pull/75573) | Migrate OAuth scope to scopes object array for granular scopes support |
+| 0.5.21 | 2026-06-16 | [79912](https://github.com/airbytehq/airbyte/pull/79912) | Update dependencies |
+| 0.5.20 | 2026-06-09 | [79341](https://github.com/airbytehq/airbyte/pull/79341) | Update dependencies |
+| 0.5.19 | 2026-06-02 | [78739](https://github.com/airbytehq/airbyte/pull/78739) | Update dependencies |
+| 0.5.18 | 2026-05-02 | [77714](https://github.com/airbytehq/airbyte/pull/77714) | Update airbyte-cdk to 7.18.1 (surface actionable check errors instead of full Python tracebacks) |
+| 0.5.17 | 2026-05-02 | [77711](https://github.com/airbytehq/airbyte/pull/77711) | Update airbyte-cdk to 7.18.0 |
+| 0.5.16 | 2026-04-28 | [77266](https://github.com/airbytehq/airbyte/pull/77266) | Update dependencies |
+| 0.5.15 | 2026-04-21 | [76611](https://github.com/airbytehq/airbyte/pull/76611) | Update dependencies |
+| 0.5.14 | 2026-04-01 | [75573](https://github.com/airbytehq/airbyte/pull/75573) | Migrate OAuth scope to scopes object array for granular scopes support |
 | 0.5.13 | 2026-03-31 | [75368](https://github.com/airbytehq/airbyte/pull/75368) | Update dependencies |
 | 0.5.12 | 2026-03-17 | [74923](https://github.com/airbytehq/airbyte/pull/74923) | Update dependencies |
 | 0.5.11 | 2026-03-03 | [73119](https://github.com/airbytehq/airbyte/pull/73119) | Update dependencies |
-| 0.5.10 | 2026-02-03 | [72377](https://github.com/airbytehq/airbyte/pull/72377) | Update dependencies |
+| 0.5.10 | 2026-02-06 | [72377](https://github.com/airbytehq/airbyte/pull/72377) | Update dependencies |
 | 0.5.9 | 2026-01-20 | [71890](https://github.com/airbytehq/airbyte/pull/71890) | Update dependencies |
 | 0.5.8 | 2026-01-14 | [71735](https://github.com/airbytehq/airbyte/pull/71735) | Update dependencies |
 | 0.5.7 | 2025-12-18 | [70532](https://github.com/airbytehq/airbyte/pull/70532) | Update dependencies |
@@ -338,7 +347,7 @@ By default, this stream is enabled and retrieves information about **users and g
 | 0.5.3 | 2025-11-11 | [69272](https://github.com/airbytehq/airbyte/pull/69272) | Update dependencies |
 | 0.5.2 | 2025-11-04 | [69158](https://github.com/airbytehq/airbyte/pull/69158) | Update dependencies |
 | 0.5.1 | 2025-10-29 | [69053](https://github.com/airbytehq/airbyte/pull/69053) | Update dependencies |
-| 0.5.0 | 2025-10-27 | [68618](https://github.com/airbytehq/airbyte/pull/68618) | Update dependencies |
+| 0.5.0 | 2025-10-27 | [68618](https://github.com/airbytehq/airbyte/pull/68618) | Upgrade to Python 3.13 |
 | 0.4.10 | 2025-10-21 | [68321](https://github.com/airbytehq/airbyte/pull/68321) | Update dependencies |
 | 0.4.9 | 2025-10-14 | [68038](https://github.com/airbytehq/airbyte/pull/68038) | Update dependencies |
 | 0.4.8 | 2025-10-07 | [67259](https://github.com/airbytehq/airbyte/pull/67259) | Update dependencies |
@@ -350,12 +359,12 @@ By default, this stream is enabled and retrieves information about **users and g
 | 0.4.2 | 2025-05-24 | [60621](https://github.com/airbytehq/airbyte/pull/60621) | Update dependencies |
 | 0.4.1 | 2025-05-10 | [58227](https://github.com/airbytehq/airbyte/pull/58227) | Update dependencies |
 | 0.4.0 | 2025-05-06 | [59690](https://github.com/airbytehq/airbyte/pull/59690) | Promoting release candidate 0.4.0-rc.1 to a main version. |
-| 0.4.0-rc.1 | 2025-04-30 | [57496](https://github.com/airbytehq/airbyte/pull/57496) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
+| 0.4.0-rc.1 | 2025-05-05 | [57496](https://github.com/airbytehq/airbyte/pull/57496) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.3.4 | 2025-04-12 | [57675](https://github.com/airbytehq/airbyte/pull/57675) | Update dependencies |
 | 0.3.3 | 2025-04-05 | [57072](https://github.com/airbytehq/airbyte/pull/57072) | Update dependencies |
 | 0.3.2 | 2025-03-29 | [56665](https://github.com/airbytehq/airbyte/pull/56665) | Update dependencies |
 | 0.3.1 | 2025-03-22 | [55938](https://github.com/airbytehq/airbyte/pull/55938) | Update dependencies |
-| 0.3.0 | 2025-03-11 | [55689](https://github.com/airbytehq/airbyte/pull/55689) | Refactor to use new Stream Permissions Reader |
+| 0.3.0 | 2025-03-14 | [55689](https://github.com/airbytehq/airbyte/pull/55689) | Refactor to use new Stream Permissions Reader |
 | 0.2.4 | 2025-03-08 | [55349](https://github.com/airbytehq/airbyte/pull/55349) | Update dependencies |
 | 0.2.3 | 2025-03-01 | [54955](https://github.com/airbytehq/airbyte/pull/54955) | Update dependencies |
 | 0.2.2 | 2025-02-22 | [54416](https://github.com/airbytehq/airbyte/pull/54416) | Update dependencies |
@@ -364,7 +373,7 @@ By default, this stream is enabled and retrieves information about **users and g
 | 0.1.2 | 2025-02-08 | [53320](https://github.com/airbytehq/airbyte/pull/53320) | Update dependencies |
 | 0.1.1 | 2025-02-01 | [43895](https://github.com/airbytehq/airbyte/pull/43895) | Update dependencies |
 | 0.1.0 | 2025-01-27 | [52572](https://github.com/airbytehq/airbyte/pull/52572) | Promoting release candidate 0.1.0-rc.1 to a main version. |
-| 0.1.0-rc.1  | 2025-01-20 | [51585](https://github.com/airbytehq/airbyte/pull/51585) | Bump cdk to enable universal file transfer |
+| 0.1.0-rc.1 | 2025-01-20 | [51585](https://github.com/airbytehq/airbyte/pull/51585) | Bump cdk to enable universal file transfer |
 | 0.0.12 | 2024-06-06 | [39291](https://github.com/airbytehq/airbyte/pull/39291) | [autopull] Upgrade base image to v1.2.2 |
 | 0.0.11 | 2024-05-29 | [38698](https://github.com/airbytehq/airbyte/pull/38698) | Avoid error on empty stream when running discover |
 | 0.0.10 | 2024-03-28 | [36581](https://github.com/airbytehq/airbyte/pull/36581) | Manage dependencies with Poetry |

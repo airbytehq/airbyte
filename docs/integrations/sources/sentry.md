@@ -59,12 +59,26 @@ Please be aware: this also means that any change older than 90 days will not be 
 | `array`             | `array`      |
 | `object`            | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.26 | 2026-06-23 | [80622](https://github.com/airbytehq/airbyte/pull/80622) | Update dependencies |
+| 0.9.25 | 2026-06-16 | [80036](https://github.com/airbytehq/airbyte/pull/80036) | Update dependencies |
+| 0.9.24 | 2026-06-09 | [79482](https://github.com/airbytehq/airbyte/pull/79482) | Update dependencies |
+| 0.9.23 | 2026-06-02 | [78975](https://github.com/airbytehq/airbyte/pull/78975) | Update dependencies |
+| 0.9.22 | 2026-06-01 | [78537](https://github.com/airbytehq/airbyte/pull/78537) | Add user-configurable `num_workers` concurrency setting (default 5, tested optimal at 7) |
+| 0.9.22-rc.2 | 2026-05-27 | [78468](https://github.com/airbytehq/airbyte/pull/78468) | Concurrency tuning iteration 2 — bump default_concurrency from 7 to 8 |
+| 0.9.22-rc.1 | 2026-05-26 | [78444](https://github.com/airbytehq/airbyte/pull/78444) | Concurrency tuning — bump default_concurrency from 5 to 7 for progressive rollout |
+| 0.9.21 | 2026-04-28 | [77407](https://github.com/airbytehq/airbyte/pull/77407) | Update dependencies |
+| 0.9.20 | 2026-04-21 | [76772](https://github.com/airbytehq/airbyte/pull/76772) | Update dependencies |
 | 0.9.19 | 2026-03-31 | [75797](https://github.com/airbytehq/airbyte/pull/75797) | Update dependencies |
 | 0.9.18 | 2026-03-24 | [75330](https://github.com/airbytehq/airbyte/pull/75330) | Update dependencies |
 | 0.9.17 | 2026-03-10 | [74601](https://github.com/airbytehq/airbyte/pull/74601) | Update dependencies |

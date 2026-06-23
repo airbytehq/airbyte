@@ -4,36 +4,29 @@ This page contains the setup guide and reference information for the GitLab sour
 
 ## Prerequisites
 
-- A GitLab instance or an account at [GitLab](https://gitlab.com)
+- A GitLab account on [GitLab.com](https://gitlab.com) or a self-hosted GitLab instance (v4 API)
 
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
-- Personal Access Token (see [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
-- OAuth
+- OAuth (recommended), or a [personal access token](https://docs.gitlab.com/user/profile/personal_access_tokens/) with the `read_api` scope
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-- Personal Access Token (see [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
+- A [personal access token](https://docs.gitlab.com/user/profile/personal_access_tokens/) with the `read_api` scope
 <!-- /env:oss -->
 
 ## Setup guide
 
 ### Step 1: Set up GitLab
 
-Create a [GitLab Account](https://gitlab.com) or set up a local instance of GitLab.
+Create a [GitLab account](https://gitlab.com) or set up a self-hosted GitLab instance.
 
-<!-- env:oss -->
-
-**Airbyte Open Source additional setup steps**
-
-Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your token should have the `read_api` scope, which grants read access to the API, including all groups and projects, the container registry, and the package registry.
-
-<!-- /env:oss -->
+If you authenticate with a personal access token, generate one in **Settings > Access Tokens** with the `read_api` scope. The `read_api` scope grants read-only access to the API, including all groups, projects, the container registry, and the package registry.
 
 <!-- env:cloud -->
 
@@ -48,12 +41,12 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 5. Log in and authorize the GitLab account.
 6. **API URL** (Optional) - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
-8. **Groups** (Optional) - List of GitLab group IDs, e.g. `airbytehq` for a single group.
-9. **Projects** (Optional) - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+8. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
+9. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
+10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
-**Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector retrieves a list of all groups accessible to the configured token and ingests as normal.
+**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 
 <!-- /env:cloud -->
 
@@ -61,7 +54,17 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 **For Airbyte Open Source:**
 
-1. Authenticate with **Personal Access Token**.
+1. Navigate to the Airbyte UI and click **Sources > + New source**.
+2. Select **GitLab** and enter a name for the connector.
+3. Authenticate with a **Personal Access Token**.
+4. **API URL** (Optional) - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+5. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
+6. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
+7. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
+8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
+9. Click **Set up source**.
+
+**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -77,29 +80,29 @@ The GitLab source connector supports the following [sync modes](https://docs.air
 
 This connector outputs the following streams:
 
-- [Branches](https://docs.gitlab.com/ee/api/branches.html)
-- [Commits](https://docs.gitlab.com/ee/api/commits.html) (Incremental)
-- [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
-- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) (GitLab Ultimate only)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) (GitLab Ultimate only)
-- [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
-- [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
-- [Group Members](https://docs.gitlab.com/ee/api/members.html)
-- [Group Milestones](https://docs.gitlab.com/ee/api/group_milestones.html)
-- [Groups](https://docs.gitlab.com/ee/api/groups.html)
-- [Issues](https://docs.gitlab.com/ee/api/issues.html) (Incremental)
-- [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
-- [Merge Request Commits](https://docs.gitlab.com/ee/api/merge_requests.html)
-- [Merge Requests](https://docs.gitlab.com/ee/api/merge_requests.html) (Incremental)
-- [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) (Incremental)
-- [Pipelines Extended](https://docs.gitlab.com/ee/api/pipelines.html)
-- [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-- [Project Members](https://docs.gitlab.com/ee/api/members.html)
-- [Project Milestones](https://docs.gitlab.com/ee/api/milestones.html)
-- [Projects](https://docs.gitlab.com/ee/api/projects.html)
-- [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
-- [Tags](https://docs.gitlab.com/ee/api/tags.html)
-- [Users](https://docs.gitlab.com/ee/api/users.html)
+- [Branches](https://docs.gitlab.com/api/branches/)
+- [Commits](https://docs.gitlab.com/api/commits/) (Incremental)
+- [Deployments](https://docs.gitlab.com/api/deployments/)
+- [Epic Issues](https://docs.gitlab.com/api/epic_issues/) (GitLab Premium and Ultimate only)
+- [Epics](https://docs.gitlab.com/api/epics/) (GitLab Premium and Ultimate only)
+- [Group Issue Boards](https://docs.gitlab.com/api/group_boards/)
+- [Group Labels](https://docs.gitlab.com/api/group_labels/)
+- [Group Members](https://docs.gitlab.com/api/members/)
+- [Group Milestones](https://docs.gitlab.com/api/group_milestones/)
+- [Groups](https://docs.gitlab.com/api/groups/)
+- [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
+- [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
+- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/)
+- [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
+- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
+- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
+- [Project Labels](https://docs.gitlab.com/api/labels/)
+- [Project Members](https://docs.gitlab.com/api/members/)
+- [Project Milestones](https://docs.gitlab.com/api/milestones/)
+- [Projects](https://docs.gitlab.com/api/projects/)
+- [Releases](https://docs.gitlab.com/api/releases/)
+- [Tags](https://docs.gitlab.com/api/tags/)
+- [Users](https://docs.gitlab.com/api/users/)
 
 ## Limitations
 
@@ -109,7 +112,7 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 ### Rate limits
 
-GitLab.com enforces per-endpoint rate limits on its REST API. The following defaults apply to the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
+The connector respects per-endpoint rate limits based on [GitLab.com's documented defaults](https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom) for the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
 
 | Endpoint | Rate limit |
 | :--- | :--- |
@@ -129,6 +132,10 @@ You can adjust the **Number of Concurrent Threads** setting to control how many 
 
 The connector silently skips any group, project, or resource that returns an HTTP 403 (Forbidden) response. If you notice missing data, verify that your access token has the required permissions for the groups and projects you want to sync.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -136,8 +143,15 @@ The connector silently skips any group, project, or resource that returns an HTT
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.31 | 2026-06-23 | [80476](https://github.com/airbytehq/airbyte/pull/80476) | Update dependencies |
+| 4.4.30 | 2026-06-17 | [77516](https://github.com/airbytehq/airbyte/pull/77516) | Lower default concurrency from 8 to 4; set HTTPAPIBudget to documented GitLab.com rate limits |
+| 4.4.29 | 2026-06-16 | [79874](https://github.com/airbytehq/airbyte/pull/79874) | Update dependencies |
+| 4.4.28 | 2026-06-09 | [79295](https://github.com/airbytehq/airbyte/pull/79295) | Update dependencies |
+| 4.4.27 | 2026-06-02 | [78724](https://github.com/airbytehq/airbyte/pull/78724) | Update dependencies |
+| 4.4.26 | 2026-04-28 | [77265](https://github.com/airbytehq/airbyte/pull/77265) | Update dependencies |
+| 4.4.25 | 2026-04-21 | [76608](https://github.com/airbytehq/airbyte/pull/76608) | Update dependencies |
 | 4.4.24 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
-| 4.4.23 | 2026-04-09 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Promote 4.4.23-rc.5 to GA: HTTPAPIBudget with concurrency 8 |
+| 4.4.23 | 2026-04-10 | [76210](https://github.com/airbytehq/airbyte/pull/76210) | Promote 4.4.23-rc.5 to GA: HTTPAPIBudget with concurrency 8 |
 | 4.4.23-rc.5 | 2026-04-01 | [75994](https://github.com/airbytehq/airbyte/pull/75994) | Revert concurrency to 8 with HTTPAPIBudget for progressive rollout tuning |
 | 4.4.23-rc.4 | 2026-03-31 | [75915](https://github.com/airbytehq/airbyte/pull/75915) | Re-enable HTTPAPIBudget with concurrency 10 for rate limit protection during progressive rollout |
 | 4.4.23-rc.3 | 2026-03-27 | [75537](https://github.com/airbytehq/airbyte/pull/75537) | Increase default concurrency from 8 to 10 for progressive rollout tuning |

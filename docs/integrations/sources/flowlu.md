@@ -48,6 +48,10 @@ Flowlu connector enables seamless data integration between Flowlu, a project man
 | project_observers | id | DefaultPaginator | ✅ |  ❌  |
 | task_workflows | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -55,6 +59,12 @@ Flowlu connector enables seamless data integration between Flowlu, a project man
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-06-23 | [80451](https://github.com/airbytehq/airbyte/pull/80451) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [79863](https://github.com/airbytehq/airbyte/pull/79863) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79303](https://github.com/airbytehq/airbyte/pull/79303) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78706](https://github.com/airbytehq/airbyte/pull/78706) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77236](https://github.com/airbytehq/airbyte/pull/77236) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76588](https://github.com/airbytehq/airbyte/pull/76588) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75713](https://github.com/airbytehq/airbyte/pull/75713) | Update dependencies |
 | 0.0.47 | 2026-03-24 | [75314](https://github.com/airbytehq/airbyte/pull/75314) | Update dependencies |
 | 0.0.46 | 2026-03-03 | [73776](https://github.com/airbytehq/airbyte/pull/73776) | Update dependencies |

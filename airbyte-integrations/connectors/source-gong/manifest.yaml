@@ -81,6 +81,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - calls
+          record_filter:
+            type: RecordFilter
+            condition: "{{ not record.get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -134,6 +137,10 @@ definitions:
                       - 404
           request_body_json:
             contentSelector:
+              context: "Extended"
+              contextTiming:
+                - "Now"
+                - "TimeOfCall"
               exposedFields:
                 media: true
                 content:
@@ -170,6 +177,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - calls
+          record_filter:
+            type: RecordFilter
+            condition: "{{ not record.get('metaData', {}).get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -423,6 +433,7 @@ definitions:
           grant_type: refresh_token
           refresh_request_headers:
             Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
+          send_refresh_request_as_query_params: true
           refresh_token_updater:
             refresh_token_name: refresh_token
             access_token_config_path:
@@ -446,6 +457,11 @@ streams:
   - $ref: "#/definitions/streams/scorecards"
   - $ref: "#/definitions/streams/answeredScorecards"
   - $ref: "#/definitions/streams/callTranscripts"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 10
 
 spec:
   type: Spec
@@ -539,6 +555,18 @@ spec:
         examples:
           - "2018-02-18T08:00:00Z"
         order: 1
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up
+          syncs but may increase API rate limit usage. Adjust based on your
+          Gong API plan; the default of 4 is tuned to stay within the standard
+          3 requests/second limit.
+        default: 4
+        minimum: 1
+        maximum: 10
+        order: 2
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
