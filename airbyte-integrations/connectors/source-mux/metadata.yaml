@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7bc19e81-14ee-43cb-a2ac-f3bcf6ba0459
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-mux
   githubIssueLabel: source-mux
   icon: icon.svg
