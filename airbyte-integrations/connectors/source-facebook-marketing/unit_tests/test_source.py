@@ -8,10 +8,9 @@ from unittest.mock import call
 
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
+from pydantic.v1 import ValidationError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig, TimeIncrementPeriod
-
-from pydantic.v1 import ValidationError
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import (
