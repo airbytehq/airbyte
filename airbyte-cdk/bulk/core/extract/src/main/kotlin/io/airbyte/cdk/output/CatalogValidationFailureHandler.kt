@@ -35,26 +35,30 @@ sealed interface CatalogValidationFailure {
 data class StreamNotFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
-    override val message = "Stream '$streamID' not found or not accessible in source."
+    override val message =
+        "Stream '$streamID' not found or not accessible in source. To continue syncing this stream, restore access to it, or refresh the source schema to remove it."
 }
 
 data class MultipleStreamsFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
-    override val message = "Multiple matching streams found for '$streamID' in source."
+    override val message =
+        "Multiple matching streams found for '$streamID' in source. To continue syncing this stream, refresh the source schema. If this doesn't work, contact Airbyte support."
 }
 
 data class StreamHasNoFields(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
-    override val message = "Stream '$streamID' has no accessible data fields."
+    override val message =
+        "Stream '$streamID' has no accessible data fields. To continue syncing this stream, grant read access to its fields, or refresh the source schema to remove the stream."
 }
 
 data class FieldNotFound(
     override val streamID: StreamIdentifier,
     val fieldName: String,
 ) : CatalogValidationFailure {
-    override val message = "Field '$fieldName' not found in stream '$streamID'."
+    override val message =
+        "Field '$fieldName' not found in stream '$streamID'. To continue syncing this stream, restore access to the field or refresh the source schema to remove it."
 }
 
 data class FieldTypeMismatch(
@@ -64,28 +68,30 @@ data class FieldTypeMismatch(
     val actual: AirbyteSchemaType,
 ) : CatalogValidationFailure {
     override val message =
-        "Field '$fieldName' in stream '$streamID' has type $actual in source but catalog expects $expected."
+        "Field '$fieldName' in stream '$streamID' has type $actual in source but schema expects $expected. Refresh the source schema to continue syncing this stream."
 }
 
 data class InvalidPrimaryKey(
     override val streamID: StreamIdentifier,
     val primaryKey: List<String>,
 ) : CatalogValidationFailure {
-    override val message = "Primary key $primaryKey not found in stream '$streamID'."
+    override val message =
+        "Primary key $primaryKey not found in stream '$streamID'. To continue syncing this stream, refresh the source schema and reselect a primary key that exists in the stream."
 }
 
 data class InvalidCursor(
     override val streamID: StreamIdentifier,
     val cursor: String,
 ) : CatalogValidationFailure {
-    override val message = "Cursor '$cursor' not found in stream '$streamID'."
+    override val message =
+        "Cursor '$cursor' not found in stream '$streamID'. To continue syncing this stream, refresh the source schema and reselect a cursor field that exists in the stream, or use the full refresh sync mode."
 }
 
 data class InvalidIncrementalSyncMode(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' has no cursor configured for incremental sync; falling back to full refresh."
+        "Stream '$streamID' has no cursor configured for incremental sync. To sync this stream incrementally, configure a cursor field, or switch the stream to the full refresh sync mode."
 }
 
 data class ResetStream(

@@ -67,6 +67,10 @@ To enable slow streams, set **All Slow Streams** to `true`, or include `large_ba
 | Incremental Sync | No |
 | Namespaces | No |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -74,6 +78,7 @@ To enable slow streams, set **All Slow Streams** to `true`, or include `large_ba
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2026-06-02 | [75374](https://github.com/airbytehq/airbyte/pull/75374) | Update dependencies |
 | 0.1.0 | 2026-03-19 | [75181](https://github.com/airbytehq/airbyte/pull/75181) | Initial release: smoke test source for destination regression testing |
 
 </details>

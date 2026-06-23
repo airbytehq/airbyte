@@ -20,6 +20,10 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPost�
 | subaccounts | id | DefaultPaginator | ✅ |  ❌  |
 | snippets | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -27,6 +31,12 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPost�
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-23 | [80624](https://github.com/airbytehq/airbyte/pull/80624) | Update dependencies |
+| 0.0.52 | 2026-06-16 | [80043](https://github.com/airbytehq/airbyte/pull/80043) | Update dependencies |
+| 0.0.51 | 2026-06-09 | [79503](https://github.com/airbytehq/airbyte/pull/79503) | Update dependencies |
+| 0.0.50 | 2026-06-02 | [78963](https://github.com/airbytehq/airbyte/pull/78963) | Update dependencies |
+| 0.0.49 | 2026-04-28 | [77426](https://github.com/airbytehq/airbyte/pull/77426) | Update dependencies |
+| 0.0.48 | 2026-04-21 | [76748](https://github.com/airbytehq/airbyte/pull/76748) | Update dependencies |
 | 0.0.47 | 2026-03-31 | [75887](https://github.com/airbytehq/airbyte/pull/75887) | Update dependencies |
 | 0.0.46 | 2026-03-24 | [75385](https://github.com/airbytehq/airbyte/pull/75385) | Update dependencies |
 | 0.0.45 | 2026-02-24 | [73974](https://github.com/airbytehq/airbyte/pull/73974) | Update dependencies |

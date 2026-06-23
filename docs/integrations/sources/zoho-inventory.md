@@ -28,6 +28,10 @@ The Zoho Inventory connector  enables seamless data synchronization between Zoho
 | creditnotes | creditnote_id | DefaultPaginator | ✅ |  ❌  |
 | users | user_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,12 @@ The Zoho Inventory connector  enables seamless data synchronization between Zoho
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-06-23 | [80714](https://github.com/airbytehq/airbyte/pull/80714) | Update dependencies |
+| 0.0.56 | 2026-06-16 | [80119](https://github.com/airbytehq/airbyte/pull/80119) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79573](https://github.com/airbytehq/airbyte/pull/79573) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [79059](https://github.com/airbytehq/airbyte/pull/79059) | Update dependencies |
+| 0.0.53 | 2026-04-28 | [77485](https://github.com/airbytehq/airbyte/pull/77485) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76824](https://github.com/airbytehq/airbyte/pull/76824) | Update dependencies |
 | 0.0.51 | 2026-03-31 | [75804](https://github.com/airbytehq/airbyte/pull/75804) | Update dependencies |
 | 0.0.50 | 2026-03-17 | [75051](https://github.com/airbytehq/airbyte/pull/75051) | Update dependencies |
 | 0.0.49 | 2026-03-10 | [74443](https://github.com/airbytehq/airbyte/pull/74443) | Update dependencies |

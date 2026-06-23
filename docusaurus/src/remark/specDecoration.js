@@ -19,8 +19,8 @@ async function injectSpecSchema(ast) {
       (attr) => attr.name === "connector",
     ).value;
     const connectorSpec = registry.find(
-      (c) => c.dockerRepository_oss === `airbyte/${connectorName}`,
-    ).spec_oss.connectionSpecification;
+      (c) => c.dockerRepository === `airbyte/${connectorName}`,
+    ).spec.connectionSpecification;
     node.attributes.push({
       type: "mdxJsxAttribute",
       name: "specJSON",
@@ -40,9 +40,9 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
   ) {
     return;
   }
-  const connectorName = registryEntry.dockerRepository_oss.split("/").pop();
+  const connectorName = registryEntry.dockerRepository.split("/").pop();
   const hasValidSpec =
-    registryEntry.spec_oss && registryEntry.spec_oss.connectionSpecification;
+    registryEntry.spec && registryEntry.spec.connectionSpecification;
 
   let added = false;
   visit(ast, "heading", (node, index, parent) => {

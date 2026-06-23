@@ -31,6 +31,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("airbyte")
 
+# Special "incrementality" attribution window (Meta beta). Facebook does not compute incrementality
+# for geographic breakdowns such as `dma`/`region`, and an async report combining it with certain
+# fields (e.g. `conversions`) under those breakdowns cannot be generated at all (oncall #12088).
+# Mirrors `AdsInsights.INCREMENTALITY_WINDOW` in base_insight_streams.py.
+INCREMENTALITY_WINDOW = "incrementality"
+
 # `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
 # It still has http status 200 but the object can not be constructed from what was fetched from API.
 # Also, it does not happen while making a call to the API, but later - when parsing the result,
@@ -40,6 +46,29 @@ backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=1
 
 
 # ----------------------------- batching -------------------------------------
+# Facebook caps batch requests at 50 entries; sending more returns a
+# GraphBatchException ("An error has occurred. No further information is
+# available."), which fails the whole sync.
+_FB_MAX_BATCH_SIZE = 50
+
+
+def _pending_leaves(jobs: List["AsyncJob"]) -> Iterator["AsyncJob"]:
+    """Yield jobs that contribute one batch entry to a status-poll call.
+
+    A ParentAsyncJob does not poll itself — it just delegates to its
+    children — so we recurse into its `_jobs` list. This lets
+    `update_in_batch` enforce the per-batch size cap across nested parents
+    instead of only between top-level entries in the input list.
+    """
+    for job in jobs:
+        if not job.started or job.completed:
+            continue
+        if isinstance(job, ParentAsyncJob):
+            yield from _pending_leaves(job._jobs)
+        else:
+            yield job
+
+
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 
@@ -47,23 +76,26 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     :param jobs:
     """
     batch = api.new_batch()
-    max_batch_size = 50
-    for job in jobs:
-        if not job.started or job.completed:
-            continue
-        # we check it here because job can be already finished
-        if len(batch) == max_batch_size:
+    for leaf in _pending_leaves(jobs):
+        leaf.update_job(batch=batch)
+        if len(batch) >= _FB_MAX_BATCH_SIZE:
             while batch:
                 # If some of the calls from batch have failed, it returns  a new
                 # FacebookAdsApiBatch object with those calls
                 batch = batch.execute()
             batch = api.new_batch()
-        job.update_job(batch=batch)
 
     while batch:
         # If some of the calls from batch have failed, it returns  a new
         # FacebookAdsApiBatch object with those calls
         batch = batch.execute()
+
+    # Polling is done — let each parent consolidate any child-produced
+    # replacement work (mirrors what ParentAsyncJob.update_job used to do
+    # right after its child loop).
+    for job in jobs:
+        if isinstance(job, ParentAsyncJob):
+            job._splice_new_children()
 
 
 # ------------------------------ status --------------------------------------
@@ -191,11 +223,22 @@ class ParentAsyncJob(AsyncJob):
         return all(child.completed for child in self._jobs) and any(child.failed for child in self._jobs)
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
+        # Direct call (outside update_in_batch): keep the original semantics
+        # of polling children inline and then splicing. Inside
+        # update_in_batch, leaves are polled via _pending_leaves() and
+        # _splice_new_children() is invoked separately so the 50-per-batch
+        # cap is respected when a parent has many children.
         for child in self._jobs:
             if child.started and not child.completed:
                 child.update_job(batch=batch)
+        self._splice_new_children()
 
-        # If any child produced replacement work, splice it in-place.
+    def _splice_new_children(self) -> None:
+        """Replace children that produced `new_jobs` with the new work,
+        recursing so nested parents are spliced bottom-up."""
+        for child in self._jobs:
+            if isinstance(child, ParentAsyncJob):
+                child._splice_new_children()
         new_children: List[AsyncJob] = []
         for job in self._jobs:
             if job.new_jobs:
@@ -261,6 +304,7 @@ class InsightAsyncJob(AsyncJob):
         job_timeout: timedelta,
         primary_key: Optional[List[str]] = None,
         object_breakdowns: Optional[Mapping[str, str]] = None,
+        stream_name: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -275,6 +319,7 @@ class InsightAsyncJob(AsyncJob):
         self._job: Optional[AdReportRun] = None
         self._primary_key = primary_key or []
         self._object_breakdowns = dict(object_breakdowns or {})
+        self._stream_name = stream_name
         self._start_time = None
         self._finish_time = None
         self._failed = False
@@ -428,6 +473,7 @@ class InsightAsyncJob(AsyncJob):
                 job_timeout=self._job_timeout,
                 primary_key=self._primary_key,
                 object_breakdowns=self._object_breakdowns,
+                stream_name=self._stream_name,
             )
             for pk in ids
         ]
@@ -466,7 +512,16 @@ class InsightAsyncJob(AsyncJob):
 
             start_ts = ab_datetime_now()
             while True:
-                id_job = id_job.api_get()
+                try:
+                    id_job = id_job.api_get()
+                except FacebookRequestError as e:
+                    raise traced_exception(e) from e
+                except (FacebookBadObjectError, TypeError) as e:
+                    raise AirbyteTracedException(
+                        message="Facebook Insights API returned an invalid response.",
+                        internal_message=f"Failed to poll ID-collection job at level={level}: {e}",
+                        failure_type=FailureType.transient_error,
+                    ) from e
                 status = id_job.get("async_status")
                 percent = id_job.get("async_percent_completion")
                 logger.info(f"[Split:{level}] attempt={attempt}, status={status}, {percent}%")
@@ -514,21 +569,47 @@ class InsightAsyncJob(AsyncJob):
 
     def _split_by_fields_parent(self) -> ParentAsyncJob:
         all_fields: List[str] = list(self._params.get("fields", []))
-        split_candidates = [f for f in all_fields if f not in self._primary_key]
+        primary_key_fields = [field for field in self._primary_key if field in all_fields]
+        split_candidates = [f for f in all_fields if f not in primary_key_fields]
         if len(split_candidates) <= 1:
+            # Terminal, unsplittable leaf: Facebook keeps failing to generate this report even for a
+            # single field at single-ad/single-day granularity, so there is nothing left to split.
+            # This is a deterministic Facebook-side limitation, not a connector bug, and the user has a
+            # concrete fix (unselect the offending field; or, when the `incrementality` window is in
+            # play, disable "Include Incrementality"). Surface it as a config_error with actionable
+            # guidance instead of a cryptic system_error (oncall #12088).
+            breakdowns = self._params.get("breakdowns", [])
+            has_incrementality = INCREMENTALITY_WINDOW in self._params.get("action_attribution_windows", [])
+
+            stream_part = f" for stream '{self._stream_name}'" if self._stream_name else ""
+            scope = f"breakdown(s) {breakdowns} with the field(s) {split_candidates}" if breakdowns else f"the field(s) {split_candidates}"
+            fixes = []
+            if has_incrementality:
+                fixes.append('disable the "Include Incrementality" option for this stream')
+            fixes.append(f"unselect the field(s) {split_candidates} from this stream's schema")
+            fix_text = "; or ".join(f"({i + 1}) {fix}" for i, fix in enumerate(fixes)) if len(fixes) > 1 else fixes[0]
+
             raise AirbyteTracedException(
-                message="Unable to split the Facebook Insights request because there are not enough non-primary-key fields.",
-                internal_message=f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, pk={self._primary_key})",
-                failure_type=FailureType.system_error,
+                message=(
+                    f"Facebook could not generate the Insights report{stream_part} for {scope}"
+                    + (' when the "incrementality" attribution window is enabled' if has_incrementality else "")
+                    + f", even at the smallest request size. This is a Facebook-side limitation. To resolve it, {fix_text}."
+                ),
+                internal_message=(
+                    f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, "
+                    f"pk={self._primary_key}); stream={self._stream_name}, breakdowns={breakdowns}, "
+                    f"level={self._params.get('level')}, incrementality={has_incrementality}"
+                ),
+                failure_type=FailureType.config_error,
             )
 
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = primary_key_fields + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = primary_key_fields + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,
@@ -538,6 +619,7 @@ class InsightAsyncJob(AsyncJob):
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
+            stream_name=self._stream_name,
         )
         job_b = InsightAsyncJob(
             api=self._api,
@@ -547,6 +629,7 @@ class InsightAsyncJob(AsyncJob):
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
+            stream_name=self._stream_name,
         )
         logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
         return ParentAsyncJob(

@@ -39,6 +39,10 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 - Lever Hiring Client Secret
 - Lever Hiring Refresh Token
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -46,6 +50,12 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
+| 0.4.34 | 2026-06-23 | [80552](https://github.com/airbytehq/airbyte/pull/80552) | Update dependencies |
+| 0.4.33 | 2026-06-16 | [79956](https://github.com/airbytehq/airbyte/pull/79956) | Update dependencies |
+| 0.4.32 | 2026-06-09 | [79384](https://github.com/airbytehq/airbyte/pull/79384) | Update dependencies |
+| 0.4.31 | 2026-06-02 | [78801](https://github.com/airbytehq/airbyte/pull/78801) | Update dependencies |
+| 0.4.30 | 2026-04-28 | [77295](https://github.com/airbytehq/airbyte/pull/77295) | Update dependencies |
+| 0.4.29 | 2026-04-21 | [76653](https://github.com/airbytehq/airbyte/pull/76653) | Update dependencies |
 | 0.4.28 | 2026-03-31 | [75032](https://github.com/airbytehq/airbyte/pull/75032) | Update dependencies |
 | 0.4.27 | 2026-02-24 | [73939](https://github.com/airbytehq/airbyte/pull/73939) | Update dependencies |
 | 0.4.26 | 2026-02-17 | [73554](https://github.com/airbytehq/airbyte/pull/73554) | Update dependencies |

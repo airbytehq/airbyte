@@ -30,6 +30,10 @@ Bunny provides a single platform for subscription management, billing, quoting, 
 | transactions | id | DefaultPaginator | ✅ |  ❌  |
 | tenants | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -37,6 +41,12 @@ Bunny provides a single platform for subscription management, billing, quoting, 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-06-23 | [80376](https://github.com/airbytehq/airbyte/pull/80376) | Update dependencies |
+| 0.0.44 | 2026-06-16 | [79786](https://github.com/airbytehq/airbyte/pull/79786) | Update dependencies |
+| 0.0.43 | 2026-06-09 | [79232](https://github.com/airbytehq/airbyte/pull/79232) | Update dependencies |
+| 0.0.42 | 2026-06-02 | [78603](https://github.com/airbytehq/airbyte/pull/78603) | Update dependencies |
+| 0.0.41 | 2026-04-28 | [77174](https://github.com/airbytehq/airbyte/pull/77174) | Update dependencies |
+| 0.0.40 | 2026-04-21 | [76533](https://github.com/airbytehq/airbyte/pull/76533) | Update dependencies |
 | 0.0.39 | 2026-03-17 | [74909](https://github.com/airbytehq/airbyte/pull/74909) | Update dependencies |
 | 0.0.38 | 2026-03-10 | [74634](https://github.com/airbytehq/airbyte/pull/74634) | Update dependencies |
 | 0.0.37 | 2026-03-03 | [74201](https://github.com/airbytehq/airbyte/pull/74201) | Update dependencies |

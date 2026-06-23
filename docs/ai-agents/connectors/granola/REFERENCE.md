@@ -8,13 +8,24 @@ The Granola connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Notes | [List](#notes-list), [Get](#notes-get), [Search](#notes-search) |
+| Notes | [List](#notes-list), [Get](#notes-get), [Context Store Search](#notes-context-store-search) |
 
 ## Notes
 
 ### Notes List
 
 Returns a paginated list of meeting notes
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -88,6 +99,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single note by ID, including full details and optionally the transcript
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "get",
+  "params": {
+    "note_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -152,14 +177,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Notes Search
+### Notes Context Store Search
 
 Search and filter notes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await granola.notes.search(
+await granola.notes.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -172,7 +217,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "notes",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }

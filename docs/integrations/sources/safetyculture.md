@@ -47,6 +47,10 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 | feed_templates | id | DefaultPaginator | ✅ |  ❌  |
 | issues | unique_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -54,6 +58,12 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.61 | 2026-06-23 | [80642](https://github.com/airbytehq/airbyte/pull/80642) | Update dependencies |
+| 0.0.60 | 2026-06-16 | [80007](https://github.com/airbytehq/airbyte/pull/80007) | Update dependencies |
+| 0.0.59 | 2026-06-09 | [79517](https://github.com/airbytehq/airbyte/pull/79517) | Update dependencies |
+| 0.0.58 | 2026-06-02 | [78973](https://github.com/airbytehq/airbyte/pull/78973) | Update dependencies |
+| 0.0.57 | 2026-04-28 | [77429](https://github.com/airbytehq/airbyte/pull/77429) | Update dependencies |
+| 0.0.56 | 2026-04-21 | [76751](https://github.com/airbytehq/airbyte/pull/76751) | Update dependencies |
 | 0.0.55 | 2026-03-31 | [75825](https://github.com/airbytehq/airbyte/pull/75825) | Update dependencies |
 | 0.0.54 | 2026-03-24 | [75340](https://github.com/airbytehq/airbyte/pull/75340) | Update dependencies |
 | 0.0.53 | 2026-03-10 | [74677](https://github.com/airbytehq/airbyte/pull/74677) | Update dependencies |

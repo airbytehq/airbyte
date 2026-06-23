@@ -28,7 +28,7 @@ All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date is replicated.
 7. For **API Key**, enter your [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth).
 8. For **Product Catalog**, select your Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). The connector defaults to Product Catalog 2.0.
-9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 3. Higher values increase throughput but consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
+9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 5. Higher values can increase throughput, but they also consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
 10. Click **Set up source**.
 
 <HideInUI>
@@ -86,7 +86,7 @@ When using incremental sync mode, the `Attached Items` stream behaves differentl
 
 The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. The connector automatically retries rate-limited requests using the `Retry-After` header provided by the Chargebee API. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
-Chargebee API rate limits vary by plan. See [Chargebee's API limits documentation](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits) for details.
+Chargebee API rate limits vary by plan. Chargebee limits test sites to 150 requests per minute regardless of plan. See [Chargebee's API limits documentation](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits) for details.
 
 ### Deleted resources
 
@@ -100,6 +100,10 @@ Some streams are only available on a specific Product Catalog version. If you at
 
 - Check out common troubleshooting issues for the Chargebee source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -107,8 +111,18 @@ Some streams are only available on a specific Product Catalog version. If you at
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.38 | 2026-06-23 | [80404](https://github.com/airbytehq/airbyte/pull/80404) | Update dependencies |
+| 0.10.37 | 2026-06-16 | [78619](https://github.com/airbytehq/airbyte/pull/78619) | Update dependencies |
+| 0.10.36 | 2026-06-09 | [79604](https://github.com/airbytehq/airbyte/pull/79604) | Clean up cancelled RC; revert source to previous stable |
+| 0.10.36-rc.5 | 2026-05-27 | [78469](https://github.com/airbytehq/airbyte/pull/78469) | Remove the local API budget limiter while keeping the default worker count at 5. |
+| 0.10.36-rc.4 | 2026-05-26 | [78435](https://github.com/airbytehq/airbyte/pull/78435) | Reduce default concurrent threads to 3 after rollout duration regressions at 5. |
+| 0.10.36-rc.3 | 2026-05-22 | [78366](https://github.com/airbytehq/airbyte/pull/78366) | Revert `default_concurrency` to 5, activate tier-aware `HTTPAPIBudget`, and document `subscription_tier` for GA rollout |
+| 0.10.36-rc.2 | 2026-05-20 | [78300](https://github.com/airbytehq/airbyte/pull/78300) | Raise `default_concurrency` to 6 after Phase 1 monitoring of 0.10.36-rc.1 showed no rate-limit signal and faster high-volume sync averages excluding a stable-precedent multi-attempt outlier |
+| 0.10.36-rc.1 | 2026-05-18 | [74345](https://github.com/airbytehq/airbyte/pull/74345) | Raise `default_concurrency` to 5 (Path B tuning calibrated to the Chargebee Starter tier, 150 req/min = 2.5 req/sec); bump `num_workers` minimum to 2 and default to 5; add `subscription_tier` spec field (enum `starter`/`performance`/`enterprise`, default `starter`); record original Starter and tier-aware `HTTPAPIBudget` shapes as YAML comments for activation in a follow-up GA RC; enable progressive rollout |
+| 0.10.35 | 2026-04-28 | [77207](https://github.com/airbytehq/airbyte/pull/77207) | Update dependencies |
+| 0.10.34 | 2026-04-21 | [75795](https://github.com/airbytehq/airbyte/pull/75795) | Update dependencies |
 | 0.10.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
-| 0.10.32 | 2026-03-25 | [75476](https://github.com/airbytehq/airbyte/pull/75476) | Handle 404 errors in subscription stream to prevent sync failures when Chargebee returns not found for deleted resources |
+| 0.10.32 | 2026-03-26 | [75476](https://github.com/airbytehq/airbyte/pull/75476) | Handle 404 errors in subscription stream to prevent sync failures when Chargebee returns not found for deleted resources |
 | 0.10.31 | 2026-03-24 | [74459](https://github.com/airbytehq/airbyte/pull/74459) | Update dependencies |
 | 0.10.30 | 2026-03-03 | [74228](https://github.com/airbytehq/airbyte/pull/74228) | Update dependencies |
 | 0.10.29 | 2026-02-17 | [73452](https://github.com/airbytehq/airbyte/pull/73452) | Update dependencies |

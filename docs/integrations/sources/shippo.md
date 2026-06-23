@@ -22,6 +22,10 @@ In order to use this source, you must first create a Shippo account. Once logged
 | carrier_acounts | object_id | DefaultPaginator | ✅ |  ❌  |
 | shipments | object_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -29,6 +33,12 @@ In order to use this source, you must first create a Shippo account. Once logged
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.49 | 2026-06-23 | [80638](https://github.com/airbytehq/airbyte/pull/80638) | Update dependencies |
+| 0.0.48 | 2026-06-16 | [80035](https://github.com/airbytehq/airbyte/pull/80035) | Update dependencies |
+| 0.0.47 | 2026-06-09 | [79510](https://github.com/airbytehq/airbyte/pull/79510) | Update dependencies |
+| 0.0.46 | 2026-06-02 | [78930](https://github.com/airbytehq/airbyte/pull/78930) | Update dependencies |
+| 0.0.45 | 2026-04-28 | [77445](https://github.com/airbytehq/airbyte/pull/77445) | Update dependencies |
+| 0.0.44 | 2026-04-21 | [76776](https://github.com/airbytehq/airbyte/pull/76776) | Update dependencies |
 | 0.0.43 | 2026-03-24 | [75122](https://github.com/airbytehq/airbyte/pull/75122) | Update dependencies |
 | 0.0.42 | 2026-02-24 | [73940](https://github.com/airbytehq/airbyte/pull/73940) | Update dependencies |
 | 0.0.41 | 2026-02-10 | [73210](https://github.com/airbytehq/airbyte/pull/73210) | Update dependencies |

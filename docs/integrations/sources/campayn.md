@@ -17,6 +17,10 @@ The Airbyte connector for [Campayn](https://campayn.com/) enables seamless data 
 | emails | id | No pagination | ✅ |  ❌  |
 | reports | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,12 @@ The Airbyte connector for [Campayn](https://campayn.com/) enables seamless data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-06-23 | [80402](https://github.com/airbytehq/airbyte/pull/80402) | Update dependencies |
+| 0.0.49 | 2026-06-16 | [79806](https://github.com/airbytehq/airbyte/pull/79806) | Update dependencies |
+| 0.0.48 | 2026-06-09 | [79267](https://github.com/airbytehq/airbyte/pull/79267) | Update dependencies |
+| 0.0.47 | 2026-06-02 | [78634](https://github.com/airbytehq/airbyte/pull/78634) | Update dependencies |
+| 0.0.46 | 2026-04-28 | [77206](https://github.com/airbytehq/airbyte/pull/77206) | Update dependencies |
+| 0.0.45 | 2026-04-21 | [76532](https://github.com/airbytehq/airbyte/pull/76532) | Update dependencies |
 | 0.0.44 | 2026-03-31 | [75669](https://github.com/airbytehq/airbyte/pull/75669) | Update dependencies |
 | 0.0.43 | 2026-03-24 | [74942](https://github.com/airbytehq/airbyte/pull/74942) | Update dependencies |
 | 0.0.42 | 2026-02-24 | [73788](https://github.com/airbytehq/airbyte/pull/73788) | Update dependencies |

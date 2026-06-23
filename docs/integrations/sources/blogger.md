@@ -18,6 +18,10 @@ Google Blogger is a free blogging platform by Google that allows users to create
 | pages | id | DefaultPaginator | ✅ |  ❌  |
 | comments | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,12 @@ Google Blogger is a free blogging platform by Google that allows users to create
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-06-23 | [80386](https://github.com/airbytehq/airbyte/pull/80386) | Update dependencies |
+| 0.0.46 | 2026-06-16 | [79774](https://github.com/airbytehq/airbyte/pull/79774) | Update dependencies |
+| 0.0.45 | 2026-06-09 | [79227](https://github.com/airbytehq/airbyte/pull/79227) | Update dependencies |
+| 0.0.44 | 2026-06-02 | [78575](https://github.com/airbytehq/airbyte/pull/78575) | Update dependencies |
+| 0.0.43 | 2026-04-28 | [77140](https://github.com/airbytehq/airbyte/pull/77140) | Update dependencies |
+| 0.0.42 | 2026-04-21 | [76503](https://github.com/airbytehq/airbyte/pull/76503) | Update dependencies |
 | 0.0.41 | 2026-03-17 | [74940](https://github.com/airbytehq/airbyte/pull/74940) | Update dependencies |
 | 0.0.40 | 2026-03-10 | [73786](https://github.com/airbytehq/airbyte/pull/73786) | Update dependencies |
 | 0.0.39 | 2026-02-10 | [73134](https://github.com/airbytehq/airbyte/pull/73134) | Update dependencies |

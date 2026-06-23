@@ -21,6 +21,12 @@ the connector, you must agree to the
 only use this connector to connect third party applications to Apache Spark SQL within a Databricks
 offering using the ODBC and/or JDBC protocols.
 
+## Network access
+
+If you're using Airbyte Cloud and this destination uses IP-based access controls,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your
+allowlist.
+
 ## Airbyte Setup
 
 When setting up a Databricks destination, you need these pieces of information:
