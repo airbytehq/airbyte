@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 73c01e46-6b1d-434f-8f15-b9a0e67c8999
-  dockerImageTag: 0.0.44
+  dockerImageTag: 0.0.45
   dockerRepository: airbyte/source-retailexpress-by-maropost
   githubIssueLabel: source-retailexpress-by-maropost
   icon: icon.svg
