@@ -4,9 +4,10 @@
 
 from urllib.parse import parse_qsl, urlparse, urlunparse
 
+from facebook_business.api import Cursor
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.api import Cursor
 
 
 class CursorPatch(Cursor):

@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
+from source_facebook_marketing.streams.patches import CursorPatch
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from source_facebook_marketing.streams.patches import CursorPatch
 
 
 def _make_cursor(api_response_json, headers=None):
@@ -34,7 +35,7 @@ def _make_cursor(api_response_json, headers=None):
     "non_dict_response",
     [
         pytest.param(
-            '<html><body>Service Unavailable</body></html>',
+            "<html><body>Service Unavailable</body></html>",
             id="html_error_page",
         ),
         pytest.param(
@@ -89,9 +90,7 @@ def test_load_next_page_succeeds_with_valid_dict_response():
     """CursorPatch.load_next_page() processes a valid dict response without raising."""
     valid_response = {
         "data": [{"id": "123", "name": "test"}],
-        "paging": {
-            "next": "https://graph.facebook.com/v25.0/act_123/ads?after=abc&limit=25"
-        },
+        "paging": {"next": "https://graph.facebook.com/v25.0/act_123/ads?after=abc&limit=25"},
     }
     cursor = _make_cursor(valid_response)
     cursor.build_objects_from_response = MagicMock(return_value=[{"id": "123"}])
