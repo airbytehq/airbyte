@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 63114ebf-1c0e-4e6e-bb93-28ae03332b14
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-zoho-analytics-metadata-api
   githubIssueLabel: source-zoho-analytics-metadata-api
   icon: icon.svg
