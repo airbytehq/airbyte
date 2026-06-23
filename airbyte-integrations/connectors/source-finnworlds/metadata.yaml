@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b8a9a60f-7178-468a-a333-23b431e355b7
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-finnworlds
   githubIssueLabel: source-finnworlds
   icon: icon.svg
