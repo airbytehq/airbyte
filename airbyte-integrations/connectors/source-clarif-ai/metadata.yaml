@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7fbeaeea-2d0d-4f13-8200-fa228494d91c
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-clarif-ai
   githubIssueLabel: source-clarif-ai
   icon: icon.svg
