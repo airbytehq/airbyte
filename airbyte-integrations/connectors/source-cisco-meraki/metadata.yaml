@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 65468f53-6682-4fa4-8627-1dfa4b3dc560
-  dockerImageTag: 0.0.36
+  dockerImageTag: 0.0.37
   dockerRepository: airbyte/source-cisco-meraki
   githubIssueLabel: source-cisco-meraki
   icon: icon.svg
