@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 40bb20de-e03c-4aa2-80bc-72234598380f
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-taboola
   githubIssueLabel: source-taboola
   icon: icon.svg
