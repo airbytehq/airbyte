@@ -7,6 +7,7 @@ from urllib.parse import parse_qsl, urlparse, urlunparse
 
 from facebook_business.api import Cursor
 
+
 logger = logging.getLogger("airbyte")
 
 
