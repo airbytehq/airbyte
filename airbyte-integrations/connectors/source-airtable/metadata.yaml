@@ -20,8 +20,11 @@ data:
       type: api_release_history
     - title: Community blog
       url: https://community.airtable.com/development-apis-11
-    - title: OAuth refference
+    - title: OAuth reference
       url: https://airtable.com/developers/web/api/oauth-reference#authorization-request
+    - title: API Deprecation Guidelines
+      url: https://support.airtable.com/docs/airtable-api-deprecation-guidelines
+      type: api_deprecations
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection
