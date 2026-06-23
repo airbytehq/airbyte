@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 89f37cda-8b7d-4179-ad8a-91cf5045b5fd
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-humanitix
   githubIssueLabel: source-humanitix
   icon: icon.svg
