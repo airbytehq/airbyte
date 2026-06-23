@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3456679e-2ff2-4ef7-aa9f-da6c0cc13894
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-jotform
   githubIssueLabel: source-jotform
   icon: icon.svg
