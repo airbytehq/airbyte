@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 935fd132-47dc-4d4c-99a5-5c7c0421401a
-  dockerImageTag: 0.0.32
+  dockerImageTag: 0.0.33
   dockerRepository: airbyte/source-thrive-learning
   githubIssueLabel: source-thrive-learning
   icon: icon.svg
