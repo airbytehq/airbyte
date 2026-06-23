@@ -27,14 +27,17 @@ For multi-tenant Xero accounts, you'll need to select which organization to conn
 There are three currently supported ways to authenticate with Xero:
 
 For OAuth (recommended on Airbyte Cloud), authorize the connection through Xero's standard [OAuth 2.0 flow](https://developer.xero.com/documentation/guides/oauth2/auth-flow/). On Airbyte Cloud you can authenticate with the **Authenticate via Xero (OAuth)** button. When configuring the connector yourself you provide:
+
 - Client ID
 - Client Secret
 - Refresh Token
 
 For the bearer token strategy, please follow [instructions](https://developer.xero.com/documentation/guides/oauth2/pkce-flow/) to obtain all requirements:
+
 - Client ID
 
 For the OAuth client credentials, please follow [instructions](https://developer.xero.com/documentation/guides/oauth2/custom-connections) to obtain all requirements:
+
 - Client ID
 - Client Secret
 

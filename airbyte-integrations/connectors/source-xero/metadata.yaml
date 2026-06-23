@@ -49,15 +49,13 @@ data:
     ql: 300
   connectorTestSuitesOptions:
     - suite: unitTests
-    # Disabling acceptance tests
-    # No/Low Airbyte Cloud Usage
-    # - suite: acceptanceTests
-    #   testSecrets:
-    #     - name: SECRET_SOURCE-XERO__CREDS
-    #       fileName: config.json
-    #       secretStore:
-    #         type: GSM
-    #         alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-XERO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Xero API reference
       url: https://developer.xero.com/documentation/
