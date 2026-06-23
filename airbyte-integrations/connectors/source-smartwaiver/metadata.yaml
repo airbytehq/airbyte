@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 878608e5-4086-4cd2-8b23-32d839616687
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-smartwaiver
   githubIssueLabel: source-smartwaiver
   icon: icon.svg
