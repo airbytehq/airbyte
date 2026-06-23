@@ -395,37 +395,38 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.51      | 2026-06-10 | [79123](https://github.com/airbytehq/airbyte/pull/79123)   | Update Apacher Iceberg dependencies.                                                                                                                            |
-| 0.3.50      | 2026-06-03 | [79112](https://github.com/airbytehq/airbyte/pull/79112)   | Use unique staging branches and clean them up after each sync.                                                                                                  |
-| 0.3.49      | 2026-05-19 | [78232](https://github.com/airbytehq/airbyte/pull/78232)   | Upgrade CDK to 1.0.13                                                                                                                                           |
-| 0.3.48      | 2026-05-01 | [77677](https://github.com/airbytehq/airbyte/pull/77677)   | Add configurable flush batch size for aggregate publishing.                                                                                                     |
-| 0.3.47      | 2026-04-16 | [76410](https://github.com/airbytehq/airbyte/pull/76410)   | Upgrade CDK to 1.0.9.                                                                                                                                           |
-| 0.3.46      | 2026-03-30 | [75628](https://github.com/airbytehq/airbyte/pull/75628)   | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution.                                                                                          |
-| 0.3.45      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326)   | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
-| 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                                                                   |
-| 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                                                            |
-| 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                                                             |
-| 0.3.42      | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                                                 |
-| 0.3.41      | 2025-11-07 | [69232](https://github.com/airbytehq/airbyte/pull/69232)   | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                                                        |
-| 0.3.40      | 2025-11-05 | [69133](https://github.com/airbytehq/airbyte/pull/69133)   | Upgrade to Bulk CDK 0.1.61.                                                                                                                                     |
-| 0.3.39      | 2025-10-15 | [68108](https://github.com/airbytehq/airbyte/pull/68108)   | Implement Polaris support                                                                                                                                       |
-| 0.3.38      | 2025-10-07 | [67005](https://github.com/airbytehq/airbyte/pull/67005)   | Fix: Treat empty string role_arn as null to prevent misleading config errors                                                                                    |
-| 0.3.37      | 2025-10-07 | [67150](https://github.com/airbytehq/airbyte/pull/67150)   | Fix check operation to use unique table names, preventing conflicts with stale metadata and concurrent operations                                               |
-| 0.3.36      | 2025-09-26 | [66711](https://github.com/airbytehq/airbyte/pull/66711)   | CHECK operation uses configured default dataset instead of `airbyte_test_namespace`                                                                             |
-| 0.3.35      | 2025-07-23 | [63746](https://github.com/airbytehq/airbyte/pull/63746)   | Remove unnecessary properties from table                                                                                                                        |
-| 0.3.34      | 2025-07-11 | [62952](https://github.com/airbytehq/airbyte/pull/62952)   | Update CDK version                                                                                                                                              |
-| 0.3.33      | 2025-07-09 | [62888](https://github.com/airbytehq/airbyte/pull/62888)   | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario                                                                |
-| 0.3.32      | 2025-07-08 | [62852](https://github.com/airbytehq/airbyte/pull/62852)   | Fix metadata (revert accidental archiving)                                                                                                                      |
-| 0.3.31      | 2025-07-07 | [62835](https://github.com/airbytehq/airbyte/pull/62835)   | Pin to latest CDK version 0.522                                                                                                                                 |
-| 0.3.30      | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105)   | ReplaceBranch to staging from main instead of fast forwarding                                                                                                   |
-| 0.3.29      | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE.                                 |
-| 0.3.28      | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                                                         |
-| 0.3.27      | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                                                                                                           |
-| 0.3.26      | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104)   | Chore: Now passing a string around for the region                                                                                                               |
-| 0.3.25      | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085)   | Internal refactoring                                                                                                                                            |
-| 0.3.24      | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435)   | Bug fix: Correctly handle non-positive numbers.                                                                                                                 |
-| 0.3.23      | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395)   | Bug fix: Correctly coerce values inside nested arrays.                                                                                                          |
-| 0.3.22      | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                               |
+| 0.3.52 | 2026-06-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
+| 0.3.51 | 2026-06-10 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apacher Iceberg dependencies. |
+| 0.3.50 | 2026-06-03 | [79112](https://github.com/airbytehq/airbyte/pull/79112) | Use unique staging branches and clean them up after each sync. |
+| 0.3.49 | 2026-05-19 | [78232](https://github.com/airbytehq/airbyte/pull/78232) | Upgrade CDK to 1.0.13 |
+| 0.3.48 | 2026-05-01 | [77677](https://github.com/airbytehq/airbyte/pull/77677) | Add configurable flush batch size for aggregate publishing. |
+| 0.3.47 | 2026-04-16 | [76410](https://github.com/airbytehq/airbyte/pull/76410) | Upgrade CDK to 1.0.9. |
+| 0.3.46 | 2026-03-30 | [75628](https://github.com/airbytehq/airbyte/pull/75628) | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution. |
+| 0.3.45 | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
+| 0.3.44 | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848) | Enable Speed. |
+| 0.3.43 | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482) | Release on dataflow. |
+| 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443) | Update to dataflow. |
+| 0.3.42 | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205) | Implement support for scope and OAuth server URI attributes for Polaris catalog |
+| 0.3.41 | 2025-11-07 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns |
+| 0.3.40 | 2025-11-05 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61. |
+| 0.3.39 | 2025-10-15 | [68108](https://github.com/airbytehq/airbyte/pull/68108) | Implement Polaris support |
+| 0.3.38 | 2025-10-07 | [67005](https://github.com/airbytehq/airbyte/pull/67005) | Fix: Treat empty string role_arn as null to prevent misleading config errors |
+| 0.3.37 | 2025-10-07 | [67150](https://github.com/airbytehq/airbyte/pull/67150) | Fix check operation to use unique table names, preventing conflicts with stale metadata and concurrent operations |
+| 0.3.36 | 2025-09-26 | [66711](https://github.com/airbytehq/airbyte/pull/66711) | CHECK operation uses configured default dataset instead of `airbyte_test_namespace` |
+| 0.3.35 | 2025-07-23 | [63746](https://github.com/airbytehq/airbyte/pull/63746) | Remove unnecessary properties from table |
+| 0.3.34 | 2025-07-11 | [62952](https://github.com/airbytehq/airbyte/pull/62952) | Update CDK version |
+| 0.3.33 | 2025-07-09 | [62888](https://github.com/airbytehq/airbyte/pull/62888) | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario |
+| 0.3.32 | 2025-07-08 | [62852](https://github.com/airbytehq/airbyte/pull/62852) | Fix metadata (revert accidental archiving) |
+| 0.3.31 | 2025-07-07 | [62835](https://github.com/airbytehq/airbyte/pull/62835) | Pin to latest CDK version 0.522 |
+| 0.3.30 | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105) | ReplaceBranch to staging from main instead of fast forwarding |
+| 0.3.29 | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588) | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE. |
+| 0.3.28 | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710) | CDK backpressure bugfix |
+| 0.3.27 | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146) | Upgrade to latest CDK |
+| 0.3.26 | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104) | Chore: Now passing a string around for the region |
+| 0.3.25 | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085) | Internal refactoring |
+| 0.3.24 | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435) | Bug fix: Correctly handle non-positive numbers. |
+| 0.3.23 | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395) | Bug fix: Correctly coerce values inside nested arrays. |
+| 0.3.22 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 0.3.21      | 2025-03-22 | [\#56347](https://github.com/airbytehq/airbyte/pull/56347) | Bugfix: stream start does not always await iceberg setup                                                                                                        |
 | 0.3.20      | 2025-03-24 | [\#55849](https://github.com/airbytehq/airbyte/pull/55849) | Internal refactoring                                                                                                                                            |
 | 0.3.19      | 2025-03-19 | [\#55798](https://github.com/airbytehq/airbyte/pull/55798) | CDK: Typing improvements                                                                                                                                        |
