@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1028d4dc-005b-484b-9164-5a81e0dbac19
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-fulcrum
   githubIssueLabel: source-fulcrum
   icon: icon.svg
