@@ -167,6 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2026-06-23 | [76231](https://github.com/airbytehq/airbyte/pull/76231) | Include `advertiser_id` in the source-defined primary keys of report streams so Incremental + Deduped syncs distinguish records across advertiser partitions |
 | 5.1.0 | 2026-06-18 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |
 | 5.0.11 | 2026-06-16 | [80094](https://github.com/airbytehq/airbyte/pull/80094) | Update dependencies |
 | 5.0.10 | 2026-06-09 | [79549](https://github.com/airbytehq/airbyte/pull/79549) | Update dependencies |
