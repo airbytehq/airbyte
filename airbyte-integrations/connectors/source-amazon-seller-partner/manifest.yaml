@@ -3385,7 +3385,7 @@ streams:
   # The Orders/OrderItems endpoints (orders/v0/orders) and Finances API (finances/v0/*)
   # are seller-only per Amazon SP-API docs. Vendor accounts get HTTP 403.
   - type: ConditionalStreams
-    condition: "{{ config.get('account_type', 'Seller') != 'Vendor' }}"
+    condition: "{{ config.get('account_type', 'Seller') == 'Seller' }}"
     streams:
       - $ref: "#/definitions/streams/orders"
       - $ref: "#/definitions/streams/order_items"
