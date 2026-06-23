@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f76b7649-322b-44a0-8cef-23aeaae89c42
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-scryfall
   githubIssueLabel: source-scryfall
   icon: icon.svg
