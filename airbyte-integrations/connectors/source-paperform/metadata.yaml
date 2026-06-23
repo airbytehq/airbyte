@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9855e6be-a7b7-48a1-acc4-935f88215aed
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-paperform
   githubIssueLabel: source-paperform
   icon: icon.svg
