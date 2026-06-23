@@ -2,12 +2,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 
 import pytest
 import requests
 import requests_mock as rm
-
 from source_netsuite.constraints import META_PATH, RECORD_PATH
 from source_netsuite.source import SourceNetsuite, _extract_netsuite_error
 
@@ -87,8 +87,6 @@ def test_extract_netsuite_error(status_code, json_body, text, expected):
     response = requests.Response()
     response.status_code = status_code
     if json_body is not None:
-        import json
-
         response._content = json.dumps(json_body).encode("utf-8")
         response.headers["Content-Type"] = "application/json"
     else:
