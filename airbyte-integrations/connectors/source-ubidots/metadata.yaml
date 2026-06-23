@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8614fab8-aa3e-4dbe-8728-6d6c8a1d3514
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-ubidots
   githubIssueLabel: source-ubidots
   icon: icon.svg
