@@ -1,6 +1,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+from unittest.mock import MagicMock, patch
+
 import pytest
+import requests
+import requests_mock as rm
+
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @pytest.mark.parametrize(
@@ -957,3 +963,244 @@ def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
     response = _make_response(b"\x1f\x8b not valid gzip at all")
     rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
     assert rows == [{}]
+
+
+# --- BingAdsReportDownloadRequester tests ---
+
+
+POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+FRESH_SAS_URL = "https://blobstorage.blob.core.windows.net/report?sv=2024&sig=fresh_token"
+STALE_SAS_URL = "https://blobstorage.blob.core.windows.net/report?sv=2024&sig=stale_token"
+
+
+def _make_stream_slice(report_request_id="REQ-123", account_id="ACC-1", parent_customer_id="CUST-1"):
+    return StreamSlice(
+        partition={"account_id": account_id},
+        cursor_slice={},
+        extra_fields={
+            "creation_response": {"ReportRequestId": report_request_id},
+            "ParentCustomerId": parent_customer_id,
+            "download_target": STALE_SAS_URL,
+        },
+    )
+
+
+def _build_requester(components_module, config=None, authenticator=None):
+    """Build a BingAdsReportDownloadRequester with minimal required fields."""
+    cfg = config or {"developer_token": "fake_dev_token"}
+    return components_module.BingAdsReportDownloadRequester(
+        name="test_download_requester",
+        url_base="{{download_target}}",
+        config=cfg,
+        parameters={},
+        report_poll_authenticator=authenticator,
+    )
+
+
+class _FakeAuthenticator:
+    """Minimal stub that satisfies the get_auth_header interface."""
+
+    def get_auth_header(self):
+        return {"Authorization": "Bearer fake_access_token"}
+
+
+@pytest.mark.parametrize(
+    "poll_response_json,expected_url",
+    [
+        pytest.param(
+            {"ReportRequestStatus": {"Status": "Success", "ReportDownloadUrl": FRESH_SAS_URL}},
+            FRESH_SAS_URL,
+            id="successful_repoll_returns_fresh_url",
+        ),
+        pytest.param(
+            {"ReportRequestStatus": {"Status": "Success"}},
+            None,
+            id="repoll_without_download_url_returns_none",
+        ),
+        pytest.param(
+            {},
+            None,
+            id="empty_repoll_response_returns_none",
+        ),
+    ],
+)
+def test_get_fresh_download_url(poll_response_json, expected_url, components_module):
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(POLL_URL, json=poll_response_json, status_code=200)
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result == expected_url
+
+    if expected_url:
+        sent_request = m.last_request
+        assert sent_request.json() == {"ReportRequestId": "REQ-123"}
+        assert sent_request.headers["Authorization"] == "Bearer fake_access_token"
+        assert sent_request.headers["DeveloperToken"] == "fake_dev_token"
+        assert sent_request.headers["CustomerAccountId"] == "ACC-1"
+        assert sent_request.headers["CustomerId"] == "CUST-1"
+
+
+def test_get_fresh_download_url_falls_back_on_http_error(components_module):
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(POLL_URL, status_code=500)
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result is None
+
+
+def test_get_fresh_download_url_falls_back_on_connection_error(components_module):
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(POLL_URL, exc=requests.ConnectionError("network failure"))
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result is None
+
+
+def test_get_fresh_download_url_returns_none_without_report_request_id(components_module):
+    requester = _build_requester(components_module)
+    stream_slice = StreamSlice(
+        partition={"account_id": "ACC-1"},
+        cursor_slice={},
+        extra_fields={"creation_response": {}, "ParentCustomerId": "CUST-1"},
+    )
+
+    result = requester._get_fresh_download_url(stream_slice)
+    assert result is None
+
+
+def test_get_fresh_download_url_works_without_authenticator(components_module):
+    requester = _build_requester(components_module, authenticator=None)
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(
+            POLL_URL,
+            json={"ReportRequestStatus": {"Status": "Success", "ReportDownloadUrl": FRESH_SAS_URL}},
+            status_code=200,
+        )
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result == FRESH_SAS_URL
+    assert "Authorization" not in m.last_request.headers
+
+
+# --- send_request() integration tests ---
+
+
+def test_send_request_forwards_fresh_url(components_module):
+    """send_request() should replace download_target with the fresh URL from re-poll."""
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with patch.object(requester, "_get_fresh_download_url", return_value=FRESH_SAS_URL):
+        with patch(
+            "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester.send_request",
+            return_value=MagicMock(),
+        ) as mock_super_send:
+            requester.send_request(stream_slice=stream_slice)
+
+    forwarded_slice = mock_super_send.call_args.kwargs["stream_slice"]
+    assert forwarded_slice.extra_fields["download_target"] == FRESH_SAS_URL
+
+
+def test_send_request_keeps_original_url_when_repoll_returns_none(components_module):
+    """send_request() should forward the original stream_slice when re-poll returns None."""
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with patch.object(requester, "_get_fresh_download_url", return_value=None):
+        with patch(
+            "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester.send_request",
+            return_value=MagicMock(),
+        ) as mock_super_send:
+            requester.send_request(stream_slice=stream_slice)
+
+    forwarded_slice = mock_super_send.call_args.kwargs["stream_slice"]
+    assert forwarded_slice.extra_fields["download_target"] == STALE_SAS_URL
+
+
+def test_get_fresh_download_url_falls_back_on_auth_error(components_module):
+    """Auth failures inside _get_fresh_download_url should fall back, not bubble up."""
+
+    class _RaisingAuthenticator:
+        def get_auth_header(self):
+            raise RuntimeError("token refresh exploded")
+
+    requester = _build_requester(components_module, authenticator=_RaisingAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    result = requester._get_fresh_download_url(stream_slice)
+    assert result is None
+
+
+# --- Manifest-level integration test (P1) ---
+
+
+def test_manifest_instantiates_custom_download_requester(config):
+    """Verify the CustomRequester factory path produces a correctly wired BingAdsReportDownloadRequester.
+
+    This test builds the full source from manifest.yaml via YamlDeclarativeSource,
+    finds a report stream, and asserts that:
+    1. The download requester is an instance of BingAdsReportDownloadRequester.
+    2. stream_response is True (derived from decoder in __post_init__).
+    3. The report_poll_authenticator is resolved and has get_auth_header().
+    """
+    from pathlib import Path
+
+    from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+    from airbyte_cdk.test.catalog_builder import CatalogBuilder
+    from airbyte_cdk.test.state_builder import StateBuilder
+
+    yaml_path = Path(__file__).parent.parent / "manifest.yaml"
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build()
+    source = YamlDeclarativeSource(path_to_yaml=str(yaml_path), catalog=catalog, config=config, state=state)
+
+    # Find a report stream that uses the async retriever with download_requester
+    target_stream = None
+    for stream in source.streams(config=config):
+        if stream.name == "account_performance_report_daily":
+            target_stream = stream
+            break
+    assert target_stream is not None, "account_performance_report_daily stream not found"
+
+    # Navigate to the AsyncJobPartitionRouter (stream_slicer).
+    # The CDK may wrap the stream as a concurrent DefaultStream or leave it as a
+    # DeclarativeStream depending on config/version, so handle both paths.
+    if hasattr(target_stream, "retriever"):
+        # DeclarativeStream path (non-concurrent)
+        slicer = target_stream.retriever.stream_slicer
+    else:
+        # DefaultStream path (concurrent wrapper)
+        slicer = target_stream._stream_partition_generator._stream_slicer
+
+    factory_fn = slicer._job_orchestrator_factory
+    job_repository = None
+    for var_name, cell in zip(factory_fn.__code__.co_freevars, factory_fn.__closure__):
+        if var_name == "job_repository":
+            job_repository = cell.cell_contents
+            break
+    assert job_repository is not None, "Could not find job_repository in factory closure"
+
+    download_requester = job_repository.download_retriever.requester
+
+    # Assert the requester is our custom class (not plain HttpRequester)
+    import components as components_mod
+
+    assert isinstance(download_requester, components_mod.BingAdsReportDownloadRequester)
+
+    # Assert stream_response is True (critical for streaming decoders)
+    assert download_requester.stream_response is True
+
+    # Assert report_poll_authenticator is resolved and usable
+    assert download_requester.report_poll_authenticator is not None
+    assert hasattr(download_requester.report_poll_authenticator, "get_auth_header")

@@ -27,6 +27,10 @@ Visit `https://docs.lob.com/` for API documentation
 | uploads | id | DefaultPaginator | ✅ |  ✅  |
 | qr_code_analytics | resource_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -34,6 +38,13 @@ Visit `https://docs.lob.com/` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.57 | 2026-06-23 | [80558](https://github.com/airbytehq/airbyte/pull/80558) | Update dependencies |
+| 0.0.56 | 2026-06-16 | [79952](https://github.com/airbytehq/airbyte/pull/79952) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79389](https://github.com/airbytehq/airbyte/pull/79389) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [78829](https://github.com/airbytehq/airbyte/pull/78829) | Update dependencies |
+| 0.0.53 | 2026-04-28 | [77351](https://github.com/airbytehq/airbyte/pull/77351) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76658](https://github.com/airbytehq/airbyte/pull/76658) | Update dependencies |
+| 0.0.51 | 2026-03-31 | [75326](https://github.com/airbytehq/airbyte/pull/75326) | Update dependencies |
 | 0.0.50 | 2026-03-10 | [74431](https://github.com/airbytehq/airbyte/pull/74431) | Update dependencies |
 | 0.0.49 | 2026-03-03 | [72763](https://github.com/airbytehq/airbyte/pull/72763) | Update dependencies |
 | 0.0.48 | 2026-01-20 | [72037](https://github.com/airbytehq/airbyte/pull/72037) | Update dependencies |

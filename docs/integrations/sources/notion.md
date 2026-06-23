@@ -5,6 +5,7 @@ This page contains the setup guide and reference information for the Notion sour
 ## Prerequisites
 
 - Access to a [Notion](https://notion.so/login) workspace
+- You must be a workspace owner to create a Notion integration
 
 ## Setup guide
 
@@ -35,8 +36,8 @@ You must be the owner of the Notion workspace to create a new integration associ
 3. In the navbar, select [**Capabilities**](https://developers.notion.com/reference/capabilities). Check the following capabilities based on your use case:
 
 - [**Read content**](https://developers.notion.com/reference/capabilities#content-capabilities): required for all connections.
-- [**Read comments**](https://developers.notion.com/reference/capabilities#comment-capabilities): required if you wish to sync the `Comments` stream
-- [**Read user information**](https://developers.notion.com/reference/capabilities#user-capabilities) (either with or without emails): required if you wish to sync the `Users` stream
+- [**Read comments**](https://developers.notion.com/reference/capabilities#comment-capabilities): required if you want to sync the Comments stream.
+- [**Read user information**](https://developers.notion.com/reference/capabilities#user-capabilities) (with or without emails): required if you want to sync the Users stream.
 
 ### Step 2: Share pages and acquire authorization credentials
 
@@ -83,7 +84,7 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 - **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after setting up your public integration.
 <!-- /env:oss -->
 
-6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
+6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. During incremental syncs, only data generated after this date is replicated. If left blank, the start date defaults to two years before the current date.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -98,21 +99,25 @@ The Notion source connector supports the following [sync modes](https://docs.air
 | Pages        |                ✓                |                   ✓                   |
 | Users        |                ✓                |                                       |
 
-## Supported Streams
+## Supported streams
 
 The Notion source connector supports the following streams:
 
 - [Blocks](https://developers.notion.com/reference/retrieve-a-block): Retrieves content blocks for all synced pages, including recursively nested child blocks up to 30 levels deep. Block types `child_page`, `child_database`, and `ai_block` are excluded.
-- [Comments](https://developers.notion.com/reference/list-comments): Retrieves comments on all synced pages.
-- [Data Sources](https://developers.notion.com/reference/data-source): Retrieves data source objects, which represent the structured tables that contain pages and properties. This stream replaces the former `Databases` stream as of v4.0.0. For details on migrating, see the [Notion migration guide](notion-migrations.md).
+- [Comments](https://developers.notion.com/reference/list-comments): Retrieves comments on all synced pages. Requires the **Read comments** integration capability.
+- [Data Sources](https://developers.notion.com/reference/data-source): Retrieves data source objects. In the Notion API `2025-09-03`, a data source represents a structured table that contains pages and properties — previously called a "database." This stream replaces the former `Databases` stream as of v4.0.0. For details on migrating, see the [Notion migration guide](notion-migrations.md).
 - [Pages](https://developers.notion.com/reference/retrieve-a-page): Retrieves page objects from all shared pages.
-- [Users](https://developers.notion.com/reference/get-users): Retrieves user objects from the workspace.
+- [Users](https://developers.notion.com/reference/get-users): Retrieves user objects from the workspace. Requires the **Read user information** integration capability.
 
 ## Performance considerations
 
-The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The Notion API enforces a rate limit of approximately three requests per second per integration. When the connector receives an HTTP 429 response, it respects the `Retry-After` header and retries the request automatically. Rate-limited requests do not count toward the maximum retry limit, so syncs continue indefinitely until the rate limit clears. For more details, see Notion's [request limits](https://developers.notion.com/reference/request-limits) documentation.
 
 The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which may slow down syncs for workspaces with complex page structures.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -121,6 +126,22 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.13 | 2026-06-23 | [80566](https://github.com/airbytehq/airbyte/pull/80566) | Update dependencies |
+| 4.0.12 | 2026-06-16 | [79948](https://github.com/airbytehq/airbyte/pull/79948) | Update dependencies |
+| 4.0.11 | 2026-06-09 | [79397](https://github.com/airbytehq/airbyte/pull/79397) | Update dependencies |
+| 4.0.10 | 2026-06-02 | [78821](https://github.com/airbytehq/airbyte/pull/78821) | Update dependencies |
+| 4.0.9 | 2026-06-01 | [78048](https://github.com/airbytehq/airbyte/pull/78048) | Improve the permission error message for the Users stream when the Notion integration lacks user information capabilities. |
+| 4.0.8 | 2026-06-01 | [78543](https://github.com/airbytehq/airbyte/pull/78543) | Set final default concurrency to 3 with configurable worker count |
+| 4.0.8-rc.5 | 2026-05-27 | [78500](https://github.com/airbytehq/airbyte/pull/78500) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
+| 4.0.8-rc.4 | 2026-05-26 | [78433](https://github.com/airbytehq/airbyte/pull/78433) | Reduce default concurrency to 4 while preserving configurable worker count and Notion API budget |
+| 4.0.8-rc.3 | 2026-05-21 | [78343](https://github.com/airbytehq/airbyte/pull/78343) | Revert default concurrency to 5, add configurable worker count, and enforce Notion API budget |
+| 4.0.8-rc.2 | 2026-05-19 | [78274](https://github.com/airbytehq/airbyte/pull/78274) | Increase `default_concurrency` to 6 for concurrency tuning iteration 2 |
+| 4.0.8-rc.1 | 2026-05-18 | [78149](https://github.com/airbytehq/airbyte/pull/78149) | Start concurrency tuning rollout |
+| 4.0.7 | 2026-04-28 | [77340](https://github.com/airbytehq/airbyte/pull/77340) | Update dependencies |
+| 4.0.6 | 2026-04-21 | [76681](https://github.com/airbytehq/airbyte/pull/76681) | Update dependencies |
+| 4.0.5 | 2026-04-01 | [75577](https://github.com/airbytehq/airbyte/pull/75577) | Add `oauth_connector_input_specification` for declarative OAuth |
+| 4.0.4 | 2026-03-31 | [75747](https://github.com/airbytehq/airbyte/pull/75747) | Update dependencies |
+| 4.0.3 | 2026-03-30 | [75603](https://github.com/airbytehq/airbyte/pull/75603) | Fix 429 status code mapping from RETRY to RATE_LIMITED for improved rate limit handling and observability |
 | 4.0.2 | 2026-03-23 | [75290](https://github.com/airbytehq/airbyte/pull/75290) | Update v4.0.0 upgrade deadline to 2026-04-10 |
 | 4.0.1 | 2026-03-10 | [74616](https://github.com/airbytehq/airbyte/pull/74616) | Update dependencies |
 | 4.0.0 | 2026-02-25 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |

@@ -21,6 +21,10 @@ Email Delivery Platform for individuals and businesses to test, send and control
 | messages | id | No pagination | ✅ |  ❌  |
 | projects | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,13 @@ Email Delivery Platform for individuals and businesses to test, send and control
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.55 | 2026-06-23 | [80565](https://github.com/airbytehq/airbyte/pull/80565) | Update dependencies |
+| 0.0.54 | 2026-06-16 | [79911](https://github.com/airbytehq/airbyte/pull/79911) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79398](https://github.com/airbytehq/airbyte/pull/79398) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [78800](https://github.com/airbytehq/airbyte/pull/78800) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77290](https://github.com/airbytehq/airbyte/pull/77290) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76667](https://github.com/airbytehq/airbyte/pull/76667) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75800](https://github.com/airbytehq/airbyte/pull/75800) | Update dependencies |
 | 0.0.48 | 2026-03-24 | [75010](https://github.com/airbytehq/airbyte/pull/75010) | Update dependencies |
 | 0.0.47 | 2026-03-10 | [74544](https://github.com/airbytehq/airbyte/pull/74544) | Update dependencies |
 | 0.0.46 | 2026-02-24 | [73417](https://github.com/airbytehq/airbyte/pull/73417) | Update dependencies |

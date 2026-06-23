@@ -2,28 +2,35 @@
 
 This page contains the setup guide and reference information for the Apple Ads source connector.
 
+## Prerequisites
+
+- An Apple Ads account with an administrator who can invite users with API permissions.
+- Your Apple Ads organization id (`orgId`), shown in the Apple Ads UI. Each Airbyte source syncs data for a single `orgId`.
+- An OAuth client id and client secret generated for an API user (see Step 1 below).
+
 ## Setup guide
 
-### Step 1: Set up Apple Ads
+### Step 1: Create an API user and OAuth credentials in Apple Ads
 
-1. With an administrator account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) from the Apple Ads UI.
-2. Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) in order to the required Client Secret and Client Id.
+The connector authenticates to the Apple Ads Campaign Management API using OAuth 2 client credentials. An account administrator creates an API user, generates a key pair, and produces a client id and client secret. Apple's full guide is at [Implementing OAuth for the Apple Ads API](https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api). The high-level steps are:
+
+1. From Apple Ads, sign in as an account administrator and go to **Account Settings** → **User Management**.
+2. Click **Invite Users** and assign the user an **API user role**.
+3. Generate a private and public key pair, upload the public key for the API user, and create a client secret.
+4. Note the resulting **Client ID** and **Client Secret**. You'll enter them into Airbyte in Step 2.
 
 ### Step 2: Set up the source connector in Airbyte
 
-#### For Airbyte Open Source
-
-1. Log in to your Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Apple Ads** from the **Source type** dropdown.
-4. Enter a name for your source.
-5. For **Org Id**, enter the Id of your organization (found in the Apple Ads UI).
-6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
-7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
-   earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. For **Time Zone**, select either UTC (Coordinated Universal Time) or ORTZ (Organization Time Zone). The default is UTC.
-9. For **Lookback Window**, enter the number of days (1-30) to re-fetch data during incremental syncs. The default is 30 days, which matches Apple Search Ads' attribution window. You can decrease this value to sync smaller amounts of data on each incremental sync, but this may result in missing late data attributions.
-10. For **Exponential Backoff Factor**, enter a value between 1 and 20 to control the delay between retry attempts when rate limits are encountered. The default is 5. Increase this value when syncing large amounts of data to reduce the chance of synchronization failures.
+1. In Airbyte, click **Sources** and then click **+ New source**.
+2. Select **Apple Ads** from the **Source type** dropdown and enter a name for the source.
+3. For **Org Id**, enter the `orgId` of your Apple Ads organization (found in the Apple Ads UI).
+4. Enter the **Client ID** and **Client Secret** from [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads).
+5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. If **End Date** is blank, Airbyte syncs up to today. Apple's reporting API limits how far back daily data is available; requests for dates outside the supported window return no data.
+6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`.
+7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
+8. For **Exponential Backoff Factor**, enter a value between 1 and 20. This controls how aggressively the connector backs off when Apple's API returns rate-limit (`429`) or server (`500`) errors. The default is 5; increase it for very large accounts that frequently hit rate limits.
+9. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
+10. (Optional) For **Token Refresh Endpoint**, override the default Apple OAuth token endpoint. Use this only if you proxy outbound requests; most users should leave it at the default.
 11. Click **Set up source**.
 
 ## Supported sync modes
@@ -35,41 +42,77 @@ The Apple Ads source connector supports the following [sync modes](https://docs.
 - [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
-The Apple Ads source connector supports the following streams. For more information, see the [Apple Ads API](https://developer.apple.com/documentation/apple_search_ads).
+The Apple Ads source connector exposes the following streams. For full schema and field details, see the [Apple Ads API reference](https://developer.apple.com/documentation/apple_ads).
 
-### Base streams
+### Object streams
 
-- [campaigns](https://developer.apple.com/documentation/apple_search_ads/get_all_campaigns)
-- [adgroups](https://developer.apple.com/documentation/apple_search_ads/get_all_ad_groups)
-- [keywords](https://developer.apple.com/documentation/apple_search_ads/get_all_targeting_keywords_in_an_ad_group)
+- [`campaigns`](https://developer.apple.com/documentation/apple_ads/get-all-campaigns) — all campaigns in the organization.
+- [`adgroups`](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups) — ad groups across all campaigns.
+- [`keywords`](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group) — targeting keywords across all ad groups.
+- [`ads`](https://developer.apple.com/documentation/apple_ads/get-all-ads) — ads across all ad groups.
 
-### Report Streams
+### Daily report streams
 
-::: note
-The usual primary keys for reports are `date` and `campaignId`.
-However, there are cases where active fields must be selected as primary keys to ensure data deduplication is correct.
-One example is `countryOrRegion`.
+The connector requests daily reports from Apple's Reports API, grouped by `countryOrRegion`. Apple [supports](https://developer.apple.com/documentation/apple_ads/reportingrequest) hourly, daily, weekly, and monthly granularity, but this connector only requests daily.
+
+- [`campaigns_report_daily`](https://developer.apple.com/documentation/apple_ads/get-campaign-level-reports) — campaign-level daily metrics.
+- [`adgroups_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports) — ad-group-level daily metrics.
+- [`keywords_report_daily`](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports) — keyword-level daily metrics.
+- [`ads_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports) — ad-level daily metrics.
+
+:::note
+Report streams use `date` as the cursor field and default to `(date, campaignId)` as the primary key. Because each row is also broken out by `countryOrRegion`, the connector exposes a separate `countryorregion` field. If your account targets multiple countries or regions, add `countryorregion` to the primary key in the connection's stream settings to deduplicate correctly.
 :::
 
-- [campaigns_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_campaign-level_reports)
-- [adgroups_report_daily](https://developer.apple.com/documentation/apple_search_ads/get__ad_group-level_reports)
-- [keywords_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)
+## Performance considerations
 
-### Report aggregation
+- Apple's API returns `401 Unauthorized` when an access token is invalid or expired. The connector automatically refreshes expired access tokens and retries the failed request.
+- Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` rate-limit responses and `500` server errors; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
+- For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
+- Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
 
-The Apple Ads currently offers [aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at hourly, daily, weekly, or monthly level.
+## IP allow list
 
-However, at this moment and as indicated in the stream names, the connector only offers data with daily aggregation.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Reference
+
+This connector uses the [Apple Ads Campaign Management API v5](https://developer.apple.com/documentation/apple_ads). Airbyte calls `https://api.searchads.apple.com/api/v5` and sends the selected Apple Ads organization in the `X-AP-Context` header as `orgId={orgId}`.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `org_id` | Yes | Apple Ads organization ID to sync. |
+| `client_id` | Yes | OAuth client ID for the Apple Ads API user. |
+| `client_secret` | Yes | OAuth client secret for the Apple Ads API user. |
+| `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
+| `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
+| `timezone` | Yes | Reporting time zone. Valid values are `UTC` and `ORTZ`. |
+| `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
+| `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. |
+| `token_refresh_endpoint` | Yes | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
+| `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 1.1.8 | 2026-06-23 | [80356](https://github.com/airbytehq/airbyte/pull/80356) | Update dependencies |
+| 1.1.7 | 2026-06-16 | [79764](https://github.com/airbytehq/airbyte/pull/79764) | Update dependencies |
+| 1.1.6 | 2026-06-09 | [79235](https://github.com/airbytehq/airbyte/pull/79235) | Update dependencies |
+| 1.1.5 | 2026-06-02 | [78565](https://github.com/airbytehq/airbyte/pull/78565) | Update dependencies |
+| 1.1.4 | 2026-05-12 | [78029](https://github.com/airbytehq/airbyte/pull/78029) | Refresh expired OAuth access tokens before retrying failed Apple Ads API requests |
+| 1.1.3 | 2026-05-05 | [76973](https://github.com/airbytehq/airbyte/pull/76973) | Fix `ads_report_daily` broken incremental sync, remove incorrect keyword error predicate, and enable concurrent partition processing to reduce heartbeat timeouts |
+| 1.1.2 | 2026-04-28 | [77141](https://github.com/airbytehq/airbyte/pull/77141) | Update dependencies |
+| 1.1.1 | 2026-04-21 | [76507](https://github.com/airbytehq/airbyte/pull/76507) | Update dependencies |
+| 1.1.0 | 2026-04-01 | [69218](https://github.com/airbytehq/airbyte/pull/69218) | Add two new streams - `ads` & `ads_report_daily` |
+| 1.0.11 | 2026-03-31 | [75879](https://github.com/airbytehq/airbyte/pull/75879) | Update dependencies |
 | 1.0.10 | 2026-03-24 | [75015](https://github.com/airbytehq/airbyte/pull/75015) | Update dependencies |
 | 1.0.9 | 2026-03-10 | [74512](https://github.com/airbytehq/airbyte/pull/74512) | Update dependencies |
 | 1.0.8 | 2026-03-03 | [74180](https://github.com/airbytehq/airbyte/pull/74180) | Update dependencies |
@@ -84,7 +127,7 @@ However, at this moment and as indicated in the stream names, the connector only
 | 0.8.10 | 2025-10-14 | [67979](https://github.com/airbytehq/airbyte/pull/67979) | Update dependencies |
 | 0.8.9 | 2025-10-07 | [67173](https://github.com/airbytehq/airbyte/pull/67173) | Update dependencies |
 | 0.8.8 | 2025-09-30 | [66272](https://github.com/airbytehq/airbyte/pull/66272) | Update dependencies |
-| 0.8.7 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
+| 0.8.7 | 2025-09-15 | [66197](https://github.com/airbytehq/airbyte/pull/66197) | Update to CDK v7 |
 | 0.8.6 | 2025-08-23 | [65312](https://github.com/airbytehq/airbyte/pull/65312) | Update dependencies |
 | 0.8.5 | 2025-08-09 | [64663](https://github.com/airbytehq/airbyte/pull/64663) | Update dependencies |
 | 0.8.4 | 2025-07-19 | [63453](https://github.com/airbytehq/airbyte/pull/63453) | Update dependencies |

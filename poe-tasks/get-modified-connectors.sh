@@ -52,6 +52,7 @@ ignore_patterns=(
   '.coveragerc'
   'poe_tasks.toml'
   'airbyte-integrations/connectors/[^/]+/README.md'
+  'airbyte-integrations/connectors/[^/]+/CONTRIBUTING.md'
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
@@ -89,7 +90,7 @@ return_empty_json() {
 }
 
 # 5) drop ignored files
-filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})")
+filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})" || true)
 if [ -z "$filtered" ]; then
   echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
   return_empty_json

@@ -58,4 +58,6 @@ interface JdbcSharedState {
     fun tryAcquireResourcesForReader(
         resourcesTypes: List<ResourceType>
     ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>?
+
+    fun tryAcquireResourcesForCreatorFactory(): JdbcPartitionsCreatorFactory.AcquiredResources?
 }

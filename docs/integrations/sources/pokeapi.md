@@ -32,6 +32,10 @@ According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), pl
 
 The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -39,6 +43,13 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.58 | 2026-06-23 | [80588](https://github.com/airbytehq/airbyte/pull/80588) | Update dependencies |
+| 0.3.57 | 2026-06-16 | [79995](https://github.com/airbytehq/airbyte/pull/79995) | Update dependencies |
+| 0.3.56 | 2026-06-09 | [79458](https://github.com/airbytehq/airbyte/pull/79458) | Update dependencies |
+| 0.3.55 | 2026-06-02 | [78874](https://github.com/airbytehq/airbyte/pull/78874) | Update dependencies |
+| 0.3.54 | 2026-04-28 | [77372](https://github.com/airbytehq/airbyte/pull/77372) | Update dependencies |
+| 0.3.53 | 2026-04-21 | [76700](https://github.com/airbytehq/airbyte/pull/76700) | Update dependencies |
+| 0.3.52 | 2026-03-31 | [75872](https://github.com/airbytehq/airbyte/pull/75872) | Update dependencies |
 | 0.3.51 | 2026-03-24 | [75403](https://github.com/airbytehq/airbyte/pull/75403) | Update dependencies |
 | 0.3.50 | 2026-02-24 | [73837](https://github.com/airbytehq/airbyte/pull/73837) | Update dependencies |
 | 0.3.49 | 2026-02-10 | [73196](https://github.com/airbytehq/airbyte/pull/73196) | Update dependencies |

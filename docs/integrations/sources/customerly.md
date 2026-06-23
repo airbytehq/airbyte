@@ -13,6 +13,10 @@ Connector for customerly.io
 | users | user_id.email | DefaultPaginator | ✅ |  ✅  |
 | leads | crmhero_user_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -20,6 +24,12 @@ Connector for customerly.io
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2026-06-23 | [80396](https://github.com/airbytehq/airbyte/pull/80396) | Update dependencies |
+| 0.0.29 | 2026-06-16 | [79797](https://github.com/airbytehq/airbyte/pull/79797) | Update dependencies |
+| 0.0.28 | 2026-06-09 | [79271](https://github.com/airbytehq/airbyte/pull/79271) | Update dependencies |
+| 0.0.27 | 2026-06-02 | [78616](https://github.com/airbytehq/airbyte/pull/78616) | Update dependencies |
+| 0.0.26 | 2026-04-28 | [77224](https://github.com/airbytehq/airbyte/pull/77224) | Update dependencies |
+| 0.0.25 | 2026-04-21 | [76559](https://github.com/airbytehq/airbyte/pull/76559) | Update dependencies |
 | 0.0.24 | 2026-03-03 | [74148](https://github.com/airbytehq/airbyte/pull/74148) | Update dependencies |
 | 0.0.23 | 2026-01-14 | [71550](https://github.com/airbytehq/airbyte/pull/71550) | Update dependencies |
 | 0.0.22 | 2025-11-25 | [69924](https://github.com/airbytehq/airbyte/pull/69924) | Update dependencies |

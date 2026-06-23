@@ -50,6 +50,7 @@ import java.time.temporal.ChronoField
 class PostgresRawDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
 ) : DestinationDataDumper {
+    private val coercer = AirbyteValueCoercer(useFastTimestampParsing = true)
     companion object {
         // Lenient formatters that handle PostgreSQL's JSONB serialization quirks
         // (e.g., dropping :00 seconds)
@@ -161,7 +162,7 @@ class PostgresRawDataDumper(
                     )
                 } catch (e: Exception) {
                     // Fall back to standard coercer
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             TimestampTypeWithoutTimezone -> {
@@ -171,7 +172,7 @@ class PostgresRawDataDumper(
                         LocalDateTime.parse(value.value, TIMESTAMP_NO_TZ_FORMATTER)
                     )
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             TimeTypeWithTimezone -> {
@@ -179,7 +180,7 @@ class PostgresRawDataDumper(
                 try {
                     TimeWithTimezoneValue(OffsetTime.parse(value.value, TIME_FORMATTER))
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             TimeTypeWithoutTimezone -> {
@@ -187,7 +188,7 @@ class PostgresRawDataDumper(
                 try {
                     TimeWithoutTimezoneValue(LocalTime.parse(value.value, TIME_NO_TZ_FORMATTER))
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             DateType -> {
@@ -195,7 +196,7 @@ class PostgresRawDataDumper(
                 try {
                     DateValue(LocalDate.parse(value.value, DATE_FORMATTER))
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             // For UnknownType with PASS_THROUGH behavior, unwrap double-serialized strings
@@ -223,7 +224,7 @@ class PostgresRawDataDumper(
             }
             // For other primitive types, use the standard coercer
             else -> {
-                val coerced = AirbyteValueCoercer.coerce(value, type)
+                val coerced = coercer.coerce(value, type)
                 // If coercion returns null, it means the value couldn't be coerced to the expected
                 // type.
                 // In test scenarios, we want to preserve the original value to see what went wrong.

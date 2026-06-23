@@ -61,6 +61,10 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 The Freshsales connector should not run into Freshsales API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -68,6 +72,13 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 1.1.52 | 2026-06-23 | [80464](https://github.com/airbytehq/airbyte/pull/80464) | Update dependencies |
+| 1.1.51 | 2026-06-16 | [79872](https://github.com/airbytehq/airbyte/pull/79872) | Update dependencies |
+| 1.1.50 | 2026-06-09 | [79328](https://github.com/airbytehq/airbyte/pull/79328) | Update dependencies |
+| 1.1.49 | 2026-06-02 | [78683](https://github.com/airbytehq/airbyte/pull/78683) | Update dependencies |
+| 1.1.48 | 2026-04-28 | [77230](https://github.com/airbytehq/airbyte/pull/77230) | Update dependencies |
+| 1.1.47 | 2026-04-21 | [76582](https://github.com/airbytehq/airbyte/pull/76582) | Update dependencies |
+| 1.1.46 | 2026-03-31 | [75723](https://github.com/airbytehq/airbyte/pull/75723) | Update dependencies |
 | 1.1.45 | 2026-03-24 | [75315](https://github.com/airbytehq/airbyte/pull/75315) | Update dependencies |
 | 1.1.44 | 2026-03-03 | [74194](https://github.com/airbytehq/airbyte/pull/74194) | Update dependencies |
 | 1.1.43 | 2026-02-17 | [73402](https://github.com/airbytehq/airbyte/pull/73402) | Update dependencies |

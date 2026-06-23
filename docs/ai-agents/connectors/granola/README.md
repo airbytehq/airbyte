@@ -4,11 +4,11 @@ The Granola agent connector is a Python package that equips AI agents to interac
 
 The Granola API connector provides read access to meeting notes from Granola,
 an AI-powered meeting notes platform. This connector integrates with the Granola
-Enterprise API to list and retrieve notes, including summaries, transcripts,
-attendees, and calendar event details. Requires an Enterprise plan API key.
+API to list and retrieve notes, including summaries, transcripts, attendees,
+and calendar event details. Requires a Granola API key.
 
 
-## Example questions
+## Example prompts
 
 The Granola connector is optimized to handle prompts like these.
 
@@ -21,7 +21,7 @@ The Granola connector is optimized to handle prompts like these.
 - Show me notes that mention budget reviews
 - What meetings happened this quarter?
 
-## Unsupported questions
+## Unsupported prompts
 
 The Granola connector isn't currently able to handle prompts like these.
 
@@ -30,83 +30,371 @@ The Granola connector isn't currently able to handle prompts like these.
 - Update an existing note
 - Share a note with someone
 
-## Installation
+## Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Context Store Search](./REFERENCE.md#notes-context-store-search) |
+
+
+## Granola API docs
+
+See the official [Granola API reference](https://docs.granola.ai/introduction).
+
+## Interfaces
+
+Use the Granola connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
 
 ```bash
-uv pip install airbyte-agent-granola
+curl -fsSL https://airbyte.ai/install.sh | bash
 ```
 
-## Usage
+Authenticate with Airbyte:
 
-Connectors can run in open source or hosted mode.
+```bash
+airbyte-agent login
+```
 
-### Open source
+Create the connector. The CLI opens the hosted setup flow:
 
-In open source mode, you provide API credentials directly to the connector.
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola"
+}'
+```
 
-```python
-from airbyte_agent_granola import GranolaConnector
-from airbyte_agent_granola.models import GranolaAuthConfig
+Describe the connector to see its supported entities and actions:
 
-connector = GranolaConnector(
-    auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
-    )
-)
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola"
+}'
+```
 
-@agent.tool_plain # assumes you're using Pydantic AI
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "granola",
+  "entity": "notes",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+#### Usage
+
+Connectors can run in hosted or open source mode.
+
+##### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `GranolaConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+
+connector = connect("granola", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @GranolaConnector.tool_utils
 async def granola_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-### Hosted
+**LangChain**
 
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
 
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+connector = connect("granola", workspace_name="<your_workspace_name>")
 
-```python
-from airbyte_agent_granola import GranolaConnector, AirbyteAuthConfig
+@tool
+@GranolaConnector.tool_utils
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+
+connector = connect("granola", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GranolaConnector.tool_utils(framework="openai_agents")
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Granola Assistant", tools=[granola_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+
+connector = connect("granola", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Granola Agent")
+
+@mcp.tool
+@GranolaConnector.tool_utils
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = GranolaConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @GranolaConnector.tool_utils
 async def granola_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-## Full documentation
+**LangChain**
 
-### Entities and actions
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
-This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+connector = GranolaConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
 
-| Entity | Actions |
-|--------|---------|
-| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Search](./REFERENCE.md#notes-search) |
+@tool
+@GranolaConnector.tool_utils
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
 
+**OpenAI Agents**
 
-### Authentication
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GranolaConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GranolaConnector.tool_utils(framework="openai_agents")
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Granola Assistant", tools=[granola_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GranolaConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Granola Agent")
+
+@mcp.tool
+@GranolaConnector.tool_utils
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+##### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
+
+connector = GranolaConnector(
+    auth_config=GranolaAuthConfig(
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GranolaConnector.tool_utils
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
+
+connector = GranolaConnector(
+    auth_config=GranolaAuthConfig(
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
+    )
+)
+
+@tool
+@GranolaConnector.tool_utils
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
+
+connector = GranolaConnector(
+    auth_config=GranolaAuthConfig(
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GranolaConnector.tool_utils(framework="openai_agents")
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Granola Assistant", tools=[granola_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
+
+connector = GranolaConnector(
+    auth_config=GranolaAuthConfig(
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
+    )
+)
+
+mcp = FastMCP("Granola Agent")
+
+@mcp.tool
+@GranolaConnector.tool_utils
+async def granola_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Granola connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-### Granola API docs
+## IP allow list
 
-See the official [Granola API reference](https://docs.granola.ai/introduction).
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 
-- **Package version:** 0.1.17
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 6ad04bc3fb66fc474336c37d69c79fb843ea1609
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/granola/CHANGELOG.md)
+**Connector version:** 1.0.7

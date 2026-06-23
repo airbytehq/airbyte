@@ -55,8 +55,9 @@ To access the Sandbox environment:
 7. Choose a **Start date**. Any data before this date is not replicated.
 8. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 9. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-10. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
-11. Click **Set up source**.
+10. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+11. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
+12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -70,8 +71,9 @@ To access the Sandbox environment:
 5. Choose a **Start date**. Any data before this date is not replicated.
 6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-8. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
-9. Click `Set up source`.
+8. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+9. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
+10. Click `Set up source`.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -127,8 +129,10 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | PixelEventsStatistics                     | Prod         | -                                          | No          |
 | AdsReportsByCountryDaily                  | Prod         | ad_id, stat_time_day, country_code         | Yes         |
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
-| AdGroupsByCountryDaily                    | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
-| AdGroupsByCountryHourly                   | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
+| AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
+
+The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
 
 :::info
 
@@ -142,11 +146,19 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ## Performance considerations
 
-The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+
+The connector automatically retries transient TikTok API errors, including service maintenance periods (error 60001). If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
+
+For daily report streams, if the TikTok API returns error 40067 ("query too large"), the connector surfaces a configuration error directing you to reduce the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. Reduce the value to 7 or 1 and retry the sync.
 
 ## Upgrading
 
 For information on breaking changes and migration steps, see the [TikTok Marketing Migration Guide](./tiktok-marketing-migrations.md).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -155,7 +167,15 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.4 | 2026-03-23 | [74376](https://github.com/airbytehq/airbyte/pull/74376) | Handle TikTok API error 60001 (service maintenance) as retryable instead of fatal; ignore error 40002 (resource not accessible or does not exist) |
+| 5.1.0 | 2026-06-18 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |
+| 5.0.11 | 2026-06-16 | [80094](https://github.com/airbytehq/airbyte/pull/80094) | Update dependencies |
+| 5.0.10 | 2026-06-09 | [79549](https://github.com/airbytehq/airbyte/pull/79549) | Update dependencies |
+| 5.0.9 | 2026-06-02 | [78999](https://github.com/airbytehq/airbyte/pull/78999) | Update dependencies |
+| 5.0.8 | 2026-04-29 | [76062](https://github.com/airbytehq/airbyte/pull/76062) | Add support for TopView and Reach & Frequency campaigns by including all buying types in campaigns stream |
+| 5.0.7 | 2026-04-28 | [77465](https://github.com/airbytehq/airbyte/pull/77465) | Update dependencies |
+| 5.0.6 | 2026-04-21 | [76807](https://github.com/airbytehq/airbyte/pull/76807) | Update dependencies |
+| 5.0.5 | 2026-03-31 | [75063](https://github.com/airbytehq/airbyte/pull/75063) | Update dependencies |
+| 5.0.4 | 2026-03-24 | [74376](https://github.com/airbytehq/airbyte/pull/74376) | Handle TikTok API error 60001 (service maintenance) as retryable instead of fatal; ignore error 40002 (resource not accessible or does not exist) |
 | 5.0.3 | 2026-03-12 | [74762](https://github.com/airbytehq/airbyte/pull/74762) | Promoting release candidate 5.0.3-rc.1 to a main version. |
 | 5.0.3-rc.1 | 2026-03-05 | [74085](https://github.com/airbytehq/airbyte/pull/74085) | Add missing video engagement metrics to audience report streams |
 | 5.0.2 | 2026-03-03 | [73111](https://github.com/airbytehq/airbyte/pull/73111) | Update dependencies |
@@ -165,29 +185,29 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 | 4.8.13 | 2026-01-20 | [64958](https://github.com/airbytehq/airbyte/pull/64958) | Update dependencies |
 | 4.8.12 | 2026-01-15 | [70241](https://github.com/airbytehq/airbyte/pull/70241) | Fix `pixel_events_statistics` stream: `pixel_ids` format, `date_range` calculation, and add error handler to skip advertisers without pixel permissions |
 | 4.8.11 | 2026-01-15 | [71773](https://github.com/airbytehq/airbyte/pull/71773) | Finalize progressive rollout for version 4.8.11 |
-| 4.8.11-rc.1| 2025-11-14 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams                                                                                                                               |
-| 4.8.10     | 2025-11-04 | [69170](https://github.com/airbytehq/airbyte/pull/69170) | Revert api budget and concurrency back to a safe number                                                                                                                |
-| 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting                                                                                                                                        |
-| 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues                                                                                                                              |
-| 4.8.7      | 2025-10-29 | [69081](https://github.com/airbytehq/airbyte/pull/69081) | Reduce concurrency                                                                                                                                                     |
-| 4.8.6      | 2025-10-29 | [69075](https://github.com/airbytehq/airbyte/pull/69075) | Add API Budget                                                                                                                                                         |
-| 4.8.5      | 2025-10-29 | [69074](https://github.com/airbytehq/airbyte/pull/69074) | Improving on rate limiting issue.                                                                                                                                      |
-| 4.8.4      | 2025-10-08 | [67432](https://github.com/airbytehq/airbyte/pull/67432) | Promoting release candidate 4.8.4 to a main version.                                                                                                                   |
-| 4.8.4-rc.1 | 2025-09-30 | [66823](https://github.com/airbytehq/airbyte/pull/66823) | Up CDK version to 7.                                                                                                                                                   |
-| 4.8.3      | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version.                                                                                                              |
-| 4.8.3-rc.1 | 2025-09-16 | [62058](https://github.com/airbytehq/airbyte/pull/62058) | Add new video metrics in `ads_reports` streams                                                                                                                         |
-| 4.8.2      | 2025-09-16 | [66233](https://github.com/airbytehq/airbyte/pull/66233) | Promoting release candidate 4.8.2-rc.1 to a main version.                                                                                                              |
-| 4.8.2-rc.1 | 2025-09-11 | [65527](https://github.com/airbytehq/airbyte/pull/65527) | Fix missing records for hourly streams: remove record filter                                                                                                           |
-| 4.8.1      | 2025-09-11 | [66161](https://github.com/airbytehq/airbyte/pull/66161) | Promoting release candidate 4.8.1-rc.1 to a main version.                                                                                                              |
-| 4.8.1-rc.1 | 2025-09-05 | [65602](https://github.com/airbytehq/airbyte/pull/65602) | Add record filter to `ads` stream to filter records without `modify_time`.                                                                                             |
-| 4.8.0      | 2025-06-24 | [62048](https://github.com/airbytehq/airbyte/pull/62048) | Promoting release candidate 4.8.0-rc.1 to a main version.                                                                                                              |
-| 4.8.0-rc.1 | 2025-06-16 | [61580](https://github.com/airbytehq/airbyte/pull/61580)  | Convert to manifest-only format                                                                                                                                        |
-| 4.7.0      | 2025-03-10 | [55681](https://github.com/airbytehq/airbyte/pull/55681)  | Ads / AdGroups report by country streams                                                                                                                               |
-| 4.6.2      | 2024-10-30 | [48003](https://github.com/airbytehq/airbyte/pull/48003) | Add new metrics to ads_reports_daily stream                                                                                                                            |
-| 4.6.1      | 2025-03-22 | [51959](https://github.com/airbytehq/airbyte/pull/51959) | Update dependencies                                                                                                                                                    |
-| 4.6.0      | 2025-03-09 | [55669](https://github.com/airbytehq/airbyte/pull/55669)  | Add `Pixels`, `PixelInstantPageEvents`, `PixelEventsStatistics` streams                                                                                                |
-| 4.5.0      | 2025-03-07 | [45081](https://github.com/airbytehq/airbyte/pull/45081)  | Add SparkAds stream                                                                                                                                                    |
-| 4.4.0      | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242)  | Promoting release candidate 4.4.0-rc3 to a main version.                                                                                                               |
+| 4.8.11-rc.1 | 2025-11-14 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams |
+| 4.8.10 | 2025-11-04 | [69170](https://github.com/airbytehq/airbyte/pull/69170) | Revert api budget and concurrency back to a safe number |
+| 4.8.9 | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting |
+| 4.8.8 | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues |
+| 4.8.7 | 2025-10-29 | [69081](https://github.com/airbytehq/airbyte/pull/69081) | Reduce concurrency |
+| 4.8.6 | 2025-10-29 | [69075](https://github.com/airbytehq/airbyte/pull/69075) | Add API Budget |
+| 4.8.5 | 2025-10-29 | [69074](https://github.com/airbytehq/airbyte/pull/69074) | Improving on rate limiting issue. |
+| 4.8.4 | 2025-10-08 | [67432](https://github.com/airbytehq/airbyte/pull/67432) | Promoting release candidate 4.8.4 to a main version. |
+| 4.8.4-rc.1 | 2025-09-30 | [66823](https://github.com/airbytehq/airbyte/pull/66823) | Up CDK version to 7. |
+| 4.8.3 | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version. |
+| 4.8.3-rc.1 | 2025-09-16 | [62058](https://github.com/airbytehq/airbyte/pull/62058) | Add new video metrics in `ads_reports` streams |
+| 4.8.2 | 2025-09-16 | [66233](https://github.com/airbytehq/airbyte/pull/66233) | Promoting release candidate 4.8.2-rc.1 to a main version. |
+| 4.8.2-rc.1 | 2025-09-11 | [65527](https://github.com/airbytehq/airbyte/pull/65527) | Fix missing records for hourly streams: remove record filter |
+| 4.8.1 | 2025-09-11 | [66161](https://github.com/airbytehq/airbyte/pull/66161) | Promoting release candidate 4.8.1-rc.1 to a main version. |
+| 4.8.1-rc.1 | 2025-09-05 | [65602](https://github.com/airbytehq/airbyte/pull/65602) | Add record filter to `ads` stream to filter records without `modify_time`. |
+| 4.8.0 | 2025-06-24 | [62048](https://github.com/airbytehq/airbyte/pull/62048) | Promoting release candidate 4.8.0-rc.1 to a main version. |
+| 4.8.0-rc.1 | 2025-06-16 | [61580](https://github.com/airbytehq/airbyte/pull/61580) | Convert to manifest-only format |
+| 4.7.0 | 2025-03-10 | [55681](https://github.com/airbytehq/airbyte/pull/55681) | Ads / AdGroups report by country streams |
+| 4.6.2 | 2024-10-30 | [48003](https://github.com/airbytehq/airbyte/pull/48003) | Add new metrics to ads_reports_daily stream |
+| 4.6.1 | 2025-03-22 | [51959](https://github.com/airbytehq/airbyte/pull/51959) | Update dependencies |
+| 4.6.0 | 2025-03-09 | [55669](https://github.com/airbytehq/airbyte/pull/55669) | Add `Pixels`, `PixelInstantPageEvents`, `PixelEventsStatistics` streams |
+| 4.5.0 | 2025-03-07 | [45081](https://github.com/airbytehq/airbyte/pull/45081) | Add SparkAds stream |
+| 4.4.0 | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242) | Promoting release candidate 4.4.0-rc3 to a main version. |
 | 4.4.0-rc3  | 2025-03-04 | [55194](https://github.com/airbytehq/airbyte/pull/55194)  | Resolve state format issue                                                                                                                                             |
 | 4.4.0-rc2  | 2025-02-20 | [53645](https://github.com/airbytehq/airbyte/pull/53645) | Remove stream_state interpolation and custom cursors                                                                                                                   |
 | 4.4.0-rc1  | 2025-01-29 | [51584](https://github.com/airbytehq/airbyte/pull/51584)  | Update to concurrent CDK                                                                                                                                               |

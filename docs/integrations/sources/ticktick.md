@@ -15,6 +15,10 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 | projects | id | No pagination | ✅ |  ❌  |
 | tasks | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -22,6 +26,12 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.27 | 2026-06-23 | [80699](https://github.com/airbytehq/airbyte/pull/80699) | Update dependencies |
+| 0.0.26 | 2026-06-16 | [80093](https://github.com/airbytehq/airbyte/pull/80093) | Update dependencies |
+| 0.0.25 | 2026-06-09 | [79538](https://github.com/airbytehq/airbyte/pull/79538) | Update dependencies |
+| 0.0.24 | 2026-06-02 | [79041](https://github.com/airbytehq/airbyte/pull/79041) | Update dependencies |
+| 0.0.23 | 2026-04-28 | [77473](https://github.com/airbytehq/airbyte/pull/77473) | Update dependencies |
+| 0.0.22 | 2026-04-21 | [76753](https://github.com/airbytehq/airbyte/pull/76753) | Update dependencies |
 | 0.0.21 | 2026-03-24 | [75370](https://github.com/airbytehq/airbyte/pull/75370) | Update dependencies |
 | 0.0.20 | 2026-03-10 | [74550](https://github.com/airbytehq/airbyte/pull/74550) | Update dependencies |
 | 0.0.19 | 2026-02-24 | [73836](https://github.com/airbytehq/airbyte/pull/73836) | Update dependencies |

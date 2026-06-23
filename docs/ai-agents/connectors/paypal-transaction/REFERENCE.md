@@ -8,13 +8,13 @@ The Paypal-Transaction connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Balances | [List](#balances-list), [Search](#balances-search) |
-| Transactions | [List](#transactions-list), [Search](#transactions-search) |
-| List Payments | [List](#list-payments-list), [Search](#list-payments-search) |
-| List Disputes | [List](#list-disputes-list), [Search](#list-disputes-search) |
-| List Products | [List](#list-products-list), [Search](#list-products-search) |
-| Show Product Details | [Get](#show-product-details-get), [Search](#show-product-details-search) |
-| Search Invoices | [List](#search-invoices-list), [Search](#search-invoices-search) |
+| Balances | [List](#balances-list), [Context Store Search](#balances-context-store-search) |
+| Transactions | [List](#transactions-list), [Context Store Search](#transactions-context-store-search) |
+| List Payments | [List](#list-payments-list), [Context Store Search](#list-payments-context-store-search) |
+| List Disputes | [List](#list-disputes-list), [Context Store Search](#list-disputes-context-store-search) |
+| List Products | [List](#list-products-list), [Context Store Search](#list-products-context-store-search) |
+| Show Product Details | [Get](#show-product-details-get), [Context Store Search](#show-product-details-context-store-search) |
+| Search Invoices | [List](#search-invoices-list), [Context Store Search](#search-invoices-context-store-search) |
 
 ## Balances
 
@@ -22,6 +22,17 @@ The Paypal-Transaction connector supports the following entities and actions.
 
 List all balances for a PayPal account. Specify date time to list balances for that time. It takes a maximum of three hours for balances to appear. Lists balances up to the previous three years.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "balances",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -78,14 +89,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Balances Search
+### Balances Context Store Search
 
 Search and filter balances records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "balances",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await paypal_transaction.balances.search(
+await paypal_transaction.balances.context_store_search(
     query={"filter": {"eq": {"account_id": "<str>"}}}
 )
 ```
@@ -98,7 +129,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "balances",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"account_id": "<str>"}}}
     }
@@ -148,6 +179,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists transactions for a PayPal account. Specify one or more query parameters to filter the transactions. Requires start_date and end_date parameters. The maximum supported date range is 31 days. It takes a maximum of three hours for executed transactions to appear.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "transactions",
+  "action": "list",
+  "params": {
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -299,14 +345,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Transactions Search
+### Transactions Context Store Search
 
 Search and filter transactions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "transactions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "auction_info": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await paypal_transaction.transactions.search(
+await paypal_transaction.transactions.context_store_search(
     query={"filter": {"eq": {"auction_info": {}}}}
 )
 ```
@@ -319,7 +385,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "transactions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"auction_info": {}}}}
     }
@@ -382,6 +448,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Lists payments for the PayPal account. Supports filtering by start and end times.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "list_payments",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -429,16 +506,42 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `links` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_id` | `string` |  |
+
 </details>
 
-### List Payments Search
+### List Payments Context Store Search
 
 Search and filter list payments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "list_payments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "cart": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await paypal_transaction.list_payments.search(
+await paypal_transaction.list_payments.context_store_search(
     query={"filter": {"eq": {"cart": "<str>"}}}
 )
 ```
@@ -451,7 +554,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "list_payments",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"cart": "<str>"}}}
     }
@@ -512,6 +615,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Lists disputes for the PayPal account. Supports filtering by update time range.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "list_disputes",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -564,16 +678,42 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `links` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `array<object>` |  |
+
 </details>
 
-### List Disputes Search
+### List Disputes Context Store Search
 
 Search and filter list disputes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "list_disputes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "create_time": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await paypal_transaction.list_disputes.search(
+await paypal_transaction.list_disputes.context_store_search(
     query={"filter": {"eq": {"create_time": "<str>"}}}
 )
 ```
@@ -586,7 +726,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "list_disputes",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"create_time": "<str>"}}}
     }
@@ -654,6 +794,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists all catalog products for the PayPal account.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "list_products",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -695,16 +846,42 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `links` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `array<object>` |  |
+
 </details>
 
-### List Products Search
+### List Products Context Store Search
 
 Search and filter list products records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "list_products",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "create_time": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await paypal_transaction.list_products.search(
+await paypal_transaction.list_products.context_store_search(
     query={"filter": {"eq": {"create_time": "<str>"}}}
 )
 ```
@@ -717,7 +894,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "list_products",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"create_time": "<str>"}}}
     }
@@ -768,6 +945,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Show Product Details Get
 
 Shows details for a catalog product by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "show_product_details",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -821,14 +1012,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Show Product Details Search
+### Show Product Details Context Store Search
 
 Search and filter show product details records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "show_product_details",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "category": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await paypal_transaction.show_product_details.search(
+await paypal_transaction.show_product_details.context_store_search(
     query={"filter": {"eq": {"category": "<str>"}}}
 )
 ```
@@ -841,7 +1052,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "show_product_details",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"category": "<str>"}}}
     }
@@ -904,6 +1115,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Searches for invoices matching the specified criteria. Uses POST with a JSON body for filtering.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "search_invoices",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -958,16 +1180,42 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `links` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `array<object>` |  |
+
 </details>
 
-### Search Invoices Search
+### Search Invoices Context Store Search
 
 Search and filter search invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "paypal-transaction",
+  "entity": "search_invoices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "additional_recipients": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await paypal_transaction.search_invoices.search(
+await paypal_transaction.search_invoices.context_store_search(
     query={"filter": {"eq": {"additional_recipients": []}}}
 )
 ```
@@ -980,7 +1228,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "search_invoices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"additional_recipients": []}}}
     }

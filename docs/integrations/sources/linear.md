@@ -11,67 +11,121 @@ This page contains the setup guide and reference information for the [Linear](ht
 ## Prerequisites
 
 - A Linear account
-- A Linear API key
+- One of the following authentication methods:
+  - **API Key**: A Linear personal API key.
+  - **OAuth 2.0**: A Linear OAuth app with a client ID, client secret, and refresh token.
 
 ## Setup guide
 
-### Step 1: Obtain a Linear API key
+### Step 1: Choose an authentication method
+
+The Linear source connector supports API key and OAuth 2.0 authentication.
+
+#### API key
 
 1. Log in to your [Linear](https://linear.app/) account.
 2. Navigate to **Settings** by clicking your workspace name in the sidebar.
 3. Select **Security & access** from the settings menu.
 4. Scroll to the **Personal API keys** section.
-5. Click **Create key** to generate a new API key.
-6. Copy the API key and store it securely. You will need it to configure the connector.
+5. Click **Create key**, give the key a descriptive label (for example, `airbyte`), and click **Create**.
+6. Copy the API key and store it securely. Linear only displays the key once.
 
-For more information, see the [Linear API documentation](https://developers.linear.app/docs/graphql/working-with-the-graphql-api).
+The API key inherits your user's permissions in the workspace. The connector can only sync data you can see in Linear.
+
+For more information, see the [Linear GraphQL API documentation](https://linear.app/developers/graphql).
+
+#### OAuth 2.0
+
+Create a Linear OAuth app and configure the redirect callback URL for your Airbyte deployment. The connector requests the `read` and `customer:read` scopes. Linear returns an access token and refresh token after the OAuth flow, and the connector uses the refresh token to refresh access tokens when they expire.
+
+For more information, see the [Linear OAuth 2.0 authentication documentation](https://linear.app/developers/oauth-2-0-authentication).
 
 ### Step 2: Configure the Linear connector in Airbyte
 
 1. In the Airbyte UI, navigate to **Sources** and click **+ New source**.
 2. Select **Linear** from the list of available sources.
 3. Enter a **Source name** of your choosing.
-4. Enter your **API key** from Step 1.
-5. Click **Set up source** and wait for the connection test to complete.
+4. For **Authentication**, choose **API Key** or **OAuth 2.0**.
+5. Enter the required credentials for your authentication method.
+6. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
+7. Optionally, adjust the **Number of concurrent workers** (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting Linear's rate limits. Users on API key authentication (2,500 requests/hour) should generally stay at or below the default. Users on OAuth authentication (5,000 requests/hour) may increase this value if they have observed headroom in their rate-limit usage.
+8. Click **Set up source** and wait for the connection test to complete.
+
+Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.1` or later. If you upgraded an API key connection to `0.2.0` and it no longer passes connection checks, upgrade to `0.2.1` or later.
 
 ## Supported sync modes
 
-The Linear source connector supports the following sync mode:
+The Linear source connector supports the following sync modes:
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---append)
+- [Incremental - Append](https://docs.airbyte.com/cloud/core-concepts/#incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/cloud/core-concepts/#incremental-append--deduped)
+
+Streams that support incremental sync use the `updatedAt` field as the cursor. The Start Date you set when configuring the connector is the lower bound for the first incremental sync. Subsequent syncs use the most recent `updatedAt` value from the previous sync as the new lower bound.
+
+The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, and `customer_tiers`.
 
 ## Supported streams
 
-The Linear source connector supports the following streams:
+The Linear source connector supports the following streams. Streams marked as incremental use `updatedAt` as the cursor field.
 
-| Stream Name | Description |
-|-------------|-------------|
-| teams | Teams in your Linear workspace |
-| users | Users in your Linear workspace |
-| cycles | Sprint cycles for teams |
-| issues | Issues and tasks |
-| comments | Comments on issues |
-| projects | Projects for organizing issues |
-| customers | Customer records (if using Linear's customer features) |
-| attachments | File attachments on issues |
-| issue_labels | Labels for categorizing issues |
-| customer_needs | Customer needs linked to issues |
-| customer_tiers | Customer tier definitions |
-| issue_relations | Relationships between issues |
-| workflow_states | Workflow states (statuses) for issues |
-| project_statuses | Status definitions for projects |
-| customer_statuses | Status definitions for customers |
-| project_milestones | Milestones within projects |
+| Stream | Incremental | Description |
+| ------ | :---------: | ----------- |
+| `attachments` | Yes | File and link attachments on issues. |
+| `comments` | Yes | Comments posted on issues. |
+| `customer_needs` | Yes | Customer needs associated with issues. |
+| `customers` | Yes | Customer records tracked in Linear's customer requests feature. |
+| `customer_statuses` | No | Status definitions for customer records. |
+| `customer_tiers` | No | Tier definitions for customer records. |
+| `cycles` | Yes | Cycles (sprints) for each team. |
+| `issue_labels` | Yes | Labels that can be applied to issues. |
+| `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
+| `issues` | Yes | Issues in every team, including archived issues. |
+| `project_milestones` | Yes | Milestones defined inside projects. |
+| `project_statuses` | No | Status definitions for projects. |
+| `projects` | Yes | Projects across all teams. |
+| `teams` | Yes | Teams in your Linear workspace. |
+| `users` | Yes | Users in your Linear workspace. |
+| `workflow_states` | Yes | Workflow states (for example, Todo, In Progress, Done) defined by each team. |
 
 ## Limitations and troubleshooting
 
 ### Rate limiting
 
-Linear's API uses a leaky bucket algorithm for rate limiting. The connector handles rate limiting automatically, but syncs may slow down if you are making many concurrent requests to the Linear API. For more information, see [Linear's rate limiting documentation](https://developers.linear.app/docs/graphql/working-with-the-graphql-api#rate-limiting).
+The Linear API uses a leaky bucket algorithm for rate limiting. The connector detects rate-limit errors returned by the API and automatically backs off until the rate-limit window resets. Syncs may slow down during backoff periods but will resume without manual intervention.
+
+Linear enforces three types of rate limits:
+
+- **Request limits**: 2,500 requests per user per hour for API key authentication, 5,000 for OAuth app authentication. All requests by the same user share the same quota.
+- **Endpoint-specific limits**: Certain queries have lower per-endpoint limits. The connector respects the `X-RateLimit-Endpoint-Requests-Reset` header when these are hit.
+- **Complexity limits**: Each query's complexity is calculated based on the number of requested fields and pagination depth. The maximum single-query complexity is 10,000 points. The hourly complexity budget is 3,000,000 points for API key authentication and 2,000,000 for OAuth.
+
+Workspace-level OAuth applications receive dynamically increased limits based on the number of paid seats. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
 
 ### Data availability
 
 The connector retrieves data that the authenticated user has access to. If you cannot see certain teams, projects, or issues in your synced data, verify that your Linear account has the appropriate permissions.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Reference
+
+This connector uses the [Linear GraphQL API](https://linear.app/developers/graphql). All API requests use the `https://api.linear.app/graphql` endpoint.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `credentials.auth_type` | Yes | Authentication method. Valid values are `API Key` and `OAuth2.0`. |
+| `credentials.api_key` | Required for API key authentication | Linear personal API key. |
+| `credentials.client_id` | Required for OAuth 2.0 authentication | Client ID of your Linear OAuth app. |
+| `credentials.client_secret` | Required for OAuth 2.0 authentication | Client secret of your Linear OAuth app. |
+| `credentials.refresh_token` | Required for OAuth 2.0 authentication | Refresh token returned by the Linear OAuth flow. |
+| `start_date` | No | UTC date and time in ISO 8601 format. Records updated before this date aren't replicated for streams that support incremental sync. If unset, defaults to two years before the first sync. |
+| `num_workers` | No | Number of worker threads used to read streams in parallel (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting rate limits. |
 
 ## Changelog
 
@@ -79,7 +133,21 @@ The connector retrieves data that the authenticated user has access to. If you c
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
+| ------- | ---- | ------------ | ------- |
+| 0.2.7 | 2026-06-23 | [80554](https://github.com/airbytehq/airbyte/pull/80554) | Update dependencies |
+| 0.2.6 | 2026-06-16 | [79947](https://github.com/airbytehq/airbyte/pull/79947) | Update dependencies |
+| 0.2.5 | 2026-06-10 | [78237](https://github.com/airbytehq/airbyte/pull/78237) | fix(source-linear): Handle GraphQL rate-limit errors |
+| 0.2.4 | 2026-06-09 | [79388](https://github.com/airbytehq/airbyte/pull/79388) | Update dependencies |
+| 0.2.3 | 2026-06-02 | [78816](https://github.com/airbytehq/airbyte/pull/78816) | Update dependencies |
+| 0.2.2 | 2026-05-18 | [78160](https://github.com/airbytehq/airbyte/pull/78160) | Promoted release candidate to GA |
+| 0.2.2-rc.2 | 2026-05-15 | [78124](https://github.com/airbytehq/airbyte/pull/78124) | Expose `num_workers` in connector spec (default 4, min 1, max 10) so users can override the per-connection concurrency from the UI |
+| 0.2.2-rc.1 | 2026-05-12 | [78034](https://github.com/airbytehq/airbyte/pull/78034) | Resume concurrency tuning at default_concurrency=4 (Path A, 2,500 req/hr API key ceiling); re-enable progressive rollout |
+| 0.2.1 | 2026-05-12 | [78013](https://github.com/airbytehq/airbyte/pull/78013) | Fix API key config migration for existing connections |
+| 0.2.0 | 2026-05-11 | [77578](https://github.com/airbytehq/airbyte/pull/77578) | Add OAuth 2.0 authentication support and migrate existing API key configurations to nested credentials |
+| 0.1.2 | 2026-04-28 | [77318](https://github.com/airbytehq/airbyte/pull/77318) | Update dependencies |
+| 0.1.1 | 2026-04-21 | [76654](https://github.com/airbytehq/airbyte/pull/76654) | Update dependencies |
+| 0.1.0 | 2026-04-17 | [76429](https://github.com/airbytehq/airbyte/pull/76429) | Add incremental sync support for 12 streams using the `updatedAt` cursor field |
+| 0.0.36 | 2026-03-31 | [75720](https://github.com/airbytehq/airbyte/pull/75720) | Update dependencies |
 | 0.0.35 | 2026-03-17 | [75023](https://github.com/airbytehq/airbyte/pull/75023) | Update dependencies |
 | 0.0.34 | 2026-03-03 | [74239](https://github.com/airbytehq/airbyte/pull/74239) | Update dependencies |
 | 0.0.33 | 2026-02-10 | [73035](https://github.com/airbytehq/airbyte/pull/73035) | Update dependencies |

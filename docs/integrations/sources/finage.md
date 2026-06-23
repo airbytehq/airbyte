@@ -37,6 +37,10 @@ This connector can be used to extract data from various APIs such as symbol-list
 | sector_performance | sector | No pagination | ✅ |  ❌  |
 | shares_float |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -44,6 +48,13 @@ This connector can be used to extract data from various APIs such as symbol-list
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.55 | 2026-06-23 | [80446](https://github.com/airbytehq/airbyte/pull/80446) | Update dependencies |
+| 0.0.54 | 2026-06-16 | [79857](https://github.com/airbytehq/airbyte/pull/79857) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79302](https://github.com/airbytehq/airbyte/pull/79302) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [78679](https://github.com/airbytehq/airbyte/pull/78679) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77246](https://github.com/airbytehq/airbyte/pull/77246) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76601](https://github.com/airbytehq/airbyte/pull/76601) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75763](https://github.com/airbytehq/airbyte/pull/75763) | Update dependencies |
 | 0.0.48 | 2026-03-17 | [74638](https://github.com/airbytehq/airbyte/pull/74638) | Update dependencies |
 | 0.0.47 | 2026-02-24 | [73748](https://github.com/airbytehq/airbyte/pull/73748) | Update dependencies |
 | 0.0.46 | 2026-02-17 | [73373](https://github.com/airbytehq/airbyte/pull/73373) | Update dependencies |

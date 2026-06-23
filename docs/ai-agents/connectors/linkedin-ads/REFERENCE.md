@@ -8,20 +8,34 @@ The Linkedin-Ads connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [Search](#accounts-search) |
-| Account Users | [List](#account-users-list), [Search](#account-users-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Campaign Groups | [List](#campaign-groups-list), [Get](#campaign-groups-get), [Search](#campaign-groups-search) |
-| Creatives | [List](#creatives-list), [Get](#creatives-get), [Search](#creatives-search) |
-| Conversions | [List](#conversions-list), [Get](#conversions-get), [Search](#conversions-search) |
-| Ad Campaign Analytics | [List](#ad-campaign-analytics-list), [Search](#ad-campaign-analytics-search) |
-| Ad Creative Analytics | [List](#ad-creative-analytics-list), [Search](#ad-creative-analytics-search) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [Context Store Search](#accounts-context-store-search) |
+| Account Users | [List](#account-users-list), [Context Store Search](#account-users-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
+| Campaign Groups | [List](#campaign-groups-list), [Get](#campaign-groups-get), [Context Store Search](#campaign-groups-context-store-search) |
+| Creatives | [List](#creatives-list), [Get](#creatives-get), [Context Store Search](#creatives-context-store-search) |
+| Conversions | [List](#conversions-list), [Get](#conversions-get), [Context Store Search](#conversions-context-store-search) |
+| Ad Campaign Analytics | [List](#ad-campaign-analytics-list), [Context Store Search](#ad-campaign-analytics-context-store-search) |
+| Ad Creative Analytics | [List](#ad-creative-analytics-list), [Context Store Search](#ad-creative-analytics-context-store-search) |
 
 ## Accounts
 
 ### Accounts List
 
 Returns a list of ad accounts the authenticated user has access to
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "accounts",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -92,6 +106,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single ad account by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "accounts",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -149,14 +177,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Accounts Search
+### Accounts Context Store Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.accounts.search(
+await linkedin_ads.accounts.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -169,7 +217,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -239,6 +287,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of users associated with ad accounts
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "account_users",
+  "action": "list",
+  "params": {
+    "q": "<str>",
+    "accounts": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -296,14 +359,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Account Users Search
+### Account Users Context Store Search
 
 Search and filter account users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "account_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.account_users.search(
+await linkedin_ads.account_users.context_store_search(
     query={"filter": {"eq": {"account": "<str>"}}}
 )
 ```
@@ -316,7 +399,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "account_users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"account": "<str>"}}}
     }
@@ -363,6 +446,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaigns List
 
 Returns a list of campaigns for an ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "account_id": 0,
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -450,6 +548,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single campaign by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "account_id": 0,
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -524,14 +637,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.campaigns.search(
+await linkedin_ads.campaigns.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -544,7 +677,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -634,6 +767,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of campaign groups for an ad account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaign_groups",
+  "action": "list",
+  "params": {
+    "account_id": 0,
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -702,6 +850,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single campaign group by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaign_groups",
+  "action": "get",
+  "params": {
+    "account_id": 0,
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -758,14 +921,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaign Groups Search
+### Campaign Groups Context Store Search
 
 Search and filter campaign groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaign_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.campaign_groups.search(
+await linkedin_ads.campaign_groups.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -778,7 +961,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaign_groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -839,6 +1022,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Creatives List
 
 Returns a list of creatives for an ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "creatives",
+  "action": "list",
+  "params": {
+    "account_id": 0,
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -912,6 +1110,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single creative by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "creatives",
+  "action": "get",
+  "params": {
+    "account_id": 0,
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -972,14 +1185,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Creatives Search
+### Creatives Context Store Search
 
 Search and filter creatives records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "creatives",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.creatives.search(
+await linkedin_ads.creatives.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -992,7 +1225,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "creatives",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1059,6 +1292,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Conversions List
 
 Returns a list of conversion rules for an ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "conversions",
+  "action": "list",
+  "params": {
+    "q": "<str>",
+    "account": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1137,6 +1385,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single conversion rule by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "conversions",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1199,14 +1461,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Conversions Search
+### Conversions Context Store Search
 
 Search and filter conversions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "conversions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.conversions.search(
+await linkedin_ads.conversions.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -1219,7 +1501,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "conversions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -1289,6 +1571,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns ad analytics data pivoted by campaign. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by campaign.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_campaign_analytics",
+  "action": "list",
+  "params": {
+    "q": "<str>",
+    "pivot": "<str>",
+    "timeGranularity": "<str>",
+    "dateRange": "<str>",
+    "campaigns": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1400,14 +1700,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Campaign Analytics Search
+### Ad Campaign Analytics Context Store Search
 
 Search and filter ad campaign analytics records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_campaign_analytics",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "impressions": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.ad_campaign_analytics.search(
+await linkedin_ads.ad_campaign_analytics.context_store_search(
     query={"filter": {"eq": {"impressions": 0.0}}}
 )
 ```
@@ -1420,7 +1740,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_campaign_analytics",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"impressions": 0.0}}}
     }
@@ -1541,6 +1861,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns ad analytics data pivoted by creative. Provides performance metrics including clicks, impressions, spend, and engagement data grouped by creative.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_creative_analytics",
+  "action": "list",
+  "params": {
+    "q": "<str>",
+    "pivot": "<str>",
+    "timeGranularity": "<str>",
+    "dateRange": "<str>",
+    "creatives": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1651,14 +1989,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Creative Analytics Search
+### Ad Creative Analytics Context Store Search
 
 Search and filter ad creative analytics records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_creative_analytics",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "impressions": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await linkedin_ads.ad_creative_analytics.search(
+await linkedin_ads.ad_creative_analytics.context_store_search(
     query={"filter": {"eq": {"impressions": 0.0}}}
 )
 ```
@@ -1671,7 +2029,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_creative_analytics",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"impressions": 0.0}}}
     }

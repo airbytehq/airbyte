@@ -17,6 +17,10 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 | leads | id | DefaultPaginator | ✅ |  ❌  |
 | opportunities | opportunityId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,13 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-23 | [80384](https://github.com/airbytehq/airbyte/pull/80384) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [79768](https://github.com/airbytehq/airbyte/pull/79768) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79230](https://github.com/airbytehq/airbyte/pull/79230) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78597](https://github.com/airbytehq/airbyte/pull/78597) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77145](https://github.com/airbytehq/airbyte/pull/77145) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76514](https://github.com/airbytehq/airbyte/pull/76514) | Update dependencies |
+| 0.0.45 | 2026-03-31 | [75883](https://github.com/airbytehq/airbyte/pull/75883) | Update dependencies |
 | 0.0.44 | 2026-03-17 | [75005](https://github.com/airbytehq/airbyte/pull/75005) | Update dependencies |
 | 0.0.43 | 2026-03-10 | [74520](https://github.com/airbytehq/airbyte/pull/74520) | Update dependencies |
 | 0.0.42 | 2026-03-03 | [74171](https://github.com/airbytehq/airbyte/pull/74171) | Update dependencies |

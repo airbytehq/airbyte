@@ -978,6 +978,26 @@ streams:
   - $ref: "#/definitions/streams/tax_classes"
   - $ref: "#/definitions/streams/tax_rates"
 
+# Rate limits: https://woocommerce.github.io/woocommerce-rest-api-docs/#request/response-format
+# WooCommerce REST API does not have built-in rate limiting by default.
+# Actual rate limits depend on the hosting provider (shared hosting typically 2-5 req/s).
+# Returns HTTP 429 when rate limited by the host.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 5
+          interval: PT1S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 12
+
 spec:
   type: Spec
   connection_specification:
@@ -1017,6 +1037,18 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
           - "2021-01-01"
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          The number of worker threads to use for the sync. Higher values can
+          speed up syncs but may hit rate limits. WooCommerce API rate limits
+          depend on the hosting provider. More info at
+          https://woocommerce.github.io/woocommerce-rest-api-docs/
+        default: 5
+        minimum: 2
+        maximum: 12
+        order: 4
     additionalProperties: true
 
 metadata:

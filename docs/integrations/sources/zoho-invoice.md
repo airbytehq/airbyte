@@ -26,6 +26,10 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 | expenses | expense_id | DefaultPaginator | ✅ |  ❌  |
 | taxes | tax_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,12 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-16 | [80113](https://github.com/airbytehq/airbyte/pull/80113) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79585](https://github.com/airbytehq/airbyte/pull/79585) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [79066](https://github.com/airbytehq/airbyte/pull/79066) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77495](https://github.com/airbytehq/airbyte/pull/77495) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76829](https://github.com/airbytehq/airbyte/pull/76829) | Update dependencies |
+| 0.0.46 | 2026-03-31 | [75815](https://github.com/airbytehq/airbyte/pull/75815) | Update dependencies |
 | 0.0.45 | 2026-03-17 | [74465](https://github.com/airbytehq/airbyte/pull/74465) | Update dependencies |
 | 0.0.44 | 2026-02-24 | [73993](https://github.com/airbytehq/airbyte/pull/73993) | Update dependencies |
 | 0.0.43 | 2026-02-17 | [73583](https://github.com/airbytehq/airbyte/pull/73583) | Update dependencies |

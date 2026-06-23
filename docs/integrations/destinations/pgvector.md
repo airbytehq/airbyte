@@ -198,6 +198,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.9 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
 | 0.1.8 | 2025-10-21 | [68347](https://github.com/airbytehq/airbyte/pull/68347) | Update dependencies |
 | 0.1.7 | 2025-10-14 | [67996](https://github.com/airbytehq/airbyte/pull/67996) | Update dependencies |
 | 0.1.6 | 2025-10-07 | [67175](https://github.com/airbytehq/airbyte/pull/67175) | Update dependencies |

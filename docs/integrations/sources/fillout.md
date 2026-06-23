@@ -17,6 +17,10 @@ The Airbyte connector for Fillout.com enables seamless data synchronization betw
 | form_metadata | id           | DefaultPaginator | ✅                 | ❌                   |
 | submissions   | submissionId | DefaultPaginator | ✅                 | ✅                   |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,13 @@ The Airbyte connector for Fillout.com enables seamless data synchronization betw
 
 | Version | Date       | Pull Request | Subject                                                                             |
 | ------- | ---------- | ------------ | ----------------------------------------------------------------------------------- |
+| 0.2.51 | 2026-06-23 | [80457](https://github.com/airbytehq/airbyte/pull/80457) | Update dependencies |
+| 0.2.50 | 2026-06-16 | [79862](https://github.com/airbytehq/airbyte/pull/79862) | Update dependencies |
+| 0.2.49 | 2026-06-09 | [79290](https://github.com/airbytehq/airbyte/pull/79290) | Update dependencies |
+| 0.2.48 | 2026-06-02 | [78699](https://github.com/airbytehq/airbyte/pull/78699) | Update dependencies |
+| 0.2.47 | 2026-04-28 | [77255](https://github.com/airbytehq/airbyte/pull/77255) | Update dependencies |
+| 0.2.46 | 2026-04-21 | [76581](https://github.com/airbytehq/airbyte/pull/76581) | Update dependencies |
+| 0.2.45 | 2026-03-31 | [75756](https://github.com/airbytehq/airbyte/pull/75756) | Update dependencies |
 | 0.2.44 | 2026-03-17 | [74686](https://github.com/airbytehq/airbyte/pull/74686) | Update dependencies |
 | 0.2.43 | 2026-02-24 | [73766](https://github.com/airbytehq/airbyte/pull/73766) | Update dependencies |
 | 0.2.42 | 2026-01-20 | [71956](https://github.com/airbytehq/airbyte/pull/71956) | Update dependencies |

@@ -41,6 +41,10 @@ Using this connector we fetch data from various streams such as contacts, data, 
 | steps | id | DefaultPaginator | ✅ |  ❌  |
 | tags | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -48,6 +52,13 @@ Using this connector we fetch data from various streams such as contacts, data, 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-06-23 | [80585](https://github.com/airbytehq/airbyte/pull/80585) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [80000](https://github.com/airbytehq/airbyte/pull/80000) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79455](https://github.com/airbytehq/airbyte/pull/79455) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78917](https://github.com/airbytehq/airbyte/pull/78917) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77360](https://github.com/airbytehq/airbyte/pull/77360) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76726](https://github.com/airbytehq/airbyte/pull/76726) | Update dependencies |
+| 0.0.46 | 2026-03-31 | [75816](https://github.com/airbytehq/airbyte/pull/75816) | Update dependencies |
 | 0.0.45 | 2026-03-24 | [75404](https://github.com/airbytehq/airbyte/pull/75404) | Update dependencies |
 | 0.0.44 | 2026-03-10 | [74452](https://github.com/airbytehq/airbyte/pull/74452) | Update dependencies |
 | 0.0.43 | 2026-02-24 | [73854](https://github.com/airbytehq/airbyte/pull/73854) | Update dependencies |

@@ -28,6 +28,10 @@ API Reference: https://dev.mendeley.com/methods/#introduction
 | subject_areas | uuid | DefaultPaginator | ✅ |  ❌  |
 | institutions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,13 @@ API Reference: https://dev.mendeley.com/methods/#introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2026-06-23 | [80564](https://github.com/airbytehq/airbyte/pull/80564) | Update dependencies |
+| 0.0.38 | 2026-06-16 | [79957](https://github.com/airbytehq/airbyte/pull/79957) | Update dependencies |
+| 0.0.37 | 2026-06-09 | [79423](https://github.com/airbytehq/airbyte/pull/79423) | Update dependencies |
+| 0.0.36 | 2026-06-02 | [78852](https://github.com/airbytehq/airbyte/pull/78852) | Update dependencies |
+| 0.0.35 | 2026-04-28 | [77298](https://github.com/airbytehq/airbyte/pull/77298) | Update dependencies |
+| 0.0.34 | 2026-04-21 | [76674](https://github.com/airbytehq/airbyte/pull/76674) | Update dependencies |
+| 0.0.33 | 2026-03-31 | [75828](https://github.com/airbytehq/airbyte/pull/75828) | Update dependencies |
 | 0.0.32 | 2026-03-17 | [74980](https://github.com/airbytehq/airbyte/pull/74980) | Update dependencies |
 | 0.0.31 | 2026-03-10 | [74543](https://github.com/airbytehq/airbyte/pull/74543) | Update dependencies |
 | 0.0.30 | 2026-02-24 | [73420](https://github.com/airbytehq/airbyte/pull/73420) | Update dependencies |

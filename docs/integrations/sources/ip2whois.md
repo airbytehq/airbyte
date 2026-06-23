@@ -25,6 +25,10 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 - [API token](https://www.ip2whois.com/register)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,13 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.56 | 2026-06-23 | [80495](https://github.com/airbytehq/airbyte/pull/80495) | Update dependencies |
+| 0.2.55 | 2026-06-16 | [79907](https://github.com/airbytehq/airbyte/pull/79907) | Update dependencies |
+| 0.2.54 | 2026-06-09 | [79360](https://github.com/airbytehq/airbyte/pull/79360) | Update dependencies |
+| 0.2.53 | 2026-06-02 | [78748](https://github.com/airbytehq/airbyte/pull/78748) | Update dependencies |
+| 0.2.52 | 2026-04-28 | [77292](https://github.com/airbytehq/airbyte/pull/77292) | Update dependencies |
+| 0.2.51 | 2026-04-21 | [76652](https://github.com/airbytehq/airbyte/pull/76652) | Update dependencies |
+| 0.2.50 | 2026-03-31 | [75679](https://github.com/airbytehq/airbyte/pull/75679) | Update dependencies |
 | 0.2.49 | 2026-03-17 | [75061](https://github.com/airbytehq/airbyte/pull/75061) | Update dependencies |
 | 0.2.48 | 2026-03-10 | [74498](https://github.com/airbytehq/airbyte/pull/74498) | Update dependencies |
 | 0.2.47 | 2026-02-24 | [73894](https://github.com/airbytehq/airbyte/pull/73894) | Update dependencies |

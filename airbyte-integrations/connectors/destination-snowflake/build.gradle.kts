@@ -23,6 +23,7 @@ application {
             "-XX:NativeMemoryTracking=detail",
             "-XX:+UnlockDiagnosticVMOptions",
             "-XX:GCLockerRetryAllocationCount=100",
+            "-Dnet.snowflake.jdbc.enableBouncyCastle=TRUE",
 //            "-XX:NativeMemoryTracking=detail",
 //            "-Djava.rmi.server.hostname=localhost",
 //            "-Dcom.sun.management.jmxremote=true",
@@ -46,6 +47,7 @@ dependencies {
     implementation("de.siegmar:fastcsv:4.0.0")
     implementation("io.micronaut.cache:micronaut-cache-caffeine:4.3.1")
 
+    testImplementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")

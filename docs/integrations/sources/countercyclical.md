@@ -14,6 +14,10 @@ Countercyclical is the fully end-to-end financial intelligence platform designed
 | Valuations | id | No pagination | ✅ |  ❌  |
 | Memos | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -21,6 +25,12 @@ Countercyclical is the fully end-to-end financial intelligence platform designed
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-06-23 | [80398](https://github.com/airbytehq/airbyte/pull/80398) | Update dependencies |
+| 0.0.45 | 2026-06-16 | [79794](https://github.com/airbytehq/airbyte/pull/79794) | Update dependencies |
+| 0.0.44 | 2026-06-09 | [79286](https://github.com/airbytehq/airbyte/pull/79286) | Update dependencies |
+| 0.0.43 | 2026-06-02 | [78614](https://github.com/airbytehq/airbyte/pull/78614) | Update dependencies |
+| 0.0.42 | 2026-04-28 | [77192](https://github.com/airbytehq/airbyte/pull/77192) | Update dependencies |
+| 0.0.41 | 2026-04-21 | [76543](https://github.com/airbytehq/airbyte/pull/76543) | Update dependencies |
 | 0.0.40 | 2026-03-17 | [75072](https://github.com/airbytehq/airbyte/pull/75072) | Update dependencies |
 | 0.0.39 | 2026-03-03 | [74163](https://github.com/airbytehq/airbyte/pull/74163) | Update dependencies |
 | 0.0.38 | 2025-11-18 | [69606](https://github.com/airbytehq/airbyte/pull/69606) | Update dependencies |

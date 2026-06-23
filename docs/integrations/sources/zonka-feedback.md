@@ -25,6 +25,10 @@ For more information about the API visit https://apidocs.zonkafeedback.com/#intr
 | users | id | DefaultPaginator | ✅ |  ❌  |
 | locations | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,12 @@ For more information about the API visit https://apidocs.zonkafeedback.com/#intr
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-06-16 | [80101](https://github.com/airbytehq/airbyte/pull/80101) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79587](https://github.com/airbytehq/airbyte/pull/79587) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [79081](https://github.com/airbytehq/airbyte/pull/79081) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77502](https://github.com/airbytehq/airbyte/pull/77502) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76825](https://github.com/airbytehq/airbyte/pull/76825) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75812](https://github.com/airbytehq/airbyte/pull/75812) | Update dependencies |
 | 0.0.48 | 2026-03-24 | [75053](https://github.com/airbytehq/airbyte/pull/75053) | Update dependencies |
 | 0.0.47 | 2026-03-10 | [74430](https://github.com/airbytehq/airbyte/pull/74430) | Update dependencies |
 | 0.0.46 | 2026-02-24 | [73994](https://github.com/airbytehq/airbyte/pull/73994) | Update dependencies |

@@ -87,13 +87,23 @@ Several output streams are available from this source. Unless noted otherwise, s
 - [Visitor Page Views](https://developer.salesforce.com/docs/marketing/pardot/guide/visitor-page-view-v5.html) (incremental)
 - [Visits](https://developer.salesforce.com/docs/marketing/pardot/guide/visit-v5.html) (incremental)
 
-
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.46 | 2026-06-23 | [80586](https://github.com/airbytehq/airbyte/pull/80586) | Update dependencies |
+| 1.0.45 | 2026-06-16 | [79997](https://github.com/airbytehq/airbyte/pull/79997) | Update dependencies |
+| 1.0.44 | 2026-06-09 | [79466](https://github.com/airbytehq/airbyte/pull/79466) | Update dependencies |
+| 1.0.43 | 2026-06-02 | [78883](https://github.com/airbytehq/airbyte/pull/78883) | Update dependencies |
+| 1.0.42 | 2026-04-28 | [77362](https://github.com/airbytehq/airbyte/pull/77362) | Update dependencies |
+| 1.0.41 | 2026-04-21 | [76711](https://github.com/airbytehq/airbyte/pull/76711) | Update dependencies |
+| 1.0.40 | 2026-03-31 | [75820](https://github.com/airbytehq/airbyte/pull/75820) | Update dependencies |
 | 1.0.39 | 2026-03-24 | [75021](https://github.com/airbytehq/airbyte/pull/75021) | Update dependencies |
 | 1.0.38 | 2026-03-10 | [74501](https://github.com/airbytehq/airbyte/pull/74501) | Update dependencies |
 | 1.0.37 | 2026-03-03 | [74170](https://github.com/airbytehq/airbyte/pull/74170) | Update dependencies |

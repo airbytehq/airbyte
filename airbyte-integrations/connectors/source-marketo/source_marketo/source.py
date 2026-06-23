@@ -168,6 +168,12 @@ class MarketoExportBase(IncrementalMarketoStream):
     # The status is only updated once every 60 seconds
     poll_interval = 60
 
+    # Marketo's Bulk Extract API honors only a single date-range filter per export
+    # job. Subclasses set `filter_field` to the Marketo field that matches their
+    # `cursor_field`, so incremental slices are bounded by the same field used to
+    # advance the cursor.
+    filter_field = "createdAt"
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
@@ -198,13 +204,21 @@ class MarketoExportBase(IncrementalMarketoStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        return {"stream": True}
+
     def stream_slices(
         self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs
     ) -> Iterable[Optional[MutableMapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
         for date_slice in date_slices:
-            param = {"fields": [], "filter": {"createdAt": date_slice}}
+            param = {"fields": [], "filter": {self.filter_field: date_slice}}
             param["fields"].extend(self.stream_fields)
             param["filter"].update(self.stream_filter)
 
@@ -246,8 +260,12 @@ class MarketoExportBase(IncrementalMarketoStream):
         schema = self.get_json_schema()["properties"]
         response.encoding = "utf-8"
 
-        response_lines = response.iter_lines(chunk_size=1024, decode_unicode=True)
-        filtered_response_lines = self.filter_null_bytes(response_lines)
+        # Use delimiter="\n" to avoid str.splitlines() which splits on Unicode
+        # line separators (\u2028, \u2029) that may appear in CJK text fields,
+        # causing CSV column misalignment. See: https://github.com/airbytehq/airbyte/pull/3327
+        response_lines = response.iter_lines(chunk_size=1024, decode_unicode=True, delimiter="\n")
+        stripped_lines = (line.rstrip("\r") for line in response_lines if line)
+        filtered_response_lines = self.filter_null_bytes(stripped_lines)
         reader = self.csv_rows(filtered_response_lines)
 
         for record in reader:
@@ -294,6 +312,12 @@ class MarketoExportBase(IncrementalMarketoStream):
             if headers is None:
                 headers = row
             else:
+                if len(row) != len(headers):
+                    raise AirbyteTracedException(
+                        message="CSV row column count does not match header column count.",
+                        internal_message=f"CSV parse error at row {reader.line_num}: expected {len(headers)} columns, got {len(row)}.",
+                        failure_type=FailureType.system_error,
+                    )
                 yield dict(zip(headers, row))
 
 
@@ -394,6 +418,10 @@ class Leads(MarketoExportBase):
     """
 
     cursor_field = "updatedAt"
+    # Filter leads by `updatedAt` so that updates to pre-existing leads are
+    # captured by incremental syncs. Marketo's Bulk Lead Extract honors only a
+    # single filter per export, so the filter field must match the cursor.
+    filter_field = "updatedAt"
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config, self.name)

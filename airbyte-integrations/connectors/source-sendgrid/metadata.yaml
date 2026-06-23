@@ -6,12 +6,14 @@ data:
     hosts:
       - api.sendgrid.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.2@sha256:19eb795baa82bad71c097a7388313c1fd9f36978f543a8c7a245bbedb0c9a153
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 1.3.27
+  dockerImageTag: 1.3.35
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: This release makes several changes that upgrade the Sendgrid connector. The configuration options have been renamed to `api_key` and `start_date`. `start_date` is now required. The `unsubscribe_groups` stream has been removed. It was the same as `suppression_groups`. You can use that and get the same data. The `single_sends` stream has been renamed `singlesend_stats`. This is closer to the data and API. The `segments` stream has been upgraded to use the Sendgrid 2.0 API because the older one has been deprecated. The schema has changed as a result. To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.

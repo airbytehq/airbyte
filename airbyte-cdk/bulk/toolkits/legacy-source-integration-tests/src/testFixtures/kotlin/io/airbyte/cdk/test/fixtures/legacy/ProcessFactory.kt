@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
+
 package io.airbyte.cdk.test.fixtures.legacy
 
 import java.nio.file.Path
@@ -69,7 +70,8 @@ interface ProcessFactory {
             lenLimit: Int
         ): String {
             var imageName = extractShortImageName(fullImagePath)
-            val randSuffix = RandomStringUtils.randomAlphabetic(5).lowercase(Locale.getDefault())
+            val randSuffix =
+                RandomStringUtils.secure().nextAlphabetic(5).lowercase(Locale.getDefault())
             val suffix = "$jobType-$jobId-$attempt-$randSuffix"
 
             var processName = "$imageName-$suffix"

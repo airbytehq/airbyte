@@ -120,6 +120,10 @@ The Strava source connector supports the following [sync modes](https://docs.air
 Strava API has limitations to 100 requests every 15 minutes, 1000 daily.
 More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.com/docs/rate-limits).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -127,6 +131,13 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.51 | 2026-06-23 | [80672](https://github.com/airbytehq/airbyte/pull/80672) | Update dependencies |
+| 0.3.50 | 2026-06-16 | [80056](https://github.com/airbytehq/airbyte/pull/80056) | Update dependencies |
+| 0.3.49 | 2026-06-09 | [79524](https://github.com/airbytehq/airbyte/pull/79524) | Update dependencies |
+| 0.3.48 | 2026-06-02 | [78990](https://github.com/airbytehq/airbyte/pull/78990) | Update dependencies |
+| 0.3.47 | 2026-04-28 | [77413](https://github.com/airbytehq/airbyte/pull/77413) | Update dependencies |
+| 0.3.46 | 2026-04-21 | [76782](https://github.com/airbytehq/airbyte/pull/76782) | Update dependencies |
+| 0.3.45 | 2026-03-31 | [75863](https://github.com/airbytehq/airbyte/pull/75863) | Update dependencies |
 | 0.3.44 | 2026-03-17 | [75088](https://github.com/airbytehq/airbyte/pull/75088) | Update dependencies |
 | 0.3.43 | 2026-03-10 | [74577](https://github.com/airbytehq/airbyte/pull/74577) | Update dependencies |
 | 0.3.42 | 2026-03-03 | [73975](https://github.com/airbytehq/airbyte/pull/73975) | Update dependencies |

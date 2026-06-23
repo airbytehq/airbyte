@@ -125,7 +125,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            containerLogMdcBuilder.build().use { mdcScope -> logger.info(line) }
+            containerLogMdcBuilder.build().use { _ -> logger.info { line } }
         }
         return jsonLine.stream()
     }
@@ -133,7 +133,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     protected fun validate(json: JsonNode): Boolean {
         val res = protocolValidator.test(json)
         if (!res) {
-            logger.error("Validation failed: {}", Jsons.serialize(json))
+            logger.error { "Validation failed: ${Jsons.serialize(json)}" }
         }
         return res
     }
@@ -141,7 +141,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     protected fun toAirbyteMessage(json: JsonNode?): Stream<AirbyteMessage> {
         val m = Jsons.tryObject(json, AirbyteMessage::class.java)
         if (m.isEmpty) {
-            logger.error("Deserialization failed: {}", Jsons.serialize(json))
+            logger.error { "Deserialization failed: ${Jsons.serialize(json)}" }
         }
         return m.stream()
     }
@@ -149,7 +149,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     protected fun filterLog(message: AirbyteMessage): Boolean {
         val isLog = message.type == AirbyteMessage.Type.LOG
         if (isLog) {
-            containerLogMdcBuilder.build().use { mdcScope -> internalLog(message.log) }
+            containerLogMdcBuilder.build().use { _ -> internalLog(message.log) }
         }
         return !isLog
     }
@@ -163,18 +163,18 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
 
         when (logMessage.level) {
             AirbyteLogMessage.Level.FATAL,
-            AirbyteLogMessage.Level.ERROR -> logger.error(combinedMessage)
-            AirbyteLogMessage.Level.WARN -> logger.warn(combinedMessage)
-            AirbyteLogMessage.Level.DEBUG -> logger.debug(combinedMessage)
-            AirbyteLogMessage.Level.TRACE -> logger.trace(combinedMessage)
-            else -> logger.info(combinedMessage)
+            AirbyteLogMessage.Level.ERROR -> logger.error { combinedMessage }
+            AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
+            AirbyteLogMessage.Level.DEBUG -> logger.debug { combinedMessage }
+            AirbyteLogMessage.Level.TRACE -> logger.trace { combinedMessage }
+            else -> logger.info { combinedMessage }
         }
     }
 
     // Human-readable byte size from
     // https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
-    private fun humanReadableByteCountSI(bytes: Long): String {
-        var bytes = bytes
+    private fun humanReadableByteCountSI(initialBytes: Long): String {
+        var bytes = initialBytes
         if (-1000 < bytes && bytes < 1000) {
             return "$bytes B"
         }

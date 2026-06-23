@@ -14,6 +14,10 @@ connects to churnkey to retrieve session details
 | sessions |  | No pagination | ✅ |  ❌  |
 | session-aggregation |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -21,6 +25,13 @@ connects to churnkey to retrieve session details
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2026-06-23 | [80411](https://github.com/airbytehq/airbyte/pull/80411) | Update dependencies |
+| 0.0.30 | 2026-06-16 | [79818](https://github.com/airbytehq/airbyte/pull/79818) | Update dependencies |
+| 0.0.29 | 2026-06-09 | [79240](https://github.com/airbytehq/airbyte/pull/79240) | Update dependencies |
+| 0.0.28 | 2026-06-02 | [78613](https://github.com/airbytehq/airbyte/pull/78613) | Update dependencies |
+| 0.0.27 | 2026-04-28 | [77169](https://github.com/airbytehq/airbyte/pull/77169) | Update dependencies |
+| 0.0.26 | 2026-04-21 | [76541](https://github.com/airbytehq/airbyte/pull/76541) | Update dependencies |
+| 0.0.25 | 2026-03-31 | [75740](https://github.com/airbytehq/airbyte/pull/75740) | Update dependencies |
 | 0.0.24 | 2026-03-24 | [75397](https://github.com/airbytehq/airbyte/pull/75397) | Update dependencies |
 | 0.0.23 | 2026-03-10 | [74420](https://github.com/airbytehq/airbyte/pull/74420) | Update dependencies |
 | 0.0.22 | 2026-02-24 | [73801](https://github.com/airbytehq/airbyte/pull/73801) | Update dependencies |

@@ -183,10 +183,20 @@ definitions:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 30
       response_filters:
-        - predicate: ""
+        - type: HttpResponseFilter
+          http_codes: [400]
           action: FAIL
           failure_type: config_error
-          error_message: "Incorrect Property ID. Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id to find your Property ID."
+          error_message: "{{ response.error.message }}"
+        - type: HttpResponseFilter
+          predicate: "{{ response.error.status == 'PERMISSION_DENIED' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "{{ response.error.message }}"
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: RETRY
+          error_message: "{{ response.error.message }}"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2978,6 +2988,20 @@ spec:
           float values for any `conversions:*` fields.
         default: false
         order: 8
+      subscription_tier:
+        type: string
+        title: Subscription Plan/Tier
+        description:
+          Quota tier of the Google Analytics 4 properties being queried. Determines
+          the per-property rate-limit policy applied locally once the tier-aware
+          rate-limit budget is activated. Select "Analytics 360 Property" only if
+          all configured property IDs belong to an Analytics 360 subscription. See
+          https://developers.google.com/analytics/devguides/reporting/data/v1/quotas.
+        enum:
+          - Standard Property
+          - Analytics 360 Property
+        default: Standard Property
+        order: 9
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -2985,6 +3009,14 @@ spec:
       - auth_type
     predicate_value: Client
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/analytics.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:
@@ -3021,16 +3053,53 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     transformations:
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["credentials", "auth_type"]
+            value: "Client"
+        condition: "{{ config.get('credentials', {}).get('client_id') is not none and config.get('credentials', {}).get('auth_type') is none }}"
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["credentials", "auth_type"]
+            value: "Service"
+        condition: "{{ config.get('credentials', {}).get('credentials_json') is not none and config.get('credentials', {}).get('auth_type') is none }}"
       - type: CustomConfigTransformation
         class_name: source_declarative_manifest.components.DimensionFilterConfigTransformation
 
+# GA4 Data API Core quotas (per property):
+#   Standard:       10 concurrent requests,  40,000 tokens/hour,  200,000 tokens/day
+#   Analytics 360:  50 concurrent requests, 400,000 tokens/hour, 2,000,000 tokens/day
+# https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 16
+
+# Original single-policy api_budget (pre-tuning). Superseded by the tier-aware
+# block below; kept commented for audit only.
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 10
+#           interval: PT1S
+#       matchers:
+#         - method: POST
+#           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
+
+# Tier-aware api_budget (Path B). Active during tuning and onward. The
+# `subscription_tier` spec field selects the per-property Core rate limit
+# applied locally (Standard 10 req/s, Analytics 360 50 req/s). See
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 10
+        - limit: "{{ {'Standard Property': 10, 'Analytics 360 Property': 50}[config.get('subscription_tier', 'Standard Property')] }}"
           interval: PT1S
       matchers:
         - method: POST
