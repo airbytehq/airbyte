@@ -39,6 +39,8 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     Stream reader for Google Cloud Storage (GCS).
     """
 
+    _GZIP_MAGIC = b"\x1f\x8b"
+
     def __init__(self):
         super().__init__()
         self._gcs_client = None
@@ -171,8 +173,6 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             logger.exception(oe)
             raise oe
         return result
-
-    _GZIP_MAGIC = b"\x1f\x8b"
 
     def _open_gzip_encoded_blob(
         self,
