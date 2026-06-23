@@ -84,7 +84,7 @@ def test_advanced_auth_block_configured(manifest):
 
     oauth_spec = advanced_auth["oauth_config_specification"]
     input_spec = oauth_spec["oauth_connector_input_specification"]
-    assert "login.xero.com" in input_spec["consent_url"]
+    assert input_spec["consent_url"].startswith("https://login.xero.com/identity/connect/authorize")
     assert input_spec["access_token_url"] == "https://identity.xero.com/connect/token"
     scope_values = [s["scope"] for s in input_spec["scopes"]]
     assert "offline_access" in scope_values
