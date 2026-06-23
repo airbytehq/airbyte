@@ -1,4 +1,6 @@
-# MSSQL
+# MS SQL Server
+
+This page describes how to set up the MS SQL Server destination connector. This connector writes data to a Microsoft SQL Server or Azure SQL Database instance.
 
 ## Supported sync modes
 
@@ -36,7 +38,7 @@ add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your a
 #### **Permissions**
 
 You need a user configured in SQL Server that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose.
-In order to allow for normalization, please grant ALTER permissions for the user configured.
+Grant the user `ALTER` permissions on the target schema so Airbyte can create and modify tables as needed.
 
 #### Target Database
 
@@ -53,7 +55,7 @@ You'll need the following information to configure the MSSQL destination:
 - **Database Name**
   - The name of the MSSQL database.
 - **Default Schema**
-  - The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
+  - The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "dbo".
 - **Username**
   - The username which is used to access the database.
 - **Password**
@@ -154,6 +156,17 @@ You’ll need to supply:
 
 See the [Getting Started: Configuration section](#configuration) of this guide for more details on `BULK INSERT` connector configuration.
 
+## Data type limitations
+
+SQL Server imposes limits on certain data types. When a value falls outside a supported range, the connector nullifies it and records a `DESTINATION_FIELD_SIZE_LIMITATION` change in `_airbyte_meta`.
+
+| Airbyte type | SQL Server type | Supported range | Notes |
+| :--- | :--- | :--- | :--- |
+| `timestamp_without_timezone` | `DATETIME` | 1753-01-01 00:00:00 through 9999-12-31 23:59:59.997 | Dates before 1753-01-01 are nullified. This is a [SQL Server restriction](https://learn.microsoft.com/en-us/sql/t-sql/data-types/datetime-transact-sql). |
+| `timestamp_with_timezone` | `DATETIMEOFFSET` | 0001-01-01 through 9999-12-31 | No additional connector-level validation. |
+| `integer` | `BIGINT` | −9,223,372,036,854,775,808 through 9,223,372,036,854,775,807 | Values outside this range are nullified. |
+| `number` | `NUMERIC(38,8)` | Approximately ±10^30 | Values outside the representable range are nullified. |
+
 ## Namespace support
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a SQL Server schema.
@@ -166,7 +179,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
 | 2.2.18 | 2026-06-09 | [79602](https://github.com/airbytehq/airbyte/pull/79602) | fix(destination-mssql): make Azure SQL DB bulk load work — schema-qualified staging tables, always serialize booleans as 0/1, and emit numbers in plain (non-scientific) notation |
-| 2.2.17 | 2026-06-05 | [79154](https://github.com/airbytehq/airbyte/pull/79154) | fix(destination-mssql): validate timestamp values against DATETIME lower bound |
+| 2.2.17 | 2026-06-08 | [79154](https://github.com/airbytehq/airbyte/pull/79154) | Nullify timestamp-without-timezone values before 1753-01-01 instead of failing the sync |
 | 2.2.16 | 2026-04-23 | [76946](https://github.com/airbytehq/airbyte/pull/76946) | Upgrade Bulk CDK to 1.0.11 and fix `_ab_cdc_deleted_at` column type so the secondary index on CDC streams can be created. |
 | 2.2.15 | 2026-01-26 | [72297](https://github.com/airbytehq/airbyte/pull/72297) | Upgrade CDK to 0.2.0 |
 | 2.2.14 | 2025-11-05 | [69130](https://github.com/airbytehq/airbyte/pull/69130) | Upgrade to Bulk CDK 0.1.61. |
@@ -231,8 +244,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.1.6      | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                           |
 | 0.1.5      | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874)   | declare object types correctly in spec                                                              |
 | 0.1.4      | 2021-06-17 | [\#3744](https://github.com/airbytehq/airbyte/pull/3744)   | Fix doc/params in specification file                                                                |
-| 0.1.3      | 2021-05-28 | [\#3728](https://github.com/airbytehq/airbyte/pull/3973)   | Change dockerfile entrypoint                                                                        |
-| 0.1.2      | 2021-05-13 | [\#3367](https://github.com/airbytehq/airbyte/pull/3671)   | Fix handle symbols unicode                                                                          |
-| 0.1.1      | 2021-05-11 | [\#3566](https://github.com/airbytehq/airbyte/pull/3195)   | MS SQL Server Destination Release!                                                                  |
+| 0.1.3      | 2021-05-28 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973)   | Change dockerfile entrypoint                                                                        |
+| 0.1.2      | 2021-05-13 | [\#3671](https://github.com/airbytehq/airbyte/pull/3671)   | Fix handle symbols unicode                                                                          |
+| 0.1.1      | 2021-05-11 | [\#3195](https://github.com/airbytehq/airbyte/pull/3195)   | MS SQL Server Destination Release!                                                                  |
 
 </details>
