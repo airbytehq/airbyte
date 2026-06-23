@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 379fc8e8-c6ec-4c13-90cb-dfebb536fac6
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-signnow
   githubIssueLabel: source-signnow
   icon: icon.svg
