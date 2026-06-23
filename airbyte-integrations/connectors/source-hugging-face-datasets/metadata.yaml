@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 38438040-03d9-406d-b10b-af83beadd3ef
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-hugging-face-datasets
   githubIssueLabel: source-hugging-face-datasets
   icon: icon.svg
