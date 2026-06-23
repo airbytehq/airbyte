@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b013676a-2286-4f7a-bca4-811477207761
-  dockerImageTag: 0.0.30
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-boldsign
   githubIssueLabel: source-boldsign
   icon: icon.svg
