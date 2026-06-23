@@ -18,7 +18,7 @@ It helps to separate two ideas that both get called "a connector":
 
 When this doc says "add a connector," it means the second thing: creating an authenticated instance of a connector type inside one of your workspaces. Once it exists, any Chat or external client that runs in the same workspace can use it without re-authenticating.
 
-Adding a connector is a one-time setup step per workspace. You don't need to pick a "mode" or opt into specific use cases. The same connector is available to agents in Chats, the [SDK](../sdk), the [API](../api), and the [MCP server](../mcp).
+Adding a connector is a one-time setup step per workspace. You don't need to pick a "mode" or opt into specific use cases. The same connector is available to agents in Chats, the [SDK](../sdk), the [API](../api), the [CLI](../cli), and the [MCP server](../mcp).
 
 ## Workspaces and connectors
 
