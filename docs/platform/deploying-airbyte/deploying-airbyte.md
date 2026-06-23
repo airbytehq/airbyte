@@ -9,7 +9,7 @@ To quickly deploy Airbyte on your local machine you can visit the [Quickstart](.
 If setting up an Airbyte server does not fit your use case needs (for example, you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](/developers/pyairbyte) documentation useful.
 
 :::info Self-Managed Enterprise customers
-If you're a Self-Managed Enterprise customer, skip this guide. Instead, follow the steps outlined in [Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
+Airbyte no longer sells Self-Managed Enterprise. If you still use Self-Managed Enterprise, documentation is preserved as a [PDF](/assets/docs/Airbyte-Self-Managed-Enterprise.pdf).
 :::
 
 ## Understanding the Airbyte Deployment

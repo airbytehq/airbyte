@@ -247,7 +247,9 @@
         {
           "type": "category",
           "label": "Transformations",
-          "items": ["cloud/managing-airbyte-cloud/dbt-cloud-integration"]
+          "items": [
+            "cloud/managing-airbyte-cloud/dbt-cloud-integration"
+          ]
         },
         {
           "type": "category",
@@ -324,29 +326,14 @@
         },
         {
           "type": "category",
-          "label": "Self-Managed Enterprise",
-          "link": {
-            "type": "doc",
-            "id": "enterprise-setup/README"
-          },
-          "items": [
-            "enterprise-setup/implementation-guide",
-            "enterprise-setup/api-access-config",
-            "enterprise-setup/multi-region",
-            "enterprise-setup/audit-logging",
-            "enterprise-setup/scaling-airbyte",
-            "enterprise-setup/upgrade-service-account",
-            "enterprise-setup/upgrading-from-community"
-          ]
-        },
-        {
-          "type": "category",
           "label": "Upgrading Airbyte",
           "link": {
             "type": "doc",
             "id": "operator-guides/upgrading-airbyte"
           },
-          "items": ["managing-airbyte/connector-updates"]
+          "items": [
+            "managing-airbyte/connector-updates"
+          ]
         },
         {
           "type": "category",

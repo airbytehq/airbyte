@@ -126,7 +126,9 @@
                 "type": "doc",
                 "id": "move-data/elt-data-activation"
               },
-              "items": ["move-data/rejected-records"]
+              "items": [
+                "move-data/rejected-records"
+              ]
             },
             "using-airbyte/sync-files-and-records"
           ]
@@ -411,24 +413,6 @@
         },
         {
           "type": "category",
-          "label": "Self-Managed Enterprise",
-          "link": {
-            "type": "doc",
-            "id": "enterprise-setup/README"
-          },
-          "items": [
-            "enterprise-setup/implementation-guide",
-            "enterprise-setup/api-access-config",
-            "enterprise-setup/multi-region",
-            "enterprise-setup/audit-logging",
-            "enterprise-setup/scaling-airbyte",
-            "enterprise-setup/upgrade-service-account",
-            "enterprise-setup/upgrading-from-community",
-            "enterprise-setup/chart-v2-enterprise"
-          ]
-        },
-        {
-          "type": "category",
           "label": "Enterprise Flex",
           "link": {
             "type": "doc",
@@ -447,7 +431,9 @@
             "type": "doc",
             "id": "operator-guides/upgrading-airbyte"
           },
-          "items": ["managing-airbyte/connector-updates"]
+          "items": [
+            "managing-airbyte/connector-updates"
+          ]
         },
         {
           "type": "category",
