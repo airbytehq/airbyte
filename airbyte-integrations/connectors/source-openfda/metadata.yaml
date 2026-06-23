@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b97d588f-d49f-440c-9158-9dd33c59fd26
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-openfda
   githubIssueLabel: source-openfda
   icon: icon.svg
