@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6ee3d92d-b081-4024-9214-2987ae114c17
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-zoho-invoice
   githubIssueLabel: source-zoho-invoice
   icon: icon.svg
