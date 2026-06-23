@@ -42,17 +42,14 @@ data:
         upgradeDeadline: "2023-11-30"
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   externalDocumentationUrls:
-    - title: Versioning docs
+    - title: API versioning and deprecation policy
       url: https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy
-      type: api_reference
+      type: api_deprecations
     - title: Changelog
       url: https://developers.klaviyo.com/en/docs/changelog_
       type: api_release_history
     - title: Developer Group
       url: https://community.klaviyo.com/groups/developer-group-64
-    - title: Changelog
-      url: https://developers.klaviyo.com/en/docs/changelog
-      type: api_release_history
   tags:
     - cdk:low-code
     - language:manifest-only
