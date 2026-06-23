@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 39fd5da7-5713-446b-a9c6-c695f0352f20
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-pipeliner
   githubIssueLabel: source-pipeliner
   icon: icon.svg
