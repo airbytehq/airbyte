@@ -33,6 +33,7 @@ base_breakdowns["user_segment_key"] = "user_segment_key"
 
 # Meta deprecated breakdowns=dma on June 22, 2026, replacing it with comscore_market.
 # Remove dma so users cannot configure Custom Insights with the broken breakdown.
+DEPRECATED_BREAKDOWNS = {"dma": "comscore_market"}
 base_breakdowns.pop("dma", None)
 ValidBreakdowns = Enum("ValidBreakdowns", base_breakdowns)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
@@ -128,6 +129,17 @@ class InsightConfig(BaseModel):
         description="A list of chosen breakdowns for breakdowns",
         default=[],
     )
+
+    @validator("breakdowns", pre=True)
+    def reject_deprecated_breakdowns(cls, v):
+        """Reject deprecated breakdowns with a clear message before enum validation."""
+        if v:
+            for item in v:
+                name = item if isinstance(item, str) else getattr(item, "value", str(item))
+                if name in DEPRECATED_BREAKDOWNS:
+                    replacement = DEPRECATED_BREAKDOWNS[name]
+                    raise ValueError(f"Breakdown `{name}` is deprecated by Meta. Use `{replacement}` instead.")
+        return v
 
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",

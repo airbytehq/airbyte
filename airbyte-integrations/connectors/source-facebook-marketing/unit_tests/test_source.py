@@ -11,6 +11,8 @@ from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig, TimeIncrementPeriod
 
+from pydantic.v1 import ValidationError
+
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -183,6 +185,18 @@ class TestSourceFacebookMarketing:
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
+
+    def test_get_custom_insights_streams_rejects_deprecated_breakdown(self, config):
+        config["custom_insights"] = [
+            {
+                "name": "test_dma",
+                "fields": ["account_id"],
+                "breakdowns": ["dma"],
+                "action_breakdowns": ["action_type"],
+            },
+        ]
+        with pytest.raises(ValidationError, match="deprecated by Meta"):
+            ConnectorConfig.parse_obj(config)
 
     def test_read_missing_stream(self, config, api, logger_mock, fb_marketing):
         catalog = ConfiguredAirbyteCatalog(

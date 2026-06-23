@@ -56,6 +56,7 @@ from source_facebook_marketing.streams import (
     Videos,
 )
 
+from .spec import DEPRECATED_BREAKDOWNS
 from .utils import validate_end_date, validate_start_date
 
 
@@ -336,6 +337,13 @@ class SourceFacebookMarketing(AbstractSource):
                 )
                 raise AirbyteTracedException(
                     message=message,
+                    failure_type=FailureType.config_error,
+                )
+            deprecated_in_use = set(insight.breakdowns or []) & DEPRECATED_BREAKDOWNS.keys()
+            if deprecated_in_use:
+                replacements = ", ".join(f"`{b}` → `{DEPRECATED_BREAKDOWNS[b]}`" for b in sorted(deprecated_in_use))
+                raise AirbyteTracedException(
+                    message=f"Custom Insights stream `{insight.name}` uses deprecated breakdown(s): {replacements}. Update the connector configuration to use the replacement breakdown(s).",
                     failure_type=FailureType.config_error,
                 )
             stream = AdsInsights(
