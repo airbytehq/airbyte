@@ -2,6 +2,13 @@ version: 6.5.0
 
 type: DeclarativeSource
 
+# CheckDynamicStream is used instead of CheckStream because the Orders API v0
+# is "Sellers only" — Vendor accounts get HTTP 403 on the Orders endpoint.
+# CheckDynamicStream picks the first available stream from the catalog, which
+# is Orders for Seller accounts or VendorOrders for Vendor accounts (controlled
+# by ConditionalStreams ordering below). If stream ordering in ConditionalStreams
+# changes, ensure the first stream for each account type remains a valid,
+# non-report stream suitable for the connectivity check.
 check:
   type: CheckDynamicStream
   stream_count: 1
