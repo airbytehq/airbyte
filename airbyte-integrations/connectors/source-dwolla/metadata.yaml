@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 775602d3-844c-4b5c-9931-3f0a923c12f2
-  dockerImageTag: 0.0.37
+  dockerImageTag: 0.0.38
   dockerRepository: airbyte/source-dwolla
   githubIssueLabel: source-dwolla
   icon: icon.svg
