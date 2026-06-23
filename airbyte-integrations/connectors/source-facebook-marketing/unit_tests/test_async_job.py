@@ -799,9 +799,7 @@ class TestInsightAsyncJob:
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
 
-        with pytest.raises(
-            AirbyteTracedException, match="Facebook Insights API response is not a valid JSON object"
-        ) as exc_info:
+        with pytest.raises(AirbyteTracedException, match="Facebook Insights API response is not a valid JSON object") as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
@@ -830,9 +828,7 @@ class TestInsightAsyncJob:
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
 
-        with pytest.raises(
-            AirbyteTracedException, match="Facebook Insights API response is not a valid JSON object"
-        ) as exc_info:
+        with pytest.raises(AirbyteTracedException, match="Facebook Insights API response is not a valid JSON object") as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
@@ -866,9 +862,7 @@ class TestInsightAsyncJob:
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
 
-        with pytest.raises(
-            AirbyteTracedException, match="Facebook Insights API response is not a valid JSON object"
-        ) as exc_info:
+        with pytest.raises(AirbyteTracedException, match="Facebook Insights API response is not a valid JSON object") as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
