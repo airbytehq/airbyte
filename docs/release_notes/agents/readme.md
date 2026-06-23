@@ -34,6 +34,19 @@ Other
 
 - Upgraded the AI model powering Chats and Automations for improved response quality.
 
+## June 18, 2026
+
+Web app
+
+- Your credentials page now shows a "Direct only" badge on connectors that support direct queries but not Context Store search.
+- The option to convert a chat to an automation is no longer available in the chat interface.
+- The "New workspace" button now appears at the top of the workspace picker for faster access.
+- Fixed an issue where shared workspaces could be hidden from organization members who didn't have a direct workspace grant.
+
+Connectors
+
+- Setting up and using direct-only connectors is now more reliable.
+
 ## June 17, 2026
 
 Other
