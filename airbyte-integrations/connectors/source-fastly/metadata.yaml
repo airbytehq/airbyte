@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d14ff3ed-5049-4dfb-bc28-1d7ccaf67182
-  dockerImageTag: 0.0.36
+  dockerImageTag: 0.0.37
   dockerRepository: airbyte/source-fastly
   githubIssueLabel: source-fastly
   icon: icon.svg
