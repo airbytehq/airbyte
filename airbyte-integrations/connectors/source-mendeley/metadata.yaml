@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9a24ef99-06b5-4e04-9d9e-09e41e5e2a24
-  dockerImageTag: 0.0.38
+  dockerImageTag: 0.0.39
   dockerRepository: airbyte/source-mendeley
   githubIssueLabel: source-mendeley
   icon: icon.svg
