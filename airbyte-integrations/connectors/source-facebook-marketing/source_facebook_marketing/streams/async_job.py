@@ -84,8 +84,7 @@ def _safe_execute_batch(batch: FacebookAdsApiBatch) -> None:
             batch = batch.execute()
     except AttributeError:
         logger.warning(
-            "Transient malformed batch response from Facebook (AttributeError "
-            "during batch.execute); skipping this poll cycle."
+            "Transient malformed batch response from Facebook (AttributeError during batch.execute); skipping this poll cycle."
         )
 
 
