@@ -2,6 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.xero.com
+      - identity.xero.com
   registryOverrides:
     oss:
       enabled: true

@@ -623,13 +623,21 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         consent_url: >-
-          https://login.xero.com/identity/connect/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}&response_type=code
-        scope: >-
-          offline_access accounting.transactions.read accounting.reports.read
-          accounting.budgets.read accounting.reports.tenninetynine.read
-          accounting.journals.read accounting.settings.read
-          accounting.contacts.read accounting.attachments.read assets.read
-          files.read projects.read openid
+          https://login.xero.com/identity/connect/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&response_type=code
+        scopes:
+          - scope: offline_access
+          - scope: accounting.transactions.read
+          - scope: accounting.reports.read
+          - scope: accounting.budgets.read
+          - scope: accounting.reports.tenninetynine.read
+          - scope: accounting.journals.read
+          - scope: accounting.settings.read
+          - scope: accounting.contacts.read
+          - scope: accounting.attachments.read
+          - scope: assets.read
+          - scope: files.read
+          - scope: projects.read
+          - scope: openid
         access_token_url: https://identity.xero.com/connect/token
         access_token_headers:
           Content-Type: application/x-www-form-urlencoded
