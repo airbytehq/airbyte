@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c3c0a577-29d7-4e31-8191-f2a346051c82
-  dockerImageTag: 0.0.12
+  dockerImageTag: 0.0.13
   dockerRepository: airbyte/source-stigg
   githubIssueLabel: source-stigg
   icon: icon.svg
