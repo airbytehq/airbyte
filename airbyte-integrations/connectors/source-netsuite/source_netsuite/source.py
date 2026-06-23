@@ -17,6 +17,20 @@ from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_C
 from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream
 
 
+def _extract_netsuite_error(response: requests.Response) -> str:
+    """Extract a human-readable error from a NetSuite REST API error response."""
+    try:
+        body = response.json()
+        error_details = body.get("o:errorDetails")
+        if isinstance(error_details, list) and error_details:
+            code = error_details[0].get("o:errorCode", "UNKNOWN")
+            detail = error_details[0].get("detail", response.text)
+            return f"{code}: {detail}"
+    except (ValueError, KeyError, AttributeError):
+        pass
+    return response.text or str(response.status_code)
+
+
 class SourceNetsuite(AbstractSource):
     logger: logging.Logger = logging.getLogger("airbyte")
 
@@ -47,30 +61,37 @@ class SourceNetsuite(AbstractSource):
         object_types = config.get("object_types")
         base_url = self.base_url(config)
         session = self.get_session(auth)
-        # if record types are specified make sure they are valid
+
+        # Always verify basic connectivity via the metadata-catalog endpoint first.
+        # This only requires REST Web Services + Token-Based Auth permissions,
+        # not record-level permissions, so it is a more reliable connectivity test.
+        metadata_url = base_url + META_PATH
+        try:
+            response = session.get(url=metadata_url)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_message = _extract_netsuite_error(response)
+            return False, f"Unable to connect to NetSuite REST API at {metadata_url}. Error: {error_message}"
+        except requests.exceptions.ConnectionError as e:
+            return False, f"Unable to reach NetSuite at {base_url}. Please verify the realm (Account ID) is correct. Error: {e}"
+
         if object_types:
-            # ensure there are no duplicate record types as this will break Airbyte
             duplicates = [k for k, v in Counter(object_types).items() if v > 1]
             if duplicates:
                 return False, f'Duplicate record type: {", ".join(duplicates)}'
-            # check connectivity to all provided `object_types`
-            for object in object_types:
+            for object_type in object_types:
                 try:
-                    response = session.get(url=base_url + RECORD_PATH + object.lower(), params={"limit": 1})
+                    response = session.get(url=base_url + RECORD_PATH + object_type.lower(), params={"limit": 1})
                     response.raise_for_status()
-                    return True, None
-                except requests.exceptions.HTTPError as e:
-                    return False, e
-        else:
-            # if `object_types` are not provided, use `Contact` object
-            # there should be at least 1 contact available in every NetSuite account by default.
-            url = base_url + RECORD_PATH + "contact"
-            try:
-                response = session.get(url=url, params={"limit": 1})
-                response.raise_for_status()
-                return True, None
-            except requests.exceptions.HTTPError as e:
-                return False, e
+                except requests.exceptions.HTTPError:
+                    error_message = _extract_netsuite_error(response)
+                    return False, (
+                        f"Failed to read record type '{object_type}'. "
+                        f"Please verify that your role has the required permissions for this record type. "
+                        f"Error: {error_message}"
+                    )
+
+        return True, None
 
     def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
         """
