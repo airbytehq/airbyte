@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f916944f-cf43-421f-9058-dbfeb7baba2f
-  dockerImageTag: 0.0.33
+  dockerImageTag: 0.0.34
   dockerRepository: airbyte/source-opuswatch
   githubIssueLabel: source-opuswatch
   icon: icon.svg
