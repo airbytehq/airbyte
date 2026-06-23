@@ -180,9 +180,18 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 
 ### Stream availability by account type
 
-Not all streams are available for every account type. The connector automatically shows only the streams that are compatible with your configured **Account Type** (Seller or Vendor).
+The connector automatically shows only the streams compatible with your configured **Account Type** (Seller or Vendor). Amazon SP-API treats these as distinct account types — a single set of credentials is associated with either a Seller Central or Vendor Central account.
 
-**Seller accounts** have access to all streams listed above _except_ the following vendor-only streams:
+**Seller accounts** have access to:
+
+- Orders
+- Order Items
+- Financial Events
+- Financial Event Groups
+- All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
+- All Brand Analytics streams
+
+**Vendor accounts** have access to:
 
 - Vendor Orders
 - Vendor Order Status
@@ -191,17 +200,10 @@ Not all streams are available for every account type. The connector automaticall
 - Vendor Forecasting Report (Retail)
 - Vendor Sales Report
 - Vendor Inventory Report
+- All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
+- All Brand Analytics streams
 
-**Vendor accounts** have access to all streams _except_ the following seller-only streams:
-
-- Orders
-- Order Items
-- Financial Events
-- Financial Event Groups
-
-These seller-only streams use the Orders API and Finances API, which are not available to Vendor Central accounts. All report-based streams and vendor-specific streams are available to Vendor accounts.
-
-If you previously had vendor streams configured on a Seller account (or seller streams on a Vendor account), they will be automatically removed from your connection's catalog after upgrading to version 5.7.10 or later. You may see a schema change notification prompting you to accept the updated catalog. After accepting, only streams compatible with your account type will be synced.
+If you previously had streams from the wrong account type configured, they will be automatically removed from your connection's catalog after upgrading to version 5.7.10 or later. You may see a schema change notification prompting you to accept the updated catalog.
 
 For more information about Amazon SP-API roles and permissions, see the [Amazon SP-API Role Mappings documentation](https://developer-docs.amazon.com/sp-api/docs/role-mappings).
 
