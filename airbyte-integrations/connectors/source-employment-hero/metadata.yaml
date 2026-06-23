@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e2db518e-ef68-40bb-a2b6-b9f9aabbadb3
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-employment-hero
   githubIssueLabel: source-employment-hero
   icon: icon.svg
