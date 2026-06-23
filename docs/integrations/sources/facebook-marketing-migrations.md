@@ -6,15 +6,33 @@ Meta deprecated the `dma` (Nielsen DMA) breakdown effective June 22, 2026, repla
 
 ### What changed
 
-1. The built-in `ads_insights_dma` stream has been replaced with `ads_insights_comscore_market`.
-2. The built-in `ads_insights_demographics_dma_region` stream has been replaced with `ads_insights_demographics_comscore_market_region`.
-3. The `dma` breakdown has been removed from the Custom Insights configuration. Users who had Custom Insights streams configured with `breakdowns=dma` must reconfigure them to use `comscore_market` instead.
+Meta transitioned from Nielsen DMA to Comscore Markets for geographic ad-performance data. The following built-in streams have been replaced:
+
+| Removed Stream (v5.x) | Replacement Stream (v6.0.0) | Breakdown |
+| :--------------------- | :-------------------------- | :-------- |
+| `ads_insights_dma` | `ads_insights_comscore_market` | `comscore_market` |
+| `ads_insights_demographics_dma_region` | `ads_insights_demographics_comscore_market_region` | `comscore_market` |
+
+The `dma` breakdown has also been removed from the Custom Insights configuration options.
 
 ### Who is affected?
 
 Any user syncing the `ads_insights_dma` or `ads_insights_demographics_dma_region` streams, or any Custom Insights stream configured with the `dma` breakdown.
 
-### Steps to upgrade
+### Custom Insights streams
+
+If you have any **Custom Insights** streams that use `breakdowns=dma`, you must update them to use `comscore_market` before syncing:
+
+1. Go to **Sources** → select your Facebook Marketing source.
+2. In the **Custom Insights** section, find streams that include `dma` in their breakdowns.
+3. Replace `dma` with `comscore_market` in the breakdown list.
+4. Save and retest the source.
+
+:::note
+After upgrading to v6.0.0, syncs for Custom Insights streams that still reference `dma` will fail with a clear error message: *"Breakdown `dma` is deprecated by Meta. Use `comscore_market` instead."*
+:::
+
+### Steps to upgrade built-in streams
 
 1. Select **Connections** in the main navbar.
    1. Select the connection(s) affected by the update.
@@ -25,10 +43,9 @@ Any user syncing the `ads_insights_dma` or `ads_insights_demographics_dma_region
    Any detected schema changes will be listed for your review. The old DMA streams will be removed and the new Comscore Market streams will be available.
    :::
 3. Enable the new `ads_insights_comscore_market` and/or `ads_insights_demographics_comscore_market_region` streams to replace the removed DMA streams.
-4. If you have Custom Insights streams that used the `dma` breakdown, update them to use `comscore_market` instead.
-5. Select **Save changes** at the bottom of the page.
+4. Select **Save changes** at the bottom of the page.
    1. Ensure the **Clear affected streams** option is checked.
-6. Select **Save connection**.
+5. Select **Save connection**.
    :::note
    This will reset the data in your destination and initiate a fresh sync.
    :::
