@@ -5931,6 +5931,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -7019,6 +7038,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -8157,6 +8195,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -9254,6 +9311,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -10387,6 +10463,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -11484,6 +11579,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -12627,6 +12741,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -13733,6 +13866,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -14821,6 +14973,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -15954,6 +16125,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -17051,6 +17241,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -18175,6 +18384,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -19281,6 +19509,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -20369,6 +20616,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -21502,6 +21768,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -22599,6 +22884,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -23737,6 +24041,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -24834,6 +25157,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -25967,6 +26309,25 @@
               }
             }
           },
+          "video_thruplay_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
           "video_play_actions": {
             "type": ["null", "array"],
             "items": {
@@ -27064,6 +27425,25 @@
             }
           },
           "video_p95_watched_actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "1d_click": { "type": ["null", "number"] },
+                "7d_click": { "type": ["null", "number"] },
+                "28d_click": { "type": ["null", "number"] },
+                "1d_view": { "type": ["null", "number"] },
+                "7d_view": { "type": ["null", "number"] },
+                "28d_view": { "type": ["null", "number"] },
+                "action_destination": { "type": ["null", "string"] },
+                "action_target_id": { "type": ["null", "string"] },
+                "action_type": { "type": ["null", "string"] },
+                "value": { "type": ["null", "number"] },
+                "lead": { "type": ["null", "number"] }
+              }
+            }
+          },
+          "video_thruplay_watched_actions": {
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
