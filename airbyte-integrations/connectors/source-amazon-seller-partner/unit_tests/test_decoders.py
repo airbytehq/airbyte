@@ -6,6 +6,8 @@ from unittest.mock import MagicMock
 import pytest
 from components import GzipXmlDecoder
 
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
 
 VALID_XML_SINGLE_MESSAGE = """<?xml version="1.0" encoding="iso-8859-1"?>
 <AmazonEnvelope>
@@ -57,15 +59,43 @@ def test_gzip_xml_decoder_decode(xml_content, compress, expected_order_ids):
     assert [r.get("AmazonOrderID") for r in results] == expected_order_ids
 
 
-def test_gzip_xml_decoder_raises_on_invalid_xml_oncall_11734():
-    """Verify that malformed XML raises instead of silently dropping data.
-
-    Before the fix, decode() crashed with AttributeError because the except
-    block referenced self.name (does not exist) and used return [] in a
-    generator.  The revised fix re-raises so the CDK does not mark the slice
-    as complete, preventing permanent data loss.
-    """
+def test_gzip_xml_decoder_raises_traced_exception_on_invalid_xml():
+    """Non-empty malformed XML raises AirbyteTracedException with system_error."""
     decoder = GzipXmlDecoder(parameters={})
     response = _make_response(INVALID_XML, compress=True)
-    with pytest.raises(Exception):
+    with pytest.raises(AirbyteTracedException) as exc_info:
         list(decoder.decode(response))
+    assert exc_info.value.failure_type.value == "system_error"
+    assert "not valid XML" in exc_info.value.message
+    assert INVALID_XML[:200] in exc_info.value.internal_message
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        pytest.param("", id="empty_string"),
+        pytest.param("   ", id="whitespace_only"),
+        pytest.param("\n\t\n", id="newlines_and_tabs"),
+    ],
+)
+def test_gzip_xml_decoder_yields_nothing_for_empty_document(content):
+    """Empty or whitespace-only documents yield no records and do not raise."""
+    decoder = GzipXmlDecoder(parameters={})
+    response = _make_response(content, compress=True)
+    results = list(decoder.decode(response))
+    assert results == []
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        pytest.param("", id="empty_uncompressed"),
+        pytest.param("  \n  ", id="whitespace_uncompressed"),
+    ],
+)
+def test_gzip_xml_decoder_yields_nothing_for_empty_uncompressed_document(content):
+    """Empty uncompressed documents (BadGzipFile fallback) yield no records."""
+    decoder = GzipXmlDecoder(parameters={})
+    response = _make_response(content, compress=False)
+    results = list(decoder.decode(response))
+    assert results == []

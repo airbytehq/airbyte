@@ -12,6 +12,7 @@ from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
 from io import StringIO
 from typing import Any, Callable, Dict, Generator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from xml.parsers.expat import ExpatError
 
 import backoff
 import dateparser
@@ -318,11 +319,18 @@ class GzipXmlDecoder(Decoder):
         except gzip.BadGzipFile:
             document = response.content.decode("iso-8859-1")
 
+        if not document.strip():
+            logger.warning("Received empty report document; yielding no records.")
+            return
+
         try:
             parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
-        except Exception as e:
-            logger.warning(f"Unable to parse the report for the stream, error: {str(e)}")
-            raise
+        except ExpatError as e:
+            raise AirbyteTracedException(
+                message="Report document is not valid XML.",
+                internal_message=f"ExpatError: {str(e)}. Document preview: {document[:200]}",
+                failure_type=FailureType.system_error,
+            ) from e
 
         reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
         for report in reports:
