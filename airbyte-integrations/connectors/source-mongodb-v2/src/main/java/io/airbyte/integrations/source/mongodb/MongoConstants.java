@@ -59,6 +59,14 @@ public class MongoConstants {
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
+  public static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String MONGODB_CHANGE_STREAM_UNAUTHORIZED_SINGLE_DB_ERROR_MESSAGE_FORMAT =
+      "MongoDB user lacks the `changeStream` privilege on database `%s`. " +
+          "Grant the built-in `read` role (or a role with `find` + `changeStream` actions on the database resource).";
+  public static final String MONGODB_CHANGE_STREAM_UNAUTHORIZED_MULTI_DB_ERROR_MESSAGE_FORMAT =
+      "MongoDB user lacks the `changeStream` privilege on the configured databases [%s]. " +
+          "Grant the built-in `readAnyDatabase` role (or a role with `find` + `changeStream` actions on the cluster resource).";
+
   private MongoConstants() {}
 
 }

@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,6 +85,15 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        final String message = databaseNames.size() == 1
+            ? String.format(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_SINGLE_DB_ERROR_MESSAGE_FORMAT, databaseNames.getFirst())
+            : String.format(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_MULTI_DB_ERROR_MESSAGE_FORMAT, String.join(", ", databaseNames));
+        LOGGER.error("MongoDB user lacks the changeStream privilege required to open a change stream. Original error: {}", e.getMessage(), e);
+        throw new ConfigErrorException(message, e);
+      }
+      throw e;
     }
   }
 
