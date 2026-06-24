@@ -200,6 +200,7 @@ If you sync the `workflows` stream and upgrade from a version earlier than `5.0.
 
 In the list above, a subset of streams makes one HTTP request per issue. These streams can significantly slow down a sync when you have many issues. If you use one or more of these streams and experience slowness, filter the issue list using the **Projects** configuration field, or remove these streams from the sync.
 
+* Issue changelogs
 * Issue comments
 * Issue properties
 * Issue remote links
@@ -249,7 +250,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.0 | 2026-06-19 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
+| 6.0.0 | 2026-06-24 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
 | 5.1.1 | 2026-06-09 | [79606](https://github.com/airbytehq/airbyte/pull/79606) | Clean up cancelled RC; revert source to previous stable |
 | 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
 | 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
