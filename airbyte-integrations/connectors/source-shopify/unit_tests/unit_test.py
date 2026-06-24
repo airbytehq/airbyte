@@ -75,7 +75,7 @@ def test_get_next_page_token(requests_mock, auth_config):
 )
 def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_config, expected):
     requests_mock.get(
-        "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
+        "https://test-shop.myshopify.com/admin/oauth/access_scopes.json",
         json={"access_scopes": [{"handle": "read_orders"}]},
     )
     basic_config["fetch_transactions_user_id"] = fetch_transactions_user_id

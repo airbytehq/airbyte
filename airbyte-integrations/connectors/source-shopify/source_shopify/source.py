@@ -4,7 +4,9 @@
 
 
 import logging
+import re
 from typing import Any, List, Mapping, Tuple
+from urllib.parse import urlparse
 
 from requests.exceptions import ConnectionError, RequestException, SSLError
 
@@ -137,11 +139,40 @@ class SourceShopify(AbstractSource):
     def continue_sync_on_stream_failure(self) -> bool:
         return True
 
+    # Regex for a valid Shopify subdomain: starts with alphanumeric, then alphanumeric or hyphens.
+    _SHOP_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9\-]*$")
+
     @staticmethod
     def get_shop_name(config) -> str:
-        split_pattern = ".myshopify.com"
-        shop_name = config.get("shop")
-        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
+        shop = config.get("shop", "").strip()
+
+        # Strip scheme prefixes (handles both http:// and https://, case-insensitive)
+        lower_shop = shop.lower()
+        if "://" in lower_shop:
+            parsed = urlparse(shop if lower_shop.startswith(("http://", "https://")) else f"https://{shop}")
+            shop = parsed.hostname or ""
+
+        # Lowercase early so suffix/validation checks are case-insensitive
+        shop = shop.lower()
+
+        # Strip .myshopify.com suffix
+        shop = shop.split(".myshopify.com")[0] if ".myshopify.com" in shop else shop
+
+        # Strip trailing dots or slashes that may remain
+        shop = shop.strip("/").strip(".")
+
+        if not shop or not SourceShopify._SHOP_NAME_PATTERN.match(shop):
+            raise AirbyteTracedException(
+                message="Shop name must be a valid Shopify subdomain containing only lowercase alphanumeric characters and hyphens.",
+                internal_message=(
+                    f"Raw shop value '{config.get('shop')}' normalized to '{shop}', "
+                    "which does not match the required pattern ^[a-z0-9][a-z0-9\\-]*$. "
+                    "Expected the plain subdomain (e.g. 'my-store') or 'my-store.myshopify.com'."
+                ),
+                failure_type=FailureType.config_error,
+            )
+
+        return shop
 
     @staticmethod
     def format_stream_name(name) -> str:

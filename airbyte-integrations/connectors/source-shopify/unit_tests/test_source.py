@@ -49,6 +49,7 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .conftest import records_per_slice
@@ -260,16 +261,43 @@ def test_parse_response_with_bad_json(config, response_with_bad_json) -> None:
 @pytest.mark.parametrize(
     "shop, expected",
     [
-        ("test-store", "test-store"),
-        ("test-store.myshopify.com", "test-store"),
+        pytest.param("test-store", "test-store", id="plain_subdomain"),
+        pytest.param("test-store.myshopify.com", "test-store", id="myshopify_domain"),
+        pytest.param("TEST-STORE", "test-store", id="uppercase_subdomain"),
+        pytest.param("Test-Store.myshopify.com", "test-store", id="mixed_case_myshopify"),
+        pytest.param("https://test-store.myshopify.com", "test-store", id="https_full_url"),
+        pytest.param("http://test-store.myshopify.com", "test-store", id="http_full_url"),
+        pytest.param("https://test-store.myshopify.com/", "test-store", id="https_trailing_slash"),
+        pytest.param("https://test-store.myshopify.com/admin/api/2025-01/shop.json", "test-store", id="https_with_path"),
+        pytest.param("  test-store  ", "test-store", id="whitespace_padded"),
+        pytest.param("my123store", "my123store", id="alphanumeric_only"),
+        pytest.param("HTTPS://TEST-STORE.myshopify.com", "test-store", id="uppercase_scheme"),
     ],
-    ids=["old style", "oauth style"],
 )
 def test_get_shop_name(config, shop, expected) -> None:
     source = SourceShopify()
     config["shop"] = shop
     actual = source.get_shop_name(config)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "shop",
+    [
+        pytest.param("", id="empty_string"),
+        pytest.param("   ", id="whitespace_only"),
+        pytest.param("not a valid shop!", id="special_characters"),
+        pytest.param("shop_with_underscores", id="underscores"),
+        pytest.param("-leading-hyphen", id="leading_hyphen"),
+        pytest.param("shop name with spaces", id="spaces_in_name"),
+    ],
+)
+def test_get_shop_name_invalid(config, shop) -> None:
+    source = SourceShopify()
+    config["shop"] = shop
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        source.get_shop_name(config)
+    assert exc_info.value.failure_type == FailureType.config_error
 
 
 @pytest.mark.parametrize(
