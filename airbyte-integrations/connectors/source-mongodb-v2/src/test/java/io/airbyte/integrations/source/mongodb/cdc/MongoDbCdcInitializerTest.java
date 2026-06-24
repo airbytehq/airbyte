@@ -8,7 +8,9 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CON
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +25,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -41,6 +45,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatus
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -318,6 +323,28 @@ class MongoDbCdcInitializerTest {
     assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
+  }
+
+  @Test
+  void testCreateCdcIteratorsWithUnauthorizedChangeStreamErrorThrowsConfigError() {
+    setupSingleDatabase();
+    final MongoCommandException unauthorizedException = new MongoCommandException(
+        BsonDocument
+            .parse("{\"ok\": 0.0, \"errmsg\": \"not authorized on private_db to execute command\", \"code\": 13, \"codeName\": \"Unauthorized\"}"),
+        new ServerAddress("private-host.mongodb.net", 27017));
+    when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+
+    assertEquals(MongoConstants.CDC_UNAUTHORIZED_ERROR_MESSAGE, thrown.getMessage());
+    assertFalse(thrown.getMessage().contains("private_db"));
+    assertFalse(thrown.getMessage().contains("private-host"));
+    assertFalse(thrown.getMessage().contains("$changeStream"));
+    assertTrue(thrown.getInternalMessage().contains("private_db"));
+    assertSame(unauthorizedException, thrown.getCause());
   }
 
   @Test
