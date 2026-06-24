@@ -7,10 +7,13 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -18,6 +21,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.debezium.connector.mongodb.ResumeTokens;
@@ -26,6 +30,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Test;
@@ -96,6 +103,63 @@ class MongoDbResumeTokenHelperTest {
   void testTimestampExtractionTimestampNotPresent() {
     final JsonNode changeEvent = Jsons.deserialize("{\"source\":{}}");
     assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent));
+  }
+
+  @Test
+  void testChangeStreamUnauthorizedRewrappedAsConfigError() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final BsonDocument response = new BsonDocument();
+    response.put("ok", new BsonDouble(0.0));
+    response.put("errmsg", new BsonString("not authorized on " + DATABASE + " to execute command"));
+    response.put("code", new BsonInt32(13));
+    response.put("codeName", new BsonString("Unauthorized"));
+    final MongoCommandException unauthorized = new MongoCommandException(response, new ServerAddress());
+
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorized);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+    assertTrue(thrown.getMessage().contains("not authorized to open a change stream"),
+        "Expected user-facing change stream privilege guidance but got: " + thrown.getMessage());
+    assertTrue(thrown.getMessage().contains(DATABASE),
+        "Expected message to reference the database name but got: " + thrown.getMessage());
+    assertEquals(unauthorized, thrown.getCause());
+  }
+
+  @Test
+  void testNonUnauthorizedMongoCommandExceptionIsNotRewrapped() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final BsonDocument response = new BsonDocument();
+    response.put("ok", new BsonDouble(0.0));
+    response.put("errmsg", new BsonString("some other failure"));
+    response.put("code", new BsonInt32(11600));
+    response.put("codeName", new BsonString("InterruptedAtShutdown"));
+    final MongoCommandException other = new MongoCommandException(response, new ServerAddress());
+
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(other);
+
+    assertThrows(MongoCommandException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
   }
 
 }
