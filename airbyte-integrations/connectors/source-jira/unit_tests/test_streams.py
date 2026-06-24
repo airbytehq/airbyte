@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+
 import pytest
 import responses
 from conftest import _YAML_FILE_PATH, find_stream, read_full_refresh
@@ -268,18 +270,18 @@ def test_jira_settings_stream(config, jira_settings_response):
 def test_board_issues_stream(config, mock_board_response, board_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json=board_issues_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json={"errorMessages": ["This board has no columns with a mapped status."], "errors": {}},
         status=500,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json={},
     )
 
@@ -418,7 +420,7 @@ def test_board_does_not_support_sprints(config, mock_board_response, sprints_res
 def test_sprint_issues_stream(config, mock_board_response, mock_fields_response, mock_sprints_response, sprints_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
+        f"https://{config['domain']}/rest/software/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json=sprints_issues_response,
     )
 
@@ -854,3 +856,133 @@ def test_skip_slice(
 
     assert len(responses.calls) == expected_calls_number
     assert log_message in caplog.messages
+
+
+@responses.activate
+def test_board_issues_stream_cursor_pagination(config, mock_board_response):
+    """Verify board_issues uses cursor-based pagination via nextPageToken on the /rest/software/1.0/ endpoint."""
+    domain = config["domain"]
+    # First page returns a nextPageToken
+    responses.add(
+        responses.GET,
+        f"https://{domain}/rest/software/1.0/board/1/issue",
+        json={
+            "issues": [
+                {
+                    "id": "10001",
+                    "key": "IT-1",
+                    "fields": {"created": "2021-01-01T00:00:00.000-0000", "updated": "2022-01-01T00:00:00.000-0000"},
+                }
+            ],
+            "nextPageToken": "cursor_abc123",
+            "isLast": False,
+        },
+    )
+    # Second page is the last page
+    responses.add(
+        responses.GET,
+        f"https://{domain}/rest/software/1.0/board/1/issue",
+        json={
+            "issues": [
+                {
+                    "id": "10002",
+                    "key": "IT-2",
+                    "fields": {"created": "2021-02-01T00:00:00.000-0000", "updated": "2022-02-01T00:00:00.000-0000"},
+                }
+            ],
+            "isLast": True,
+        },
+    )
+    # Board 2 and 3 return empty
+    responses.add(
+        responses.GET,
+        f"https://{domain}/rest/software/1.0/board/2/issue",
+        json={"issues": [], "isLast": True},
+    )
+    responses.add(
+        responses.GET,
+        f"https://{domain}/rest/software/1.0/board/3/issue",
+        json={"issues": [], "isLast": True},
+    )
+
+    stream = find_stream("board_issues", config)
+    records = list(read_full_refresh(stream))
+
+    assert len(records) == 2
+    # Verify the second request used nextPageToken
+    second_call_url = responses.calls[2].request.url
+    assert "nextPageToken=cursor_abc123" in second_call_url
+
+
+@responses.activate
+def test_sprint_issues_stream_cursor_pagination(config, mock_board_response, mock_fields_response, mock_sprints_response):
+    """Verify sprint_issues uses cursor-based pagination via nextPageToken on the /rest/software/1.0/ endpoint."""
+    domain = config["domain"]
+
+    def _page1(_request):
+        return (
+            200,
+            {},
+            json.dumps(
+                {
+                    "issues": [
+                        {
+                            "id": "10001",
+                            "key": "IT-1",
+                            "fields": {
+                                "customfield_10016": None,
+                                "created": "2021-01-01T00:00:00.000-0000",
+                                "updated": "2022-01-01T00:00:00.000-0000",
+                                "status": {"name": "To Do", "id": "10000"},
+                            },
+                        }
+                    ],
+                    "nextPageToken": "sprint_cursor_xyz",
+                    "isLast": False,
+                }
+            ),
+        )
+
+    def _page2(_request):
+        return (
+            200,
+            {},
+            json.dumps(
+                {
+                    "issues": [
+                        {
+                            "id": "10002",
+                            "key": "IT-2",
+                            "fields": {
+                                "customfield_10016": 5,
+                                "created": "2021-02-01T00:00:00.000-0000",
+                                "updated": "2022-02-01T00:00:00.000-0000",
+                                "status": {"name": "Done", "id": "10001"},
+                            },
+                        }
+                    ],
+                    "isLast": True,
+                }
+            ),
+        )
+
+    # Each board (3 boards) yields sprint 2, so the endpoint is called 3 times.
+    # Each call paginates: page1 (with nextPageToken) → page2 (isLast=True).
+    pages = [_page1, _page2] * 3
+    responses.add_callback(
+        responses.GET,
+        f"https://{domain}/rest/software/1.0/sprint/2/issue",
+        callback=lambda req: pages.pop(0)(req),
+        content_type="application/json",
+    )
+
+    output = read(
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
+        config,
+        CatalogBuilder().with_stream("sprint_issues", SyncMode.full_refresh).build(),
+    )
+
+    assert len(output.records) == 6
+    # Verify at least one request used nextPageToken
+    sprint_issue_calls = [c for c in responses.calls if "/rest/software/1.0/sprint/" in c.request.url]
+    assert any("nextPageToken=sprint_cursor_xyz" in c.request.url for c in sprint_issue_calls)

@@ -41,6 +41,10 @@ definitions:
     $ref: "#/definitions/requester"
     url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['domain'] }}/rest/agile/1.0/{% endif %}"
 
+  requester_software_v1:
+    $ref: "#/definitions/requester"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/software/1.0/{% else %}https://{{ config['domain'] }}/rest/software/1.0/{% endif %}"
+
   # Selector
 
   selector:
@@ -130,6 +134,11 @@ definitions:
     requester:
       $ref: "#/definitions/retriever_v1/requester"
       use_cache: true
+
+  retriever_software_v1:
+    $ref: "#/definitions/retriever"
+    requester: "#/definitions/requester_software_v1"
+    paginator: "#/definitions/jql_paginator"
 
   # Service Streams
 
@@ -12153,13 +12162,13 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
 
-  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
+  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-software-1-0-board-boardid-issue-get
   board_issues_stream:
     $ref: "#/definitions/incremental_stream"
     name: board_issues
     primary_key: "id"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/retriever_software_v1"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -12168,7 +12177,7 @@ definitions:
           parent_key: "id"
           partition_field: "board_id"
       requester:
-        $ref: "#/definitions/requester_v1"
+        $ref: "#/definitions/requester_software_v1"
         request_parameters:
           fields: "['key', 'created', 'updated']"
           jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"
@@ -14066,13 +14075,13 @@ definitions:
         record_filter:
           condition: "{{ record.name in ['Story Points', 'Story point estimate'] }}"
 
-  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get
+  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-software-1-0-sprint-sprintid-issue-get
   sprint_issues_stream:
     $ref: "#/definitions/incremental_stream"
     name: sprint_issues
     primary_key: "id"
     retriever:
-      $ref: "#/definitions/retriever_v1"
+      $ref: "#/definitions/retriever_software_v1"
       partition_router:
         type: CustomPartitionRouter
         class_name: "source_declarative_manifest.components.SprintIssuesSubstreamPartitionRouter"
@@ -14086,7 +14095,7 @@ definitions:
           parent_key: "id"
           partition_field: "sprint_id"
       requester:
-        $ref: "#/definitions/retriever_v1/requester"
+        $ref: "#/definitions/requester_software_v1"
         request_parameters:
           fields: "{{ stream_slice._partition.extra_fields['fields'] }}"
           jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"

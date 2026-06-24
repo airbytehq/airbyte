@@ -20,6 +20,7 @@ class JiraRequestBuilder:
 
     API_V3_BASE = "https://{domain}/rest/api/3"
     AGILE_V1_BASE = "https://{domain}/rest/agile/1.0"
+    SOFTWARE_V1_BASE = "https://{domain}/rest/software/1.0"
 
     @classmethod
     def application_roles_endpoint(cls, domain: str) -> "JiraRequestBuilder":
@@ -263,13 +264,13 @@ class JiraRequestBuilder:
 
     @classmethod
     def sprint_issues_endpoint(cls, domain: str, sprint_id: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /sprint/{sprintId}/issue endpoint (Agile API)."""
-        return cls(domain, f"sprint/{sprint_id}/issue", api_version="agile")
+        """Create a request builder for the /sprint/{sprintId}/issue endpoint (Software API)."""
+        return cls(domain, f"sprint/{sprint_id}/issue", api_version="software")
 
     @classmethod
     def board_issues_endpoint(cls, domain: str, board_id: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /board/{boardId}/issue endpoint (Agile API)."""
-        return cls(domain, f"board/{board_id}/issue", api_version="agile")
+        """Create a request builder for the /board/{boardId}/issue endpoint (Software API)."""
+        return cls(domain, f"board/{board_id}/issue", api_version="software")
 
     @classmethod
     def time_tracking_endpoint(cls, domain: str) -> "JiraRequestBuilder":
@@ -365,6 +366,8 @@ class JiraRequestBuilder:
         """
         if self._api_version == "agile":
             base_url = self.AGILE_V1_BASE.format(domain=self._domain)
+        elif self._api_version == "software":
+            base_url = self.SOFTWARE_V1_BASE.format(domain=self._domain)
         else:
             base_url = self.API_V3_BASE.format(domain=self._domain)
 
