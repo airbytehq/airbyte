@@ -275,7 +275,13 @@ class BigqueryDirectLoadNativeTableOperations(
             columnNameMapping,
             replace = true,
         )
-        databaseHandler.execute(insertToTempTable)
+        if (columnsToRetain.isNotEmpty() || columnsToChange.isNotEmpty()) {
+            databaseHandler.execute(insertToTempTable)
+        } else {
+            logger.info {
+                "Stream ${stream.mappedDescriptor.toPrettyString()} has no columns to copy from the original table; skipping INSERT."
+            }
+        }
         sqlOperations.overwriteTable(tempTableName, tableName)
     }
 
