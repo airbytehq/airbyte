@@ -307,6 +307,37 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testIsUnauthorizedCommandExceptionDetectsErrorCode13() {
+    final MongoCommandException unauthorized = mock(MongoCommandException.class);
+    when(unauthorized.getErrorCode()).thenReturn(MongoConstants.UNAUTHORIZED_ERROR_CODE);
+
+    assertTrue(MongoUtil.isUnauthorizedCommandException(unauthorized));
+  }
+
+  @Test
+  void testIsUnauthorizedCommandExceptionDetectsWrappedCause() {
+    final MongoCommandException unauthorized = mock(MongoCommandException.class);
+    when(unauthorized.getErrorCode()).thenReturn(MongoConstants.UNAUTHORIZED_ERROR_CODE);
+    final RuntimeException wrapper = new RuntimeException("wrapped", unauthorized);
+
+    assertTrue(MongoUtil.isUnauthorizedCommandException(wrapper));
+  }
+
+  @Test
+  void testIsUnauthorizedCommandExceptionIgnoresOtherErrorCodes() {
+    final MongoCommandException other = mock(MongoCommandException.class);
+    when(other.getErrorCode()).thenReturn(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE);
+
+    assertFalse(MongoUtil.isUnauthorizedCommandException(other));
+  }
+
+  @Test
+  void testIsUnauthorizedCommandExceptionHandlesNullAndUnrelatedExceptions() {
+    assertFalse(MongoUtil.isUnauthorizedCommandException(null));
+    assertFalse(MongoUtil.isUnauthorizedCommandException(new RuntimeException("nope")));
+  }
+
+  @Test
   void testGetDebeziumEventQueueSize() {
     final int queueSize = 5000;
     final MongoDbSourceConfig validQueueSizeConfiguration = new MongoDbSourceConfig(

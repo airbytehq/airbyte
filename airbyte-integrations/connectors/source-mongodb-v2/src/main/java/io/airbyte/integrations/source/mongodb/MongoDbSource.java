@@ -185,8 +185,9 @@ public class MongoDbSource extends BaseConnector implements Source {
         }
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
-        // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
-        return wrapIteratorWithBsonErrorHandling(baseIterator);
+        // Wrap the iterator to catch BSONObjectTooLarge and Unauthorized errors and provide helpful error
+        // messages.
+        return wrapIteratorWithErrorHandling(baseIterator, sourceConfig.getDatabaseNames().size());
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
@@ -198,14 +199,17 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
-   * actionable error messages to users.
+   * Wraps an iterator to catch BSONObjectTooLarge and Unauthorized errors during CDC operations and
+   * provide helpful, actionable error messages to users.
    *
    * @param iterator The base iterator to wrap.
-   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   * @param databaseCount The number of configured databases, used to choose between the
+   *        single-database and cluster-wide unauthorized error messages.
+   * @return A wrapped iterator that catches BSONObjectTooLarge and Unauthorized errors.
    */
-  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
-                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithErrorHandling(
+                                                                              final AutoCloseableIterator<AirbyteMessage> iterator,
+                                                                              final int databaseCount) {
     return new AutoCloseableIterator<>() {
 
       @Override
@@ -213,7 +217,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.hasNext();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialError(e);
         }
       }
 
@@ -222,7 +226,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.next();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialError(e);
         }
       }
 
@@ -231,10 +235,17 @@ public class MongoDbSource extends BaseConnector implements Source {
         iterator.close();
       }
 
-      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+      private RuntimeException handlePotentialError(final Exception e) {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (MongoUtil.isUnauthorizedCommandException(e)) {
+          LOGGER.error("Unauthorized error detected during sync. Original error: {}", e.getMessage(), e);
+          final String message = databaseCount == 1
+              ? MongoConstants.UNAUTHORIZED_DATABASE_ERROR_MESSAGE
+              : MongoConstants.UNAUTHORIZED_CLUSTER_ERROR_MESSAGE;
+          throw new ConfigErrorException(message, e);
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
