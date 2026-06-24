@@ -214,8 +214,8 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
 @pytest.mark.parametrize(
     "start_date_provided,stream_name,expected_start_date",
     [
-        (True, "Account", "2010-01-18T21:18:20Z"),
-        (True, "ActiveFeatureLicenseMetric", "2010-01-18T21:18:20Z"),
+        pytest.param(True, "Account", "2010-01-18T21:18:20Z", id="user_provided_account"),
+        pytest.param(True, "ActiveFeatureLicenseMetric", "2010-01-18T21:18:20Z", id="user_provided_incremental"),
     ],
 )
 def test_stream_start_date(
@@ -231,7 +231,33 @@ def test_stream_start_date(
         assert stream.start_date == expected_start_date
     else:
         stream = generate_stream(stream_name, stream_config_without_start_date, stream_api)
-        assert datetime.strptime(stream.start_date, "%Y-%m-%dT%H:%M:%SZ").year == datetime.now().year - 2
+        assert stream.start_date == SourceSalesforce.DEFAULT_START_DATE
+
+
+@pytest.mark.parametrize(
+    "frozen_now",
+    [
+        pytest.param("2025-01-15T00:00:00Z", id="jan_2025"),
+        pytest.param("2026-06-10T12:00:00Z", id="jun_2026"),
+        pytest.param("2030-12-31T23:59:59Z", id="dec_2030"),
+    ],
+)
+def test_default_start_date_is_fixed_not_sliding(frozen_now, stream_api):
+    """The default start_date must be a fixed constant, not relative to `now`."""
+    with freezegun.freeze_time(frozen_now):
+        config = {
+            "client_id": "fake_client_id",
+            "client_secret": "fake_client_secret",
+            "refresh_token": "fake_refresh_token",
+            "is_sandbox": False,
+            "wait_timeout": 15,
+        }
+        assert "start_date" not in config
+        source = SourceSalesforce(catalog=None, config=config, state=None)
+        source._get_sf_object = Mock(return_value=stream_api)
+        stream_api.get_validated_streams = Mock(return_value={})
+        source.streams(config)
+        assert config["start_date"] == "2006-01-01T00:00:00Z"
 
 
 def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):
