@@ -200,7 +200,30 @@ class SnowflakeAirbyteClient(
         if (snowflakeConfiguration.legacyRawTablesOnly) {
             return
         }
+        ensureMetaColumnsExist(tableName)
         super.ensureSchemaMatches(stream, tableName, columnNameMapping)
+    }
+
+    /**
+     * Pre-4.0.0 tables may be missing _AIRBYTE_META and _AIRBYTE_GENERATION_ID columns.
+     * Since discoverSchema/computeSchema intentionally exclude meta columns from the
+     * schema evolution changeset, we must detect and add them separately.
+     */
+    internal fun ensureMetaColumnsExist(tableName: TableName) {
+        val existingColumns = describeTable(tableName)
+        val existingColumnNamesUpper = existingColumns.keys.map { it.uppercase() }.toSet()
+        val missingMetaColumns =
+            columnManager.getMetaColumns().filter { (name, _) ->
+                !existingColumnNamesUpper.contains(name.uppercase())
+            }
+        if (missingMetaColumns.isNotEmpty()) {
+            log.info {
+                "Adding missing meta columns to ${tableName.toPrettyString()}: ${missingMetaColumns.keys}"
+            }
+            sqlGenerator
+                .addMetaColumnsIfNotExist(tableName, missingMetaColumns)
+                .forEach { execute(it) }
+        }
     }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {

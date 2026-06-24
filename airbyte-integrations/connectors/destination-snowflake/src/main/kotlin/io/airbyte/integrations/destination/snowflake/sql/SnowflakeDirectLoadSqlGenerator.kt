@@ -393,6 +393,16 @@ class SnowflakeDirectLoadSqlGenerator(
     ): String =
         """DESCRIBE TABLE ${fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
 
+    fun addMetaColumnsIfNotExist(
+        tableName: TableName,
+        columns: Map<String, ColumnType>,
+    ): List<String> {
+        val prettyTableName = fullyQualifiedName(tableName)
+        return columns.map { (name, columnType) ->
+            "ALTER TABLE $prettyTableName ADD COLUMN IF NOT EXISTS ${name.quote()} ${columnType.type};".andLog()
+        }
+    }
+
     fun alterTable(
         tableName: TableName,
         addedColumns: Map<String, ColumnType>,
