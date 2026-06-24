@@ -444,6 +444,46 @@ public class MongoUtilTest {
             .isEqualTo(100_003);
   }
 
+  @Test
+  void testIsUnauthorizedExceptionDetectsErrorCode13() {
+    final BsonDocument response = BsonDocument.parse(
+        "{\"ok\": 0, \"code\": 13, \"errmsg\": \"not authorized on grid-ai to execute command\", \"codeName\": \"Unauthorized\"}");
+    final MongoCommandException unauthorized = new MongoCommandException(response, new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(unauthorized));
+    assertTrue(MongoUtil.findUnauthorizedException(unauthorized).isPresent());
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException("wrap", unauthorized)));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionIgnoresOtherErrorCodes() {
+    final BsonDocument response = BsonDocument.parse(
+        "{\"ok\": 0, \"code\": 10334, \"errmsg\": \"BSONObj size exceeded\", \"codeName\": \"BSONObjectTooLarge\"}");
+    final MongoCommandException tooLarge = new MongoCommandException(response, new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedException(tooLarge));
+    assertFalse(MongoUtil.isUnauthorizedException(new RuntimeException("plain runtime")));
+    assertFalse(MongoUtil.isUnauthorizedException(null));
+  }
+
+  @Test
+  void testBuildChangeStreamUnauthorizedMessageSingleDatabase() {
+    final String message = MongoUtil.buildChangeStreamUnauthorizedMessage(List.of("grid-ai"));
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream on database \"grid-ai\". "
+            + "Grant a role with the `find` and `changeStream` privileges (the built-in `readAnyDatabase` role is sufficient).",
+        message);
+  }
+
+  @Test
+  void testBuildChangeStreamUnauthorizedMessageMultipleDatabases() {
+    final String message = MongoUtil.buildChangeStreamUnauthorizedMessage(List.of("grid-ai", "events"));
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream on databases \"grid-ai\", \"events\". "
+            + "Grant a role with the `find` and `changeStream` privileges (the built-in `readAnyDatabase` role is sufficient).",
+        message);
+  }
+
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
                                                 final boolean isCatalogSchemaEnforcing,
                                                 final boolean isStateSchemaEnforced) {

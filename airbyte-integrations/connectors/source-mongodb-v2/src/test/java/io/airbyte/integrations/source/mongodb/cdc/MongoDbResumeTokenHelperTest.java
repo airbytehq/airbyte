@@ -11,6 +11,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -18,6 +20,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.debezium.connector.mongodb.ResumeTokens;
@@ -59,6 +62,65 @@ class MongoDbResumeTokenHelperTest {
     final BsonDocument actualResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of()));
     assertEquals(resumeTokenDocument, actualResumeToken);
+  }
+
+  @Test
+  void testGetMostRecentResumeTokenTranslatesUnauthorizedExceptionIntoConfigError() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final BsonDocument response = BsonDocument.parse(
+        "{\"ok\": 0, \"code\": 13, \"errmsg\": \"not authorized on test-database to execute command { aggregate: 1, pipeline: [...] }\", "
+            + "\"codeName\": \"Unauthorized\"}");
+    final MongoCommandException unauthorized = new MongoCommandException(response, new ServerAddress());
+
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoClient.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorized);
+
+    final ConfigErrorException thrown = assertThrows(
+        ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream on database \"test-database\". "
+            + "Grant a role with the `find` and `changeStream` privileges (the built-in `readAnyDatabase` role is sufficient).",
+        thrown.getMessage());
+    // The internal_message preserves the raw driver response for developer debugging.
+    assertEquals(unauthorized.getMessage(), thrown.getInternalMessage());
+    // The original MongoCommandException is preserved as the cause for stack trace continuity.
+    assertEquals(unauthorized, thrown.getCause());
+  }
+
+  @Test
+  void testGetMostRecentResumeTokenRethrowsNonUnauthorizedExceptions() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final RuntimeException unrelated = new RuntimeException("totally unrelated failure");
+
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoClient.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(unrelated);
+
+    final RuntimeException thrown = assertThrows(
+        RuntimeException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+    assertEquals(unrelated, thrown);
   }
 
   @Test

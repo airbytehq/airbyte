@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.client.ChangeStreamIterable;
+import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
@@ -29,6 +32,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.bson.BsonDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +106,18 @@ public class MongoDbSource extends BaseConnector implements Source {
           return new AirbyteConnectionStatus()
               .withMessage("Target MongoDB instance is not a replica set cluster.")
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+
+        /*
+         * Probe the {@code changeStream} privilege on the configured databases. The authorized collections
+         * check above only requires the {@code listCollections} privilege, which means a misconfigured role
+         * can pass CHECK and only fail later on the first incremental sync. We open (and immediately close)
+         * a change stream cursor so that a missing privilege surfaces as a clear configuration failure at
+         * "Test connection" time.
+         */
+        final Optional<AirbyteConnectionStatus> changeStreamProbeFailure = probeChangeStreamPrivilege(mongoClient, databaseNames);
+        if (changeStreamProbeFailure.isPresent()) {
+          return changeStreamProbeFailure.get();
         }
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
@@ -193,8 +209,48 @@ public class MongoDbSource extends BaseConnector implements Source {
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to perform sync read operation.", e);
+      if (MongoUtil.isUnauthorizedException(e)) {
+        throw new ConfigErrorException(
+            MongoUtil.buildChangeStreamUnauthorizedMessage(sourceConfig.getDatabaseNames()),
+            e,
+            MongoUtil.findUnauthorizedException(e).map(Throwable::getMessage).orElse(""));
+      }
       throw e;
     }
+  }
+
+  /**
+   * Opens (and immediately closes) a change stream cursor against each configured database to verify
+   * that the configured MongoDB user has the {@code find} and {@code changeStream} privileges
+   * required for incremental / CDC syncs. If any database is missing the privilege, returns a
+   * {@code FAILED} status with the same actionable message that {@link MongoDbSource#read} surfaces
+   * at sync time, so users see the misconfiguration at "Test connection" time instead of on the first
+   * sync.
+   *
+   * <p>
+   * Any other exception (including {@link MongoCommandException}s with a different error code) is
+   * rethrown so that the existing error-handling fallthrough in {@link #check} continues to apply.
+   */
+  private Optional<AirbyteConnectionStatus> probeChangeStreamPrivilege(final MongoClient mongoClient,
+                                                                       final List<String> databaseNames) {
+    for (final String databaseName : databaseNames) {
+      final ChangeStreamIterable<BsonDocument> probeStream = mongoClient.getDatabase(databaseName).watch(BsonDocument.class);
+      try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor = probeStream.cursor()) {
+        cursor.tryNext();
+      } catch (final RuntimeException e) {
+        if (MongoUtil.isUnauthorizedException(e)) {
+          final String message = MongoUtil.buildChangeStreamUnauthorizedMessage(List.of(databaseName));
+          LOGGER.error("MongoDB user is not authorized to open a change stream on database {}. "
+              + "Underlying server response: {}", databaseName,
+              MongoUtil.findUnauthorizedException(e).map(Throwable::getMessage).orElse(e.getMessage()));
+          return Optional.of(new AirbyteConnectionStatus()
+              .withMessage(message)
+              .withStatus(AirbyteConnectionStatus.Status.FAILED));
+        }
+        throw e;
+      }
+    }
+    return Optional.empty();
   }
 
   /**
