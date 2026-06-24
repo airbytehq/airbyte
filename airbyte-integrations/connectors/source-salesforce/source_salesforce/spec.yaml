@@ -5,8 +5,6 @@ connectionSpecification:
   type: object
   required:
     - client_id
-    - client_secret
-    - refresh_token
   additionalProperties: true
   properties:
     is_sandbox:
@@ -18,18 +16,32 @@ connectionSpecification:
       default: false
       order: 1
     auth_type:
+      title: Authentication Type
+      description: >-
+        The authentication method to use. <b>Client (OAuth)</b> uses a refresh token
+        (the default; obtained via the "Authenticate" button on Airbyte Cloud).
+        <b>JWT</b> uses the Salesforce <a
+        href="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5">OAuth
+        2.0 JWT Bearer Flow</a> — sign a token with your connected app's private key,
+        no refresh token required. Fill in the fields that match the selected type.
       type: string
-      const: Client
+      enum:
+        - Client
+        - JWT
+      default: Client
+      order: 0
     client_id:
       title: Client ID
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+        (the connected app's Consumer Key). Required for both authentication types.
       type: string
       order: 2
     client_secret:
       title: Client Secret
       description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>.
+        Required for <b>Client (OAuth)</b> authentication.
       type: string
       airbyte_secret: true
       order: 3
@@ -38,9 +50,27 @@ connectionSpecification:
       description: >-
         Enter your application's <a
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
+        Required for <b>Client (OAuth)</b> authentication.
       type: string
       airbyte_secret: true
       order: 4
+    username:
+      title: Username
+      description: >-
+        The Salesforce username (the <code>sub</code> claim) the JWT assertion is issued for.
+        This user must be pre-authorized for the connected app. Required for <b>JWT</b> authentication.
+      type: string
+      order: 5
+    private_key:
+      title: Private Key
+      description: >-
+        The RSA private key (PEM format) whose matching certificate is uploaded to the connected
+        app's "Use digital signatures" setting. Used to sign the JWT assertion. Required for
+        <b>JWT</b> authentication.
+      type: string
+      airbyte_secret: true
+      multiline: true
+      order: 6
     start_date:
       title: Start Date
       description: >-
@@ -53,19 +83,19 @@ connectionSpecification:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
       format: date-time
-      order: 5
+      order: 7
     force_use_bulk_api:
       title: Force to use BULK API
       type: boolean
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
-      order: 6
+      order: 8
     stream_slice_step:
       title: Stream Slice Step for Incremental sync
       type: string
       description: The size of the time window (ISO8601 duration) to slice requests.
       default: P30D
-      order: 7
+      order: 9
       examples:
         - PT12H
         - P7D
@@ -83,14 +113,14 @@ connectionSpecification:
         Increase this value if you observe missing records in your destination.
         See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
-      order: 8
+      order: 10
       examples:
         - PT10M
         - PT30M
         - PT1H
     streams_criteria:
       type: array
-      order: 9
+      order: 11
       items:
         type: object
         required:
