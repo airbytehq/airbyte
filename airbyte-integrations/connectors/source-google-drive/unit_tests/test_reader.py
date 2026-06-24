@@ -722,6 +722,137 @@ def flatten_list(list_of_lists):
             ],
             id="Other google file types as is",
         ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
+                            {
+                                "id": "xyz",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-06-01T00:00:00.000Z",
+                                "createdTime": "2021-06-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/xyz/view?usp=drivesdk",
+                            },
+                        ]
+                    }
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv",
+                    id="xyz",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 6, 1),
+                    created_at=datetime.datetime(2021, 6, 1),
+                    view_link="https://docs.google.com/file/d/xyz/view?usp=drivesdk",
+                ),
+            ],
+            id="Duplicate URI keeps most recently modified file",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "newer_id",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-06-01T00:00:00.000Z",
+                                "createdTime": "2021-06-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/newer_id/view?usp=drivesdk",
+                            },
+                            {
+                                "id": "older_id",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/older_id/view?usp=drivesdk",
+                            },
+                        ]
+                    }
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv",
+                    id="newer_id",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 6, 1),
+                    created_at=datetime.datetime(2021, 6, 1),
+                    view_link="https://docs.google.com/file/d/newer_id/view?usp=drivesdk",
+                ),
+            ],
+            id="Duplicate URI keeps newer file even when it appears first",
+        ),
+        pytest.param(
+            "**/*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "file_a",
+                                "mimeType": "text/csv",
+                                "name": "report.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/file_a/view?usp=drivesdk",
+                            },
+                            {
+                                "id": "file_b",
+                                "mimeType": "text/csv",
+                                "name": "report.csv",
+                                "modifiedTime": "2021-03-01T00:00:00.000Z",
+                                "createdTime": "2021-03-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/file_b/view?usp=drivesdk",
+                            },
+                        ]
+                    },
+                ],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="subfolder/report.csv",
+                    id="file_b",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 3, 1),
+                    created_at=datetime.datetime(2021, 3, 1),
+                    view_link="https://docs.google.com/file/d/file_b/view?usp=drivesdk",
+                ),
+            ],
+            id="Duplicate URI in subfolder keeps most recently modified",
+        ),
     ],
 )
 @patch("source_google_drive.stream_reader.service_account")

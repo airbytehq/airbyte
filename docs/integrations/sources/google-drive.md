@@ -326,6 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.22 | 2026-06-12 | [79696](https://github.com/airbytehq/airbyte/pull/79696) | Deduplicate files by URI to prevent 'No such file or directory' errors in file transfer mode when multiple files share the same name |
 | 0.5.21 | 2026-06-16 | [79912](https://github.com/airbytehq/airbyte/pull/79912) | Update dependencies |
 | 0.5.20 | 2026-06-09 | [79341](https://github.com/airbytehq/airbyte/pull/79341) | Update dependencies |
 | 0.5.19 | 2026-06-02 | [78739](https://github.com/airbytehq/airbyte/pull/78739) | Update dependencies |

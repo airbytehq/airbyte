@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Set, Tuple
+from typing import Iterable, List, Optional, OrderedDict, Set, Tuple
 
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
@@ -140,6 +140,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         folder_id_queue = [("", root_folder_id)]
         seen: Set[str] = set()
+        # Track files by URI to deduplicate same-named files (different Drive IDs)
+        # that would otherwise produce identical staging paths in file-transfer mode.
+        unique_files: OrderedDict[str, GoogleDriveRemoteFile] = OrderedDict()
         while len(folder_id_queue) > 0:
             (path, folder_id) = folder_id_queue.pop()
             # fetch all files in this folder (1000 is the max page size)
@@ -189,10 +192,33 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                             view_link=new_file.get("webViewLink"),
                         )
                         if self.file_matches_globs(remote_file, globs):
-                            yield remote_file
+                            existing = unique_files.get(file_name)
+                            if existing is not None:
+                                if remote_file.last_modified > existing.last_modified:
+                                    logger.warning(
+                                        "Duplicate file URI '%s': keeping file id '%s' (modified %s) over '%s' (modified %s)",
+                                        file_name,
+                                        new_file["id"],
+                                        remote_file.last_modified,
+                                        existing.id,
+                                        existing.last_modified,
+                                    )
+                                    unique_files[file_name] = remote_file
+                                else:
+                                    logger.warning(
+                                        "Duplicate file URI '%s': skipping file id '%s' (modified %s), keeping '%s' (modified %s)",
+                                        file_name,
+                                        new_file["id"],
+                                        remote_file.last_modified,
+                                        existing.id,
+                                        existing.last_modified,
+                                    )
+                            else:
+                                unique_files[file_name] = remote_file
                 request = service.files().list_next(request, results)
                 if request is None:
                     break
+        yield from unique_files.values()
 
     def _is_exportable_document(self, mime_type: str):
         """
