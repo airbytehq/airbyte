@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -442,6 +444,44 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testIsMongoCommandUnauthorizedExceptionWithErrorCode13() {
+    final BsonDocument response = new BsonDocument()
+        .append("code", new BsonInt32(MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized on test to execute command"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertTrue(MongoUtil.isMongoCommandUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsMongoCommandUnauthorizedExceptionWithDifferentErrorCode() {
+    final BsonDocument response = new BsonDocument()
+        .append("code", new BsonInt32(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE))
+        .append("codeName", new BsonString("BSONObjectTooLarge"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertFalse(MongoUtil.isMongoCommandUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsMongoCommandUnauthorizedExceptionUnwrapsCause() {
+    final BsonDocument response = new BsonDocument()
+        .append("code", new BsonInt32(MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"));
+    final MongoCommandException cause = new MongoCommandException(response, new ServerAddress());
+    final RuntimeException wrapper = new RuntimeException("wrapped failure", cause);
+
+    assertTrue(MongoUtil.isMongoCommandUnauthorizedException(wrapper));
+  }
+
+  @Test
+  void testIsMongoCommandUnauthorizedExceptionWithNonMongoException() {
+    assertFalse(MongoUtil.isMongoCommandUnauthorizedException(new RuntimeException("boom")));
+    assertFalse(MongoUtil.isMongoCommandUnauthorizedException(new MongoException("boom")));
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
