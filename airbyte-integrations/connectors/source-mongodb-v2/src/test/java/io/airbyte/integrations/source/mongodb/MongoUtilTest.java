@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -304,6 +306,30 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
     assertThrows(MongoSecurityException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+  }
+
+  @Test
+  void testUnauthorizedChangeStreamExceptionDetection() {
+    final MongoCommandException exception = new MongoCommandException(new BsonDocument()
+        .append("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString(
+            "not authorized on grid-ai to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }")),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedChangeStreamException(exception));
+    assertTrue(MongoUtil.isUnauthorizedChangeStreamException(new RuntimeException("wrapper", exception)));
+  }
+
+  @Test
+  void testUnauthorizedChangeStreamExceptionDetectionRequiresChangeStreamContext() {
+    final MongoCommandException exception = new MongoCommandException(new BsonDocument()
+        .append("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized on grid-ai to execute command { find: \"registrations\" }")),
+        new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedChangeStreamException(exception));
   }
 
   @Test
