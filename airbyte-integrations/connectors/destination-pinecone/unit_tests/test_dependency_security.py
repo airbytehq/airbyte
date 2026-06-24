@@ -21,6 +21,4 @@ CDK_MIN_SAFE_VERSION = Version("7.6.4")
 )
 def test_dependency_above_vulnerability_threshold(package: str, min_version: Version) -> None:
     installed = Version(importlib.metadata.version(package))
-    assert installed >= min_version, (
-        f"{package}=={installed} is below the minimum safe version {min_version}"
-    )
+    assert installed >= min_version, f"{package}=={installed} is below the minimum safe version {min_version}"
