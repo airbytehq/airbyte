@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -288,6 +289,22 @@ class MongoDbCdcInitializerTest {
     when(findIterable2.sort(any())).thenReturn(findIterable2);
     when(findIterable2.cursor()).thenReturn(findCursor);
     when(findIterable2.allowDiskUse(anyBoolean())).thenReturn(findIterable2);
+  }
+
+  @Test
+  void testCreateCdcIteratorsWithUnauthorizedChangeStreamSingleDB() {
+    setupSingleDatabase();
+    final MongoCommandException unauthorizedException = mock(MongoCommandException.class);
+    when(unauthorizedException.getErrorCode()).thenReturn(io.airbyte.integrations.source.mongodb.MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, SINGLE_DB_CONFIG));
+    assertEquals("MongoDB user lacks required change stream privileges.",
+        thrown.getMessage());
   }
 
   @Test
