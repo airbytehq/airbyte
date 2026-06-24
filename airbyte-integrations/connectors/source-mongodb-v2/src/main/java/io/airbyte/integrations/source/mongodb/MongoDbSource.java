@@ -110,6 +110,19 @@ public class MongoDbSource extends BaseConnector implements Source {
             .withStatus(AirbyteConnectionStatus.Status.FAILED);
       } catch (final Exception e) {
         LOGGER.error("Unable to perform source check operation.", e);
+        if (MongoUtil.isUnauthorizedException(e)) {
+          final List<String> databaseNames;
+          try {
+            databaseNames = new MongoDbSourceConfig(config).getDatabaseNames();
+          } catch (final Exception ignored) {
+            return new AirbyteConnectionStatus()
+                .withMessage(MongoUtil.buildUnauthorizedChangeStreamMessage(List.of()))
+                .withStatus(AirbyteConnectionStatus.Status.FAILED);
+          }
+          return new AirbyteConnectionStatus()
+              .withMessage(MongoUtil.buildUnauthorizedChangeStreamMessage(databaseNames))
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
         return new AirbyteConnectionStatus()
             .withMessage(e.getMessage())
             .withStatus(AirbyteConnectionStatus.Status.FAILED);

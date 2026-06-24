@@ -433,6 +433,45 @@ public class MongoUtil {
   }
 
   /**
+   * Checks if the given exception (or any cause in its chain) is a MongoDB server "Unauthorized"
+   * error (error code 13). This is raised when the configured MongoDB user lacks the privileges
+   * required to execute a command (for example, opening a change stream without {@code find} and
+   * {@code changeStream} privileges).
+   *
+   * @param exception The exception to check.
+   * @return true if the exception (or any cause) is a {@link MongoCommandException} with error code
+   *         13, false otherwise.
+   */
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.MONGO_UNAUTHORIZED_ERROR_CODE) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  /**
+   * Builds the user-facing error message for an Unauthorized error when opening a change stream on
+   * the configured database(s). The message names the affected database(s) but does not include BSON,
+   * cluster timestamps, signatures, or any per-event identifiers, so the same failure mode always
+   * produces the same string.
+   *
+   * @param databaseNames The database names that the connector attempted to watch.
+   * @return A deterministic, user-facing error message.
+   */
+  public static String buildUnauthorizedChangeStreamMessage(final List<String> databaseNames) {
+    final String databaseList = databaseNames == null || databaseNames.isEmpty()
+        ? "<unknown>"
+        : String.join(", ", databaseNames);
+    return "MongoDB user is not authorized to open a change stream on database \"" + databaseList
+        + "\". Grant a role with the `find` and `changeStream` privileges (the built-in `readAnyDatabase` role is sufficient).";
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.
