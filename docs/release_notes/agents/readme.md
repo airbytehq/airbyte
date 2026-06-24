@@ -1,5 +1,25 @@
 # Airbyte Agents release notes
 
+## June 24, 2026
+
+Web app
+
+- When new members accept an organization invitation, they now automatically receive access to all shared workspaces in the organization.
+
+MCP
+
+- Fixed an issue where some connectors were not accessible through the Airbyte Agent MCP when using organization-scoped or operator tokens.
+
+SDK
+
+- SDK models are now forward-compatible with new connector registry extensions, preventing unexpected validation errors when connector specifications evolve.
+- The SDK now only includes connectors that are publicly available, removing experimental connectors from packages and documentation.
+
+Connectors
+
+- The Exa connector is now available for all users. Exa provides AI-powered web search and content retrieval.
+- Updated the Monday connector (v2.0.0) for forward-compatibility with monday.com's upcoming July 2026 API changes. Some deprecated User fields have been removed from the cached data schema.
+
 ## June 23, 2026
 
 Web app
