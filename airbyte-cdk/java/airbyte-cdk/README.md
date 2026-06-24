@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.48.19    | 2026-06-01 | [\#77899](https://github.com/airbytehq/airbyte/pull/77899)  | Raise Jackson maxStringLength to Int.MAX_VALUE; wrap CDC deserialization with an actionable error message.                                                     |
 | 0.48.17    | 2025-06-26 | [\#62052](https://github.com/airbytehq/airbyte/pull/62015)  | Revert change to CDK interface signature.                                                                                                                      |
 | 0.48.16    | 2025-06-27 | [\#61729](https://github.com/airbytehq/airbyte/pull/61729)  | Make function used in testDiscover overridable.                                                                                                                |
 | 0.48.15    | 2025-05-15 | [\#62015](https://github.com/airbytehq/airbyte/pull/62015)  | Add an ooption for sources to exclude today's data.                                                                                                            |
