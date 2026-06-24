@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UNAUTHORIZED_ERROR_CODE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +25,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -69,6 +73,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -420,6 +425,26 @@ class MongoDbCdcInitializerTest {
             MULTIPLE_DB_CONFIG);
     assertNotNull(iterators);
     assertEquals(1, filterTraceIterator(iterators).size(), "Should always have 1 iterator for the cdc stream (due to WASS)");
+  }
+
+  @Test
+  void testCreateCdcIteratorsWithUnauthorizedChangeStream() {
+    setupSingleDatabase();
+    final BsonDocument commandResponse = new BsonDocument()
+        .append("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized to open change stream"));
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(commandResponse, new ServerAddress()));
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, SINGLE_DB_CONFIG));
+    assertEquals(UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, thrown.getMessage());
+    assertEquals("Command failed with error 13 (Unauthorized): 'not authorized to open change stream' on server 127.0.0.1:27017. "
+        + "The full response is {\"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized to open change stream\"}",
+        thrown.getInternalMessage());
   }
 
   @Test
