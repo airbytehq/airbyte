@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .auth import MissingAccessTokenError, ShopifyAuthenticator
+from .auth import MissingAccessTokenError, build_shopify_authenticator
 from .scopes import ShopifyScopes
 from .streams.streams import (
     AbandonedCheckouts,
@@ -152,7 +152,7 @@ class SourceShopify(AbstractSource):
         Testing connection availability for the connector.
         """
         config["shop"] = self.get_shop_name(config)
-        config["authenticator"] = ShopifyAuthenticator(config)
+        config["authenticator"] = build_shopify_authenticator(config)
         return ConnectionCheckTest(config).test_connection()
 
     def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
@@ -171,7 +171,7 @@ class SourceShopify(AbstractSource):
         Defining streams to run.
         """
         config["shop"] = self.get_shop_name(config)
-        config["authenticator"] = ShopifyAuthenticator(config)
+        config["authenticator"] = build_shopify_authenticator(config)
         # add `shop_id` int value
         config["shop_id"] = ConnectionCheckTest(config).get_shop_id()
         # define scopes checker
