@@ -13,8 +13,10 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
@@ -31,6 +33,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -142,6 +146,26 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+  }
+
+  @Test
+  void testCheckOperationAuthorizationFailure() {
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final MongoCommandException cause = new MongoCommandException(new BsonDocument()
+        .append("ok", new BsonInt32(0))
+        .append("code", new BsonInt32(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized")), new ServerAddress());
+
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoClient.getDatabase(any())).thenThrow(new MongoSecurityException(
+        MongoCredential.createCredential("username", DB_NAME, "password".toCharArray()), "test", cause));
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+
+    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
+    assertNotNull(airbyteConnectionStatus);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, airbyteConnectionStatus.getMessage());
   }
 
   @Test
