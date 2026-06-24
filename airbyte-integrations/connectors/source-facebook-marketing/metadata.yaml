@@ -10,15 +10,15 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 5.2.14
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   externalDocumentationUrls:
     - title: Changelog
       url: https://developers.facebook.com/docs/marketing-api/marketing-api-changelog
       type: api_release_history
-    - title: 2025 Out-Of-Cycle Changes
-      url: https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025
+    - title: 2026 Out-Of-Cycle Changes
+      url: https://developers.facebook.com/documentation/ads-commerce/marketing-api/out-of-cycle-changes/occ-2026
     - title: API Upgrade Tool
       url: https://developers.facebook.com/tools/api_versioning/600551260845577/
       type: api_reference
@@ -72,6 +72,10 @@ data:
           - scopeType: stream
             impactedScopes:
               - "ad_creatives"
+      6.0.0:
+        message: "Meta deprecated the `dma` (Nielsen DMA) breakdown effective June 22, 2026, replacing it with `comscore_market`. The built-in `ads_insights_dma` and `ads_insights_demographics_dma_region` streams have been replaced with `ads_insights_comscore_market` and `ads_insights_demographics_comscore_market_region`. Users syncing the old DMA streams must switch to the new Comscore Market streams. The `dma` breakdown has also been removed from Custom Insights configuration. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)."
+        upgradeDeadline: "2026-06-24"
+        deadlineAction: "auto_upgrade"
       5.0.0:
         message: "This update includes multiple breaking schema changes: (1) Custom Insights streams now use level-based primary keys — when `level` is set to `adset`, `campaign`, or `account`, the primary key will use `adset_id`, `campaign_id`, or just `account_id` respectively, instead of always using `ad_id`. (2) The deprecated `7d_view` and `28d_view` attribution window columns have been removed from all Ads Insights streams, as Meta stopped returning data for these windows on January 12, 2026. (3) The `wish_bid` field has been removed from Ads Insights streams. All users should refresh their source schema and reset affected streams after upgrading. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)."
         upgradeDeadline: "2026-04-10"
@@ -89,7 +93,7 @@ data:
       - ads_insights_country
       - ads_insights_platform_and_device
       - ads_insights_region
-      - ads_insights_dma
+      - ads_insights_comscore_market
       - activities
   supportLevel: certified
   tags:
