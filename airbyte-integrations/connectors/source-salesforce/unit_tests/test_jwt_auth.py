@@ -9,7 +9,6 @@ import pytest
 import requests_mock as req_mock
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-
 from source_salesforce.api import Salesforce
 
 
