@@ -180,8 +180,16 @@ public class MongoDbSource extends BaseConnector implements Source {
 
         if (!incrementalStreams.isEmpty()) {
           LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
-          iterators
-              .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+          try {
+            iterators
+                .addAll(
+                    cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+          } catch (final MongoCommandException e) {
+            if (e.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+              throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, e, e.getMessage());
+            }
+            throw e;
+          }
         }
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);

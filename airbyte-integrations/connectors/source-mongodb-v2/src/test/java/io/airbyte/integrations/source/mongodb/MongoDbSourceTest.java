@@ -13,24 +13,31 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -254,6 +261,36 @@ class MongoDbSourceTest {
   }
 
   @Test
+  void testReadConvertsCdcUnauthorizedToConfigErrorAndClosesMongoClient() {
+    doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
+    final MongoCommandException mongoCommandException =
+        new MongoCommandException(new BsonDocument("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE)), new ServerAddress());
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(mongoCommandException);
+
+    final ConfigErrorException exception =
+        assertThrows(ConfigErrorException.class, () -> source.read(airbyteSourceConfig, configuredCatalogWithIncrementalStream(), null));
+
+    assertEquals(CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, exception.getMessage());
+    assertEquals(mongoCommandException, exception.getCause());
+    assertEquals(mongoCommandException.getMessage(), exception.getInternalMessage());
+    verify(mongoClient, times(1)).close();
+  }
+
+  @Test
+  void testReadDoesNotConvertNonUnauthorizedCdcMongoCommandException() {
+    doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
+    final MongoCommandException mongoCommandException =
+        new MongoCommandException(new BsonDocument("code", new BsonInt32(1)), new ServerAddress());
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(mongoCommandException);
+
+    final MongoCommandException exception =
+        assertThrows(MongoCommandException.class, () -> source.read(airbyteSourceConfig, configuredCatalogWithIncrementalStream(), null));
+
+    assertEquals(mongoCommandException, exception);
+    verify(mongoClient, times(1)).close();
+  }
+
+  @Test
   void testReadWithMissingConfiguration() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode state = mock(JsonNode.class);
@@ -283,6 +320,16 @@ class MongoDbSourceTest {
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config)));
+  }
+
+  private static ConfiguredAirbyteCatalog configuredCatalogWithIncrementalStream() {
+    final AirbyteStream stream = MongoCatalogHelper.buildAirbyteStream(
+        "testCollection",
+        DB_NAME,
+        List.of(new Field(MongoConstants.ID_FIELD, JsonSchemaType.STRING)))
+        .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(new ConfiguredAirbyteStream().withStream(stream).withSyncMode(SyncMode.INCREMENTAL)));
   }
 
 }
