@@ -84,11 +84,15 @@ class ReplicationSlotManager(
         log.info { getSlotInfo() }
     }
 
-    // ensure that the lsn is available
-    fun validate(lsn: Lsn) {
+    sealed interface SlotValidationResult {
+        data object Valid : SlotValidationResult
+        data class Invalid(val reason: String) : SlotValidationResult
+    }
+
+    fun checkSlotValidity(lsn: Lsn): SlotValidationResult {
         val slotInfo = getSlotInfo()
         if (slotInfo.restartLsn == null) {
-            throw ConfigErrorException(
+            return SlotValidationResult.Invalid(
                 "Replication slot '$slot' is not valid: " +
                     "wal_status = '${slotInfo.walStatus}', " +
                     "invalidation_reason = '${slotInfo.invalidationReason}'."
@@ -96,7 +100,7 @@ class ReplicationSlotManager(
         }
         if (slotInfo.confirmedFlushLsn != null) {
             if (slotInfo.confirmedFlushLsn > lsn) {
-                throw ConfigErrorException(
+                return SlotValidationResult.Invalid(
                     "Replication slot '$slot' has advanced beyond the source's state LSN. " +
                         "Confirmed flush LSN: ${slotInfo.confirmedFlushLsn}, source LSN: $lsn."
                 )
@@ -108,7 +112,7 @@ class ReplicationSlotManager(
         } else {
             // PG version < 9.6 doesn't have confirmed_flush_lsn: fall back to restart_lsn
             if (slotInfo.restartLsn > lsn) {
-                throw ConfigErrorException(
+                return SlotValidationResult.Invalid(
                     "Replication slot '$slot' has advanced beyond the source's state LSN. " +
                         "Restart LSN: ${slotInfo.restartLsn}, source LSN: $lsn."
                 )
@@ -117,6 +121,15 @@ class ReplicationSlotManager(
                 "Replication slot '$slot' is valid. " +
                     "Restart LSN: ${slotInfo.restartLsn}, source state LSN: $lsn."
             }
+        }
+        return SlotValidationResult.Valid
+    }
+
+    // ensure that the lsn is available
+    fun validate(lsn: Lsn) {
+        when (val result = checkSlotValidity(lsn)) {
+            is SlotValidationResult.Valid -> {}
+            is SlotValidationResult.Invalid -> throw ConfigErrorException(result.reason)
         }
     }
 
