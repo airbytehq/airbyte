@@ -8,6 +8,7 @@ import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
@@ -54,6 +55,15 @@ public class MongoDbCdcInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitializer.class);
 
+  /**
+   * MongoDB server error code returned when the authenticated user lacks the privileges required to
+   * execute a command (e.g. opening a {@code $changeStream} cursor without the {@code find} and
+   * {@code changeStream} actions on the target database).
+   *
+   * @see <a href="https://www.mongodb.com/docs/manual/reference/error-codes/">MongoDB error codes</a>
+   */
+  private static final int MONGO_UNAUTHORIZED_ERROR_CODE = 13;
+
   private final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
 
   @VisibleForTesting
@@ -95,8 +105,16 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    final BsonDocument initialResumeToken;
+    try {
+      initialResumeToken =
+          MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MONGO_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(buildChangeStreamUnauthorizedMessage(databaseNames), e);
+      }
+      throw e;
+    }
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =
@@ -336,6 +354,26 @@ public class MongoDbCdcInitializer {
       }
     }
     return false; // All state entries match current state format
+  }
+
+  /**
+   * Builds a user-facing message explaining that the configured MongoDB user is not authorized to
+   * open a change stream against the target database(s) and pointing the user at the specific
+   * privileges/roles they need.
+   *
+   * @param databaseNames The list of databases the connector was configured to sync.
+   * @return The remediation message to surface as a {@link ConfigErrorException}.
+   */
+  @VisibleForTesting
+  static String buildChangeStreamUnauthorizedMessage(final List<String> databaseNames) {
+    if (databaseNames.size() == 1) {
+      return "MongoDB user is not authorized to open a change stream on database \"" + databaseNames.getFirst() + "\". "
+          + "Grant a role with the \"find\" and \"changeStream\" actions on this database "
+          + "(e.g. the built-in \"read\" role for a single database, or \"readAnyDatabase\" when multiple databases are configured).";
+    }
+    return "MongoDB user is not authorized to open a change stream on the configured databases " + databaseNames + ". "
+        + "Grant a role with the \"find\" and \"changeStream\" actions on every configured database "
+        + "(e.g. the built-in \"readAnyDatabase\" role, or the \"read\" role on each individual database).";
   }
 
   /**
