@@ -5,18 +5,21 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
@@ -29,6 +32,13 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+
+  /**
+   * MongoDB server error code 13 ("Unauthorized") returned when the connecting user lacks the
+   * privileges required by the requested command (for example {@code changeStream} or {@code find} on
+   * the target database).
+   */
+  private static final int MONGO_UNAUTHORIZED_ERROR_CODE = 13;
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -82,7 +92,28 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MONGO_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(buildChangeStreamUnauthorizedMessage(databaseNames), e);
+      }
+      throw e;
     }
+  }
+
+  private static String buildChangeStreamUnauthorizedMessage(final List<String> databaseNames) {
+    if (databaseNames.size() == 1) {
+      return String.format(
+          "MongoDB user is not authorized to open a change stream on database \"%s\". "
+              + "Grant the \"read\" role on this database (or equivalent privileges including \"find\" and \"changeStream\").",
+          databaseNames.get(0));
+    }
+    final String quotedDatabases = databaseNames.stream()
+        .map(name -> "\"" + name + "\"")
+        .collect(Collectors.joining(", "));
+    return String.format(
+        "MongoDB user is not authorized to open a change stream on databases %s. "
+            + "Grant the \"readAnyDatabase\" role (or equivalent privileges including \"find\" and \"changeStream\") on those databases.",
+        quotedDatabases);
   }
 
   /**
