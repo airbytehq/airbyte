@@ -5,12 +5,14 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -29,6 +31,12 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+
+  /**
+   * MongoDB error code returned when the authenticated user lacks the privilege required to execute
+   * the requested command. See https://www.mongodb.com/docs/manual/reference/error-codes/.
+   */
+  static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -82,7 +90,28 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(buildUnauthorizedChangeStreamMessage(databaseNames), e);
+      }
+      throw e;
     }
+  }
+
+  /**
+   * Builds the user-facing error message used when MongoDB rejects the change-stream open with error
+   * code 13 ("Unauthorized"). The string before the period is fixed so that it remains deterministic
+   * and suitable as a log aggregation key.
+   *
+   * @param databaseNames The list of database names for which the change stream was being opened.
+   * @return The user-facing error message.
+   */
+  static String buildUnauthorizedChangeStreamMessage(final List<String> databaseNames) {
+    final String dbContext = databaseNames.size() == 1
+        ? "database \"" + databaseNames.getFirst() + "\""
+        : "the configured databases";
+    return "MongoDB user is not authorized to open a change stream on " + dbContext
+        + ". Grant the user the \"read\" role on that database, or the \"readAnyDatabase\" role for cluster-wide CDC.";
   }
 
   /**
