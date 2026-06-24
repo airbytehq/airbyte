@@ -703,7 +703,12 @@ def test_cast_record_fields_if_needed(
         ("marketing_emails", "content", "https://api.hubapi.com/marketing/v3/emails", "GET"),
         ("deals_archived", "contacts, crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deals", "GET"),
         ("contacts_archived", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/contacts", "GET"),
-        ("companies_archived", "crm.objects.contacts.read, crm.objects.companies.read", "https://api.hubapi.com/crm/v3/objects/companies", "GET"),
+        (
+            "companies_archived",
+            "crm.objects.contacts.read, crm.objects.companies.read",
+            "https://api.hubapi.com/crm/v3/objects/companies",
+            "GET",
+        ),
         ("tickets_archived", "tickets", "https://api.hubapi.com/crm/v3/objects/tickets", "GET"),
         ("forms", "forms", "https://api.hubapi.com/marketing/v3/forms", "GET"),
         # form_submissions have parent stream forms
