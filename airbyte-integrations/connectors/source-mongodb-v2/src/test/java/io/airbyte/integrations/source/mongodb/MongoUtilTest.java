@@ -53,6 +53,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -442,6 +445,81 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionMatchesErrorCode13() {
+    final MongoCommandException unauthorized = new MongoCommandException(
+        unauthorizedResponse("not authorized on grid-ai to execute command { aggregate: 1 }"),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(unauthorized));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException("wrapper", unauthorized)));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionRejectsOtherErrorCodes() {
+    final MongoCommandException notUnauthorized = new MongoCommandException(
+        new BsonDocument()
+            .append("ok", new BsonDouble(0.0))
+            .append("code", new BsonInt32(BSON_OBJECT_TOO_LARGE_ERROR_CODE))
+            .append("errmsg", new BsonString("BSONObjectTooLarge"))
+            .append("codeName", new BsonString("BSONObjectTooLarge")),
+        new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedException(notUnauthorized));
+    assertFalse(MongoUtil.isUnauthorizedException(new RuntimeException("plain")));
+    assertFalse(MongoUtil.isUnauthorizedException(null));
+  }
+
+  @Test
+  void testExtractUnauthorizedDatabaseNameParsesErrmsg() {
+    final MongoCommandException unauthorized = new MongoCommandException(
+        unauthorizedResponse("not authorized on grid-ai to execute command { aggregate: 1 }"),
+        new ServerAddress());
+
+    assertEquals(Optional.of("grid-ai"), MongoUtil.extractUnauthorizedDatabaseName(unauthorized));
+    assertEquals(Optional.of("grid-ai"),
+        MongoUtil.extractUnauthorizedDatabaseName(new RuntimeException("wrapper", unauthorized)));
+  }
+
+  @Test
+  void testExtractUnauthorizedDatabaseNameMissingErrmsg() {
+    final MongoCommandException unauthorized = new MongoCommandException(
+        unauthorizedResponse("user does not have permission"),
+        new ServerAddress());
+
+    assertEquals(Optional.empty(), MongoUtil.extractUnauthorizedDatabaseName(unauthorized));
+  }
+
+  @Test
+  void testBuildUnauthorizedErrorMessageWithDatabase() {
+    final MongoCommandException unauthorized = new MongoCommandException(
+        unauthorizedResponse("not authorized on grid-ai to execute command { aggregate: 1 }"),
+        new ServerAddress());
+
+    assertEquals(
+        "MongoDB user is not authorized to read change streams on database \"grid-ai\".",
+        MongoUtil.buildUnauthorizedErrorMessage(unauthorized));
+  }
+
+  @Test
+  void testBuildUnauthorizedErrorMessageFallsBackWithoutDatabase() {
+    final MongoCommandException unauthorized = new MongoCommandException(
+        unauthorizedResponse("user does not have permission"),
+        new ServerAddress());
+
+    assertEquals(
+        "MongoDB user is not authorized to read change streams.",
+        MongoUtil.buildUnauthorizedErrorMessage(unauthorized));
+  }
+
+  private static BsonDocument unauthorizedResponse(final String errmsg) {
+    return new BsonDocument()
+        .append("ok", new BsonDouble(0.0))
+        .append("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE))
+        .append("errmsg", new BsonString(errmsg))
+        .append("codeName", new BsonString("Unauthorized"));
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,

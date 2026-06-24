@@ -37,6 +37,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bson.Document;
@@ -430,6 +432,73 @@ public class MongoUtil {
       current = current.getCause();
     }
     return false;
+  }
+
+  /**
+   * Pattern for parsing the database name out of a MongoDB "Unauthorized" error message of the form
+   * {@code "not authorized on <db> to execute command ..."}.
+   */
+  private static final Pattern UNAUTHORIZED_DATABASE_PATTERN =
+      Pattern.compile("not authorized on (\\S+) to execute command");
+
+  /**
+   * Checks if the given exception is caused by a MongoDB Unauthorized error (server error code 13).
+   * This typically indicates that the configured MongoDB user is missing required privileges to
+   * execute a command on a target database (for example, opening a change stream).
+   *
+   * @param exception The exception to check.
+   * @return true if the exception (or any of its causes) is a MongoCommandException with error code
+   *         13, false otherwise.
+   */
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  /**
+   * Extracts the database name from a MongoDB Unauthorized error message, if available. The server
+   * formats the message as {@code "not authorized on <db> to execute command ..."}.
+   *
+   * @param exception The exception to inspect.
+   * @return An {@link Optional} containing the database name when it can be parsed from the
+   *         underlying {@link MongoCommandException}, empty otherwise.
+   */
+  public static Optional<String> extractUnauthorizedDatabaseName(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        final String errmsg = mongoException.getErrorMessage();
+        if (errmsg != null) {
+          final Matcher matcher = UNAUTHORIZED_DATABASE_PATTERN.matcher(errmsg);
+          if (matcher.find()) {
+            return Optional.of(matcher.group(1));
+          }
+        }
+      }
+      current = current.getCause();
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Builds the user-facing error message for a MongoDB Unauthorized failure, including the target
+   * database name when it can be parsed from the underlying server response.
+   *
+   * @param exception The exception to inspect.
+   * @return A deterministic error message describing the missing change stream privilege.
+   */
+  public static String buildUnauthorizedErrorMessage(final Throwable exception) {
+    return extractUnauthorizedDatabaseName(exception)
+        .map(db -> String.format(MongoConstants.UNAUTHORIZED_ERROR_MESSAGE_WITH_DB, db))
+        .orElse(MongoConstants.UNAUTHORIZED_ERROR_MESSAGE);
   }
 
   /**
