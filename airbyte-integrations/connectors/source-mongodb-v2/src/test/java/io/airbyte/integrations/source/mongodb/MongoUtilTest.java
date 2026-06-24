@@ -18,6 +18,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,6 +55,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -442,6 +447,48 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testFindUnauthorizedChangeStreamException() {
+    final MongoCommandException unauthorized = buildMongoCommandException(13, "Unauthorized",
+        "not authorized on grid-ai to execute command { aggregate: 1, pipeline: [...] }");
+    assertSame(unauthorized, MongoUtil.findUnauthorizedChangeStreamException(unauthorized));
+    assertSame(unauthorized, MongoUtil.findUnauthorizedChangeStreamException(new RuntimeException("wrapper", unauthorized)));
+    assertSame(unauthorized,
+        MongoUtil.findUnauthorizedChangeStreamException(new RuntimeException("outer", new IllegalStateException("middle", unauthorized))));
+  }
+
+  @Test
+  void testFindUnauthorizedChangeStreamExceptionReturnsNullForOtherErrors() {
+    final MongoCommandException tooLarge =
+        buildMongoCommandException(BSON_OBJECT_TOO_LARGE_ERROR_CODE, "BSONObjectTooLarge", "BSONObj size is too large");
+    assertNull(MongoUtil.findUnauthorizedChangeStreamException(tooLarge));
+    assertNull(MongoUtil.findUnauthorizedChangeStreamException(new RuntimeException("no mongo cause")));
+    assertNull(MongoUtil.findUnauthorizedChangeStreamException(null));
+  }
+
+  @Test
+  void testBuildChangeStreamNotAuthorizedMessageWithDatabase() {
+    final MongoCommandException unauthorized = buildMongoCommandException(13, "Unauthorized",
+        "not authorized on grid-ai to execute command { aggregate: 1, pipeline: [...] }");
+    assertEquals("MongoDB user is not authorized to open a change stream on database \"grid-ai\".",
+        MongoUtil.buildChangeStreamNotAuthorizedMessage(unauthorized));
+  }
+
+  @Test
+  void testBuildChangeStreamNotAuthorizedMessageWithoutDatabase() {
+    final MongoCommandException unauthorized = buildMongoCommandException(13, "Unauthorized", "user is not authorized to perform action");
+    assertEquals(CHANGE_STREAM_NOT_AUTHORIZED_ERROR_MESSAGE, MongoUtil.buildChangeStreamNotAuthorizedMessage(unauthorized));
+  }
+
+  private static MongoCommandException buildMongoCommandException(final int errorCode, final String codeName, final String errmsg) {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonDouble(0.0))
+        .append("errmsg", new BsonString(errmsg))
+        .append("code", new BsonInt32(errorCode))
+        .append("codeName", new BsonString(codeName));
+    return new MongoCommandException(response, new ServerAddress("localhost", 27017));
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
