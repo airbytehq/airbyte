@@ -9,6 +9,7 @@ import pytest
 import requests
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest, ShopifyScopes, SourceShopify
+from source_shopify.utils import ShopifyWrongShopNameError
 from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -262,14 +263,61 @@ def test_parse_response_with_bad_json(config, response_with_bad_json) -> None:
     [
         ("test-store", "test-store"),
         ("test-store.myshopify.com", "test-store"),
+        ("https://test-store.myshopify.com", "test-store"),
+        ("https://test-store.myshopify.com/", "test-store"),
+        ("http://test-store.myshopify.com/", "test-store"),
+        ("https://Test-Store.myshopify.com", "test-store"),
+        ("TEST-STORE", "test-store"),
+        ("  test-store  ", "test-store"),
+        ("test-store.myshopify.com/", "test-store"),
     ],
-    ids=["old style", "oauth style"],
+    ids=[
+        "bare",
+        "full-domain",
+        "https",
+        "https-slash",
+        "http-slash",
+        "mixed-case",
+        "bare-upper",
+        "whitespace",
+        "bare-slash",
+    ],
 )
 def test_get_shop_name(config, shop, expected) -> None:
     source = SourceShopify()
     config["shop"] = shop
     actual = source.get_shop_name(config)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "shop",
+    [
+        "https://test-store.myshopify.com/admin",
+        "test-store.myshopify.com/admin/api",
+        "test store",
+        "test_store",
+        "",
+        "   ",
+        "https://",
+        "-test-store",
+    ],
+    ids=[
+        "path-scheme",
+        "path-bare",
+        "space",
+        "underscore",
+        "empty",
+        "whitespace",
+        "scheme-only",
+        "leading-hyphen",
+    ],
+)
+def test_get_shop_name_invalid(config, shop) -> None:
+    source = SourceShopify()
+    config["shop"] = shop
+    with pytest.raises(ShopifyWrongShopNameError):
+        source.get_shop_name(config)
 
 
 @pytest.mark.parametrize(

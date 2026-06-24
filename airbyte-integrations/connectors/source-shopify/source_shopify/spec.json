@@ -10,9 +10,10 @@
       "shop": {
         "type": "string",
         "title": "Shopify Store",
-        "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME' or 'NAME.myshopify.com'.",
-        "pattern": "^(?!https://)(?!https://).*",
-        "examples": ["my-store", "my-store.myshopify.com"],
+        "description": "The name of your Shopify store found in the URL. For example, if your URL is https://NAME.myshopify.com, then the name is 'NAME'. You may also paste the full myshopify URL (e.g. https://NAME.myshopify.com) and it will be normalized automatically.",
+        "pattern": "^\\s*(https?://)?[A-Za-z0-9][A-Za-z0-9.\\-/]*\\s*$",
+        "pattern_descriptor": "my-store  OR  https://my-store.myshopify.com",
+        "examples": ["my-store", "my-store.myshopify.com", "https://my-store.myshopify.com"],
         "order": 1
       },
       "credentials": {

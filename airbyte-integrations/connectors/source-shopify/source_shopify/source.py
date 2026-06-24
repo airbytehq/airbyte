@@ -4,7 +4,9 @@
 
 
 import logging
+import re
 from typing import Any, List, Mapping, Tuple
+from urllib.parse import urlparse
 
 from requests.exceptions import ConnectionError, RequestException, SSLError
 
@@ -68,6 +70,7 @@ from .streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
+from .utils import ShopifyWrongShopNameError
 
 
 class ConnectionCheckTest:
@@ -139,9 +142,44 @@ class SourceShopify(AbstractSource):
 
     @staticmethod
     def get_shop_name(config) -> str:
-        split_pattern = ".myshopify.com"
-        shop_name = config.get("shop")
-        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
+        """
+        Normalize the `shop` config value to the bare myshopify subdomain.
+
+        Accepts a bare handle (`my-store`) or a full URL
+        (`https://my-store.myshopify.com/`, scheme and trailing slash optional)
+        and returns `my-store`. Raises `ShopifyWrongShopNameError` (config_error)
+        for malformed input (embedded path, whitespace, invalid characters).
+
+        Idempotent: a value already normalized to a bare handle is returned unchanged.
+        """
+        raw = config.get("shop")
+        if not raw or not isinstance(raw, str) or not raw.strip():
+            raise ShopifyWrongShopNameError(raw)
+
+        value = raw.strip()
+        # If a scheme is present, parse out the host; urlparse only fills netloc
+        # when "://" is present.
+        if "://" in value:
+            parsed = urlparse(value)
+            host = parsed.netloc
+            if parsed.path not in ("", "/") or parsed.query or parsed.fragment:
+                raise ShopifyWrongShopNameError(raw)
+        else:
+            host, _, path = value.partition("/")
+            if path != "":
+                raise ShopifyWrongShopNameError(raw)
+
+        host = host.strip().lower()
+        suffix = ".myshopify.com"
+        if host.endswith(suffix):
+            host = host[: -len(suffix)]
+
+        # Final handle is a single label: starts alnum, then alnum/hyphen.
+        # No dots, underscores, whitespace, or empty string.
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", host):
+            raise ShopifyWrongShopNameError(raw)
+
+        return host
 
     @staticmethod
     def format_stream_name(name) -> str:
