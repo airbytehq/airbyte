@@ -53,6 +53,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -442,6 +445,49 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testIsChangeStreamUnauthorizedExceptionDetectsCode13OnChangeStreamAggregate() {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonDouble(0.0))
+        .append("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString(
+            "not authorized on testdb to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertTrue(MongoUtil.isChangeStreamUnauthorizedException(exception));
+    assertTrue(MongoUtil.isChangeStreamUnauthorizedException(new RuntimeException("wrapped", exception)));
+  }
+
+  @Test
+  void testIsChangeStreamUnauthorizedExceptionRejectsUnauthorizedOnUnrelatedCommand() {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonDouble(0.0))
+        .append("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized on testdb to execute command { listCollections: 1 }"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsChangeStreamUnauthorizedExceptionRejectsOtherErrorCodes() {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonDouble(0.0))
+        .append("code", new BsonInt32(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE))
+        .append("errmsg", new BsonString("BSONObjectTooLarge: command output references $changeStream pipeline"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsChangeStreamUnauthorizedExceptionHandlesNullAndUnrelatedExceptions() {
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(null));
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(new RuntimeException("unrelated")));
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,

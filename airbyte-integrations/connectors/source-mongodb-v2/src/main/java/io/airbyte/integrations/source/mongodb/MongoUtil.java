@@ -433,6 +433,29 @@ public class MongoUtil {
   }
 
   /**
+   * Checks if the given exception is caused by a MongoDB Unauthorized error (code 13) on a change
+   * stream aggregate. This indicates that the configured MongoDB user lacks the {@code changeStream}
+   * privilege action on the source database, which is required for incremental (CDC) sync.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is a change-stream Unauthorized error, false otherwise.
+   */
+  public static boolean isChangeStreamUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        final String errorMessage = mongoException.getErrorMessage();
+        if (errorMessage != null && (errorMessage.contains("$changeStream") || errorMessage.contains("changeStream"))) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.
