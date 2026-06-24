@@ -59,6 +59,11 @@ public class MongoConstants {
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
+  public static final int UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE =
+      "MongoDB user lacks the changeStream privilege action required for incremental (CDC) sync. " +
+          "Grant the user the readAnyDatabase role, or include both find and changeStream privilege actions for the configured databases in the user's role.";
+
   private MongoConstants() {}
 
 }
