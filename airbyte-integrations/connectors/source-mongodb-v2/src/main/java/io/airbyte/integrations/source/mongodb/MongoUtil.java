@@ -105,6 +105,11 @@ public class MongoUtil {
         .collect(Collectors.toSet());
   }
 
+  public static boolean isUnauthorizedCommandException(final Throwable e) {
+    return e instanceof MongoCommandException commandException
+        && (commandException.getErrorCode() == 13 || "Unauthorized".equals(commandException.getErrorCodeName()));
+  }
+
   /**
    * Retrieves the {@link AirbyteStream}s available to the source by querying the MongoDB server.
    *
