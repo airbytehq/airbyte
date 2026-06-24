@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
+  static final String CDC_CHANGE_STREAM_PERMISSION_ERROR_MESSAGE =
+      "MongoDB user lacks required change stream privileges for CDC.";
 
   private final MongoDbCdcInitializer cdcInitializer;
 
@@ -193,8 +195,25 @@ public class MongoDbSource extends BaseConnector implements Source {
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to perform sync read operation.", e);
+      if (isUnauthorizedMongoCommandException(e)) {
+        throw new ConfigErrorException(CDC_CHANGE_STREAM_PERMISSION_ERROR_MESSAGE, e, e.getMessage());
+      }
       throw e;
     }
+  }
+
+  private static boolean isUnauthorizedMongoCommandException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoCommandException
+          && mongoCommandException.getErrorCode() == 13
+          && current.getMessage() != null
+          && current.getMessage().contains("$changeStream")) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 
   /**
