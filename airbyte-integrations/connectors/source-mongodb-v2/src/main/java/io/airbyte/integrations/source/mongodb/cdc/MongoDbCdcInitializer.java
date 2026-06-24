@@ -8,6 +8,7 @@ import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
@@ -54,6 +55,24 @@ public class MongoDbCdcInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitializer.class);
 
+  /**
+   * MongoDB server error code returned when the authenticated user does not have the privileges
+   * required to execute a command (e.g. opening a change stream).
+   *
+   * @see <a href="https://www.mongodb.com/docs/manual/reference/error-codes/">MongoDB Error Codes</a>
+   */
+  private static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
+
+  /**
+   * Deterministic, user-facing message emitted when the configured MongoDB user lacks the privileges
+   * required to open a change stream during CDC. Kept short and free of cluster, BSON, and database
+   * identifiers so it is usable as a log aggregation key.
+   */
+  @VisibleForTesting
+  static final String CDC_CHANGE_STREAM_NOT_AUTHORIZED_MESSAGE =
+      "MongoDB user lacks privileges required to open a change stream. "
+          + "Grant the configured user the \"read\" or \"readAnyDatabase\" role on the source database.";
+
   private final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
 
   @VisibleForTesting
@@ -95,8 +114,17 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    final BsonDocument initialResumeToken;
+    try {
+      initialResumeToken =
+          MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        LOGGER.error("MongoDB user is not authorized to open a change stream during CDC initialization.", e);
+        throw new ConfigErrorException(CDC_CHANGE_STREAM_NOT_AUTHORIZED_MESSAGE, e, e.getMessage());
+      }
+      throw e;
+    }
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =
