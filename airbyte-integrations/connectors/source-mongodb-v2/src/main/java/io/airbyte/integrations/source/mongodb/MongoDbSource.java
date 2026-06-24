@@ -198,11 +198,12 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
-   * actionable error messages to users.
+   * Wraps an iterator to catch known MongoDB error conditions during CDC operations (e.g.
+   * BSONObjectTooLarge or change stream authorization failures) and convert them into actionable,
+   * user-facing error messages.
    *
    * @param iterator The base iterator to wrap.
-   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   * @return A wrapped iterator that translates known MongoDB errors into config errors.
    */
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
                                                                                   final AutoCloseableIterator<AirbyteMessage> iterator) {
@@ -213,7 +214,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.hasNext();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handleKnownMongoErrors(e);
         }
       }
 
@@ -222,7 +223,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.next();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handleKnownMongoErrors(e);
         }
       }
 
@@ -231,10 +232,24 @@ public class MongoDbSource extends BaseConnector implements Source {
         iterator.close();
       }
 
-      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+      private RuntimeException handleKnownMongoErrors(final Exception e) {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        final MongoCommandException unauthorized =
+            MongoUtil.findMongoCommandExceptionWithErrorCode(e, MongoConstants.MONGO_UNAUTHORIZED_ERROR_CODE);
+        if (unauthorized != null) {
+          LOGGER.error("MongoDB user is not authorized to open change streams (error code {}).",
+              unauthorized.getErrorCode(), e);
+          throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e);
+        }
+        final MongoCommandException authFailed =
+            MongoUtil.findMongoCommandExceptionWithErrorCode(e, MongoConstants.MONGO_AUTHENTICATION_FAILED_ERROR_CODE);
+        if (authFailed != null) {
+          LOGGER.error("MongoDB authentication failed during CDC sync (error code {}).",
+              authFailed.getErrorCode(), e);
+          throw new ConfigErrorException(MongoConstants.MONGO_AUTHENTICATION_FAILED_ERROR_MESSAGE, e);
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
