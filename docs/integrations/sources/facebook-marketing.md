@@ -222,11 +222,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.action_report_time">
-   6. (Optional) For **Action Report Time**, enter the action report time you want to configure. This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported.
-
-      - `impression`: Actions are attributed to the time the ad was viewed (Jan 1st).
-      - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
-      - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
+   6. (Optional) **Action Report Time** is deprecated and hidden from the UI since v3.5.0. It defaults to `mixed` and cannot be changed. For existing configurations, this value continues to be applied. The `mixed` behavior attributes click-through actions to the time the ad was viewed, and view-through actions to the time the action was taken.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment">
