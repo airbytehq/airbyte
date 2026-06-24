@@ -8,7 +8,7 @@ These tests verify that CursorPatch handles malformed Facebook API responses
 gracefully instead of raising TypeError when response data is not dict-typed.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from source_facebook_marketing.streams.patches import CursorPatch
