@@ -3,12 +3,18 @@
 #
 
 
+from googleapiclient.errors import HttpError
 from pygsheets import Worksheet
 
-from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.models import AirbyteStream, FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .buffer import WriteBufferMixin
 from .spreadsheet import GoogleSheets
+
+
+GOOGLE_SHEETS_CELL_LIMIT_ERROR = "This action would increase the number of cells in the workbook above the limit of 10000000 cells."
+GOOGLE_SHEETS_CELL_LIMIT_MESSAGE = "Google Sheets spreadsheet exceeds the 10,000,000-cell limit."
 
 
 class GoogleSheetsWriter(WriteBufferMixin):
@@ -64,7 +70,17 @@ class GoogleSheetsWriter(WriteBufferMixin):
             values = [
                 [self._truncate_cell(val, row_idx, col_idx) for col_idx, val in enumerate(row)] for row_idx, row in enumerate(values, 1)
             ]
-            stream.append_table(values, start="A2", dimension="ROWS")
+            try:
+                stream.append_table(values, start="A2", dimension="ROWS")
+            except HttpError as err:
+                if GOOGLE_SHEETS_CELL_LIMIT_ERROR in str(err):
+                    raise AirbyteTracedException(
+                        message=GOOGLE_SHEETS_CELL_LIMIT_MESSAGE,
+                        internal_message=str(err),
+                        failure_type=FailureType.config_error,
+                        exception=err,
+                    )
+                raise
         else:
             self.logger.info(f"Skipping empty stream: {stream_name}")
 
