@@ -73,7 +73,7 @@ Enter the endpoint URL, select authentication method, and whether to use 'upsert
 Airbyte has the ability to connect to an Elastic instance via an SSH Tunnel.
 The reason you might want to do this because it is not possible \(or against security policy\) to connect to your Elastic instance directly \(e.g. it does not have a public IP address\).
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion sever\) that _does_ have direct access to the Elastic instance.
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion server\) that _does_ have direct access to the Elastic instance.
 Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
 Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
