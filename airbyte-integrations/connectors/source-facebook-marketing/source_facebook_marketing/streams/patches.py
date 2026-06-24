@@ -2,9 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from urllib.parse import parse_qsl, urlparse, urlunparse
 
 from facebook_business.api import Cursor
+
+
+logger = logging.getLogger("airbyte")
 
 
 class CursorPatch(Cursor):
@@ -61,6 +65,19 @@ class CursorPatch(Cursor):
 
         if self._include_summary and "summary" in response:
             self._summary = response["summary"]
+
+        if "data" in response:
+            original_data = response["data"]
+            filtered_data = [item for item in original_data if isinstance(item, dict)]
+            num_filtered = len(original_data) - len(filtered_data)
+            if num_filtered > 0:
+                logger.warning(
+                    "Filtered %d malformed non-dict item(s) from API response for path '%s'. "
+                    "This is a known Meta Graph API issue (facebook-python-business-sdk#641).",
+                    num_filtered,
+                    self._path,
+                )
+                response["data"] = filtered_data
 
         self._queue = self.build_objects_from_response(response)
         return len(self._queue) > 0
