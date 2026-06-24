@@ -307,7 +307,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.8.0 | 2026-06-23 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add OAuth 2.0 JWT Bearer authentication option |
+| 2.8.0 | 2026-06-23 | [80788](https://github.com/airbytehq/airbyte/pull/80788) | Add OAuth 2.0 JWT Bearer authentication option |
 | 2.7.23 | 2026-05-20 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
 | 2.7.22 | 2026-04-28 | [76978](https://github.com/airbytehq/airbyte/pull/76978) | Bump airbyte-cdk to ^7.17.4 |
 | 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |

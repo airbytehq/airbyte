@@ -209,22 +209,54 @@ def test_refresh_token_login_is_unchanged(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "username, include_private_key",
-    [(None, True), ("user@example.com", False)],
-    ids=["missing_username", "missing_private_key"],
+    "client_id, username, include_private_key, expected_field",
+    [
+        (None, "user@example.com", True, "client_id"),
+        ("consumer_key", None, True, "username"),
+        ("consumer_key", "user@example.com", False, "private_key"),
+    ],
+    ids=["missing_client_id", "missing_username", "missing_private_key"],
 )
-def test_jwt_login_requires_username_and_private_key(username, include_private_key):
+def test_jwt_login_requires_required_fields(client_id, username, include_private_key, expected_field):
     private_key_pem = _generate_rsa_private_key_pem()[0] if include_private_key else None
     sf = Salesforce(
         auth_type="JWT",
-        client_id="consumer_key",
+        client_id=client_id,
         username=username,
         private_key=private_key_pem,
         is_sandbox=False,
     )
+
     with pytest.raises(AirbyteTracedException) as err:
         sf.login()
+
     assert "JWT authentication requires" in err.value.message
+    assert expected_field in err.value.message
+
+
+@pytest.mark.parametrize(
+    "client_id, client_secret, refresh_token, expected_field",
+    [
+        (None, "client_secret", "refresh_token", "client_id"),
+        ("client_id", None, "refresh_token", "client_secret"),
+        ("client_id", "client_secret", None, "refresh_token"),
+    ],
+    ids=["missing_client_id", "missing_client_secret", "missing_refresh_token"],
+)
+def test_client_login_requires_required_fields(client_id, client_secret, refresh_token, expected_field):
+    sf = Salesforce(
+        auth_type="Client",
+        client_id=client_id,
+        client_secret=client_secret,
+        refresh_token=refresh_token,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "Client authentication requires" in err.value.message
+    assert expected_field in err.value.message
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api):

@@ -6,6 +6,33 @@ connectionSpecification:
   required:
     - client_id
   additionalProperties: true
+  allOf:
+    - if:
+        anyOf:
+          - not:
+              required:
+                - auth_type
+          - properties:
+              auth_type:
+                const: Client
+            required:
+              - auth_type
+      then:
+        required:
+          - client_id
+          - client_secret
+          - refresh_token
+    - if:
+        properties:
+          auth_type:
+            const: JWT
+        required:
+          - auth_type
+      then:
+        required:
+          - client_id
+          - username
+          - private_key
   properties:
     is_sandbox:
       title: Sandbox

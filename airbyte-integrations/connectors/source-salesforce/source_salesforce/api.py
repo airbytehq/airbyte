@@ -377,9 +377,7 @@ class Salesforce:
         return resp
 
     def _use_jwt_auth(self) -> bool:
-        """Select the JWT Bearer flow when explicitly chosen, or when a private key is
-        supplied without a refresh token (so configs that omit auth_type still work)."""
-        return self.auth_type == "JWT" or (bool(self.private_key) and not self.refresh_token)
+        return self.auth_type == "JWT"
 
     def _build_jwt_assertion(self) -> str:
         """Sign a short-lived RS256 JWT for the Salesforce OAuth 2.0 JWT Bearer flow.
@@ -398,16 +396,23 @@ class Salesforce:
     def login(self):
         login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
         if self._use_jwt_auth():
-            if not self.private_key or not self.username:
+            missing_fields = [field for field in ("client_id", "username", "private_key") if not getattr(self, field)]
+            if missing_fields:
                 raise AirbyteTracedException(
                     failure_type=FailureType.config_error,
-                    message="JWT authentication requires both 'username' and 'private_key'.",
+                    message=f"JWT authentication requires the following fields: {', '.join(missing_fields)}.",
                 )
             login_body = {
                 "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
                 "assertion": self._build_jwt_assertion(),
             }
         else:
+            missing_fields = [field for field in ("client_id", "client_secret", "refresh_token") if not getattr(self, field)]
+            if missing_fields:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"Client authentication requires the following fields: {', '.join(missing_fields)}.",
+                )
             login_body = {
                 "grant_type": "refresh_token",
                 "client_id": self.client_id,
