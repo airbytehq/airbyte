@@ -3,7 +3,9 @@
 #
 
 
-from typing import Any, List, Mapping
+import logging
+import re
+from typing import Any, Dict, List, Mapping, Tuple
 
 from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -13,6 +15,9 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import GAQL
+
+
+logger = logging.getLogger("airbyte")
 
 
 FULL_REFRESH_CUSTOM_TABLE = [
@@ -110,6 +115,111 @@ class MigrateCustomQuery:
         - args (List[str]): List of command-line arguments.
         - source (Source): The data source.
         """
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        if config_path:
+            config = source.read_config(config_path)
+            if cls.should_migrate(config):
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))
+
+
+# Mapping of deprecated Google Ads API v23 field names to their replacements.
+# See: https://developers.google.com/google-ads/api/diff-tool/v23/versus-v22/diffs/full/common/metrics
+DEPRECATED_FIELDS: Dict[str, str] = {
+    "metrics.video_views": "metrics.video_trueview_views",
+    "metrics.video_view_rate": "metrics.video_trueview_view_rate",
+    "metrics.average_cpv": "metrics.trueview_average_cpv",
+    "campaign.start_date": "campaign.start_date_time",
+    "campaign.end_date": "campaign.end_date_time",
+}
+
+
+class MigrateDeprecatedFields:
+    """Replaces deprecated Google Ads API v23 field names in custom GAQL queries.
+
+    In API v23 several fields were renamed:
+    - `metrics.video_views` → `metrics.video_trueview_views`
+    - `metrics.video_view_rate` → `metrics.video_trueview_view_rate`
+    - `metrics.average_cpv` → `metrics.trueview_average_cpv`
+    - `campaign.start_date` → `campaign.start_date_time`
+    - `campaign.end_date` → `campaign.end_date_time`
+
+    This migration transparently rewrites user-defined custom queries
+    so they continue to work.
+    """
+
+    message_repository: MessageRepository = InMemoryMessageRepository()
+
+    @classmethod
+    def _replace_fields_in_query(cls, query_str: str) -> Tuple[str, bool]:
+        """Parse a GAQL query and replace any deprecated field names.
+
+        Returns the (possibly rewritten) query string and a boolean
+        indicating whether any replacement was made.
+        """
+        query_object = GAQL.parse(query_str)
+
+        new_fields = tuple(DEPRECATED_FIELDS.get(f, f) for f in query_object.fields)
+        fields_changed = new_fields != query_object.fields
+
+        new_where = query_object.where
+        new_order_by = query_object.order_by
+        clauses_changed = False
+        for old_name, new_name in DEPRECATED_FIELDS.items():
+            pattern = re.escape(old_name) + r"(?![a-zA-Z0-9_.])"
+            if re.search(pattern, new_where):
+                new_where = re.sub(pattern, new_name, new_where)
+                clauses_changed = True
+            if re.search(pattern, new_order_by):
+                new_order_by = re.sub(pattern, new_name, new_order_by)
+                clauses_changed = True
+
+        changed = fields_changed or clauses_changed
+        if not changed:
+            return query_str, False
+
+        new_query = GAQL(new_fields, query_object.resource_name, new_where, new_order_by, query_object.limit, query_object.parameters)
+        return str(new_query), True
+
+    @classmethod
+    def should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        """Return `True` if any custom query references a deprecated field."""
+        for query_entry in config.get("custom_queries_array", []):
+            query_str = query_entry.get("query", "")
+            for deprecated_field in DEPRECATED_FIELDS:
+                if re.search(re.escape(deprecated_field) + r"(?![a-zA-Z0-9_.])", query_str):
+                    return True
+        return False
+
+    @classmethod
+    def update_custom_queries(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Replace deprecated field names in every custom query entry."""
+        migrated_queries = []
+        for query_entry in config.get("custom_queries_array", []):
+            new_entry = query_entry.copy()
+            query_str = query_entry.get("query", "")
+            try:
+                new_query, changed = cls._replace_fields_in_query(query_str)
+            except ValueError:
+                migrated_queries.append(new_entry)
+                continue
+            if changed:
+                new_entry["query"] = new_query
+                logger.info("Migrated deprecated fields in custom query '%s'.", query_entry.get("table_name", "<unnamed>"))
+            migrated_queries.append(new_entry)
+
+        config["custom_queries_array"] = migrated_queries
+        return config
+
+    @classmethod
+    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Apply the migration and persist the updated config."""
+        migrated_config = cls.update_custom_queries(config)
+        source.write_config(migrated_config, config_path)
+        return migrated_config
+
+    @classmethod
+    def migrate(cls, args: List[str], source: Source) -> None:
+        """Orchestrate the deprecated-field migration."""
         config_path = AirbyteEntrypoint(source).extract_config(args)
         if config_path:
             config = source.read_config(config_path)

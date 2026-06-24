@@ -1,0 +1,28 @@
+{
+  "credentials": {
+    "developer_token": "developer_token",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "customer_id": "1234567890",
+  "start_date": "2023-09-04",
+  "conversion_window_days": 14,
+  "custom_queries_array": [
+    {
+      "query": "SELECT campaign.name, metrics.clicks, metrics.video_views, metrics.video_view_rate, metrics.average_cpv FROM campaign",
+      "primary_key": null,
+      "table_name": "ad_stats"
+    },
+    {
+      "query": "SELECT ad_group.name, metrics.impressions FROM ad_group",
+      "primary_key": null,
+      "table_name": "clean_query"
+    },
+    {
+      "query": "SELECT campaign.name, campaign.start_date, campaign.end_date FROM campaign",
+      "primary_key": null,
+      "table_name": "campaign_dates"
+    }
+  ]
+}
