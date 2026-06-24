@@ -4,7 +4,10 @@
  * committed to git since it's regenerated on each build.
  */
 const fs = require("fs");
-const { REGISTRY_CACHE_PATH } = require("./constants");
+const {
+  AGENT_CONNECTORS_ENABLED_CACHE_PATH,
+  REGISTRY_CACHE_PATH,
+} = require("./constants");
 
 function cleanupFile(filePath) {
   if (fs.existsSync(filePath)) {
@@ -19,6 +22,7 @@ function cleanupFile(filePath) {
 
 function cleanupCache() {
   cleanupFile(REGISTRY_CACHE_PATH);
+  cleanupFile(AGENT_CONNECTORS_ENABLED_CACHE_PATH);
 }
 
 cleanupCache();

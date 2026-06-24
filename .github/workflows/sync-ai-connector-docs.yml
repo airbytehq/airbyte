@@ -20,11 +20,42 @@ jobs:
 
       - name: Sync connector docs
         run: |
+          REGISTRY_URL="https://connectors.airbyte.ai/registry.json"
           DEST_DIR="docs/ai-agents/connectors"
           mkdir -p "$DEST_DIR"
+          curl --fail --silent --show-error --location "$REGISTRY_URL" --output /tmp/agent_connector_registry.json
+
+          jq -r '
+            def slug:
+              (.docs_url // .connector_name) as $value
+              | ($value | capture("/connectors/(?<slug>[^/]+)/") | .slug) // $value;
+            .connectors[]
+            | select((.platform_availability.state // "enabled") == "enabled")
+            | slug
+          ' /tmp/agent_connector_registry.json | sort > /tmp/enabled_agent_connectors.txt
+
+          jq -r '
+            def slug:
+              (.docs_url // .connector_name) as $value
+              | ($value | capture("/connectors/(?<slug>[^/]+)/") | .slug) // $value;
+            .connectors[]
+            | select((.platform_availability.state // "enabled") != "enabled")
+            | slug
+          ' /tmp/agent_connector_registry.json | sort > /tmp/hidden_agent_connectors.txt
+
+          while IFS= read -r connector; do
+            if [ -n "$connector" ]; then
+              rm -rf "$DEST_DIR/$connector"
+            fi
+          done < /tmp/hidden_agent_connectors.txt
 
           for connector_dir in agent-connectors-source/connectors/*/; do
             connector=$(basename "$connector_dir")
+
+            if ! grep -qx "$connector" /tmp/enabled_agent_connectors.txt; then
+              echo "Skipping unavailable agent connector docs: $connector"
+              continue
+            fi
 
             # Only delete/recreate the specific connector subdirectory
             # This leaves any files directly in $DEST_DIR untouched
@@ -43,6 +74,7 @@ jobs:
           done
 
           echo "Synced $(ls -d $DEST_DIR/*/ 2>/dev/null | wc -l) connectors"
+          echo "Skipped $(wc -l < /tmp/hidden_agent_connectors.txt) unavailable connectors"
 
       - name: Cleanup temporary checkout
         run: rm -rf agent-connectors-source

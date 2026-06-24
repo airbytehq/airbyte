@@ -7,6 +7,9 @@ import {
   loadAgentEngineApiSidebar,
   replaceApiReferenceCategory,
 } from "./src/scripts/agent-engine-api/sidebar-generator";
+const {
+  loadEnabledAgentConnectorSlugs,
+} = require("./src/scripts/agent-connector-availability");
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -31,6 +34,39 @@ const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
 } = require("./src/scripts/agent-engine-api/constants");
+
+function getSidebarItemDocId(item: any): string | undefined {
+  if (item.type === "doc") return item.id;
+  if (item.type === "category" && item.link?.type === "doc") {
+    return item.link.id;
+  }
+  return undefined;
+}
+
+function getAgentConnectorSlugFromDocId(
+  docId: string | undefined,
+): string | undefined {
+  if (!docId?.startsWith("connectors/")) return undefined;
+  return docId.split("/")[1];
+}
+
+function filterAgentConnectorSidebarItems(
+  items: any[],
+  enabledSlugs: Set<string>,
+): any[] {
+  return items
+    .filter((item) => {
+      const slug = getAgentConnectorSlugFromDocId(getSidebarItemDocId(item));
+      return !slug || enabledSlugs.has(slug);
+    })
+    .map((item) => {
+      if (!item.items) return item;
+      return {
+        ...item,
+        items: filterAgentConnectorSidebarItems(item.items, enabledSlugs),
+      };
+    });
+}
 
 const lightCodeTheme = prismThemes.github;
 const darkCodeTheme = prismThemes.dracula;
@@ -188,7 +224,14 @@ const config: Config = {
           // multi-instance sidebars (e.g. sidebar-platform.js) use this same
           // pattern, so this makes ai-agents breadcrumbs consistent with them.
           // See https://github.com/facebook/docusaurus/issues/6953.
-          const itemsWithoutReadme = processedItems.filter(
+          const enabledAgentConnectorSlugs = new Set(
+            loadEnabledAgentConnectorSlugs(),
+          );
+          const enabledItems = filterAgentConnectorSidebarItems(
+            processedItems,
+            enabledAgentConnectorSlugs,
+          );
+          const itemsWithoutReadme = enabledItems.filter(
             (item: any) => !(item.type === "doc" && item.id === "README"),
           );
 
