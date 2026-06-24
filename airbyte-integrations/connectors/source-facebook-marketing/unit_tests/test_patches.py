@@ -11,9 +11,9 @@ gracefully instead of raising TypeError when response data is not dict-typed.
 from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
-
 from source_facebook_marketing.streams.patches import CursorPatch
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def _make_cursor_patch(response_json, include_summary=False):
