@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -181,6 +182,27 @@ class MongoDbDebeziumStateUtilTest {
 
       final boolean result = mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties);
       assertFalse(result);
+    }
+  }
+
+  @Test
+  void testIsResumeTokenUnauthorizedExceptionBubblesUp() {
+    final String resumeToken = RESUME_TOKEN;
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final Properties debeziumProperties = createDebeziumProperties(DATABASE + ".test-collection");
+
+    final MongoCommandException mongoException = mock(MongoCommandException.class);
+    when(mongoException.getErrorCode()).thenReturn(13);
+    when(changeStreamIterable.cursor()).thenThrow(mongoException);
+
+    try (MockedStatic<MongoUtils> mockedMongoUtils = mockStatic(MongoUtils.class)) {
+      mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+          .thenReturn(changeStreamIterable);
+
+      assertThrows(MongoCommandException.class,
+          () -> mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties));
     }
   }
 

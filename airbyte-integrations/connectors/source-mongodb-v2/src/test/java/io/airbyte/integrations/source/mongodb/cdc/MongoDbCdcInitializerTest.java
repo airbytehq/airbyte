@@ -17,12 +17,15 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -41,6 +44,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatus
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -69,6 +73,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -406,6 +411,35 @@ class MongoDbCdcInitializerTest {
             SINGLE_DB_CONFIG);
     assertNotNull(iterators);
     assertEquals(1, filterTraceIterator(iterators).size(), "Should always have 1 iterator for the cdc stream (due to WASS)");
+  }
+
+  @Test
+  void testCreateCdcIteratorsThrowsConfigErrorWhenChangeStreamUnauthorized() {
+    setupSingleDatabase();
+    final BsonDocument unauthorizedError = new BsonDocument("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE));
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(unauthorizedError, new ServerAddress()));
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+    assertEquals(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, thrown.getMessage());
+  }
+
+  @Test
+  void testCreateCdcIteratorsThrowsConfigErrorWhenSavedOffsetValidationUnauthorized() {
+    setupSingleDatabase();
+    final BsonDocument unauthorizedError = new BsonDocument("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE));
+    doThrow(new MongoCommandException(unauthorizedError, new ServerAddress())).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
+
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.COMPLETE), SINGLE_DB_CONFIG);
+
+    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+    assertEquals(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, thrown.getMessage());
   }
 
   @Test

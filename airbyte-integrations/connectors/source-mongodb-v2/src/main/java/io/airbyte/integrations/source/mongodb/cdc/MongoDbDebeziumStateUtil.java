@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingSt
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
@@ -120,6 +121,9 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
           ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return true;
     } catch (final MongoCommandException | MongoChangeStreamException e) {
+      if (MongoUtil.isUnauthorizedException(e)) {
+        throw e;
+      }
       LOGGER.info("Exception : {}", e.getMessage());
       LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
           ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
