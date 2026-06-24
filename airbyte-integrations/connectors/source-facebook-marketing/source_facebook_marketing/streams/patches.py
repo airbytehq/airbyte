@@ -68,7 +68,11 @@ class CursorPatch(Cursor):
             self._path = urlunparse(urlparse(path)._replace(query={}))
             self.params = dict(parse_qsl(urlparse(path).query))
         else:
-            # Indicate if this was the last page
+            if paging is not None and not isinstance(paging, dict):
+                logger.warning(
+                    "Facebook Marketing response had a non-dict 'paging' (%s); stopping pagination for this slice.",
+                    type(paging).__name__,
+                )
             self._finished_iteration = True
 
         summary = response.get("summary")

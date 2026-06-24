@@ -71,11 +71,14 @@ class TestCursorPatchResponseTypeGuard:
 class TestCursorPatchPagingTypeGuard:
     """Test that non-dict 'paging' values are handled safely."""
 
-    def test_paging_as_string_marks_finished(self):
+    def test_paging_as_string_does_not_raise_and_marks_finished(self):
         response = {"data": [], "paging": "not-a-dict"}
         cursor = _make_cursor_patch(response)
+        original_path, original_params = cursor._path, dict(cursor.params)
         cursor.load_next_page()
         assert cursor._finished_iteration is True
+        assert cursor._path == original_path
+        assert cursor.params == original_params
 
     def test_paging_as_none_marks_finished(self):
         response = {"data": [], "paging": None}
