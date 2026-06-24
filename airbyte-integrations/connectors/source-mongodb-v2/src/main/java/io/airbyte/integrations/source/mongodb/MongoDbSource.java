@@ -193,6 +193,9 @@ public class MongoDbSource extends BaseConnector implements Source {
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to perform sync read operation.", e);
+      if (MongoUtil.isMongoUnauthorizedException(e)) {
+        throw new ConfigErrorException(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e, e.getMessage());
+      }
       throw e;
     }
   }
@@ -235,6 +238,9 @@ public class MongoDbSource extends BaseConnector implements Source {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (MongoUtil.isMongoUnauthorizedException(e)) {
+          throw new ConfigErrorException(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e, e.getMessage());
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;

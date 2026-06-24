@@ -13,12 +13,15 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
@@ -27,6 +30,8 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +43,7 @@ import org.junit.jupiter.api.Test;
 class MongoDbSourceTest {
 
   private static final String DB_NAME = "airbyte_test";
+  private static final String COLLECTION_NAME = "testCollection";
 
   private JsonNode airbyteSourceConfig;
   private JsonNode airbyteSourceConfigWithoutSchema;
@@ -269,6 +275,26 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  @Test
+  void testReadClassifiesCdcUnauthorizedErrorsAsConfigErrors() {
+    final MongoCommandException unauthorizedException = new MongoCommandException(
+        BsonDocument.parse("{\"ok\": 0, \"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized\"}"),
+        new ServerAddress());
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withStream(
+                new AirbyteStream().withName(COLLECTION_NAME).withNamespace(DB_NAME).withJsonSchema(Jsons.jsonNode(Map.of("properties", Map.of()))))
+            .withSyncMode(SyncMode.INCREMENTAL)));
+
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(unauthorizedException);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> source.read(airbyteSourceConfig, catalog, null));
+
+    assertEquals(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, thrown.getDisplayMessage());
+    assertTrue(thrown.getInternalMessage().contains("not authorized"));
+    verify(mongoClient, times(1)).close();
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
