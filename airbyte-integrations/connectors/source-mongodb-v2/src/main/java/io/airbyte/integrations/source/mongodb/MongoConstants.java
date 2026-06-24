@@ -59,6 +59,10 @@ public class MongoConstants {
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
+  public static final int CDC_UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String CDC_UNAUTHORIZED_ERROR_MESSAGE =
+      "MongoDB credentials lack permission to open CDC change streams.";
+
   private MongoConstants() {}
 
 }
