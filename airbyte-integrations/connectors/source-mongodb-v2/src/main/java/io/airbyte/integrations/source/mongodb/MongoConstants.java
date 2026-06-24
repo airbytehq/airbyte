@@ -48,7 +48,10 @@ public class MongoConstants {
   public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
 
+  public static final int UNAUTHORIZED_ERROR_CODE = 13;
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
+  public static final String CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE =
+      "MongoDB credentials lack required change stream permissions for incremental syncs.";
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
       "A document in your MongoDB database exceeds the 16MB BSON size limit when processed through CDC (Change Data Capture) change streams. " +
           "This error occurs specifically during incremental/CDC syncs when change stream events become too large. " +
