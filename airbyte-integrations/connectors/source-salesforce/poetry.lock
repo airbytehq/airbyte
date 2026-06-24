@@ -1758,6 +1758,7 @@ files = [
 ]
 
 [package.dependencies]
+cryptography = {version = ">=3.4.0", optional = true, markers = "extra == \"crypto\""}
 typing_extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
@@ -2812,4 +2813,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "6961d80c9e2273296c678fadd75fb694525bcf4b93ec6f4c0fc81115337994c5"
+content-hash = "c164962bf227cdb73f1781bb33792b258ed830acf3b88e9652e0cc9f92cc5609"
