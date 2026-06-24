@@ -7,10 +7,12 @@ import logging
 from dataclasses import dataclass
 from datetime import timedelta
 from time import sleep
+from typing import List
 
 import backoff
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.adobjects.user import User
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 
@@ -198,3 +200,12 @@ class API:
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
         return AdAccount(f"act_{account_id}").api_get(fields=["timezone_name"])
+
+    def get_all_ad_accounts(self) -> List[str]:
+        """Fetch all ad accounts accessible to the authenticated user.
+
+        Returns a list of account IDs (without the 'act_' prefix).
+        """
+        user = User(fbid="me")
+        accounts = user.get_ad_accounts(fields=["account_id"])
+        return [acc["account_id"] for acc in accounts]
