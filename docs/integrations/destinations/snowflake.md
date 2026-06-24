@@ -27,20 +27,20 @@ If you're using Airbyte Cloud, add Airbyte's
 To determine whether a network policy is set on your account or for a specific user, execute the
 _SHOW PARAMETERS_ command.
 
-**Account**
+**Account:**
 
-```
+```sql
 SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
 ```
 
-**User**
+**User:**
 
-```
+```sql
 SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 ```
 
-To read more please check official
-[Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+For more information, see Snowflake's
+[network policies documentation](https://docs.snowflake.com/en/user-guide/network-policies.html).
 
 ## Setup guide
 
@@ -51,11 +51,11 @@ entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` pe
 data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
 
 You can use the following script in a new
-[Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the
+[Snowsight worksheet](https://docs.snowflake.com/en/user-guide/ui-snowsight-worksheets-gs) to create the
 entities:
 
-1.  [Log into your Snowflake account](https://www.snowflake.com/login/).
-2.  Edit the following script to change the password to a more secure password and to change the
+1. [Log into your Snowflake account](https://www.snowflake.com/login/).
+1. Edit the following script to change the password to a more secure password and to change the
     names of other resources if you so desire.
 
     **Note:** Make sure you follow the
@@ -115,8 +115,7 @@ to role identifier($airbyte_role);
 commit;
 ```
 
-3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
-  Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
+1. Run the script using [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Select and highlight the entire query before running it.
 
 Note: Our integration automatically creates the necessary schemas in your Snowflake destination database.
 To enable this, ensure the connection user has `CREATE SCHEMA` privileges on the target database.
@@ -151,12 +150,24 @@ username/password or key pair authentication:
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
 | Airbyte Internal Table Dataset Name (Optional) | The schema used for Airbyte's internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`. |
-| Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
+| Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. Defaults to enabled. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 
 ### Key pair authentication
 
 <KeypairExample/>
+
+After you add the public key to your Snowflake user, choose **Key Pair Authentication** in Airbyte and
+enter the following fields:
+
+| Field | Description |
+| :---- | :---------- |
+| Private Key | The full PEM-formatted private key, including the `BEGIN PRIVATE KEY` or `BEGIN ENCRYPTED PRIVATE KEY` header and matching footer. |
+| Passphrase (Optional) | The passphrase for the private key. Leave this empty for a private key that isn't encrypted. |
+
+Airbyte supports PKCS#8 private keys that are encrypted or not encrypted. Connector version
+4.0.42 and later support encrypted private keys generated with Snowflake's documented OpenSSL command,
+including `-v2 des3`.
 
 ## Output schema
 
@@ -171,6 +182,7 @@ to [Working with Temporary and Transient Tables](https://docs.snowflake.com/en/u
 ### Raw Table schema
 
 The raw table contains these fields:
+
 - `_airbyte_raw_id`
 - `_airbyte_generation_id`
 - `_airbyte_extracted_at`
@@ -178,7 +190,7 @@ The raw table contains these fields:
 - `_airbyte_meta`
 - `_airbyte_data`
 
-`_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
+`_airbyte_data` is a JSON blob with the event data. See [Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields)
 for more information about the other fields.
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
@@ -194,7 +206,7 @@ The final table contains these fields, in addition to the columns declared in yo
 - `_AIRBYTE_LOADED_AT`
 - `_AIRBYTE_META`
 
-Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+See [Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 ## Data type map
 
@@ -281,6 +293,29 @@ desired namespace.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Snowflake schema.
 
+## Reference
+
+The connector uses these configuration fields for programmatic setup with PyAirbyte, Terraform, or the Airbyte API:
+
+| Field | Required | Description |
+| :---- | :------: | :---------- |
+| `host` | Yes | Snowflake account host, for example `accountname.snowflakecomputing.com` or `accountname.us-east-2.aws.snowflakecomputing.com`. |
+| `role` | Yes | Snowflake role Airbyte uses to access the warehouse, database, and schemas. |
+| `warehouse` | Yes | Snowflake warehouse Airbyte uses for compute. |
+| `database` | Yes | Snowflake database Airbyte writes to. |
+| `schema` | Yes | Default Snowflake schema. The namespace setting can direct streams to other schemas. |
+| `username` | Yes | Snowflake user Airbyte uses to connect. |
+| `credentials.auth_type` | Yes | Authentication method. Valid values are `Username and Password` and `Key Pair Authentication`. |
+| `credentials.password` | Required for username/password authentication | Password for the Snowflake user. |
+| `credentials.private_key` | Required for key-pair authentication | PEM-formatted PKCS#8 private key. |
+| `credentials.private_key_password` | No | Passphrase for an encrypted private key. Leave empty for a private key without encryption. |
+| `cdc_deletion_mode` | No | Whether CDC deletes are propagated as hard deletes or preserved as soft-delete tombstone records. Defaults to `Hard delete`. |
+| `disable_type_dedupe` | No | Writes only the legacy raw table format when enabled. Defaults to `false`. |
+| `raw_data_schema` | No | Schema for Airbyte internal tables. In legacy raw tables mode, raw tables are stored in this schema. Defaults to `airbyte_internal`. |
+| `trim_space` | No | Whether Snowflake trims leading and trailing whitespace from string fields during loading. Defaults to `true`. |
+| `jdbc_url_params` | No | Additional JDBC URL properties formatted as `key=value` pairs separated by `&`. |
+| `retention_period_days` | No | Number of Snowflake Time Travel retention days to enable on tables. Defaults to `1`. |
+
 ## Changelog
 
 <details>
@@ -288,9 +323,10 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.43          | 2026-05-19 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
-| 4.0.42          | 2026-05-11 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
-| 4.0.41          | 2026-05-06 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
+| 4.0.43          | 2026-05-20 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13                                                                                                                                                                  |
+| 4.0.42          | 2026-05-14 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Support Snowflake-documented encrypted PKCS#8 private keys for key-pair authentication                                                                                                 |
+| 4.0.41          | 2026-05-07 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
+| 4.0.40          | 2026-05-01 | [77673](https://github.com/airbytehq/airbyte/pull/77673)   | Upgrade CDK to 1.0.11. Default timestamp parsing is now handled by the CDK.                                                                                                            |
 | 4.0.40-rc.1     | 2026-04-27 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
 | 4.0.39          | 2026-03-13 | [74715](https://github.com/airbytehq/airbyte/pull/74715)   | Drop temp table after successful upsert to prevent duplicate records                                                                                                                   |
 | 4.0.38          | 2026-02-25 | [74041](https://github.com/airbytehq/airbyte/pull/74041)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches                                                                                                                           |
