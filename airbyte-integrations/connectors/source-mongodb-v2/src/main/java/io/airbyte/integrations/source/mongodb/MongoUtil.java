@@ -433,6 +433,29 @@ public class MongoUtil {
   }
 
   /**
+   * Walks the cause chain and returns the first {@link MongoCommandException} that represents an
+   * Unauthorized (error code 13) failure raised while trying to open a change stream aggregate
+   * pipeline. The message-substring guard on {@code $changeStream} ensures unrelated authorization
+   * failures (e.g. on {@code local.oplog.rs} {@code collStats}) are not reclassified.
+   *
+   * @param exception The exception to inspect.
+   * @return The matching {@link MongoCommandException} if found, otherwise {@link Optional#empty()}.
+   */
+  public static Optional<MongoCommandException> findUnauthorizedChangeStreamException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE
+          && mongoException.getErrorMessage() != null
+          && mongoException.getErrorMessage().contains("$changeStream")) {
+        return Optional.of(mongoException);
+      }
+      current = current.getCause();
+    }
+    return Optional.empty();
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.

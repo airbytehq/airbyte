@@ -8,6 +8,7 @@ import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
@@ -21,6 +22,7 @@ import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -95,8 +97,22 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    final BsonDocument initialResumeToken;
+    try {
+      initialResumeToken =
+          MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    } catch (final RuntimeException e) {
+      final Optional<MongoCommandException> unauthorized = MongoUtil.findUnauthorizedChangeStreamException(e);
+      if (unauthorized.isPresent()) {
+        final String offendingDatabase = extractDatabaseFromChangeStreamUnauthorized(unauthorized.get(), databaseNames);
+        LOGGER.error(
+            "MongoDB user is not authorized to open a change stream on database '{}'. Original driver error: {}",
+            offendingDatabase, unauthorized.get().getErrorMessage(), e);
+        throw new ConfigErrorException(
+            String.format(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, offendingDatabase), e);
+      }
+      throw e;
+    }
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =
@@ -336,6 +352,38 @@ public class MongoDbCdcInitializer {
       }
     }
     return false; // All state entries match current state format
+  }
+
+  /**
+   * Best-effort extraction of the database name from an "Unauthorized" change-stream
+   * {@link MongoCommandException}. The driver's {@code errmsg} typically reads {@code not authorized
+   * on <db> to execute command { aggregate: ... }}; if that pattern is not present (e.g. because the
+   * change stream was opened against the deployment), falls back to the first configured database
+   * name, or {@code "<unknown>"} as a last resort.
+   *
+   * @param exception The unauthorized {@link MongoCommandException} raised by the driver.
+   * @param databaseNames The configured list of database names from the connector source config.
+   * @return A user-facing database identifier suitable for embedding in the error message.
+   */
+  @VisibleForTesting
+  static String extractDatabaseFromChangeStreamUnauthorized(final MongoCommandException exception,
+                                                            final List<String> databaseNames) {
+    final String message = exception.getErrorMessage();
+    if (message != null) {
+      final String marker = "not authorized on ";
+      final int start = message.indexOf(marker);
+      if (start >= 0) {
+        final int from = start + marker.length();
+        final int end = message.indexOf(' ', from);
+        if (end > from) {
+          return message.substring(from, end);
+        }
+      }
+    }
+    if (databaseNames != null && !databaseNames.isEmpty()) {
+      return databaseNames.size() == 1 ? databaseNames.getFirst() : String.join(", ", databaseNames);
+    }
+    return "<unknown>";
   }
 
   /**
