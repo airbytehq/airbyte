@@ -30,7 +30,6 @@ class MSSQLCsvRowGenerator {
         val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
 
         enrichedRecord.declaredFields.values.forEach { value ->
-            if (value.abValue is NullValue) return@forEach
             ValueCohercer.coerce(value)
             if (value.abValue is NullValue) return@forEach
 
