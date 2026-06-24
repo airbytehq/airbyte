@@ -180,12 +180,18 @@ public class MongoDbSource extends BaseConnector implements Source {
 
         if (!incrementalStreams.isEmpty()) {
           LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
-          iterators
-              .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+          try {
+            iterators
+                .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig)
+                    .stream()
+                    .map(this::wrapIteratorWithCdcErrorHandling)
+                    .toList());
+          } catch (final Exception e) {
+            throw handlePotentialCdcConfigError(e);
+          }
         }
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
-        // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
         return wrapIteratorWithBsonErrorHandling(baseIterator);
       } catch (final Exception e) {
         mongoClient.close();
@@ -197,13 +203,6 @@ public class MongoDbSource extends BaseConnector implements Source {
     }
   }
 
-  /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
-   * actionable error messages to users.
-   *
-   * @param iterator The base iterator to wrap.
-   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
-   */
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
                                                                                   final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
@@ -231,18 +230,64 @@ public class MongoDbSource extends BaseConnector implements Source {
         iterator.close();
       }
 
-      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
-        if (MongoUtil.isBsonObjectTooLargeException(e)) {
-          LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
-          throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+    };
+  }
+
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithCdcErrorHandling(
+                                                                                 final AutoCloseableIterator<AirbyteMessage> iterator) {
+    return new AutoCloseableIterator<>() {
+
+      @Override
+      public boolean hasNext() {
+        try {
+          return iterator.hasNext();
+        } catch (final Exception e) {
+          throw handlePotentialCdcConfigError(e);
         }
-        if (e instanceof RuntimeException) {
-          throw (RuntimeException) e;
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        try {
+          return iterator.next();
+        } catch (final Exception e) {
+          throw handlePotentialCdcConfigError(e);
         }
-        throw new RuntimeException(e);
+      }
+
+      @Override
+      public void close() throws Exception {
+        iterator.close();
       }
 
     };
+  }
+
+  private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+    if (MongoUtil.isBsonObjectTooLargeException(e)) {
+      LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
+      return new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+    }
+    if (e instanceof RuntimeException) {
+      return (RuntimeException) e;
+    }
+    return new RuntimeException(e);
+  }
+
+  private RuntimeException handlePotentialCdcConfigError(final Exception e) {
+    if (MongoUtil.isBsonObjectTooLargeException(e)) {
+      LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
+      return new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+    }
+    if (MongoUtil.isUnauthorizedException(e)) {
+      LOGGER.error("MongoDB authorization error detected during CDC sync. Original error: {}", e.getMessage(), e);
+      return new ConfigErrorException(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e,
+          MongoConstants.CHANGE_STREAM_UNAUTHORIZED_INTERNAL_MESSAGE);
+    }
+    if (e instanceof RuntimeException) {
+      return (RuntimeException) e;
+    }
+    return new RuntimeException(e);
   }
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
