@@ -83,9 +83,12 @@ data:
     - title: PayPal authentication
       url: https://developer.paypal.com/api/rest/authentication/
       type: authentication_guide
-    - title: PayPal rate limits
-      url: https://developer.paypal.com/api/rest/rate-limiting/
-      type: rate_limits
+    - title: PayPal deprecated resources
+      url: https://developer.paypal.com/api/rest/deprecated-resources/
+      type: api_deprecations
+    - title: PayPal lifecycle definition
+      url: https://developer.paypal.com/docs/archive/lifecycle/
+      type: api_deprecations
     - title: PayPal Status
       url: https://www.paypal-status.com/
       type: status_page
