@@ -19,6 +19,15 @@ data:
     - title: API versions
       url: https://learn.microsoft.com/en-us/rest/api/storageservices/previous-azure-storage-service-versions
       type: api_reference
+    - title: Azure Storage versioning and release history
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/versioning-for-the-azure-storage-services
+      type: api_release_history
+    - title: Azure Storage authorization overview
+      url: https://learn.microsoft.com/en-us/azure/storage/common/storage-auth
+      type: authentication_guide
+    - title: Microsoft identity platform breaking changes reference
+      url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
+      type: api_deprecations
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
   license: ELv2
