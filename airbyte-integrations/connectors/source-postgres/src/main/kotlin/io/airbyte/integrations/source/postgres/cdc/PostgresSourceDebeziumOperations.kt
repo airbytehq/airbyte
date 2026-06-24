@@ -196,14 +196,17 @@ class PostgresSourceDebeziumOperations(
         return ValidDebeziumWarmStartState(debeziumOffset, null)
     }
 
-    // Commit the minimum of lsn_proc and lsn_commit to the replication slot
+    // Commit the minimum of lsn_proc and lsn_commit to the replication slot.
+    // Falls back to lsn when both lsn_proc and lsn_commit are absent (e.g. after snapshot).
     private fun advanceReplicationSlot(offset: DebeziumOffset) {
         if (cdcConfig.debeziumCommitsLsn) return
         check(offset.wrapped.size == 1) { "Debezium offset has unrecognized format" }
         val value = offset.wrapped.values.first()
         val lsnProc = Lsn.valueOf(value[LSN_PROC]?.asLong())
         val lsnCommit = Lsn.valueOf(value[LSN_COMMIT]?.asLong())
-        val lsnToAdvanceTo = listOfNotNull(lsnProc, lsnCommit).minOrNull() ?: return
+        val lsnToAdvanceTo =
+            listOfNotNull(lsnProc, lsnCommit).minOrNull()
+                ?: Lsn.valueOf(value[LSN]?.asLong()) ?: return
         replicationSlotManager.advanceLsn(lsnToAdvanceTo)
     }
 
