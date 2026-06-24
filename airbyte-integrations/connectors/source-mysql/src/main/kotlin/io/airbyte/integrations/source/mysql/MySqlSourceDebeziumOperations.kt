@@ -411,7 +411,11 @@ class MySqlSourceDebeziumOperations(
             .buildMap()
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
-        DebeziumPropertiesBuilder().with(commonProperties).withStreams(streams).buildMap()
+        DebeziumPropertiesBuilder()
+            .with(commonProperties)
+            .withStreams(streams)
+            .with(SCHEMA_HISTORY_STORE_ONLY_CAPTURED_TABLES_DDL_PROPERTY, "true")
+            .buildMap()
 
     override fun serializeState(
         offset: DebeziumOffset,
@@ -520,6 +524,8 @@ class MySqlSourceDebeziumOperations(
         const val MYSQL_CDC_OFFSET = "mysql_cdc_offset"
         const val MYSQL_DB_HISTORY = "mysql_db_history"
         const val IS_COMPRESSED = "is_compressed"
+        const val SCHEMA_HISTORY_STORE_ONLY_CAPTURED_TABLES_DDL_PROPERTY =
+            "schema.history.internal.store.only.captured.tables.ddl"
 
         /**
          * The name of the Debezium property that contains the unique name for the Debezium
