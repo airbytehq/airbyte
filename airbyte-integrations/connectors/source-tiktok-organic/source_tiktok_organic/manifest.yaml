@@ -1,0 +1,137 @@
+version: 4.3.3
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - business_user
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  requester:
+    type: HttpRequester
+    http_method: "GET"
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_tiktok_organic.components.TiktokOrganicAuthenticator
+      config: "{{ config }}"
+      $parameters:
+        config: "{{ config }}"
+      client_key: "{{ config['client_key'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: "{{ config['refresh_token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    url_base: "https://business-api.tiktok.com/open_api/v1.3/"
+    record_selector:
+      $ref: "#/definitions/selector"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+
+  business_user_stream:
+    $ref: "#/definitions/base_stream"
+    name: "business_user"
+    primary_key: "username"
+    retriever:
+      type: SimpleRetriever
+      url_base: "https://business-api.tiktok.com/open_api/v1.3/"
+      requester:
+        type: CustomRequester
+        class_name: source_tiktok_organic.components.TiktokOrganicHttpRequester
+        http_method: "GET"
+        authenticator:
+          type: CustomAuthenticator
+          class_name: source_tiktok_organic.components.TiktokOrganicAuthenticator
+          config: "{{ config }}"
+          $parameters:
+            config: "{{ config }}"
+          client_key: "{{ config['client_key'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
+        path: "business/get/"
+        request_parameters:
+          business_id: "{{ config['open_id'] }}"
+          fields: '["address_clicks","app_download_clicks","audience_activity","audience_ages","audience_cities","audience_countries","audience_genders","average_comments","average_likes","average_shares","average_views","bio_description","bio_link_clicks","comments","completion_rate","daily_lost_followers","daily_new_followers","daily_total_followers","display_name","email_clicks","engaged_audience","engagement_rate","followers_count","followers_growth_rate","following_count","is_business_account","is_verified","lead_submissions","likes","phone_number_clicks","profile_deep_link","profile_image","profile_views","shares","total_likes","unique_video_views","username","video_views","videos_count"]'
+          start_date: "{{ stream_interval.start_time.strftime('%Y-%m-%d') }}"
+          end_date: "{{ stream_interval.end_time.strftime('%Y-%m-%d') }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_tiktok_organic.components.TiktokOrganicRecordExtractor
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "date"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: "P1D"
+      step: "P30D"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') if config.get('start_date') else day_delta(-30, format='%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ day_delta(-1, format='%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "source_tiktok_organic/schemas/business_user.json"
+
+  business_videos_stream:
+    $ref: "#/definitions/base_stream"
+    name: "business_videos"
+    primary_key: "item_id"
+    retriever:
+      type: SimpleRetriever
+      url_base: "https://business-api.tiktok.com/open_api/v1.3/"
+      requester:
+        type: CustomRequester
+        class_name: source_tiktok_organic.components.TiktokOrganicHttpRequester
+        http_method: "GET"
+        authenticator:
+          type: CustomAuthenticator
+          class_name: source_tiktok_organic.components.TiktokOrganicAuthenticator
+          config: "{{ config }}"
+          $parameters:
+            config: "{{ config }}"
+          client_key: "{{ config['client_key'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
+        path: "business/video/list/"
+        request_parameters:
+          business_id: "{{ config['open_id'] }}"
+          fields: '["address_clicks","app_download_clicks","audience_cities","audience_countries","audience_genders","audience_types","average_time_watched","caption","comments","create_time","email_clicks","embed_url","engagement_likes","favorites","full_video_watched_rate","impression_sources","item_id","lead_submissions","likes","media_type","new_followers","phone_number_clicks","profile_views","reach","share_url","shares","thumbnail_url","total_time_watched","video_duration","video_view_retention","video_views","website_clicks"]'
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('data', {}).get('cursor') }}"
+          stop_condition: "{{ not response.get('data', {}).get('has_more', False) }}"
+        page_token_option:
+          type: RequestOption
+          field_name: "cursor"
+          inject_into: "request_parameter"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "videos"]
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "source_tiktok_organic/schemas/business_videos.json"
+
+streams:
+  - $ref: "#/definitions/business_user_stream"
+  - $ref: "#/definitions/business_videos_stream"
