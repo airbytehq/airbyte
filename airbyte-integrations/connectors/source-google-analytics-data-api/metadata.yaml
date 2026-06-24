@@ -19,6 +19,9 @@ data:
     - title: Data API changelog
       url: https://developers.google.com/analytics/devguides/reporting/data/v1/changelog
       type: api_release_history
+    - title: Google Analytics Data API Reference
+      url: https://developers.google.com/analytics/devguides/reporting/data/v1/rest
+      type: api_reference
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection
