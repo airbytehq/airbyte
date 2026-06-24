@@ -62,6 +62,9 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
         ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts_archived", "contact", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("companies_archived", "company", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("tickets_archived", "ticket", {"archivedAt": "2022-02-25T16:43:11Z"}),
         ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
         ("deal_splits", "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -185,11 +188,13 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
         ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts_archived", "contact", {"archivedAt": "2022-02-25T16:43:11Z"}),
     ],
     ids=[
         "Contacts stream with v2 field transformations",
         "Deals stream with v2 field transformations",
         "DealsArchived stream with v2 field transformations",
+        "ContactsArchived stream with v2 field transformations",
     ],
 )
 def test_stream_read_with_legacy_field_transformation(
@@ -284,7 +289,7 @@ def test_stream_read_with_legacy_field_transformation(
         "properties_hs_time_in_prospect": "1 month",
         "properties_hs_date_exited_prospect": "2024-02-01T00:00:00Z",
     } | cursor_value
-    if stream_class == "contacts":
+    if stream_class in ("contacts", "contacts_archived"):
         expected_record = expected_record | {"properties_hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
         expected_record["properties"] = expected_record["properties"] | {"hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
     else:
@@ -697,6 +702,9 @@ def test_cast_record_fields_if_needed(
         ("engagements_tasks", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/tasks/search", "POST"),
         ("marketing_emails", "content", "https://api.hubapi.com/marketing/v3/emails", "GET"),
         ("deals_archived", "contacts, crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deals", "GET"),
+        ("contacts_archived", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/contacts", "GET"),
+        ("companies_archived", "crm.objects.contacts.read, crm.objects.companies.read", "https://api.hubapi.com/crm/v3/objects/companies", "GET"),
+        ("tickets_archived", "tickets", "https://api.hubapi.com/crm/v3/objects/tickets", "GET"),
         ("forms", "forms", "https://api.hubapi.com/marketing/v3/forms", "GET"),
         # form_submissions have parent stream forms
         # ("form_submissions", "forms", "https://api.hubapi.com/marketing/v3/forms", "GET"),
