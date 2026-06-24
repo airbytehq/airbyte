@@ -3,7 +3,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - tickets
+    - health_check
 definitions:
   streams:
     tickets:
@@ -2897,6 +2897,43 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
       password: "{{ config['api_key'] }}"
+    health_check:
+      type: DeclarativeStream
+      name: health_check
+      primary_key:
+        - domain
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{config['domain_name']}}/api/v2
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key'] }}"
+          path: /health
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - health
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            domain:
+              type: string
+            status:
+              type: string
+            response_time_ms:
+              type:
+                - "null"
+                - integer
 streams:
   - type: DeclarativeStream
     name: tickets
