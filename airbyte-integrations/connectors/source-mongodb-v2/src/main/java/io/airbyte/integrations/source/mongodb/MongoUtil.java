@@ -432,6 +432,26 @@ public class MongoUtil {
     return false;
   }
 
+  public static boolean isUnauthorizedChangeStreamException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE && isChangeStreamErrorMessage(mongoException.getErrorMessage())) {
+          return true;
+        }
+      }
+      if (isChangeStreamErrorMessage(current.getMessage()) && current.getMessage().contains("error 13")) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  private static boolean isChangeStreamErrorMessage(final String message) {
+    return message != null && message.contains("$changeStream");
+  }
+
   /**
    * Represents statistics of a MongoDB collection.
    *

@@ -23,6 +23,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -41,6 +43,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatus
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -69,6 +72,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -318,6 +322,25 @@ class MongoDbCdcInitializerTest {
     assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
+  }
+
+  @Test
+  void testCreateCdcIteratorsThrowsConfigErrorForUnauthorizedChangeStream() {
+    setupSingleDatabase();
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonInt32(0))
+        .append("errmsg", new BsonString("not authorized on database to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }"))
+        .append("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"));
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(response, new ServerAddress()));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+
+    assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, thrown.getMessage());
+    assertTrue(thrown.getInternalMessage().contains("MongoCommandException"));
   }
 
   @Test
