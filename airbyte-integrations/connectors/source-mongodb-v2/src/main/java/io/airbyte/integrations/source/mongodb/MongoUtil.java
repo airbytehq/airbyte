@@ -14,6 +14,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_M
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -425,6 +426,19 @@ public class MongoUtil {
           (current.getMessage().contains("BSONObjectTooLarge") ||
               current.getMessage().contains("BSONObj size") ||
               current.getMessage().contains("error 10334"))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  public static boolean isChangeStreamAuthorizationException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoException mongoException
+          && mongoException.getCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE
+          && mongoException.getMessage().contains("$changeStream")) {
         return true;
       }
       current = current.getCause();
