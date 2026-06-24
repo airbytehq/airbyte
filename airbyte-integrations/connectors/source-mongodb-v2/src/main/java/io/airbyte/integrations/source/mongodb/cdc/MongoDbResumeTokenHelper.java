@@ -11,6 +11,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
+import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -66,22 +69,30 @@ public class MongoDbResumeTokenHelper {
     }
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
-    final ChangeStreamIterable<BsonDocument> eventStream;
-    if (databaseNames.size() == 1) {
-      LOGGER.info("Most recent CDC token for a single database.");
-      eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
-    } else {
-      LOGGER.info("Most recent CDC token for multiple databases.");
-      eventStream = mongoClient.watch(pipeline, BsonDocument.class);
-    }
+    try {
+      final ChangeStreamIterable<BsonDocument> eventStream;
+      if (databaseNames.size() == 1) {
+        LOGGER.info("Most recent CDC token for a single database.");
+        eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
+      } else {
+        LOGGER.info("Most recent CDC token for multiple databases.");
+        eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+      }
 
-    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
-      /*
-       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
-       * the call to getResumeToken() will return null!
-       */
-      eventStreamCursor.tryNext();
-      return eventStreamCursor.getResumeToken();
+      try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
+        /*
+         * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
+         * the call to getResumeToken() will return null!
+         */
+        eventStreamCursor.tryNext();
+        return eventStreamCursor.getResumeToken();
+      }
+    } catch (final RuntimeException e) {
+      if (MongoUtil.isChangeStreamAuthorizationException(e)) {
+        LOGGER.error("Unable to open MongoDB change stream during CDC initialization.", e);
+        throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, e, e.getMessage());
+      }
+      throw e;
     }
   }
 

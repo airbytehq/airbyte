@@ -11,6 +11,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -18,6 +20,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.debezium.connector.mongodb.ResumeTokens;
@@ -26,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Test;
@@ -59,6 +64,32 @@ class MongoDbResumeTokenHelperTest {
     final BsonDocument actualResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of()));
     assertEquals(resumeTokenDocument, actualResumeToken);
+  }
+
+  @Test
+  void testUnauthorizedChangeStreamExceptionIsConfigError() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+
+    when(changeStreamIterable.cursor()).thenThrow(mongoCommandException(13, "Unauthorized"));
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    final ConfigErrorException exception = assertThrows(ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream. Grant changeStream/read privileges on the configured database or use readAnyDatabase for multi-database CDC.",
+        exception.getMessage());
+    assertEquals(
+        "Command failed with error 13 (Unauthorized): 'not authorized to execute change stream command' on server localhost:27017. The full response is {\"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized to execute change stream command\"}",
+        exception.getInternalMessage());
   }
 
   @Test
@@ -96,6 +127,13 @@ class MongoDbResumeTokenHelperTest {
   void testTimestampExtractionTimestampNotPresent() {
     final JsonNode changeEvent = Jsons.deserialize("{\"source\":{}}");
     assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent));
+  }
+
+  private static MongoCommandException mongoCommandException(final int errorCode, final String codeName) {
+    return new MongoCommandException(new BsonDocument()
+        .append("code", new BsonInt32(errorCode))
+        .append("codeName", new BsonString(codeName))
+        .append("errmsg", new BsonString("not authorized to execute change stream command")), new ServerAddress("localhost", 27017));
   }
 
 }
