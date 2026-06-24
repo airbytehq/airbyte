@@ -405,6 +405,37 @@ public class MongoUtil {
   }
 
   /**
+   * Returns the {@link MongoCommandException} in the cause chain of the given throwable, if any.
+   *
+   * @param exception The exception to inspect.
+   * @return The first {@link MongoCommandException} found in the cause chain, or {@code null} if none
+   *         is present.
+   */
+  public static MongoCommandException findMongoCommandException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        return mongoException;
+      }
+      current = current.getCause();
+    }
+    return null;
+  }
+
+  /**
+   * Checks if the given exception is caused by an Unauthorized error (MongoDB error code 13) surfaced
+   * from a change stream / aggregate command. This indicates that the configured MongoDB user does
+   * not have the {@code changeStream} privilege on the target database.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by an Unauthorized error from MongoDB, false otherwise.
+   */
+  public static boolean isMongoUnauthorizedException(final Throwable exception) {
+    final MongoCommandException mongoException = findMongoCommandException(exception);
+    return mongoException != null && mongoException.getErrorCode() == MongoConstants.MONGO_NOT_AUTHORIZED_ERROR_CODE;
+  }
+
+  /**
    * Checks if the given exception is caused by a BSONObjectTooLarge error (MongoDB error code 10334).
    * This error occurs when a BSON document exceeds the 16MB size limit, which can happen during CDC
    * (Change Data Capture) operations when change stream events become too large.

@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.client.ChangeStreamIterable;
+import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
@@ -27,8 +30,10 @@ import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.bson.BsonDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +107,20 @@ public class MongoDbSource extends BaseConnector implements Source {
           return new AirbyteConnectionStatus()
               .withMessage("Target MongoDB instance is not a replica set cluster.")
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+
+        /*
+         * Open a change stream cursor against each configured database to verify that the user has the
+         * `changeStream` privilege required for incremental/CDC syncs. Without this pre-flight check, a
+         * misconfigured user passes `check` and only fails at the start of every sync attempt with a raw
+         * MongoCommandException (errorCode 13). Surfacing the failure here lets the platform classify it as
+         * a config error and stops unnecessary retries.
+         */
+        for (String databaseName : databaseNames) {
+          final AirbyteConnectionStatus changeStreamStatus = checkChangeStreamPermission(mongoClient, databaseName);
+          if (changeStreamStatus != null) {
+            return changeStreamStatus;
+          }
         }
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
@@ -247,6 +266,30 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
     return MongoConnectionUtils.createMongoClient(config);
+  }
+
+  /**
+   * Verifies that the configured user can open a change stream on the given database. Returns
+   * {@code null} when the check passes, or a failed {@link AirbyteConnectionStatus} when the user
+   * lacks the {@code changeStream} privilege. Other exceptions are rethrown so the existing catch-all
+   * in {@link #check} can handle them uniformly.
+   */
+  @VisibleForTesting
+  AirbyteConnectionStatus checkChangeStreamPermission(final MongoClient mongoClient, final String databaseName) {
+    final ChangeStreamIterable<BsonDocument> eventStream =
+        mongoClient.getDatabase(databaseName).watch(Collections.emptyList(), BsonDocument.class);
+    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor = eventStream.cursor()) {
+      cursor.tryNext();
+      return null;
+    } catch (final RuntimeException e) {
+      if (MongoUtil.isMongoUnauthorizedException(e)) {
+        LOGGER.error("MongoDB user is not authorized to open a change stream on database \"{}\".", databaseName, e);
+        return new AirbyteConnectionStatus()
+            .withMessage("Source MongoDB user is not authorized to open a change stream on database \"" + databaseName + "\".")
+            .withStatus(AirbyteConnectionStatus.Status.FAILED);
+      }
+      throw e;
+    }
   }
 
   List<AutoCloseableIterator<AirbyteMessage>> createFullRefreshIterators(final MongoDbSourceConfig sourceConfig,
