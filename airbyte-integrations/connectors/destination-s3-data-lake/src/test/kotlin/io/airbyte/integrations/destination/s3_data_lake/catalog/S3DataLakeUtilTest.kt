@@ -28,7 +28,7 @@ import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfiguration
-import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
+
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -224,7 +224,7 @@ internal class S3DataLakeUtilTest {
         val s3BucketConfiguration =
             S3BucketConfiguration(
                 s3BucketName = s3BucketName,
-                s3BucketRegion = S3BucketRegion.`us-east-1`.region,
+                s3BucketRegion = "us-east-1",
                 s3Endpoint = s3Endpoint,
             )
         val icebergCatalogConfiguration =
@@ -337,7 +337,7 @@ internal class S3DataLakeUtilTest {
             s3BucketConfiguration =
                 S3BucketConfiguration(
                     s3BucketName = "test",
-                    s3BucketRegion = S3BucketRegion.`us-east-1`.region,
+                    s3BucketRegion = "us-east-1",
                     s3Endpoint = null,
                 ),
             icebergCatalogConfiguration =
