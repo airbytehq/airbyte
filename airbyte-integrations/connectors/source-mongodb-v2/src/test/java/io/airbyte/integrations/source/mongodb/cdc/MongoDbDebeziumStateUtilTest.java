@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -22,7 +24,9 @@ import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.ServerDescription;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -36,6 +40,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -140,6 +146,33 @@ class MongoDbDebeziumStateUtilTest {
 
       final boolean result = mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties);
       assertTrue(result);
+    }
+  }
+
+  @Test
+  void testIsResumeTokenUnauthorizedThrowsConfigError() {
+    final String resumeToken = RESUME_TOKEN;
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final Properties debeziumProperties = createDebeziumProperties(DATABASE + ".test-collection");
+    final MongoCommandException unauthorizedException = new MongoCommandException(
+        new BsonDocument()
+            .append("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
+            .append("codeName", new BsonString("Unauthorized"))
+            .append("errmsg", new BsonString("not authorized to open change stream")),
+        new ServerAddress());
+
+    when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
+
+    try (MockedStatic<MongoUtils> mockedMongoUtils = mockStatic(MongoUtils.class)) {
+      mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+          .thenReturn(changeStreamIterable);
+
+      final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+          () -> mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties));
+      assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, thrown.getMessage());
+      assertEquals(unauthorizedException, thrown.getCause());
     }
   }
 
