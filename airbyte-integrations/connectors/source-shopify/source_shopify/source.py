@@ -162,7 +162,7 @@ class SourceShopify(AbstractSource):
         if "://" in value:
             parsed = urlparse(value)
             host = parsed.netloc
-            if parsed.path not in ("", "/") or parsed.query or parsed.fragment:
+            if parsed.path not in ("", "/") or parsed.params or parsed.query or parsed.fragment:
                 raise ShopifyWrongShopNameError(raw)
         else:
             host, _, path = value.partition("/")
@@ -174,9 +174,10 @@ class SourceShopify(AbstractSource):
         if host.endswith(suffix):
             host = host[: -len(suffix)]
 
-        # Final handle is a single label: starts alnum, then alnum/hyphen.
-        # No dots, underscores, whitespace, or empty string.
-        if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", host):
+        # Final handle is a single label that must start and end with an alphanumeric,
+        # with hyphens allowed only in between. No dots, underscores, whitespace,
+        # leading/trailing hyphen, or empty string (none of which are valid myshopify handles).
+        if not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", host):
             raise ShopifyWrongShopNameError(raw)
 
         return host
@@ -189,7 +190,12 @@ class SourceShopify(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-        config["shop"] = self.get_shop_name(config)
+        try:
+            config["shop"] = self.get_shop_name(config)
+        except ShopifyWrongShopNameError as error:
+            # Surface the specific, actionable reason at check time instead of letting the
+            # exception escape to the generic top-level handler ("Something went wrong...").
+            return False, error.message
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
 

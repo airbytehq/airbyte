@@ -9,7 +9,6 @@ import pytest
 import requests
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest, ShopifyScopes, SourceShopify
-from source_shopify.utils import ShopifyWrongShopNameError
 from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -49,6 +48,7 @@ from source_shopify.streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
+from source_shopify.utils import ShopifyWrongShopNameError
 
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -186,6 +186,18 @@ def test_check_connection(config, mocker) -> None:
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
+def test_check_connection_invalid_shop_returns_clear_error(config) -> None:
+    # A malformed `shop` must surface a clear, actionable reason at check time rather than
+    # letting ShopifyWrongShopNameError escape to the generic top-level handler.
+    config["shop"] = "https://test-store.myshopify.com/admin"
+    source = SourceShopify()
+    logger_mock = MagicMock()
+    succeeded, message = source.check_connection(logger_mock, config)
+    assert succeeded is False
+    assert "Shopify Store" in message
+    assert "https://test-store.myshopify.com/admin" in message
+
+
 def test_read_records(config, mocker) -> None:
     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
     stream_slice = records[0]
@@ -268,6 +280,7 @@ def test_parse_response_with_bad_json(config, response_with_bad_json) -> None:
         ("http://test-store.myshopify.com/", "test-store"),
         ("https://Test-Store.myshopify.com", "test-store"),
         ("TEST-STORE", "test-store"),
+        ("TEST-STORE.MYSHOPIFY.COM", "test-store"),
         ("  test-store  ", "test-store"),
         ("test-store.myshopify.com/", "test-store"),
     ],
@@ -279,6 +292,7 @@ def test_parse_response_with_bad_json(config, response_with_bad_json) -> None:
         "http-slash",
         "mixed-case",
         "bare-upper",
+        "full-domain-upper",
         "whitespace",
         "bare-slash",
     ],
@@ -295,22 +309,32 @@ def test_get_shop_name(config, shop, expected) -> None:
     [
         "https://test-store.myshopify.com/admin",
         "test-store.myshopify.com/admin/api",
+        "https://test-store.myshopify.com?foo=bar",
+        "https://test-store.myshopify.com#section",
         "test store",
         "test_store",
         "",
         "   ",
         "https://",
         "-test-store",
+        "test-store-",
+        None,
+        12345,
     ],
     ids=[
         "path-scheme",
         "path-bare",
+        "query",
+        "fragment",
         "space",
         "underscore",
         "empty",
         "whitespace",
         "scheme-only",
         "leading-hyphen",
+        "trailing-hyphen",
+        "none",
+        "non-string",
     ],
 )
 def test_get_shop_name_invalid(config, shop) -> None:
