@@ -422,6 +422,17 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testIsUnauthorizedException() {
+    final MongoCommandException unauthorized = new MongoCommandException(
+        BsonDocument.parse("{\"ok\": 0, \"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized\"}"),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(unauthorized));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException(unauthorized)));
+    assertFalse(MongoUtil.isUnauthorizedException(new RuntimeException("not authorized")));
+  }
+
+  @Test
   void testChunkSize() {
     final String collectionName = "test-collection";
     final String databaseName = "test-database";
