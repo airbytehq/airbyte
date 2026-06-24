@@ -187,11 +187,18 @@ class BigqueryDirectLoadNativeTableOperations(
         )
     }
 
-    private fun getColumnCastStatement(
+    @VisibleForTesting
+    internal fun getColumnCastStatement(
         columnName: String,
         originalType: StandardSQLTypeName,
         newType: StandardSQLTypeName,
+        tableAlias: String = SOURCE_TABLE_ALIAS,
     ): String {
+        // Always qualify the column reference with the source table alias. Otherwise, if the
+        // source table's name collides with one of its own column names, BigQuery resolves the
+        // unqualified identifier to the table's row STRUCT rather than the column.
+        // See https://github.com/airbytehq/oncall/issues/10671.
+        val qualifiedColumn = "$tableAlias.`$columnName`"
         if (originalType == StandardSQLTypeName.JSON) {
             // somewhat annoying.
             // TO_JSON_STRING returns string values with double quotes, which is not what we want
@@ -203,18 +210,18 @@ class BigqueryDirectLoadNativeTableOperations(
             // but that seems like a weird enough situation that we shouldn't worry about it.
             return """
                 CAST(
-                  CASE JSON_TYPE(`$columnName`)
-                    WHEN 'object' THEN TO_JSON_STRING(`$columnName`)
-                    WHEN 'array' THEN TO_JSON_STRING(`$columnName`)
-                    ELSE JSON_VALUE(`$columnName`)
+                  CASE JSON_TYPE($qualifiedColumn)
+                    WHEN 'object' THEN TO_JSON_STRING($qualifiedColumn)
+                    WHEN 'array' THEN TO_JSON_STRING($qualifiedColumn)
+                    ELSE JSON_VALUE($qualifiedColumn)
                   END
                   AS $newType
                 )
                 """.trimIndent()
         } else if (newType == StandardSQLTypeName.JSON) {
-            return "TO_JSON(`$columnName`)"
+            return "TO_JSON($qualifiedColumn)"
         } else {
-            return "CAST(`$columnName` AS $newType)"
+            return "CAST($qualifiedColumn AS $newType)"
         }
     }
 
@@ -243,8 +250,12 @@ class BigqueryDirectLoadNativeTableOperations(
         val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
         val columnList =
             (columnsToRetain + columnsToChange.map { it.name }).joinToString(",") { "`$it`" }
+        // Qualify each SELECT-list entry with the source table alias. Without the alias,
+        // BigQuery would resolve an unqualified identifier that happens to match the table's
+        // own name to the row STRUCT instead of the column.
+        // See https://github.com/airbytehq/oncall/issues/10671.
         val valueList =
-            (columnsToRetain.map { "`$it`" } +
+            (columnsToRetain.map { "$SOURCE_TABLE_ALIAS.`$it`" } +
                     columnsToChange.map {
                         getColumnCastStatement(
                             columnName = it.name,
@@ -262,7 +273,7 @@ class BigqueryDirectLoadNativeTableOperations(
                 ($columnList)
                 SELECT
                 $valueList
-                FROM $originalTableId
+                FROM $originalTableId AS $SOURCE_TABLE_ALIAS
                 """.trimIndent(),
             )
 
@@ -353,10 +364,15 @@ class BigqueryDirectLoadNativeTableOperations(
         typeChangePlans.forEach {
             (realColumnName, tempColumnName, backupColumnName, originalType, newType) ->
             // first, update the temp column to contain the casted value.
+            // Alias the updated table so that the source column reference inside the CAST
+            // expression (emitted by getColumnCastStatement with a src. prefix) is always
+            // unambiguously resolved to the column and not to the row STRUCT when the table
+            // name collides with a column name.
+            // See https://github.com/airbytehq/oncall/issues/10671.
             val castStatement = getColumnCastStatement(realColumnName, originalType, newType)
             try {
                 databaseHandler.executeWithRetries(
-                    """UPDATE $tableId SET `$tempColumnName` = $castStatement WHERE 1=1"""
+                    """UPDATE $tableId AS $SOURCE_TABLE_ALIAS SET `$tempColumnName` = $castStatement WHERE 1=1"""
                 )
             } catch (e: Exception) {
                 val message =
@@ -394,6 +410,11 @@ class BigqueryDirectLoadNativeTableOperations(
     }
 
     companion object {
+        // Alias used for the source table in recreateTable's INSERT ... SELECT to disambiguate
+        // unqualified column references from the row STRUCT when a column name matches the
+        // table name. See https://github.com/airbytehq/oncall/issues/10671.
+        @VisibleForTesting internal const val SOURCE_TABLE_ALIAS = "src"
+
         @VisibleForTesting
         fun clusteringMatches(
             stream: DestinationStream,

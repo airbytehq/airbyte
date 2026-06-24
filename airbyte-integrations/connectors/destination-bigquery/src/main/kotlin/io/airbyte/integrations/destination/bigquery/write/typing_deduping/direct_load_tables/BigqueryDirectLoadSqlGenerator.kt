@@ -104,8 +104,15 @@ class BigqueryDirectLoadSqlGenerator(
         sourceTableName: TableName,
         targetTableName: TableName
     ): Sql {
-        val columnNames =
+        val insertColumnNames =
             columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",") { "`$it`" }
+        // Qualify the SELECT list with the source-table alias so unqualified identifiers
+        // can never collide with the source table's own name (which BigQuery would otherwise
+        // resolve to the row STRUCT). See https://github.com/airbytehq/oncall/issues/10671.
+        val selectColumnNames =
+            columnNameMapping
+                .map { (_, actualName) -> actualName }
+                .joinToString(",") { "$SOURCE_TABLE_ALIAS.`$it`" }
         return Sql.of(
             // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
             """
@@ -115,15 +122,15 @@ class BigqueryDirectLoadSqlGenerator(
                 _airbyte_extracted_at,
                 _airbyte_meta,
                 _airbyte_generation_id,
-                $columnNames
+                $insertColumnNames
             )
             SELECT
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id,
-                $columnNames
-            FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
+                $SOURCE_TABLE_ALIAS._airbyte_raw_id,
+                $SOURCE_TABLE_ALIAS._airbyte_extracted_at,
+                $SOURCE_TABLE_ALIAS._airbyte_meta,
+                $SOURCE_TABLE_ALIAS._airbyte_generation_id,
+                $selectColumnNames
+            FROM `${sourceTableName.namespace}`.`${sourceTableName.name}` AS $SOURCE_TABLE_ALIAS
             """.trimIndent()
         )
     }
@@ -246,6 +253,15 @@ class BigqueryDirectLoadSqlGenerator(
         sourceTableName: TableName,
         columnNameMapping: ColumnNameMapping,
     ): String {
+        // Qualify each column reference in the `records` CTE with the source-table alias so
+        // BigQuery cannot resolve an unqualified identifier to the row STRUCT when the source
+        // table name matches one of its own column names.
+        // See https://github.com/airbytehq/oncall/issues/10671.
+        val sourceColumnList: String =
+            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
+                val columnName = columnNameMapping[fieldName]!!
+                "$SOURCE_TABLE_ALIAS.`$columnName`,"
+            }
         val columnList: String =
             stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
                 val columnName = columnNameMapping[fieldName]!!
@@ -276,12 +292,12 @@ class BigqueryDirectLoadSqlGenerator(
         return """
                WITH records AS (
                  SELECT
-                   $columnList
-                   _airbyte_meta,
-                   _airbyte_raw_id,
-                   _airbyte_extracted_at,
-                   _airbyte_generation_id
-                 FROM `$projectId`.${sourceTableName.toPrettyString(QUOTE)}
+                   $sourceColumnList
+                   $SOURCE_TABLE_ALIAS._airbyte_meta,
+                   $SOURCE_TABLE_ALIAS._airbyte_raw_id,
+                   $SOURCE_TABLE_ALIAS._airbyte_extracted_at,
+                   $SOURCE_TABLE_ALIAS._airbyte_generation_id
+                 FROM `$projectId`.${sourceTableName.toPrettyString(QUOTE)} AS $SOURCE_TABLE_ALIAS
                ), numbered_rows AS (
                  SELECT *, row_number() OVER (
                    PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
@@ -296,6 +312,12 @@ class BigqueryDirectLoadSqlGenerator(
 
     companion object {
         const val QUOTE: String = "`"
+
+        // Alias used when qualifying column references in SELECT statements that read from a
+        // source table, to prevent BigQuery from resolving an unqualified identifier to the
+        // source table's row STRUCT when the table name matches a column name.
+        // See https://github.com/airbytehq/oncall/issues/10671.
+        internal const val SOURCE_TABLE_ALIAS = "src"
 
         fun toDialectType(type: AirbyteType): StandardSQLTypeName =
             when (type) {
