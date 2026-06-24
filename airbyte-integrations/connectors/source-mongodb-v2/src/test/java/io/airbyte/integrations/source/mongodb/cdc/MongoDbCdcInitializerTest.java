@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
@@ -23,6 +24,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -69,6 +72,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -288,6 +292,24 @@ class MongoDbCdcInitializerTest {
     when(findIterable2.sort(any())).thenReturn(findIterable2);
     when(findIterable2.cursor()).thenReturn(findCursor);
     when(findIterable2.allowDiskUse(anyBoolean())).thenReturn(findIterable2);
+  }
+
+  @Test
+  void testCreateCdcIteratorsWithUnauthorizedChangeStreamThrowsConfigError() {
+    setupSingleDatabase();
+    final BsonDocument errorResponse = new BsonDocument()
+        .append("ok", new BsonInt32(0))
+        .append("code", new BsonInt32(13))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized on test-database to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }"));
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(errorResponse, new ServerAddress("localhost")));
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+    final ConfigErrorException exception = assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager,
+            EMITTED_AT, SINGLE_DB_CONFIG));
+
+    assertEquals(CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, exception.getMessage());
   }
 
   @Test
