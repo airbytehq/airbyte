@@ -7,7 +7,7 @@ name: Block/Unblock Connector Release
 # Intended to be triggered by the airbyte-ops MCP/CLI after a connector version
 # is yanked, to prevent accidental re-publish of broken code still on master.
 #
-# See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
+# See: https://github.com/airbytehq/airbyte-ops/issues/686
 
 on:
   workflow_dispatch:
