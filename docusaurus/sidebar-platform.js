@@ -437,23 +437,7 @@ module.exports = {
         buildAConnector,     
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
-        {
-          type: "category",
-          label: "Self-Managed Enterprise",
-          link: {
-            type: "doc",
-            id: "enterprise-setup/README",
-          },
-          items: [
-            "enterprise-setup/implementation-guide",
-            "enterprise-setup/multi-region",
-            "enterprise-setup/audit-logging",
-            "enterprise-setup/scaling-airbyte",
-            "enterprise-setup/upgrade-service-account",
-            "enterprise-setup/upgrading-from-community",
-            "enterprise-setup/chart-v2-enterprise",
-          ],
-        },
+        "enterprise-setup/README",
         {
           type: "category",
           label: "Enterprise Flex",
