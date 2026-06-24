@@ -20,8 +20,11 @@ data:
     - title: REST API Release Notes
       url: https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/rest_rns.htm
       type: api_release_history
-    - title: Winter 2026 release notes - API
-      url: https://help.salesforce.com/s/articleView?id=release-notes.salesforce_release_notes.htm&release=258&type=5
+    - title: Salesforce Platform API End-of-Life Policy
+      url: https://developer.salesforce.com/docs/revenue/subscription-management/guide/api-end-of-life.html
+      type: api_deprecations
+    - title: Salesforce Release Notes (Latest)
+      url: https://help.salesforce.com/s/articleView?id=release-notes.salesforce_release_notes.htm&type=5
       type: api_release_history
   githubIssueLabel: source-salesforce
   icon: salesforce.svg
