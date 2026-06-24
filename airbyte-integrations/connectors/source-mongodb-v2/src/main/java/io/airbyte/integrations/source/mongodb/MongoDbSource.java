@@ -236,6 +236,10 @@ public class MongoDbSource extends BaseConnector implements Source {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
         }
+        if (MongoUtil.isMongoUnauthorizedException(e)) {
+          LOGGER.error("MongoDB Unauthorized error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.MONGO_UNAUTHORIZED_ERROR_MESSAGE, e);
+        }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
         }
