@@ -185,27 +185,30 @@ public class MongoDbSource extends BaseConnector implements Source {
         }
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
-        // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
-        return wrapIteratorWithBsonErrorHandling(baseIterator);
+        // Wrap the iterator to translate known MongoDB errors into actionable ConfigErrorExceptions.
+        return wrapIteratorWithErrorHandling(baseIterator);
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to perform sync read operation.", e);
+      if (MongoUtil.isUnauthorizedChangeStreamException(e)) {
+        throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_NOT_AUTHORIZED_ERROR_MESSAGE, e);
+      }
       throw e;
     }
   }
 
   /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
-   * actionable error messages to users.
+   * Wraps an iterator to translate known MongoDB errors raised during CDC operations into actionable
+   * {@link ConfigErrorException}s with user-facing messages.
    *
    * @param iterator The base iterator to wrap.
-   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   * @return A wrapped iterator that catches and translates known MongoDB errors.
    */
-  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
-                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithErrorHandling(
+                                                                              final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
@@ -213,7 +216,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.hasNext();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw translateMongoError(e);
         }
       }
 
@@ -222,7 +225,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.next();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw translateMongoError(e);
         }
       }
 
@@ -231,10 +234,14 @@ public class MongoDbSource extends BaseConnector implements Source {
         iterator.close();
       }
 
-      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+      private RuntimeException translateMongoError(final Exception e) {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (MongoUtil.isUnauthorizedChangeStreamException(e)) {
+          LOGGER.error("MongoDB user is not authorized to open a change stream. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_NOT_AUTHORIZED_ERROR_MESSAGE, e);
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;

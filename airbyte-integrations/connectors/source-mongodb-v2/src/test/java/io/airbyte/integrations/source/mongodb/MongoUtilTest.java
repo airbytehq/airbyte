@@ -444,6 +444,50 @@ public class MongoUtilTest {
             .isEqualTo(100_003);
   }
 
+  @Test
+  void testIsUnauthorizedChangeStreamException() {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new org.bson.BsonDouble(0.0))
+        .append("code", new org.bson.BsonInt32(MongoConstants.MONGO_UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new org.bson.BsonString("Unauthorized"))
+        .append("errmsg", new org.bson.BsonString(
+            "not authorized on test-db to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ], cursor: {}, $db: \"test-db\" }"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedChangeStreamException(exception));
+    assertTrue(MongoUtil.isUnauthorizedChangeStreamException(new RuntimeException("wrapped", exception)));
+  }
+
+  @Test
+  void testIsUnauthorizedChangeStreamExceptionRejectsOtherUnauthorizedCommands() {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new org.bson.BsonDouble(0.0))
+        .append("code", new org.bson.BsonInt32(MongoConstants.MONGO_UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new org.bson.BsonString("Unauthorized"))
+        .append("errmsg", new org.bson.BsonString("not authorized on test-db to execute command { find: \"users\" }"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedChangeStreamException(exception));
+  }
+
+  @Test
+  void testIsUnauthorizedChangeStreamExceptionRejectsOtherErrorCodes() {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new org.bson.BsonDouble(0.0))
+        .append("code", new org.bson.BsonInt32(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE))
+        .append("codeName", new org.bson.BsonString("BSONObjectTooLarge"))
+        .append("errmsg", new org.bson.BsonString("BSONObj size: ... in pipeline [ { $changeStream: {} } ]"));
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedChangeStreamException(exception));
+  }
+
+  @Test
+  void testIsUnauthorizedChangeStreamExceptionHandlesNullAndUnrelated() {
+    assertFalse(MongoUtil.isUnauthorizedChangeStreamException(new RuntimeException("nothing to see here")));
+    assertFalse(MongoUtil.isUnauthorizedChangeStreamException(new MongoException("boom")));
+  }
+
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
                                                 final boolean isCatalogSchemaEnforcing,
                                                 final boolean isStateSchemaEnforced) {
