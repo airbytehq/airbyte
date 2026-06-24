@@ -67,6 +67,9 @@ TEST_CONFIG = {
         "product_search_query_performance_report_daily",
         "product_search_query_performance_report_weekly",
         "product_search_query_performance_report_monthly",
+        "asset_group_performance_report_daily",
+        "asset_group_performance_report_weekly",
+        "asset_group_performance_report_monthly",
         "search_query_performance_report_daily",
         "search_query_performance_report_weekly",
         "search_query_performance_report_monthly",
@@ -202,6 +205,7 @@ def test_search_query_performance_primary_key_distinguishes_rows_by_all_requeste
         "goals_and_funnels_report_hourly",
         "product_dimension_performance_report_hourly",
         "product_search_query_performance_report_hourly",
+        "asset_group_performance_report_hourly",
         "search_query_performance_report_hourly",
         "user_location_performance_report_hourly",
     ),
@@ -331,3 +335,69 @@ def test_custom_report_name_conversion(test_name, config, custom_report_config, 
         custom_stream is not None
     ), f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
     assert custom_stream.name == expected_name
+
+
+def test_asset_group_performance_report_primary_key_and_schema(config):
+    stream = find_stream("asset_group_performance_report_daily", config)
+    assert stream.primary_key == [
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "AssetGroupId",
+        "CampaignType",
+    ]
+
+
+def test_asset_group_performance_report_ctr_transformation(config, mock_user_query, mock_auth_token):
+    stream = find_stream("asset_group_performance_report_daily", config)
+    record = {
+        "TimePeriod": "2025-06-01",
+        "AccountName": "Test Account",
+        "AccountId": "12345",
+        "CampaignName": "PMax Campaign",
+        "CampaignId": "67890",
+        "AccountStatus": "Active",
+        "CampaignStatus": "Active",
+        "AssetGroupId": "11111",
+        "AssetGroupName": "Test Asset Group",
+        "AssetGroupStatus": "Active",
+        "Impressions": "100",
+        "Clicks": "10",
+        "Ctr": "10.00%",
+        "Spend": "50.0",
+        "AverageCpc": "5.0",
+        "Conversions": "2",
+        "Revenue": "100.0",
+        "ReturnOnAdSpend": "2.0",
+        "CampaignType": "PerformanceMax",
+        "CostPerConversion": "25.0",
+    }
+    transformed_record = list(
+        stream.retriever.record_selector.filter_and_transform(all_data=[record], stream_state={}, stream_slice={}, records_schema={})
+    )[0]
+    assert transformed_record["Ctr"] == 10.0
+    assert transformed_record["AccountId"] == 12345
+    assert transformed_record["CampaignId"] == 67890
+    assert transformed_record["AssetGroupId"] == 11111
+    assert transformed_record["Impressions"] == 100
+    assert transformed_record["Clicks"] == 10
+    assert transformed_record["Spend"] == 50.0
+    assert transformed_record["AverageCpc"] == 5.0
+    assert transformed_record["Revenue"] == 100.0
+    assert transformed_record["ReturnOnAdSpend"] == 2.0
+    assert transformed_record["CostPerConversion"] == 25.0
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        pytest.param("asset_group_performance_report_hourly", id="hourly"),
+        pytest.param("asset_group_performance_report_daily", id="daily"),
+        pytest.param("asset_group_performance_report_weekly", id="weekly"),
+        pytest.param("asset_group_performance_report_monthly", id="monthly"),
+    ],
+)
+def test_asset_group_performance_report_all_variants_exist(stream_name, config):
+    stream = find_stream(stream_name, config)
+    assert stream is not None
+    assert stream.name == stream_name
