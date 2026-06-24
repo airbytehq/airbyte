@@ -193,6 +193,9 @@ public class MongoDbSource extends BaseConnector implements Source {
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to perform sync read operation.", e);
+      if (MongoUtil.isUnauthorizedException(e)) {
+        throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, e, e.getMessage());
+      }
       throw e;
     }
   }
