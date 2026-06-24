@@ -26,11 +26,25 @@ flowchart TD
     click API "#agent-api"
 ```
 
+## At a glance
+
+| | Web app | MCP server | SDK | CLI | API |
+| --- | --- | --- | --- | --- | --- |
+| **Install required** | No | No | `uv add airbyte-agent-sdk` | Binary download or `brew` | No |
+| **Language / platform** | Browser | Any MCP-capable client | Python | Any shell | Any HTTP client |
+| **Auth model** | Browser login | OAuth (browser popup) | Client ID + secret | Browser login or `--manual` | Client ID + secret |
+| **Best for** | No-code exploration, automations | Conversational AI agents (Claude, ChatGPT, Cursor) | Python-native agent frameworks | Shell scripts, CI, agent harnesses | Non-Python backends, custom admin |
+| **Programmatic control** | No | Agent-driven | Full | Full | Full |
+| **Context Store access** | Yes | Yes | Yes | Yes | Yes |
+| **Credential handling** | Browser widget | Browser widget (via agent) | Environment variables | Browser widget + settings file | HTTP headers |
+
 ## MCP server
 
 **Best for:** Users of Claude, Cursor, ChatGPT, VS Code, or any agent that supports the [Model Context Protocol](https://modelcontextprotocol.io/).
 
 The [MCP server](../interfaces/mcp) is a remote, Airbyte-hosted server that gives MCP-capable agents authenticated access to your connected data. You have nothing to install. Add the server URL to your agent's MCP configuration, authenticate with your Airbyte account, and your agent can immediately read and write data across every connector in your workspace.
+
+Choose MCP when your agent already speaks the Model Context Protocol and you want zero-install, conversational access to your data. If you need JSON-scriptable execution, local binary control, or CI integration, see [CLI](#cli) instead.
 
 **Get started:** see the [MCP server docs](../interfaces/mcp) for setup instructions for Claude Code, Cursor, VS Code, Claude Desktop, ChatGPT, and other clients.
 
@@ -39,6 +53,8 @@ The [MCP server](../interfaces/mcp) is a remote, Airbyte-hosted server that give
 **Best for:** Python developers building custom agents with frameworks like Pydantic AI, LangChain, or FastMCP.
 
 The [Python SDK](../interfaces/sdk) (`airbyte-agent-sdk`) gives you typed connectors, automatic credential handling, and patterns for exposing connectors as tools to any AI agent framework. Install the SDK, authenticate with your Airbyte API credentials, and start executing operations in your own code.
+
+Choose the SDK when you're writing Python and want typed, in-process access to connectors. If your stack isn't Python, use the [API](#agent-api). If you prefer a shell binary over a library import, see the [CLI](#cli).
 
 ```bash
 uv add airbyte-agent-sdk
@@ -72,6 +88,8 @@ Two primary surfaces:
 
 The [CLI](../interfaces/cli) (`airbyte-agent`) gives you a terminal interface for listing workspaces, adding connectors through browser credential flows, describing connector schemas, and executing connector actions. It accepts JSON input, prints JSON output, and includes schema discovery for agent workflows.
 
+Choose the CLI when you want a local binary that your scripts or agent harness can shell out to. The CLI runs locally, authenticates via a browser flow or `--manual` mode, and returns structured JSON for programmatic consumption. If your agent speaks MCP natively, the [MCP server](#mcp-server) gives you the same connectors with zero install.
+
 ```bash
 curl -fsSL https://airbyte.ai/install.sh | bash
 ```
@@ -84,7 +102,18 @@ curl -fsSL https://airbyte.ai/install.sh | bash
 
 The [Agent API](../interfaces/api) exposes REST endpoints for managing connectors, tokens, and executing operations from any language or backend service. Use it when you need programmatic control over Airbyte Agents from a stack that isn't Python, or when you're building a custom integration layer.
 
+Choose the API when you need HTTP-level control, are working outside Python, or are building admin tooling (workspace management, credential embedding). If you're in Python, the [SDK](#python-sdk) wraps the same endpoints with a typed interface.
+
 **Get started:** see the [API docs](../interfaces/api) for authentication, connector management, and execution endpoints. The [Developer Quickstart](developer-quickstart) also covers common patterns.
+
+## MCP server vs. CLI for AI agents
+
+Both the MCP server and the CLI can connect AI agents to your data, but they differ in how the agent communicates with Airbyte:
+
+- **MCP server** — The agent talks to Airbyte over the Model Context Protocol. Nothing is installed locally; the server is hosted by Airbyte. Authentication is OAuth via a browser popup. Best for conversational agents (Claude, ChatGPT, Cursor) that already support MCP.
+- **CLI** — The agent shells out to a local `airbyte-agent` binary. Commands accept JSON input and print JSON output. Authentication is a browser login (or `--manual` for headless machines). Best for scripted pipelines, CI jobs, and agent harnesses that invoke command-line tools.
+
+If your agent supports MCP natively, start with the MCP server for the simplest setup. If your agent runs shell commands or you need offline/local execution, use the CLI.
 
 ## All paths lead to the same data
 
