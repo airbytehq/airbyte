@@ -59,7 +59,7 @@ To fill out the required information:
 <FieldAnchor field="schemas">
 2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 </FieldAnchor>
-3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
+3. Enter the username you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user). If your Postgres user authenticates with a password, enter it in the **Password** field. The password is optional — some PostgreSQL authentication methods (such as `trust`, `peer`, or certificate-based auth) do not require one.
 4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
@@ -359,8 +359,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |--------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.1  | 2026-06-03 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Fix NPE when connecting without password.                                                                                                                                  |
-| 3.8.0  | 2026-06-02 | [78305](https://github.com/airbytehq/airbyte/pull/78305) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
+| 3.8.1  | 2026-06-04 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Allow connecting without a password for passwordless auth methods.                                                                                                                                  |
+| 3.8.0  | 2026-06-02 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
 | 3.7.2  | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                     |
 | 3.7.1  | 2026-01-27 | [72396](https://github.com/airbytehq/airbyte/pull/72396) | This version causes issues discovering streams for some users. Do not use.                                                                                                 |
 | 3.7.0  | 2025-08-12 | [57511](https://github.com/airbytehq/airbyte/pull/57511) | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                     |
