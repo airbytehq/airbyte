@@ -1,0 +1,10 @@
+{
+  "start_date": "2023-01-01T00:00:00Z",
+  "use_sandbox": false,
+  "lookback_window_days": 30,
+  "credentials": {
+    "auth_type": "oauth2.0",
+    "client_id": "invalid-client-id",
+    "client_secret": "invalid-client-secret"
+  }
+}

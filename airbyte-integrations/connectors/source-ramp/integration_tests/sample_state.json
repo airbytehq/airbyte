@@ -1,0 +1,123 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "transactions"
+      },
+      "stream_state": {
+        "user_transaction_time": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "reimbursements"
+      },
+      "stream_state": {
+        "updated_at": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "transfers"
+      },
+      "stream_state": {
+        "created_at": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "cashbacks"
+      },
+      "stream_state": {
+        "created_at": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "statements"
+      },
+      "stream_state": {
+        "end_date": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "audit_log_events"
+      },
+      "stream_state": {
+        "event_time": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "vendor_credits"
+      },
+      "stream_state": {
+        "created_at": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "trips"
+      },
+      "stream_state": {
+        "start_date": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "repayments"
+      },
+      "stream_state": {
+        "repaid_at": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "receipts"
+      },
+      "stream_state": {
+        "created_at": "2023-01-01T00:00:00Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "limits"
+      },
+      "stream_state": {
+        "created_at": "2023-01-01T00:00:00Z"
+      }
+    }
+  }
+]
