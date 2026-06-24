@@ -3,13 +3,14 @@ name: Publish Connectors Pre-release
 # It can be triggered via the /publish-connectors-prerelease slash command from PR comments,
 # or via the MCP tool `publish_connector_to_airbyte_registry`.
 #
-# Pre-release versions are tagged with the format: {version}-preview.{7-char-git-sha}
+# Pre-release versions are tagged with the format: {version}-preview.{7-char-git-sha} by default, or {version}-hotfix.{mmdd}.{3-char-git-sha} when requested
 # These versions are NOT eligible for semver auto-advancement but ARE available
 # for version pinning via the scoped_configuration API.
 #
 # Usage:
 #   /publish-connectors-prerelease                    # Auto-detects single modified connector
 #   /publish-connectors-prerelease connector=source-github  # Explicit connector name
+#   /publish-connectors-prerelease version-suffix=hotfix connector=source-github
 #
 # If no connector is specified, the workflow auto-detects modified connectors.
 # It will fail if 0 or 2+ connectors are modified (only single-connector publishing is supported).
@@ -39,6 +40,11 @@ on:
         description: "Single connector name to publish (e.g., destination-pinecone). If not provided, auto-detects from PR changes (fails if 0 or 2+ connectors modified)."
         required: false
         type: string
+      version-suffix:
+        description: "Pre-release suffix format: preview or hotfix. Hotfix tags include current UTC MMDD and 3 SHA chars."
+        required: false
+        default: "preview"
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.pr || github.run_id }}
@@ -55,6 +61,8 @@ jobs:
       short-sha: ${{ steps.get-sha.outputs.short-sha }}
       connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
       connector-version: ${{ steps.connector-version.outputs.connector-version }}
+      version-suffix: ${{ steps.resolve-version-suffix.outputs.version-suffix }}
+      tag-format: ${{ steps.resolve-version-suffix.outputs.tag-format }}
     steps:
       - name: Checkout to get commit SHA
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -67,7 +75,7 @@ jobs:
         id: get-sha
         run: |
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
-          echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "short-sha=$SHORT_SHA" | tee -a $GITHUB_OUTPUT
 
       - name: Get job variables
         id: job-vars
@@ -77,16 +85,23 @@ jobs:
           if [[ -n "${{ inputs.pr }}" ]]; then
             RUN_URL="${RUN_URL}?pr=${{ inputs.pr }}"
           fi
-          echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
-          echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
+          echo "run-url=$RUN_URL" | tee -a $GITHUB_OUTPUT
+          echo "pr-number=${{ inputs.pr }}" | tee -a $GITHUB_OUTPUT
 
       - name: Resolve connector name
         id: resolve-connector
+        env:
+          CONNECTOR_INPUT: ${{ inputs.connector }}
         run: |
           set -euo pipefail
-          if [[ -n "${{ inputs.connector }}" ]]; then
-            echo "Connector explicitly provided: ${{ inputs.connector }}"
-            echo "connector-name=${{ inputs.connector }}" >> "$GITHUB_OUTPUT"
+          if [[ -n "$CONNECTOR_INPUT" && "$CONNECTOR_INPUT" == *"version-suffix="* ]]; then
+            echo "::error::Received version-suffix inside the connector input. Use '/publish-connectors-prerelease version-suffix=<preview|hotfix> connector=<name>' instead of adding version-suffix to the connector value."
+            exit 1
+          fi
+
+          if [[ -n "$CONNECTOR_INPUT" ]]; then
+            echo "Connector explicitly provided: $CONNECTOR_INPUT"
+            echo "connector-name=$CONNECTOR_INPUT" | tee -a $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -109,7 +124,32 @@ jobs:
 
           CONNECTOR_NAME=$(echo "$CONNECTORS" | head -n1)
           echo "Auto-detected single modified connector: $CONNECTOR_NAME"
-          echo "connector-name=$CONNECTOR_NAME" >> "$GITHUB_OUTPUT"
+          echo "connector-name=$CONNECTOR_NAME" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve version suffix
+        id: resolve-version-suffix
+        env:
+          VERSION_SUFFIX: ${{ inputs.version-suffix }}
+        run: |
+          set -euo pipefail
+          VERSION_SUFFIX="${VERSION_SUFFIX:-preview}"
+          VERSION_SUFFIX="${VERSION_SUFFIX,,}"
+          case "$VERSION_SUFFIX" in
+            preview)
+              TAG_FORMAT="{version}-preview.${{ steps.get-sha.outputs.short-sha }}"
+              ;;
+            hotfix)
+              SHORT_SHA=$(git rev-parse --short=3 HEAD)
+              DATE_SUFFIX=$(date -u +%m%d)
+              TAG_FORMAT="{version}-hotfix.${DATE_SUFFIX}.${SHORT_SHA}"
+              ;;
+            *)
+              echo "::error::Invalid version-suffix '$VERSION_SUFFIX'. Valid options are 'preview' or 'hotfix'."
+              exit 1
+              ;;
+          esac
+          echo "version-suffix=$VERSION_SUFFIX" | tee -a $GITHUB_OUTPUT
+          echo "tag-format=$TAG_FORMAT" | tee -a $GITHUB_OUTPUT
 
       - name: Determine connector version
         id: connector-version
@@ -124,7 +164,7 @@ jobs:
           if [[ -z "$VERSION" ]] && [[ -f "$CONNECTOR_DIR/metadata.yaml" ]]; then
             VERSION=$(grep -E '^\s*dockerImageTag:' "$CONNECTOR_DIR/metadata.yaml" | head -n1 | awk '{print $2}' | tr -d '"')
           fi
-          echo "connector-version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "connector-version=$VERSION" | tee -a $GITHUB_OUTPUT
 
       - name: Append start comment
         id: append-start-comment
@@ -140,7 +180,7 @@ jobs:
             > Publishing pre-release build for connector `${{ steps.resolve-connector.outputs.connector-name }}`.
             > PR: [#${{ inputs.pr }}](https://github.com/${{ inputs.repo || github.repository }}/pull/${{ inputs.pr }})
             >
-            > Pre-release versions will be tagged as `{version}-preview.${{ steps.get-sha.outputs.short-sha }}`
+            > Pre-release versions will be tagged as `${{ steps.resolve-version-suffix.outputs.tag-format }}`
             > and are available for version pinning via the scoped_configuration API.
             >
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
@@ -151,7 +191,7 @@ jobs:
     uses: ./.github/workflows/publish_connectors.yml
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
-      with-semver-suffix: preview
+      with-semver-suffix: ${{ needs.init.outputs.version-suffix }}
       gitref: refs/pull/${{ inputs.pr }}/head
       pr: ${{ format('{0}', inputs.pr) }}
     secrets: inherit
