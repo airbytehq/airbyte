@@ -391,6 +391,47 @@ class InitialSnapshotHandlerTest {
     assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
+  @Test
+  void testGetIteratorsWithNullIdDoesNotThrow() {
+    // Insert a document with an explicit null _id (valid in MongoDB) followed by a document with a
+    // valid ObjectId.
+    // MongoDB sorts null before all other values in ascending _id order.
+    final MongoCollection<Document> collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    collection.insertOne(new Document("_id", null).append(NAME_FIELD, "null_id_doc"));
+    collection.insertOne(new Document("_id", OBJECT_ID1).append(NAME_FIELD, NAME1));
+
+    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
+    final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
+    final MongoDbStateManager stateManager = spy(ogStateManager);
+    final List<AutoCloseableIterator<AirbyteMessage>> iterators =
+        initialSnapshotHandler.getIterators(
+            List.of(STREAMS.get(0)), stateManager, mongoClient.getDatabase(DB_NAME), CONFIG, false, false, null, Optional.empty());
+
+    assertEquals(1, iterators.size());
+
+    final AutoCloseableIterator<AirbyteMessage> iterator = iterators.get(0);
+
+    // First record should be the null _id document (null sorts first in ascending order)
+    final AirbyteMessage message1 = iterator.next();
+    assertEquals(Type.RECORD, message1.getType());
+    assertEquals(COLLECTION1, message1.getRecord().getStream());
+    assertTrue(message1.getRecord().getData().get(CURSOR_FIELD).isNull());
+    assertEquals("null_id_doc", message1.getRecord().getData().get(NAME_FIELD).asText());
+
+    // Second record should be the valid ObjectId document
+    final AirbyteMessage message2 = iterator.next();
+    assertEquals(Type.RECORD, message2.getType());
+    assertEquals(COLLECTION1, message2.getRecord().getStream());
+    assertEquals(OBJECT_ID1.toString(), message2.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertEquals(NAME1, message2.getRecord().getData().get(NAME_FIELD).asText());
+
+    // State message should follow
+    final AirbyteMessage stateMessage = iterator.next();
+    assertEquals(Type.STATE, stateMessage.getType());
+
+    assertFalse(iterator.hasNext());
+  }
+
   private void assertConfiguredFieldsEqualsRecordDataFields(final Set<String> configuredStreamFields, final JsonNode recordMessageData) {
     final Set<String> recordDataFields = ImmutableSet.copyOf(recordMessageData.fieldNames());
     assertEquals(configuredStreamFields, recordDataFields,
