@@ -363,7 +363,9 @@ class SnowflakeAirbyteClient(
 
         // Check for known permission-related error patterns
         when {
-            errorMessage.contains("current role has no privileges on it") -> {
+            errorMessage.contains("current role has no privileges on it") ||
+                errorMessage.contains("insufficient privileges") ||
+                errorMessage.contains("sql access control error") -> {
                 throw ConfigErrorException(e.message ?: "Permission error", e)
             }
             else -> {
