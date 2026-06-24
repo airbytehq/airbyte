@@ -5,12 +5,14 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -29,6 +31,9 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+  private static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
+  private static final String CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE =
+      "MongoDB credentials lack permission to open change streams.";
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -65,23 +70,33 @@ public class MongoDbResumeTokenHelper {
           Filters.in("ns.coll", collectionNames)));
     }
 
-    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
-    final ChangeStreamIterable<BsonDocument> eventStream;
-    if (databaseNames.size() == 1) {
-      LOGGER.info("Most recent CDC token for a single database.");
-      eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
-    } else {
-      LOGGER.info("Most recent CDC token for multiple databases.");
-      eventStream = mongoClient.watch(pipeline, BsonDocument.class);
-    }
+    try {
+      final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
+      final ChangeStreamIterable<BsonDocument> eventStream;
+      if (databaseNames.size() == 1) {
+        LOGGER.info("Most recent CDC token for a single database.");
+        eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
+      } else {
+        LOGGER.info("Most recent CDC token for multiple databases.");
+        eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+      }
 
-    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
-      /*
-       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
-       * the call to getResumeToken() will return null!
-       */
-      eventStreamCursor.tryNext();
-      return eventStreamCursor.getResumeToken();
+      try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
+        /*
+         * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
+         * the call to getResumeToken() will return null!
+         */
+        eventStreamCursor.tryNext();
+        return eventStreamCursor.getResumeToken();
+      }
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(
+            CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE,
+            e,
+            "MongoDB returned Unauthorized while opening a CDC change stream: " + e.getMessage());
+      }
+      throw e;
     }
   }
 
