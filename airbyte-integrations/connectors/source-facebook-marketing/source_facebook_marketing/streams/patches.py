@@ -6,6 +6,9 @@ from urllib.parse import parse_qsl, urlparse, urlunparse
 
 from facebook_business.api import Cursor
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
+
 
 class CursorPatch(Cursor):
     """
@@ -43,6 +46,15 @@ class CursorPatch(Cursor):
             params=self.params,
         )
         response = response_obj.json()
+
+        if not isinstance(response, dict):
+            raw_preview = repr(response)[:200] if response else repr(response)
+            raise AirbyteTracedException(
+                message="Facebook Marketing API returned a non-JSON response.",
+                internal_message=f"Expected dict from response_obj.json(), got {type(response).__name__}: {raw_preview}",
+                failure_type=FailureType.transient_error,
+            )
+
         self._headers = response_obj.headers()
 
         if "paging" in response and "next" in response["paging"]:
