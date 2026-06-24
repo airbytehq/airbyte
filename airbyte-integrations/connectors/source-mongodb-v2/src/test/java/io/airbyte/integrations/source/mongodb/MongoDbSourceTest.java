@@ -13,24 +13,31 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -254,6 +261,23 @@ class MongoDbSourceTest {
   }
 
   @Test
+  void testReadReclassifiesUnauthorizedCdcInitializationException() {
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoCommandException unauthorizedException = new MongoCommandException(
+        new BsonDocument("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE)),
+        new ServerAddress());
+
+    doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(unauthorizedException);
+
+    final ConfigErrorException thrown =
+        assertThrows(ConfigErrorException.class, () -> source.read(airbyteSourceConfig, createIncrementalCatalog(), null));
+
+    assertEquals(MongoConstants.UNAUTHORIZED_CDC_CHANGE_STREAM_ERROR_MESSAGE, thrown.getMessage());
+    verify(mongoClient, times(1)).close();
+  }
+
+  @Test
   void testReadWithMissingConfiguration() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode state = mock(JsonNode.class);
@@ -269,6 +293,13 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  private static ConfiguredAirbyteCatalog createIncrementalCatalog() {
+    return new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withStream(MongoCatalogHelper.buildAirbyteStream("test-collection", DB_NAME, List.of(new Field("_id", JsonSchemaType.STRING))))
+            .withSyncMode(SyncMode.INCREMENTAL)));
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {

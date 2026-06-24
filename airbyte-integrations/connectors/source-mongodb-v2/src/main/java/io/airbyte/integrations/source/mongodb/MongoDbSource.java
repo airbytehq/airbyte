@@ -180,8 +180,7 @@ public class MongoDbSource extends BaseConnector implements Source {
 
         if (!incrementalStreams.isEmpty()) {
           LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
-          iterators
-              .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+          addCdcIterators(iterators, mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig);
         }
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
@@ -236,6 +235,10 @@ public class MongoDbSource extends BaseConnector implements Source {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
         }
+        if (MongoUtil.isUnauthorizedException(e)) {
+          LOGGER.error("MongoDB authorization error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CDC_CHANGE_STREAM_ERROR_MESSAGE, e);
+        }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
         }
@@ -280,6 +283,25 @@ public class MongoDbSource extends BaseConnector implements Source {
     }
 
     return fullRefreshIterators;
+  }
+
+  private void addCdcIterators(final List<AutoCloseableIterator<AirbyteMessage>> iterators,
+                               final MongoClient mongoClient,
+                               final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector,
+                               final List<ConfiguredAirbyteStream> incrementalStreams,
+                               final MongoDbStateManager stateManager,
+                               final Instant emittedAt,
+                               final MongoDbSourceConfig sourceConfig) {
+    try {
+      iterators
+          .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+    } catch (final Exception e) {
+      if (MongoUtil.isUnauthorizedException(e)) {
+        LOGGER.error("MongoDB authorization error detected while initializing CDC sync. Original error: {}", e.getMessage(), e);
+        throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CDC_CHANGE_STREAM_ERROR_MESSAGE, e);
+      }
+      throw e;
+    }
   }
 
 }
