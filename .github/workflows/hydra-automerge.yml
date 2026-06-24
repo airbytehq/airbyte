@@ -272,7 +272,7 @@ jobs:
                 required: [no_breaking_changes, ai_review_passed]
               change_scope:
                 type: object
-                description: "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else."
+                description: "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else. Shared rule for all scopes: in addition to the functional files described by each scope, every scope also permits connector version bumps (metadata.yaml version/dockerImageTag fields, pyproject.toml version field), changelog entries (docs/integrations/**/*.md), and unit/mock test files (files under unit_tests/ or integration_tests/ directories). These accompanying files alone do NOT determine which scope matches -- only the functional change does."
                 properties:
                   docs_only_change:
                     type: object
@@ -310,7 +310,25 @@ jobs:
                       reasoning:
                         type: string
                     required: [pass, reasoning]
-                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change]
+                  error_classification_change:
+                    type: object
+                    description: "Set pass to true ONLY if the functional change in the PR consists entirely of adding failure_type fields and/or modifying error_message text on EXISTING response filters in a declarative connector manifest YAML. No new HttpResponseFilter entries may be added. No action fields may be added or changed. No filters may be removed. No Python source code (.py files outside unit_tests/ or integration_tests/), JSON schemas, spec/config, pagination, record selectors, or stream definitions may be changed."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                  error_handler_fail_or_retry:
+                    type: object
+                    description: "Set pass to true ONLY if the functional change in the PR adds new HttpResponseFilter entries, DefaultErrorHandler definitions, or backoff_strategies to a declarative connector manifest YAML, AND every new response filter uses ONLY action FAIL, action RETRY, or action RATE_LIMITED. Set pass to false if ANY new or existing filter uses action IGNORE or action SUCCESS. Set pass to false if existing filters are removed or have their action field changed. No Python source code (.py files outside unit_tests/ or integration_tests/), JSON schemas, spec/config, pagination, record selectors, or stream definitions may be changed."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change, error_classification_change, error_handler_fail_or_retry]
             required: [preconditions, change_scope]
 
       - name: Check for structured output
@@ -354,8 +372,10 @@ jobs:
           comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')
           dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
           metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
+          error_classif=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.error_classification_change.pass')
+          error_handler=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.error_handler_fail_or_retry.pass')
 
-          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" ]]; then
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$error_classif" == "true" || "$error_handler" == "true" ]]; then
             scope_pass="true"
           else
             scope_pass="false"
@@ -415,7 +435,7 @@ jobs:
             echo ""
             scope_matched=false
             has_scope_row=false
-            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change error_classification_change error_handler_fail_or_retry; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then
