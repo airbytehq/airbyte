@@ -73,6 +73,9 @@ definitions:
           backoff_strategies:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 2
+        - http_codes: [504]
+          action: RETRY
+          error_message: "Recharge API request timed out for stream {{ parameters['name'] }}."
   requester_deprecated_api:
     $ref: "#/definitions/requester_base"
     # for deprecated retriever we should use `2021-01` api version
