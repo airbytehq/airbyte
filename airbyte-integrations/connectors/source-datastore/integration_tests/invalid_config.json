@@ -1,0 +1,5 @@
+{
+  "project_id": "non-existent-project",
+  "credentials_json": "{\"type\": \"service_account\", \"project_id\": \"fake\"}",
+  "kinds": ["Product"]
+}
