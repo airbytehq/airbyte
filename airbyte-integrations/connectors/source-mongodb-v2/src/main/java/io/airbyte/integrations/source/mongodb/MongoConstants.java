@@ -43,6 +43,10 @@ public class MongoConstants {
   public static final String FAIL_SYNC_OPTION = "Fail sync";
   public static final String RESYNC_DATA_OPTION = "Re-sync data";
 
+  public static final int UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE =
+      "MongoDB credentials lack permission to open change streams for the configured database.";
+
   public static final String UPDATE_CAPTURE_MODE = "update_capture_mode";
 
   public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
