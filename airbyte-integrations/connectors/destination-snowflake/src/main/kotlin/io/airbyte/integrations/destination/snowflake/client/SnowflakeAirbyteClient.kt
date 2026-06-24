@@ -205,9 +205,9 @@ class SnowflakeAirbyteClient(
     }
 
     /**
-     * Pre-4.0.0 tables may be missing _AIRBYTE_META and _AIRBYTE_GENERATION_ID columns.
-     * Since discoverSchema/computeSchema intentionally exclude meta columns from the
-     * schema evolution changeset, we must detect and add them separately.
+     * Pre-4.0.0 tables may be missing _AIRBYTE_META and _AIRBYTE_GENERATION_ID columns. Since
+     * discoverSchema/computeSchema intentionally exclude meta columns from the schema evolution
+     * changeset, we must detect and add them separately.
      */
     internal fun ensureMetaColumnsExist(tableName: TableName) {
         val existingColumns = describeTable(tableName)
@@ -220,9 +220,9 @@ class SnowflakeAirbyteClient(
             log.info {
                 "Adding missing meta columns to ${tableName.toPrettyString()}: ${missingMetaColumns.keys}"
             }
-            sqlGenerator
-                .addMetaColumnsIfNotExist(tableName, missingMetaColumns)
-                .forEach { execute(it) }
+            sqlGenerator.addMetaColumnsIfNotExist(tableName, missingMetaColumns).forEach {
+                execute(it)
+            }
         }
     }
 

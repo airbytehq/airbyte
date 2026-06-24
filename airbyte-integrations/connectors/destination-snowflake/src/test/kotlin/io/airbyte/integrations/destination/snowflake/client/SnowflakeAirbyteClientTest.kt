@@ -827,9 +827,8 @@ internal class SnowflakeAirbyteClientTest {
             )
         val alterSql1 = "ALTER TABLE ... ADD COLUMN IF NOT EXISTS $abMeta VARIANT;"
         val alterSql2 = "ALTER TABLE ... ADD COLUMN IF NOT EXISTS $abGenerationId NUMBER;"
-        every {
-            sqlGenerator.addMetaColumnsIfNotExist(tableName, expectedMissing)
-        } returns listOf(alterSql1, alterSql2)
+        every { sqlGenerator.addMetaColumnsIfNotExist(tableName, expectedMissing) } returns
+            listOf(alterSql1, alterSql2)
 
         client.ensureMetaColumnsExist(tableName)
 
@@ -914,12 +913,7 @@ internal class SnowflakeAirbyteClientTest {
         // Table has meta columns in mixed case (QUOTED_IDENTIFIERS_IGNORE_CASE scenario)
         val showColumnsResultSet =
             mockk<ResultSet> {
-                every { next() } returns
-                    true andThen
-                    true andThen
-                    true andThen
-                    true andThen
-                    false
+                every { next() } returns true andThen true andThen true andThen true andThen false
                 every { getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD) } returns
                     abRawId.lowercase() andThen
                     abExtractedAt.lowercase() andThen
