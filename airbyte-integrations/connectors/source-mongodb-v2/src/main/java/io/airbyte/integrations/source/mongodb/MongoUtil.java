@@ -433,6 +433,30 @@ public class MongoUtil {
   }
 
   /**
+   * Checks if the given exception is caused by MongoDB error code 13 (Unauthorized) raised while
+   * opening a change stream cursor. This indicates the configured user has the {@code find} privilege
+   * but is missing the {@code changeStream} action on the target database.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by an unauthorized change-stream operation, false
+   *         otherwise.
+   */
+  public static boolean isUnauthorizedChangeStreamException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_CODE) {
+        final String errorMessage = mongoException.getErrorMessage();
+        if (errorMessage != null && errorMessage.contains("$changeStream")) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.

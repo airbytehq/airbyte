@@ -6,11 +6,14 @@ package io.airbyte.integrations.source.mongodb.cdc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -18,6 +21,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.debezium.connector.mongodb.ResumeTokens;
@@ -26,6 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Test;
@@ -59,6 +65,75 @@ class MongoDbResumeTokenHelperTest {
     final BsonDocument actualResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of()));
     assertEquals(resumeTokenDocument, actualResumeToken);
+  }
+
+  @Test
+  void testRetrievingResumeTokenTranslatesUnauthorizedChangeStreamException() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final BsonDocument errorResponse = new BsonDocument()
+        .append("ok", new BsonInt32(0))
+        .append("code", new BsonInt32(13))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg",
+            new BsonString("not authorized on " + DATABASE + " to execute command "
+                + "{ aggregate: 1, pipeline: [ { $changeStream: {} } ] }"));
+    final MongoCommandException unauthorized = new MongoCommandException(errorResponse, new ServerAddress());
+
+    when(changeStreamIterable.cursor()).thenThrow(unauthorized);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoClient.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    final ConfigErrorException thrown = assertThrows(
+        ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream on the configured database. " +
+            "Grant the user the built-in \"read\" role on the database (or \"readAnyDatabase\") so that " +
+            "both the \"find\" and \"changeStream\" privilege actions are permitted. " +
+            "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#step-1-create-a-database-user",
+        thrown.getMessage());
+    assertSame(unauthorized, thrown.getCause());
+  }
+
+  @Test
+  void testRetrievingResumeTokenRethrowsUnrelatedMongoCommandException() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    // Code 13 but not from a $changeStream command - should NOT be translated.
+    final BsonDocument errorResponse = new BsonDocument()
+        .append("ok", new BsonInt32(0))
+        .append("code", new BsonInt32(13))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized on admin to execute command { listDatabases: 1 }"));
+    final MongoCommandException unrelated = new MongoCommandException(errorResponse, new ServerAddress());
+
+    when(changeStreamIterable.cursor()).thenThrow(unrelated);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoClient.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    final MongoCommandException thrown = assertThrows(
+        MongoCommandException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+    assertSame(unrelated, thrown);
   }
 
   @Test
