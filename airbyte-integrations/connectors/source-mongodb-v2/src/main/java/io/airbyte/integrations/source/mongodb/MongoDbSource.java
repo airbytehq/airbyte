@@ -186,26 +186,47 @@ public class MongoDbSource extends BaseConnector implements Source {
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
         // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
-        return wrapIteratorWithBsonErrorHandling(baseIterator);
+        return wrapIteratorWithKnownErrorHandling(baseIterator);
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to perform sync read operation.", e);
-      throw e;
+      throw classifyKnownException(e);
     }
   }
 
   /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
-   * actionable error messages to users.
+   * Translates known MongoDB driver failures into {@link ConfigErrorException}s with deterministic,
+   * user-actionable messages so they are routed to the customer rather than retried as
+   * {@code system_error}s.
+   *
+   * @param e The exception thrown during {@link #read}.
+   * @return The original exception, or a {@link ConfigErrorException} wrapping it when the cause is a
+   *         recognized MongoDB driver error.
+   */
+  private RuntimeException classifyKnownException(final Exception e) {
+    if (MongoUtil.isUnauthorizedException(e)) {
+      LOGGER.error("MongoDB authorization failure detected during CDC sync. Original error: {}", e.getMessage(), e);
+      return new ConfigErrorException(MongoConstants.UNAUTHORIZED_ERROR_MESSAGE, e);
+    }
+    if (e instanceof RuntimeException) {
+      return (RuntimeException) e;
+    }
+    return new RuntimeException(e);
+  }
+
+  /**
+   * Wraps an iterator to catch known MongoDB driver errors (BSONObjectTooLarge, Unauthorized) during
+   * CDC operations and surface helpful, actionable error messages to users.
    *
    * @param iterator The base iterator to wrap.
-   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   * @return A wrapped iterator that converts recognized MongoDB driver errors into
+   *         {@link ConfigErrorException}s.
    */
-  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
-                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithKnownErrorHandling(
+                                                                                   final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
@@ -213,7 +234,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.hasNext();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialKnownError(e);
         }
       }
 
@@ -222,7 +243,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.next();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialKnownError(e);
         }
       }
 
@@ -231,10 +252,14 @@ public class MongoDbSource extends BaseConnector implements Source {
         iterator.close();
       }
 
-      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+      private RuntimeException handlePotentialKnownError(final Exception e) {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (MongoUtil.isUnauthorizedException(e)) {
+          LOGGER.error("MongoDB authorization failure detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_ERROR_MESSAGE, e);
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
