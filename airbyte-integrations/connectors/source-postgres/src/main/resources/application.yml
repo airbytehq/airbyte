@@ -101,6 +101,18 @@ airbyte:
             group: Postgres connection timeout
             output: Database connection timeout, will retry.
 
+          - pattern: (?i).*Connect timed out.*
+            input-example: "java.net.SocketTimeoutException: Connect timed out"
+            error: transient
+            group: Postgres Connection Error
+            output: Database connection timed out, will retry.
+
+          - pattern: (?i).*The connection attempt failed.*
+            input-example: "org.postgresql.util.PSQLException: The connection attempt failed."
+            error: transient
+            group: Postgres Connection Error
+            output: Database connection attempt failed, will retry.
+
           - pattern: (?i).*SocketException.*(broken pipe|socket is closed).*
             input-example: |
               java.net.SocketException: Broken pipe
