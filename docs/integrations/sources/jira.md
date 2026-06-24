@@ -92,7 +92,6 @@ read:board-scope:jira-software
 read:project:jira
 read:sprint:jira-software
 read:application-role:jira
-read:field-configuration:jira
 read:notification-scheme:jira
 read:issue-security-scheme:jira
 read:issue-security-level:jira
@@ -112,7 +111,7 @@ manage:jira-configuration
 You can paste this comma-separated scope list into Atlassian's scope search:
 
 ```text
-read:jira-work,read:jql:jira,read:group:jira,read:project-role:jira,read:issue-details:jira,read:status:jira,read:jira-user,read:user:jira,read:avatar:jira,read:webhook:jira,read:project-category:jira,read:screenable-field:jira,read:screen-field:jira,offline_access,read:board-scope:jira-software,read:project:jira,read:sprint:jira-software,read:application-role:jira,read:field-configuration:jira,read:notification-scheme:jira,read:issue-security-scheme:jira,read:issue-security-level:jira,read:issue-type-scheme:jira,read:issue-type-screen-scheme:jira,read:permission-scheme:jira,read:screen:jira,read:screen-scheme:jira,read:screen-tab:jira,read:workflow:jira,read:workflow-scheme:jira,read:project.email:jira,read:custom-field-contextual-configuration:jira,manage:jira-configuration
+read:jira-work,read:jql:jira,read:group:jira,read:project-role:jira,read:issue-details:jira,read:status:jira,read:jira-user,read:user:jira,read:avatar:jira,read:webhook:jira,read:project-category:jira,read:screenable-field:jira,read:screen-field:jira,offline_access,read:board-scope:jira-software,read:project:jira,read:sprint:jira-software,read:application-role:jira,read:notification-scheme:jira,read:issue-security-scheme:jira,read:issue-security-level:jira,read:issue-type-scheme:jira,read:issue-type-screen-scheme:jira,read:permission-scheme:jira,read:screen:jira,read:screen-scheme:jira,read:screen-tab:jira,read:workflow:jira,read:workflow-scheme:jira,read:project.email:jira,read:custom-field-contextual-configuration:jira,manage:jira-configuration
 ```
 
 The service account must also have Jira app access and the project permissions required for the streams you sync. To sync all workflow records, the service account needs the **Administer Jira** global permission.
@@ -138,7 +137,6 @@ This connector outputs the following full refresh streams:
 - [Filter sharing](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get)
 - [Groups](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-groups-picker-get)
 - [Issue fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get)
-- [Issue field configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get)
 - [Issue custom field contexts](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get)
 - [Issue custom field options](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get)
 - [Issue link types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get)
@@ -251,6 +249,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2026-06-19 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
 | 5.1.1 | 2026-06-09 | [79606](https://github.com/airbytehq/airbyte/pull/79606) | Clean up cancelled RC; revert source to previous stable |
 | 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
 | 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
