@@ -9,7 +9,12 @@ data:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   remoteRegistries:
     pypi:
       enabled: false
@@ -22,7 +27,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
-  dockerImageTag: 0.3.58
+  dockerImageTag: 0.3.59
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
