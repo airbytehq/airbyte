@@ -513,7 +513,7 @@ jobs:
       - name: Install Ops CLI
         if: matrix.connector
         run: |
-          uv tool install airbyte-internal-ops
+          uv tool install "airbyte-internal-ops==0.67.0"
 
       - name: Run QA Checks
         if: matrix.connector
@@ -582,7 +582,7 @@ jobs:
 
       - name: Install Ops CLI
         if: matrix.connector
-        run: uv tool install airbyte-internal-ops
+        run: uv tool install "airbyte-internal-ops==0.67.0"
 
       - name: Install Airbyte CDK
         if: matrix.connector
