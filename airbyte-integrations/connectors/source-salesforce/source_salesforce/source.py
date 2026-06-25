@@ -84,7 +84,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         self._persist_rotated_refresh_token(sf, config)
         return sf
 
-    def _persist_rotated_refresh_token(self, sf: Salesforce, config: MutableMapping[str, Any]) -> None:
+    def _persist_rotated_refresh_token(self, sf: Salesforce, config: MutableMapping[str, Any]):
         if sf.refresh_token and sf.refresh_token != config.get("refresh_token"):
             config["refresh_token"] = sf.refresh_token
             self.message_repository.emit_message(create_connector_config_control_message(config))
