@@ -304,11 +304,23 @@ spec:
         item: string
         order: 4
         title: Discover Event Fields
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: >-
+          The number of worker threads to use for the sync. The default of 5 is
+          safe for all Sentry API plans. Testing showed concurrency of 7 is
+          optimal; increase if your Sentry plan supports higher rate limits.
+        minimum: 1
+        maximum: 20
+        default: 5
+        order: 5
     additionalProperties: true
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 7
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 20
 
 metadata:
   assist: {}

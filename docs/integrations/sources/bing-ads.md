@@ -283,6 +283,10 @@ For example, if you select a report with daily aggregation, the report will cont
 
 A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Report aggregated using an hourly window.
 
+## Upgrading
+
+For information on breaking changes and migration steps, see the [Bing Ads Migration Guide](./bing-ads-migrations.md).
+
 ## Limitations and troubleshooting
 
 <details>
@@ -317,6 +321,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0 | 2026-05-12 | [78031](https://github.com/airbytehq/airbyte/pull/78031) | Breaking: include every attribute (dimension) column in the primary keys of all report streams to prevent silent row collapse at the destination during incremental append+dedup. A stream reset is required for the affected report streams after upgrading. |
+| 2.23.17 | 2026-05-29 | [78518](https://github.com/airbytehq/airbyte/pull/78518) | Add num_workers config for user-adjustable concurrency |
+| 2.23.17-rc.2 | 2026-05-27 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Revert concurrency to 10, add num_workers config and HTTP API budget |
 | 2.23.17-rc.1 | 2026-05-26 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Enable progressive rollout for concurrency tuning |
 | 2.23.16 | 2026-04-21 | [76515](https://github.com/airbytehq/airbyte/pull/76515) | Update dependencies |
 | 2.23.15 | 2026-04-08 | [76165](https://github.com/airbytehq/airbyte/pull/76165) | Promote 2.23.15-rc.3 to GA — fixes SAS token expiry during report downloads |

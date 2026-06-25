@@ -15,9 +15,15 @@ The Hubspot connector is optimized to handle prompts like these.
 - List recent tickets
 - List companies in my CRM
 - List contacts in my CRM
-- Show me all deals from \{company\} this quarter
+- Create a new contact with email john@example.com and name John Smith
+- Create a new deal called 'Enterprise License' with amount 50000
+- Update the deal stage to 'closedwon' for a specific deal
+- Create a new company called 'Acme Corp' with domain acme.com
+- Create a support ticket with subject 'Login issue' and priority HIGH
+- Update the contact email for a specific contact
+- Show me all deals from Acme Corp this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
-- Search for contacts in the marketing department at \{company\}
+- Search for contacts in the marketing department at HubSpot
 - Give me an overview of my sales team's deals in the last 30 days
 - Identify the most active companies in our CRM this month
 - Compare the number of deals closed by different sales representatives
@@ -27,9 +33,8 @@ The Hubspot connector is optimized to handle prompts like these.
 
 The Hubspot connector isn't currently able to handle prompts like these.
 
-- Create a new contact record for \{person\}
-- Update the contact information for \{customer\}
-- Delete the ticket from last week's support case
+- Delete a contact from HubSpot
+- Delete a deal record
 - Schedule a follow-up task for this deal
 - Send an email to all contacts in the sales pipeline
 
@@ -39,10 +44,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [API Search](./REFERENCE.md#companies-api_search), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
-| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [API Search](./REFERENCE.md#deals-api_search), [Context Store Search](./REFERENCE.md#deals-context-store-search) |
-| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [API Search](./REFERENCE.md#tickets-api_search), [Context Store Search](./REFERENCE.md#tickets-context-store-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [API Search](./REFERENCE.md#companies-api_search), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
+| Deals | [List](./REFERENCE.md#deals-list), [Create](./REFERENCE.md#deals-create), [Get](./REFERENCE.md#deals-get), [Update](./REFERENCE.md#deals-update), [API Search](./REFERENCE.md#deals-api_search), [Context Store Search](./REFERENCE.md#deals-context-store-search) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [API Search](./REFERENCE.md#tickets-api_search), [Context Store Search](./REFERENCE.md#tickets-context-store-search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
 
@@ -51,17 +56,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Hubspot API reference](https://developers.hubspot.com/docs/api/crm/understanding-the-crm).
 
-## SDK installation
+## Interfaces
+
+Use the Hubspot connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -251,7 +305,7 @@ async def hubspot_execute(entity: str, action: str, params: dict | None = None):
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 

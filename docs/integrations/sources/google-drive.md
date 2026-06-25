@@ -168,7 +168,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -237,11 +237,7 @@ The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/l
 
 There are currently no options for JSONL parsing.
 
-### Document File Type Format (Experimental)
-
-:::warning
-The Document file type format is currently an experimental feature and not subject to SLAs. Use at your own risk.
-:::
+### Document File Type Format
 
 The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
 
@@ -330,6 +326,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.21 | 2026-06-16 | [79912](https://github.com/airbytehq/airbyte/pull/79912) | Update dependencies |
+| 0.5.20 | 2026-06-09 | [79341](https://github.com/airbytehq/airbyte/pull/79341) | Update dependencies |
+| 0.5.19 | 2026-06-02 | [78739](https://github.com/airbytehq/airbyte/pull/78739) | Update dependencies |
 | 0.5.18 | 2026-05-02 | [77714](https://github.com/airbytehq/airbyte/pull/77714) | Update airbyte-cdk to 7.18.1 (surface actionable check errors instead of full Python tracebacks) |
 | 0.5.17 | 2026-05-02 | [77711](https://github.com/airbytehq/airbyte/pull/77711) | Update airbyte-cdk to 7.18.0 |
 | 0.5.16 | 2026-04-28 | [77266](https://github.com/airbytehq/airbyte/pull/77266) | Update dependencies |

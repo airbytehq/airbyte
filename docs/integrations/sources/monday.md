@@ -90,6 +90,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.11 | 2026-06-23 | [80562](https://github.com/airbytehq/airbyte/pull/80562) | Update dependencies |
+| 2.5.10 | 2026-06-16 | [78817](https://github.com/airbytehq/airbyte/pull/78817) | Update dependencies |
+| 2.5.9 | 2026-06-09 | [79605](https://github.com/airbytehq/airbyte/pull/79605) | Clean up cancelled RC; revert source to previous stable |
+| 2.5.9-rc.2 | 2026-05-28 | [78489](https://github.com/airbytehq/airbyte/pull/78489) | Reduce default concurrency to 4 and enable tier-aware HTTPAPIBudget rate limiting |
 | 2.5.9-rc.1 | 2026-05-26 | [78442](https://github.com/airbytehq/airbyte/pull/78442) | Add subscription_tier spec field and tier-aware HTTPAPIBudget for concurrency tuning (Path B) |
 | 2.5.8 | 2026-04-28 | [77302](https://github.com/airbytehq/airbyte/pull/77302) | Update dependencies |
 | 2.5.7 | 2026-04-21 | [76675](https://github.com/airbytehq/airbyte/pull/76675) | Update dependencies |

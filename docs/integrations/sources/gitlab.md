@@ -43,10 +43,10 @@ If you authenticate with a personal access token, generate one in **Settings > A
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
-**Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
+**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 
 <!-- /env:cloud -->
 
@@ -61,10 +61,10 @@ If you authenticate with a personal access token, generate one in **Settings > A
 5. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 6. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 7. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
 9. Click **Set up source**.
 
-**Note:** You can specify either group paths or project paths in the source configuration. If both fields are blank, the connector retrieves all groups accessible to the configured token and syncs their projects.
+**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -91,11 +91,11 @@ This connector outputs the following streams:
 - [Group Milestones](https://docs.gitlab.com/api/group_milestones/)
 - [Groups](https://docs.gitlab.com/api/groups/)
 - [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
-- [Jobs](https://docs.gitlab.com/api/jobs/)
+- [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
 - [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
 - [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
-- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/)
+- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
 - [Project Labels](https://docs.gitlab.com/api/labels/)
 - [Project Members](https://docs.gitlab.com/api/members/)
 - [Project Milestones](https://docs.gitlab.com/api/milestones/)
@@ -112,7 +112,7 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 ### Rate limits
 
-GitLab.com enforces per-endpoint rate limits on its REST API. The following defaults apply to the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
+The connector respects per-endpoint rate limits based on [GitLab.com's documented defaults](https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom) for the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
 
 | Endpoint | Rate limit |
 | :--- | :--- |
@@ -143,6 +143,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.31 | 2026-06-23 | [80476](https://github.com/airbytehq/airbyte/pull/80476) | Update dependencies |
+| 4.4.30 | 2026-06-17 | [77516](https://github.com/airbytehq/airbyte/pull/77516) | Lower default concurrency from 8 to 4; set HTTPAPIBudget to documented GitLab.com rate limits |
+| 4.4.29 | 2026-06-16 | [79874](https://github.com/airbytehq/airbyte/pull/79874) | Update dependencies |
+| 4.4.28 | 2026-06-09 | [79295](https://github.com/airbytehq/airbyte/pull/79295) | Update dependencies |
+| 4.4.27 | 2026-06-02 | [78724](https://github.com/airbytehq/airbyte/pull/78724) | Update dependencies |
 | 4.4.26 | 2026-04-28 | [77265](https://github.com/airbytehq/airbyte/pull/77265) | Update dependencies |
 | 4.4.25 | 2026-04-21 | [76608](https://github.com/airbytehq/airbyte/pull/76608) | Update dependencies |
 | 4.4.24 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |

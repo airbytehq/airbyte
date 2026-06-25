@@ -50,14 +50,6 @@ definitions:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        http_codes:
-          - 400
-        predicate: "{{ 'UNRECOGNIZED_FIELD' in (response | string) or 'Unrecognized field' in (response | string) }}"
-        error_message: >-
-          {{ (((response[0] if response is iterable and response is not mapping else response).get('error', {}).get('details', [{}])[0].get('errors', [{}])[0].get('message')) or (response[0] if response is iterable and response is not mapping else response).get('error', {}).get('message') or 'Google Ads query contains unrecognized fields.') }}
-      - type: HttpResponseFilter
         action: RETRY
         http_codes:
           - 500
@@ -165,10 +157,12 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1110, format='%Y-%m-%d') }}"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('end_date', today_utc()) }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1109, format='%Y-%m-%d') }}"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
@@ -678,10 +672,12 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ max(config.get('start_date', day_delta(-90, format='%Y-%m-%d')), day_delta(-90, format='%Y-%m-%d')) }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1110, format='%Y-%m-%d') }}"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1109, format='%Y-%m-%d') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1015,12 +1011,14 @@ definitions:
               "start_datetime": {
                 "type": "MinMaxDatetime",
                 "datetime": "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}",
-                "datetime_format": "%Y-%m-%d"
+                "datetime_format": "%Y-%m-%d",
+                "min_datetime": "{{ day_delta(-1110, format='%Y-%m-%d') }}"
               },
               "end_datetime": {
                 "type": "MinMaxDatetime",
                 "datetime": "{{ config.get('end_date', today_utc()) }}",
-                "datetime_format": "%Y-%m-%d"
+                "datetime_format": "%Y-%m-%d",
+                "min_datetime": "{{ day_delta(-1109, format='%Y-%m-%d') }}"
               }
             }
           condition: >-
@@ -1113,7 +1111,8 @@ definitions:
             {
               "type": "MinMaxDatetime",
               "datetime": "{{ max(config.get('start_date', day_delta(-90, format='%Y-%m-%d')), day_delta(-90, format='%Y-%m-%d')) }}",
-              "datetime_format": "%Y-%m-%d"
+              "datetime_format": "%Y-%m-%d",
+              "min_datetime": "{{ day_delta(-1110, format='%Y-%m-%d') }}"
             }
           condition: >-
             {{
@@ -1139,7 +1138,8 @@ definitions:
             {
               "type": "MinMaxDatetime",
               "datetime": "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}",
-              "datetime_format": "%Y-%m-%d"
+              "datetime_format": "%Y-%m-%d",
+              "min_datetime": "{{ day_delta(-1109, format='%Y-%m-%d') }}"
             }
           condition: >-
             {{
