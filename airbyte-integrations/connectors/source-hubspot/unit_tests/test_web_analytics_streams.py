@@ -281,9 +281,9 @@ def test_web_analytics_fresh_state_from_start_date(requests_mock, config_experim
     assert len(history) > 0, "Should make at least one Events API request"
 
     first_request = history[0]
-    assert re.search(r"occurredAfter=2023-12-01", first_request.url), (
-        f"First request should start from config start_date (2023-12-01), got: {first_request.url}"
-    )
+    assert re.search(
+        r"occurredAfter=2023-12-01", first_request.url
+    ), f"First request should start from config start_date (2023-12-01), got: {first_request.url}"
 
 
 # ── Test 10: State maintained per parent partition ──────────────────
