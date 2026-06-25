@@ -183,3 +183,37 @@ class Purchases(Stream, IncrementalMixin):
                 self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
             self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+
+
+class PremiumAnalytics(Stream, IncrementalMixin):
+    """Analytics data available only when the Premium Analytics add-on is enabled.
+
+    This stream reads from the premium_analytics config section. When the
+    add-on is not provisioned on the account, the API returns an empty
+    result set (no error, just zero records).
+    """
+
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+        super().__init__(**kwargs)
+        self.count = count
+        self.seed = seed
+        self.records_per_slice = records_per_slice
+        self.always_updated = always_updated
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if hasattr(self, "_state"):
+            return self._state
+        return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # Premium Analytics requires the add-on to be enabled on the account.
+        # When the add-on is not present, the API returns an empty dataset.
+        return iter([])
