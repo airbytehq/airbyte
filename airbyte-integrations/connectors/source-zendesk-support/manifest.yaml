@@ -1328,6 +1328,47 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  side_conversations_stream:
+    type: DeclarativeStream
+    name: "side_conversations"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/side_conversations"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - http_codes: [403]
+              action: IGNORE
+              error_message: "Side Conversations requires the Collaboration add-on. Skipping for ticket {{ stream_partition.ticket_id }}."
+            - http_codes: [404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Unable to read side conversations for ticket {{ stream_partition.ticket_id }}. Error: {{ response.get('error') }}"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "ticket_id"
+            stream:
+              $ref: "#/definitions/tickets_stream"
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["side_conversations"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/side_conversations"
+
 streams:
   # Full refresh streams
   - $ref: "#/definitions/deleted_tickets_stream"
@@ -1366,6 +1407,7 @@ streams:
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
   - $ref: "#/definitions/ticket_comments_stream"
+  - $ref: "#/definitions/side_conversations_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/tickets_stream"
@@ -7470,3 +7512,70 @@ schemas:
         type:
           - "null"
           - number
+  side_conversations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier for the side conversation.
+        type:
+          - "null"
+          - string
+      url:
+        description: The API URL of this side conversation.
+        type:
+          - "null"
+          - string
+      subject:
+        description: The subject line of the side conversation.
+        type:
+          - "null"
+          - string
+      preview_text:
+        description: A truncated preview of the latest message body.
+        type:
+          - "null"
+          - string
+      state:
+        description: "The current state: open or closed."
+        type:
+          - "null"
+          - string
+      state_updated_at:
+        description: When the state was last changed.
+        type:
+          - "null"
+          - string
+        format: date-time
+      message_added_at:
+        description: When the last message was added.
+        type:
+          - "null"
+          - string
+        format: date-time
+      participants:
+        description: List of participants in the side conversation.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      external:
+        description: Whether the side conversation is external (e.g. email).
+        type:
+          - "null"
+          - boolean
+      created_at:
+        description: When the side conversation was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        description: When the side conversation was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
