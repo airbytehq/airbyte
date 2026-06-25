@@ -38,7 +38,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 ## Supported regions
 
-The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
 
 Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
 
@@ -392,6 +392,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.11 | 2026-06-25 | | Add Ireland (IE) marketplace support |
 | 5.7.10 | 2026-06-24 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only and seller-only streams behind account type using ConditionalStreams; use CheckDynamicStream so connectivity check works for both Seller and Vendor accounts. Added documentation for stream availability by account type. |
 | 5.7.9 | 2026-06-17 | [75470](https://github.com/airbytehq/airbyte/pull/75470) | Fix GzipXmlDecoder error handling that caused AttributeError on malformed XML responses |
 | 5.7.8 | 2026-06-16 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |

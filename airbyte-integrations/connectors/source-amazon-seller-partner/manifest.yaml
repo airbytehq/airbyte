@@ -59,6 +59,7 @@ spec:
         - ES
         - FR
         - GB
+        - IE
         - IN
         - IT
         - JP
@@ -530,6 +531,7 @@ spec:
           ES: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           FR: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           GB: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          IE: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           IN: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           IT: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           JP: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
@@ -555,6 +557,7 @@ spec:
           ES: "A1RKKUPIHCS9HS"
           FR: "A13V1IB3VIYZZH"
           GB: "A1F83G8C2ARO7P"
+          IE: "A28R8C7NBKEWEA"
           IN: "A21TJRUUN4KGV"
           IT: "APJ6JRA9NG5V4"
           JP: "A1VC38T7YXB528"
