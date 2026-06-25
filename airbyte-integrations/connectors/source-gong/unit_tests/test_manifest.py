@@ -23,4 +23,6 @@ def test_manifest_maps_429_to_rate_limited():
 
         default_handler = next(handler for handler in error_handler["error_handlers"] if handler["type"] == "DefaultErrorHandler")
         response_filters = default_handler["response_filters"]
-        assert any(filter_spec.get("$ref") == "#/definitions/response_filters/rate_limit" for filter_spec in response_filters), f"Stream {stream_name} does not include a shared Gateway rate limit response filter"
+        assert any(
+            filter_spec.get("$ref") == "#/definitions/response_filters/rate_limit" for filter_spec in response_filters
+        ), f"Stream {stream_name} does not include a shared Gateway rate limit response filter"
