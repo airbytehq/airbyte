@@ -1,0 +1,44 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2024-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "company" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2024-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "person" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2024-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "opportunity" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": "2024-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "event" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2024-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "sequence_enrollment" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2024-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "sequence_enrollment_step" }
+    }
+  }
+]
