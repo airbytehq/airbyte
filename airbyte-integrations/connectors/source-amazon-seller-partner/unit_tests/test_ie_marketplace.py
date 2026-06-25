@@ -3,11 +3,10 @@
 #
 
 import tempfile
+from pathlib import Path
 
 import pytest
 import yaml
-from pathlib import Path
-
 from components import SellerFeedbackReportsTypeTransformer
 
 from .conftest import get_source, get_stream_by_name
