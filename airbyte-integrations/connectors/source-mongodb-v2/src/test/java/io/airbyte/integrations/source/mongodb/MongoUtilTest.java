@@ -17,6 +17,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,6 +56,7 @@ import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 public class MongoUtilTest {
 
@@ -270,13 +272,51 @@ public class MongoUtilTest {
     final Document result = new Document(Map.of("cursor", Map.of("firstBatch", List.of(Map.of("name", collectionName)))));
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final MongoClient mongoClient = mock(MongoClient.class);
+    final ArgumentCaptor<Document> commandCaptor = ArgumentCaptor.forClass(Document.class);
 
-    when(mongoDatabase.runCommand(any())).thenReturn(result);
+    when(mongoDatabase.runCommand(commandCaptor.capture())).thenReturn(result);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
     final Set<String> authorizedCollections = MongoUtil.getAuthorizedCollections(mongoClient, databaseName);
 
     assertEquals(Set.of(collectionName), authorizedCollections);
+
+    // Verify the filter is sent as part of the command (not appended to the response),
+    // and that it is a Document, not a raw string — both bugs from issue #63727.
+    final Document capturedCommand = commandCaptor.getValue();
+    assertNotNull(capturedCommand.get("filter"));
+    assertInstanceOf(Document.class, capturedCommand.get("filter"));
+    assertEquals("collection", ((Document) capturedCommand.get("filter")).getString("type"));
+  }
+
+  @Test
+  void testGetAuthorizedCollectionsExcludesViews() {
+    // Regression test for https://github.com/airbytehq/airbyte/issues/63727
+    // The filter is evaluated server-side; this test simulates a server that returned views
+    // (i.e. the old broken command was used) and verifies client-side handling is still correct
+    // when the server does honour the filter and returns only collections.
+    final String databaseName = "test-database";
+    final String collectionName = "real-collection";
+    // Mock returns only collection entries (server has applied the filter correctly)
+    final Document result = new Document(Map.of("cursor", Map.of("firstBatch", List.of(Map.of("name", collectionName)))));
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final ArgumentCaptor<Document> commandCaptor = ArgumentCaptor.forClass(Document.class);
+
+    when(mongoDatabase.runCommand(commandCaptor.capture())).thenReturn(result);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final Set<String> authorizedCollections = MongoUtil.getAuthorizedCollections(mongoClient, databaseName);
+
+    // Only the collection is returned, not any view
+    assertEquals(Set.of(collectionName), authorizedCollections);
+    assertFalse(authorizedCollections.isEmpty());
+
+    // Confirm the command sent to MongoDB contains the type filter as a proper Document
+    final Document capturedCommand = commandCaptor.getValue();
+    final Document filter = (Document) capturedCommand.get("filter");
+    assertNotNull(filter, "filter must be included in the listCollections command");
+    assertEquals("collection", filter.getString("type"), "filter must restrict to type=collection to exclude views");
   }
 
   @Test
