@@ -1,8 +1,14 @@
 # PokéAPI
 
+<HideInUI>
+
+This page contains the setup guide and reference information for the [PokéAPI](https://pokeapi.co/) source connector.
+
+</HideInUI>
+
 ## Tutorials
 
-The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
+The PokéAPI is primarily used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
 - [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
 - [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
@@ -20,11 +26,13 @@ The PokéAPI is primarly used as a tutorial and educational resource, as it requ
 
 This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to serve and retrieve information about Pokémon. This connector should be primarily used for educational purposes or for getting a trial source up and running without needing any dependencies. As this API is fully open and is not rate-limited, no authentication or rate-limiting is performed, so you can use this connector right out of the box without any further configuration.
 
-## Output Schema
+## Supported streams
 
-Currently, only one output stream is available from this source, which is the Pokémon output stream. This schema is defined [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json).
+This source provides a single stream:
 
-## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
+- **pokemon** — returns detailed data for the Pokémon name you specify in the connector configuration, including base stats, abilities, types, sprites, moves, and held items.
+
+## Rate limiting and performance considerations
 
 According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
 
