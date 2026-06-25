@@ -312,7 +312,7 @@ jobs:
                     required: [pass, reasoning]
                   net_new_stream_addition:
                     type: object
-                    description: "Set pass to true ONLY if the PR exclusively adds net-new streams to an existing connector without modifying any existing streams or core connector logic. Allowed changes: new stream class definitions, new stream registrations, new tests for the new streams, new or updated documentation/changelogs for the new streams, version bumps in metadata.yaml, and new or updated schema files for the new streams. Set pass to false if any existing stream, existing schema, existing test, or core connector logic (e.g. auth, base classes, shared utilities, existing stream definitions) is modified."
+                    description: "Set pass to true ONLY if the PR exclusively adds net-new streams to an existing connector without modifying any existing streams or core connector logic. Allowed changes: new stream class definitions, new stream registrations, new tests for the new streams, new or updated documentation/changelogs for the new streams, version bumps in metadata.yaml, new or updated schema files for the new streams, and trivial updates to existing tests that are a direct mechanical consequence of adding the new stream (e.g. incrementing an expected stream count assertion). Set pass to false if any existing stream definition, existing schema, or core connector logic (e.g. auth, base classes, shared utilities) is modified, or if existing tests are changed in ways beyond trivial count updates."
                     properties:
                       pass:
                         type: boolean
