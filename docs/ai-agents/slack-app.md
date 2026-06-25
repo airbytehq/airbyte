@@ -11,7 +11,7 @@ description: Connect your AI agents to Slack with Airbyte Agents. Read and write
 
 Airbyte Agents connects your AI agents to Slack so they can read, search, and write across your workspace in real time. Manage channels, send messages, track conversations, and search your Slack data — all through a single, secure integration.
 
-Airbyte Agents is a data and context layer for AI agents. It gives agents reliable access to the tools your organization runs on through managed connectors and secure credential storage. The Slack connector is one the connectors available on the platform.
+Airbyte Agents is a data and context layer for AI agents. It gives agents reliable access to the tools your organization runs on through managed connectors and secure credential storage. The Slack connector is one of the connectors available on the platform.
 
 [Get started with Airbyte Agents](https://app.airbyte.ai)
 
@@ -105,7 +105,7 @@ There are several ways to install and use the Slack connector:
 1. Go to [app.airbyte.ai](https://app.airbyte.ai) and sign in or create a free account.
 2. Navigate to **Connectors** and click **Add Connector**.
 3. Select **Slack** and authenticate with OAuth.
-4. Start using the connector in chats, the MCP serer, the API, the CLI, or the SDK.
+4. Start using the connector in chats, the MCP server, the API, the CLI, or the SDK.
 
 ### API
 
