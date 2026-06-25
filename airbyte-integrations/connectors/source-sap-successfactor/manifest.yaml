@@ -1,0 +1,388 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: Fetch Employee master data
+
+check:
+  type: CheckStream
+  stream_names:
+    - SAP Employee Details
+
+definitions:
+  linked:
+    HttpRequester: {}
+
+streams:
+  - type: DeclarativeStream
+    name: SAP Employee Details
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://apisalesdemo2.successfactors.eu/odata/v2/EmpEmployment
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['username'] }}"
+          password: "{{ config['password'] }}"
+        request_parameters:
+          $format: json
+          $expand: >-
+            jobInfoNav/companyNav,jobInfoNav,personNav,userNav,userNav,jobInfoNav/managerUserNav,jobInfoNav/departmentNav,jobInfoNav/divisionNav,jobInfoNav/locationNav
+          $select: >-
+            jobInfoNav/companyNav/name,jobInfoNav/companyNav/externalCode,personIdExternal,userId,startDate,endDate,originalStartDate,seniorityDate,lastDateWorked,assignmentClass,isECRecord,okToRehire,jobInfoNav/jobCode,jobInfoNav/jobTitle,jobInfoNav/company,jobInfoNav/businessUnit,jobInfoNav/department,jobInfoNav/managerId,jobInfoNav/startDate,jobInfoNav/seqNumber,userNav/userId,userNav/username,userNav/firstName,userNav/lastName,userNav/mi,userNav/defaultFullName,userNav/email,userNav/status,userNav/location,userNav/manager,jobInfoNav/managerUserNav/email,jobInfoNav/managerUserNav/displayName,jobInfoNav/departmentNav/name,jobInfoNav/departmentNav/externalCode,jobInfoNav/divisionNav/name,jobInfoNav/divisionNav/externalCode,jobInfoNav/locationNav/name
+          $top: "7"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - d
+            - results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          __metadata:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              uri:
+                type:
+                  - string
+                  - "null"
+          personIdExternal:
+            type:
+              - string
+              - "null"
+          userId:
+            type:
+              - string
+              - "null"
+          originalStartDate:
+            type:
+              - string
+              - "null"
+          isECRecord:
+            type:
+              - boolean
+              - "null"
+          endDate:
+            type:
+              - string
+              - "null"
+          assignmentClass:
+            type:
+              - string
+              - "null"
+          okToRehire:
+            type:
+              - boolean
+              - "null"
+          lastDateWorked:
+            type:
+              - string
+              - "null"
+          startDate:
+            type:
+              - string
+              - "null"
+          seniorityDate:
+            type:
+              - string
+              - "null"
+          userNav:
+            type:
+              - object
+              - "null"
+            properties:
+              __metadata:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  uri:
+                    type:
+                      - string
+                      - "null"
+              userId:
+                type:
+                  - string
+                  - "null"
+              defaultFullName:
+                type:
+                  - string
+                  - "null"
+              firstName:
+                type:
+                  - string
+                  - "null"
+              lastName:
+                type:
+                  - string
+                  - "null"
+              location:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+              manager:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  __deferred:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      uri:
+                        type:
+                          - string
+                          - "null"
+          jobInfoNav:
+            type:
+              - object
+              - "null"
+            properties:
+              results:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    __metadata:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        uri:
+                          type:
+                            - string
+                            - "null"
+                    seqNumber:
+                      type:
+                        - string
+                        - "null"
+                    startDate:
+                      type:
+                        - string
+                        - "null"
+                    businessUnit:
+                      type:
+                        - string
+                        - "null"
+                    jobTitle:
+                      type:
+                        - string
+                        - "null"
+                    jobCode:
+                      type:
+                        - string
+                        - "null"
+                    company:
+                      type:
+                        - string
+                        - "null"
+                    managerId:
+                      type:
+                        - string
+                        - "null"
+                    department:
+                      type:
+                        - string
+                        - "null"
+                    divisionNav:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        __metadata:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            uri:
+                              type:
+                                - string
+                                - "null"
+                        externalCode:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                    locationNav:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        __metadata:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            uri:
+                              type:
+                                - string
+                                - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                    departmentNav:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        __metadata:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            uri:
+                              type:
+                                - string
+                                - "null"
+                        externalCode:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                    managerUserNav:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        __metadata:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            uri:
+                              type:
+                                - string
+                                - "null"
+                        displayName:
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          type:
+                            - string
+                            - "null"
+                    companyNav:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        __metadata:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            uri:
+                              type:
+                                - string
+                                - "null"
+                        externalCode:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        description: username
+        title: username
+        order: 0
+      password:
+        type: string
+        description: password
+        title: password
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    SAP Employee Details:
+      isStale: false
+      streamHash: a98440016df346034472fef23290e4965c8a50bb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    SAP Employee Details: true
