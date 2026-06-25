@@ -40,6 +40,14 @@ The Shopify connector supports the following entities and actions.
 | Metafield Product Images | [List](#metafield-product-images-list), [Context Store Search](#metafield-product-images-context-store-search) |
 | Customer Address | [List](#customer-address-list), [Get](#customer-address-get) |
 | Fulfillment Orders | [List](#fulfillment-orders-list), [Get](#fulfillment-orders-get), [Context Store Search](#fulfillment-orders-context-store-search) |
+| Pages | [List](#pages-list), [Get](#pages-get), [Context Store Search](#pages-context-store-search) |
+| Blogs | [List](#blogs-list), [Get](#blogs-get), [Context Store Search](#blogs-context-store-search) |
+| Articles | [List](#articles-list), [Get](#articles-get), [Context Store Search](#articles-context-store-search) |
+| Balance Transactions | [List](#balance-transactions-list), [Context Store Search](#balance-transactions-context-store-search) |
+| Disputes | [List](#disputes-list), [Get](#disputes-get), [Context Store Search](#disputes-context-store-search) |
+| Metafield Pages | [List](#metafield-pages-list), [Context Store Search](#metafield-pages-context-store-search) |
+| Metafield Blogs | [List](#metafield-blogs-list), [Context Store Search](#metafield-blogs-context-store-search) |
+| Metafield Articles | [List](#metafield-articles-list), [Context Store Search](#metafield-articles-context-store-search) |
 
 ## Customers
 
@@ -7818,6 +7826,1698 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].request_status` | `string` | Status of the fulfillment request (e.g. `unsubmitted`, `submitted`) |
 | `data[].created_at` | `string` | ISO 8601 timestamp when the fulfillment order was created |
 | `data[].updated_at` | `string` | ISO 8601 timestamp when the fulfillment order was last updated |
+
+</details>
+
+## Pages
+
+### Pages List
+
+Returns a list of static pages for the store
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "pages",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.pages.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pages",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+| `since_id` | `integer` | No | Restrict results to after the specified ID |
+| `created_at_min` | `string` | No | Show pages created after date (ISO 8601 format) |
+| `created_at_max` | `string` | No | Show pages created before date (ISO 8601 format) |
+| `updated_at_min` | `string` | No | Show pages last updated after date (ISO 8601 format) |
+| `updated_at_max` | `string` | No | Show pages last updated before date (ISO 8601 format) |
+| `published_status` | `"published" \| "unpublished" \| "any"` | No | Filter by published status (published, unpublished, any) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `title` | `string \| null` |  |
+| `handle` | `string \| null` |  |
+| `body_html` | `string \| null` |  |
+| `author` | `string \| null` |  |
+| `template_suffix` | `string \| null` |  |
+| `published_at` | `string \| null` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Pages Get
+
+Retrieves a single page by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "pages",
+  "action": "get",
+  "params": {
+    "page_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.pages.get(
+    page_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pages",
+    "action": "get",
+    "params": {
+        "page_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `page_id` | `integer` | Yes | The page ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `title` | `string \| null` |  |
+| `handle` | `string \| null` |  |
+| `body_html` | `string \| null` |  |
+| `author` | `string \| null` |  |
+| `template_suffix` | `string \| null` |  |
+| `published_at` | `string \| null` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+</details>
+
+### Pages Context Store Search
+
+Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "pages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.pages.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pages",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the page |
+| `title` | `string` | Title of the page |
+| `handle` | `string` | URL-friendly handle for the page |
+| `author` | `string` | Name of the page author |
+| `body_html` | `string` | HTML content of the page |
+| `published_at` | `string` | ISO 8601 timestamp when the page was published |
+| `created_at` | `string` | ISO 8601 timestamp when the page was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the page was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the page |
+| `data[].title` | `string` | Title of the page |
+| `data[].handle` | `string` | URL-friendly handle for the page |
+| `data[].author` | `string` | Name of the page author |
+| `data[].body_html` | `string` | HTML content of the page |
+| `data[].published_at` | `string` | ISO 8601 timestamp when the page was published |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the page was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the page was last updated |
+
+</details>
+
+## Blogs
+
+### Blogs List
+
+Returns a list of blogs for the store
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "blogs",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.blogs.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "blogs",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+| `since_id` | `integer` | No | Restrict results to after the specified ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `title` | `string \| null` |  |
+| `handle` | `string \| null` |  |
+| `commentable` | `string \| null` |  |
+| `feedburner` | `string \| null` |  |
+| `feedburner_location` | `string \| null` |  |
+| `tags` | `string \| null` |  |
+| `template_suffix` | `string \| null` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Blogs Get
+
+Retrieves a single blog by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "blogs",
+  "action": "get",
+  "params": {
+    "blog_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.blogs.get(
+    blog_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "blogs",
+    "action": "get",
+    "params": {
+        "blog_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `blog_id` | `integer` | Yes | The blog ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `title` | `string \| null` |  |
+| `handle` | `string \| null` |  |
+| `commentable` | `string \| null` |  |
+| `feedburner` | `string \| null` |  |
+| `feedburner_location` | `string \| null` |  |
+| `tags` | `string \| null` |  |
+| `template_suffix` | `string \| null` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+</details>
+
+### Blogs Context Store Search
+
+Search and filter blogs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "blogs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.blogs.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "blogs",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the blog |
+| `title` | `string` | Title of the blog |
+| `handle` | `string` | URL-friendly handle for the blog |
+| `commentable` | `string` | Whether readers can post comments (no, moderate, yes) |
+| `tags` | `string` | Comma-separated tags from the blog's articles |
+| `created_at` | `string` | ISO 8601 timestamp when the blog was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the blog was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the blog |
+| `data[].title` | `string` | Title of the blog |
+| `data[].handle` | `string` | URL-friendly handle for the blog |
+| `data[].commentable` | `string` | Whether readers can post comments (no, moderate, yes) |
+| `data[].tags` | `string` | Comma-separated tags from the blog's articles |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the blog was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the blog was last updated |
+
+</details>
+
+## Articles
+
+### Articles List
+
+Returns a list of articles from a specific blog
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "articles",
+  "action": "list",
+  "params": {
+    "blog_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.articles.list(
+    blog_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "articles",
+    "action": "list",
+    "params": {
+        "blog_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `blog_id` | `integer` | Yes | The blog ID |
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+| `since_id` | `integer` | No | Restrict results to after the specified ID |
+| `created_at_min` | `string` | No | Show articles created after date (ISO 8601 format) |
+| `created_at_max` | `string` | No | Show articles created before date (ISO 8601 format) |
+| `updated_at_min` | `string` | No | Show articles last updated after date (ISO 8601 format) |
+| `updated_at_max` | `string` | No | Show articles last updated before date (ISO 8601 format) |
+| `published_status` | `"published" \| "unpublished" \| "any"` | No | Filter by published status (published, unpublished, any) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `title` | `string \| null` |  |
+| `handle` | `string \| null` |  |
+| `author` | `string \| null` |  |
+| `blog_id` | `integer \| null` |  |
+| `body_html` | `string \| null` |  |
+| `summary_html` | `string \| null` |  |
+| `tags` | `string \| null` |  |
+| `template_suffix` | `string \| null` |  |
+| `published_at` | `string \| null` |  |
+| `user_id` | `integer \| null` |  |
+| `image` | `object \| any` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Articles Get
+
+Retrieves a single article by ID from a blog
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "articles",
+  "action": "get",
+  "params": {
+    "blog_id": 0,
+    "article_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.articles.get(
+    blog_id=0,
+    article_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "articles",
+    "action": "get",
+    "params": {
+        "blog_id": 0,
+        "article_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `blog_id` | `integer` | Yes | The blog ID |
+| `article_id` | `integer` | Yes | The article ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `title` | `string \| null` |  |
+| `handle` | `string \| null` |  |
+| `author` | `string \| null` |  |
+| `blog_id` | `integer \| null` |  |
+| `body_html` | `string \| null` |  |
+| `summary_html` | `string \| null` |  |
+| `tags` | `string \| null` |  |
+| `template_suffix` | `string \| null` |  |
+| `published_at` | `string \| null` |  |
+| `user_id` | `integer \| null` |  |
+| `image` | `object \| any` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+</details>
+
+### Articles Context Store Search
+
+Search and filter articles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "articles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.articles.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "articles",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the article |
+| `title` | `string` | Title of the article |
+| `handle` | `string` | URL-friendly handle for the article |
+| `author` | `string` | Name of the author of the article |
+| `blog_id` | `integer` | Identifier of the blog the article belongs to |
+| `body_html` | `string` | HTML content of the article body |
+| `summary_html` | `string` | Summary of the article in HTML |
+| `tags` | `string` | Comma-separated list of tags for the article |
+| `published_at` | `string` | ISO 8601 timestamp when the article was published |
+| `created_at` | `string` | ISO 8601 timestamp when the article was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the article was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the article |
+| `data[].title` | `string` | Title of the article |
+| `data[].handle` | `string` | URL-friendly handle for the article |
+| `data[].author` | `string` | Name of the author of the article |
+| `data[].blog_id` | `integer` | Identifier of the blog the article belongs to |
+| `data[].body_html` | `string` | HTML content of the article body |
+| `data[].summary_html` | `string` | Summary of the article in HTML |
+| `data[].tags` | `string` | Comma-separated list of tags for the article |
+| `data[].published_at` | `string` | ISO 8601 timestamp when the article was published |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the article was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the article was last updated |
+
+</details>
+
+## Balance Transactions
+
+### Balance Transactions List
+
+Returns a list of Shopify Payments balance transactions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "balance_transactions",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.balance_transactions.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "balance_transactions",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+| `since_id` | `integer` | No | Restrict results to after the specified ID |
+| `payout_id` | `integer` | No | Filter to transactions in a specific payout |
+| `payout_status` | `"scheduled" \| "in_transit" \| "paid" \| "failed" \| "canceled"` | No | Filter by payout status |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `type` | `string \| null` |  |
+| `test` | `boolean \| null` |  |
+| `payout_id` | `integer \| null` |  |
+| `payout_status` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `amount` | `string \| null` |  |
+| `fee` | `string \| null` |  |
+| `net` | `string \| null` |  |
+| `source_id` | `integer \| null` |  |
+| `source_type` | `string \| null` |  |
+| `source_order_id` | `integer \| null` |  |
+| `source_order_transaction_id` | `integer \| null` |  |
+| `processed_at` | `string \| null` |  |
+| `adjustment_order_transactions` | `array \| null` |  |
+| `adjustment_reason` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Balance Transactions Context Store Search
+
+Search and filter balance transactions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "balance_transactions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.balance_transactions.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "balance_transactions",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier of the balance transaction |
+| `type` | `string` | Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.) |
+| `amount` | `string` | Gross amount of the transaction |
+| `fee` | `string` | Total fees deducted from the transaction |
+| `net` | `string` | Net amount of the transaction |
+| `currency` | `string` | ISO 4217 currency code of the transaction |
+| `payout_id` | `integer` | Identifier of the payout the transaction was paid out in |
+| `payout_status` | `string` | Status of the associated payout |
+| `source_type` | `string` | Type of the resource that led to this transaction |
+| `source_order_id` | `integer` | Identifier of the source order, if applicable |
+| `processed_at` | `string` | ISO 8601 timestamp when the transaction was processed |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier of the balance transaction |
+| `data[].type` | `string` | Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.) |
+| `data[].amount` | `string` | Gross amount of the transaction |
+| `data[].fee` | `string` | Total fees deducted from the transaction |
+| `data[].net` | `string` | Net amount of the transaction |
+| `data[].currency` | `string` | ISO 4217 currency code of the transaction |
+| `data[].payout_id` | `integer` | Identifier of the payout the transaction was paid out in |
+| `data[].payout_status` | `string` | Status of the associated payout |
+| `data[].source_type` | `string` | Type of the resource that led to this transaction |
+| `data[].source_order_id` | `integer` | Identifier of the source order, if applicable |
+| `data[].processed_at` | `string` | ISO 8601 timestamp when the transaction was processed |
+
+</details>
+
+## Disputes
+
+### Disputes List
+
+Returns a list of Shopify Payments disputes (chargebacks and inquiries)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "disputes",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.disputes.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "disputes",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+| `since_id` | `integer` | No | Restrict results to after the specified ID |
+| `status` | `"needs_response" \| "under_review" \| "charge_refunded" \| "accepted" \| "won" \| "lost"` | No | Filter by dispute status |
+| `initiated_at` | `string` | No | Filter by initiated date (ISO 8601 format) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `order_id` | `integer \| null` |  |
+| `type` | `string \| null` |  |
+| `amount` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `reason` | `string \| null` |  |
+| `network_reason_code` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `evidence_due_by` | `string \| null` |  |
+| `evidence_sent_on` | `string \| null` |  |
+| `finalized_on` | `string \| null` |  |
+| `initiated_at` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Disputes Get
+
+Retrieves a single Shopify Payments dispute by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "disputes",
+  "action": "get",
+  "params": {
+    "dispute_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.disputes.get(
+    dispute_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "disputes",
+    "action": "get",
+    "params": {
+        "dispute_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `dispute_id` | `integer` | Yes | The dispute ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `order_id` | `integer \| null` |  |
+| `type` | `string \| null` |  |
+| `amount` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `reason` | `string \| null` |  |
+| `network_reason_code` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `evidence_due_by` | `string \| null` |  |
+| `evidence_sent_on` | `string \| null` |  |
+| `finalized_on` | `string \| null` |  |
+| `initiated_at` | `string \| null` |  |
+
+
+</details>
+
+### Disputes Context Store Search
+
+Search and filter disputes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "disputes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.disputes.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "disputes",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the dispute |
+| `order_id` | `integer` | Identifier of the order the dispute belongs to |
+| `type` | `string` | Whether the dispute is an inquiry or chargeback |
+| `amount` | `string` | Disputed amount |
+| `currency` | `string` | ISO 4217 currency code of the dispute amount |
+| `reason` | `string` | Reason for the dispute provided by the cardholder's bank |
+| `network_reason_code` | `string` | Network reason code from the cardholder's bank |
+| `status` | `string` | Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost) |
+| `evidence_due_by` | `string` | ISO 8601 deadline for evidence submission |
+| `initiated_at` | `string` | ISO 8601 timestamp when the dispute was initiated |
+| `finalized_on` | `string` | ISO 8601 timestamp when the dispute was resolved |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the dispute |
+| `data[].order_id` | `integer` | Identifier of the order the dispute belongs to |
+| `data[].type` | `string` | Whether the dispute is an inquiry or chargeback |
+| `data[].amount` | `string` | Disputed amount |
+| `data[].currency` | `string` | ISO 4217 currency code of the dispute amount |
+| `data[].reason` | `string` | Reason for the dispute provided by the cardholder's bank |
+| `data[].network_reason_code` | `string` | Network reason code from the cardholder's bank |
+| `data[].status` | `string` | Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost) |
+| `data[].evidence_due_by` | `string` | ISO 8601 deadline for evidence submission |
+| `data[].initiated_at` | `string` | ISO 8601 timestamp when the dispute was initiated |
+| `data[].finalized_on` | `string` | ISO 8601 timestamp when the dispute was resolved |
+
+</details>
+
+## Metafield Pages
+
+### Metafield Pages List
+
+Returns a list of metafields for a specific page
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_pages",
+  "action": "list",
+  "params": {
+    "page_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.metafield_pages.list(
+    page_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_pages",
+    "action": "list",
+    "params": {
+        "page_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `page_id` | `integer` | Yes | The page ID |
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `namespace` | `string \| null` |  |
+| `key` | `string \| null` |  |
+| `value` | `string \| integer \| boolean \| null` |  |
+| `type` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `owner_resource` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Pages Context Store Search
+
+Search and filter metafield pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_pages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.metafield_pages.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_pages",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Container namespace for the metafield |
+| `key` | `string` | Identifier key for the metafield |
+| `value` | `string` | The metafield value |
+| `type` | `string` | The metafield's information type |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the page that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `page`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Container namespace for the metafield |
+| `data[].key` | `string` | Identifier key for the metafield |
+| `data[].value` | `string` | The metafield value |
+| `data[].type` | `string` | The metafield's information type |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the page that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `page`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+</details>
+
+## Metafield Blogs
+
+### Metafield Blogs List
+
+Returns a list of metafields for a specific blog
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_blogs",
+  "action": "list",
+  "params": {
+    "blog_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.metafield_blogs.list(
+    blog_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_blogs",
+    "action": "list",
+    "params": {
+        "blog_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `blog_id` | `integer` | Yes | The blog ID |
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `namespace` | `string \| null` |  |
+| `key` | `string \| null` |  |
+| `value` | `string \| integer \| boolean \| null` |  |
+| `type` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `owner_resource` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Blogs Context Store Search
+
+Search and filter metafield blogs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_blogs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.metafield_blogs.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_blogs",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Container namespace for the metafield |
+| `key` | `string` | Identifier key for the metafield |
+| `value` | `string` | The metafield value |
+| `type` | `string` | The metafield's information type |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the blog that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `blog`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Container namespace for the metafield |
+| `data[].key` | `string` | Identifier key for the metafield |
+| `data[].value` | `string` | The metafield value |
+| `data[].type` | `string` | The metafield's information type |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the blog that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `blog`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+</details>
+
+## Metafield Articles
+
+### Metafield Articles List
+
+Returns a list of metafields for a specific article
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_articles",
+  "action": "list",
+  "params": {
+    "blog_id": 0,
+    "article_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.metafield_articles.list(
+    blog_id=0,
+    article_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_articles",
+    "action": "list",
+    "params": {
+        "blog_id": 0,
+        "article_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `blog_id` | `integer` | Yes | The blog ID |
+| `article_id` | `integer` | Yes | The article ID |
+| `limit` | `integer` | No | Maximum number of results to return (max 250) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `namespace` | `string \| null` |  |
+| `key` | `string \| null` |  |
+| `value` | `string \| integer \| boolean \| null` |  |
+| `type` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
+| `owner_resource` | `string \| null` |  |
+| `admin_graphql_api_id` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Articles Context Store Search
+
+Search and filter metafield articles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "metafield_articles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await shopify.metafield_articles.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_articles",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Container namespace for the metafield |
+| `key` | `string` | Identifier key for the metafield |
+| `value` | `string` | The metafield value |
+| `type` | `string` | The metafield's information type |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the article that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `article`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Container namespace for the metafield |
+| `data[].key` | `string` | Identifier key for the metafield |
+| `data[].value` | `string` | The metafield value |
+| `data[].type` | `string` | The metafield's information type |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the article that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `article`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
 
 </details>
 

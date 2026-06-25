@@ -6,11 +6,11 @@ data:
     hosts:
       - api.monday.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.2@sha256:19eb795baa82bad71c097a7388313c1fd9f36978f543a8c7a245bbedb0c9a153
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.5.9
+  dockerImageTag: 2.5.11
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
@@ -86,6 +86,15 @@ data:
     - title: monday.com API reference
       url: https://developer.monday.com/api-reference/docs
       type: api_reference
+    - title: monday.com API release notes
+      url: https://developer.monday.com/api-reference/docs/release-notes
+      type: api_release_history
+    - title: monday.com API changelog
+      url: https://developer.monday.com/api-reference/changelog
+      type: api_release_history
+    - title: monday.com API versioning and deprecation policy
+      url: https://developer.monday.com/api-reference/docs/api-versioning
+      type: api_deprecations
     - title: monday.com authentication
       url: https://developer.monday.com/api-reference/docs/authentication
       type: authentication_guide

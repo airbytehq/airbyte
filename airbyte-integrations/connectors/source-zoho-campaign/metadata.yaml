@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-zoho-campaign
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.21.1@sha256:0e55d8593249f5b9d84272cd5786884bffa46eeac691162de1217807930c5e70
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.2@sha256:19eb795baa82bad71c097a7388313c1fd9f36978f543a8c7a245bbedb0c9a153
   connectorSubtype: api
   connectorType: source
   definitionId: 1d0d5605-604b-401a-8a69-92f841a95a90
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-zoho-campaign
   githubIssueLabel: source-zoho-campaign
   icon: icon.svg

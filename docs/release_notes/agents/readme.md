@@ -1,5 +1,104 @@
 # Airbyte Agents release notes
 
+## June 23, 2026
+
+Web app
+
+- You can now add team members directly when creating a new workspace, so everyone has access from the start.
+- The workspace picker shows an "Admin" badge on workspaces where you have admin privileges.
+- Switching workspaces while in a chat shows a toast confirming which workspace you switched to.
+- Member lists in workspace settings are now sorted alphabetically.
+
+Connectors
+
+- Gong call transcripts now support semantic search, allowing your agent to find relevant conversations based on meaning rather than exact keyword matches.
+- Your agent can now search GitHub data using more natural field names, and sorting results by fields like creation date works correctly.
+
+## June 19, 2026
+
+Web app
+
+- Chat connections to your agent are now more reliable. If the initial connection fails due to a temporary network issue, the app automatically retries instead of showing an error.
+
+SDK
+
+- Fixed an issue where connectors with an empty authentication header prefix would send a leading space in API requests, potentially causing authentication failures.
+
+Connectors
+
+- The Shopify connector is now generally available. You can connect your Shopify store to read orders, products, customers, inventory, and more.
+- Amazon Ads entities such as campaigns, ad groups, and keywords are now correctly linked to advertising profiles, so your agent can resolve data across multiple accounts more accurately.
+- Fixed an issue where certain connectors were not displayed correctly in your connector list and could not be used by your agent.
+
+Other
+
+- Upgraded the AI model powering Chats and Automations for improved response quality.
+
+## June 18, 2026
+
+Web app
+
+- Your credentials page now shows a "Direct only" badge on connectors that support direct queries but not Context Store search.
+- The option to convert a chat to an automation is no longer available in the chat interface.
+- The "New workspace" button now appears at the top of the workspace picker for faster access.
+- Fixed an issue where shared workspaces could be hidden from organization members who didn't have a direct workspace grant.
+
+Connectors
+
+- Setting up and using direct-only connectors is now more reliable.
+
+## June 17, 2026
+
+Other
+
+- The Context Store now pauses automatically for connectors that haven't been searched recently. When you next search a paused connector, it resumes immediately and you'll see a notice while its data refreshes.
+
+## June 16, 2026
+
+API
+
+- You now see only the workspaces you belong to, and deleting a workspace requires workspace admin permission.
+
+Connectors
+
+- The incident.io connector now lets you list and retrieve teams from your incident.io account.
+
+## June 15, 2026
+
+Web app
+
+- You can now switch between workspaces and create new ones directly from the sidebar without leaving your current page.
+- The Connectors page now shows "Paused" and "Re-enabling" status indicators for the Context Store, so you can see at a glance when data indexing is temporarily inactive.
+- Connectors that only support direct requests now clearly indicate that the Context Store is not available, instead of showing irrelevant status information.
+- Fixed an issue where some connectors could temporarily disappear from the available connectors list during intermittent backend errors.
+
+API
+
+- Connector template and credential API responses now include `runtime_mode` and `supports_context_store` fields, so you can programmatically determine whether a connector supports the Context Store, direct requests, or both.
+
+## June 12, 2026
+
+Web app
+
+- Chat sessions and automations are now organized by workspace. If you use multiple workspaces, your conversations and workflows stay scoped to the workspace you're working in.
+- When you create a workspace, you're automatically granted admin permissions on it.
+- Agents now read connector documentation before executing each operation, improving accuracy when working with your connected data.
+- When your automations send Slack messages, they now include a link back to the automation for easy traceability.
+- Fixed an issue where organization and workspace data could appear stale after refreshing connector credentials.
+- Fixed progress indicators during connector editing to correctly show completed steps.
+
+SDK
+
+- New `build_connector_tools()` function builds hosted connector tools with progressive documentation lookup. Your agent inspects and reads connector docs before executing, improving accuracy. Pass `use_progressive_docs=False` to keep the single-tool behavior.
+
+API
+
+- Workspace-scoped tokens now properly restrict connector access to your workspace, preventing cross-workspace data access.
+
+Connectors
+
+- The Granola Notes entity is now pre-selected when you set up the connector.
+
 ## June 11, 2026
 
 Web app

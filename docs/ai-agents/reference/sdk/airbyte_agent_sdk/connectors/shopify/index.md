@@ -190,21 +190,28 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[AbandonedCheckoutsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ArticlesSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BalanceTransactionsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BlogsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CollectsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CountriesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CustomCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CustomersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DiscountCodesSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DisputesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DraftOrdersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[FulfillmentOrdersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[FulfillmentsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[InventoryItemsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[InventoryLevelsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[LocationsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldArticlesSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldBlogsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldCustomersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldDraftOrdersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldLocationsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldOrdersSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldPagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldProductImagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldProductVariantsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldProductsSearchData]
@@ -212,6 +219,7 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldSmartCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrderRefundsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrdersSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[PagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[PriceRulesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductImagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductVariantsSearchData]
@@ -234,6 +242,60 @@ Classes
 <a id="AbandonedCheckoutsSearchResult"></a>
 
 `AbandonedCheckoutsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ArticlesSearchResult"></a>
+
+`ArticlesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BalanceTransactionsSearchResult"></a>
+
+`BalanceTransactionsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BlogsSearchResult"></a>
+
+`BlogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -324,6 +386,24 @@ Classes
 <a id="DiscountCodesSearchResult"></a>
 
 `DiscountCodesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="DisputesSearchResult"></a>
+
+`DisputesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -447,6 +527,42 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MetafieldArticlesSearchResult"></a>
+
+`MetafieldArticlesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MetafieldBlogsSearchResult"></a>
+
+`MetafieldBlogsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="MetafieldCustomersSearchResult"></a>
 
 `MetafieldCustomersSearchResult(**data: Any)`
@@ -504,6 +620,24 @@ Classes
 <a id="MetafieldOrdersSearchResult"></a>
 
 `MetafieldOrdersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MetafieldPagesSearchResult"></a>
+
+`MetafieldPagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -645,6 +779,24 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PagesSearchResult"></a>
+
+`PagesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="PriceRulesSearchResult"></a>
 
 `PriceRulesSearchResult(**data: Any)`
@@ -770,6 +922,156 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ArticlesSearchData"></a>
+
+`ArticlesSearchData(**data: Any)`
+:   Search result data for articles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author: str | None`
+    :   Name of the author of the article
+
+    `blog_id: int | None`
+    :   Identifier of the blog the article belongs to
+
+    `body_html: str | None`
+    :   HTML content of the article body
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the article was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the article
+
+    `id: int | None`
+    :   Unique identifier for the article
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the article was published
+
+    `summary_html: str | None`
+    :   Summary of the article in HTML
+
+    `tags: str | None`
+    :   Comma-separated list of tags for the article
+
+    `title: str | None`
+    :   Title of the article
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the article was last updated
+
+<a id="BalanceTransactionsSearchData"></a>
+
+`BalanceTransactionsSearchData(**data: Any)`
+:   Search result data for balance_transactions entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Gross amount of the transaction
+
+    `currency: str | None`
+    :   ISO 4217 currency code of the transaction
+
+    `fee: str | None`
+    :   Total fees deducted from the transaction
+
+    `id: int | None`
+    :   Unique identifier of the balance transaction
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `net: str | None`
+    :   Net amount of the transaction
+
+    `payout_id: int | None`
+    :   Identifier of the payout the transaction was paid out in
+
+    `payout_status: str | None`
+    :   Status of the associated payout
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `source_order_id: int | None`
+    :   Identifier of the source order, if applicable
+
+    `source_type: str | None`
+    :   Type of the resource that led to this transaction
+
+    `type_: str | None`
+    :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+
+<a id="BlogsSearchData"></a>
+
+`BlogsSearchData(**data: Any)`
+:   Search result data for blogs entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `commentable: str | None`
+    :   Whether readers can post comments (no, moderate, yes)
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the blog was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the blog
+
+    `id: int | None`
+    :   Unique identifier for the blog
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `tags: str | None`
+    :   Comma-separated tags from the blog's articles
+
+    `title: str | None`
+    :   Title of the blog
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the blog was last updated
 
 <a id="CollectsSearchData"></a>
 
@@ -977,6 +1279,60 @@ Classes
 
     `usage_count: int | None`
     :   Number of times the code has been redeemed
+
+<a id="DisputesSearchData"></a>
+
+`DisputesSearchData(**data: Any)`
+:   Search result data for disputes entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Disputed amount
+
+    `currency: str | None`
+    :   ISO 4217 currency code of the dispute amount
+
+    `evidence_due_by: str | None`
+    :   ISO 8601 deadline for evidence submission
+
+    `finalized_on: str | None`
+    :   ISO 8601 timestamp when the dispute was resolved
+
+    `id: int | None`
+    :   Unique identifier for the dispute
+
+    `initiated_at: str | None`
+    :   ISO 8601 timestamp when the dispute was initiated
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `network_reason_code: str | None`
+    :   Network reason code from the cardholder's bank
+
+    `order_id: int | None`
+    :   Identifier of the order the dispute belongs to
+
+    `reason: str | None`
+    :   Reason for the dispute provided by the cardholder's bank
+
+    `status: str | None`
+    :   Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+
+    `type_: str | None`
+    :   Whether the dispute is an inquiry or chargeback
 
 <a id="DraftOrdersSearchData"></a>
 
@@ -1251,6 +1607,108 @@ Classes
     `updated_at: str | None`
     :   ISO 8601 timestamp when the location was last updated
 
+<a id="MetafieldArticlesSearchData"></a>
+
+`MetafieldArticlesSearchData(**data: Any)`
+:   Search result data for metafield_articles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the article that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `article`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
+
+<a id="MetafieldBlogsSearchData"></a>
+
+`MetafieldBlogsSearchData(**data: Any)`
+:   Search result data for metafield_blogs entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the blog that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `blog`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
+
 <a id="MetafieldCustomersSearchData"></a>
 
 `MetafieldCustomersSearchData(**data: Any)`
@@ -1454,6 +1912,57 @@ Classes
 
     `value: str | None`
     :   Serialized value stored in the metafield
+
+<a id="MetafieldPagesSearchData"></a>
+
+`MetafieldPagesSearchData(**data: Any)`
+:   Search result data for metafield_pages entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the page that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `page`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
 
 <a id="MetafieldProductImagesSearchData"></a>
 
@@ -1833,6 +2342,51 @@ Classes
     `updated_at: str | None`
     :   ISO 8601 timestamp when the order was last updated
 
+<a id="PagesSearchData"></a>
+
+`PagesSearchData(**data: Any)`
+:   Search result data for pages entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author: str | None`
+    :   Name of the page author
+
+    `body_html: str | None`
+    :   HTML content of the page
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the page was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the page
+
+    `id: int | None`
+    :   Unique identifier for the page
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the page was published
+
+    `title: str | None`
+    :   Title of the page
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the page was last updated
+
 <a id="PriceRulesSearchData"></a>
 
 `PriceRulesSearchData(**data: Any)`
@@ -2096,30 +2650,6 @@ Classes
 
     `updated_at: str | None`
     :   ISO 8601 timestamp when the shop was last updated
-
-<a id="ShopifyAuthConfig"></a>
-
-`ShopifyAuthConfig(**data: Any)`
-:   Access Token Authentication
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `api_key: str`
-    :   Your Shopify Admin API access token
-
-    `model_config`
-    :   The type of the None singleton.
 
 <a id="ShopifyConnector"></a>
 
