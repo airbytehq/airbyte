@@ -1,5 +1,52 @@
 # Airbyte Agents release notes
 
+## June 23, 2026
+
+Web app
+
+- You can now add team members directly when creating a new workspace, so everyone has access from the start.
+- The workspace picker shows an "Admin" badge on workspaces where you have admin privileges.
+- Switching workspaces while in a chat shows a toast confirming which workspace you switched to.
+- Member lists in workspace settings are now sorted alphabetically.
+
+Connectors
+
+- Gong call transcripts now support semantic search, allowing your agent to find relevant conversations based on meaning rather than exact keyword matches.
+- Your agent can now search GitHub data using more natural field names, and sorting results by fields like creation date works correctly.
+
+## June 19, 2026
+
+Web app
+
+- Chat connections to your agent are now more reliable. If the initial connection fails due to a temporary network issue, the app automatically retries instead of showing an error.
+
+SDK
+
+- Fixed an issue where connectors with an empty authentication header prefix would send a leading space in API requests, potentially causing authentication failures.
+
+Connectors
+
+- The Shopify connector is now generally available. You can connect your Shopify store to read orders, products, customers, inventory, and more.
+- Amazon Ads entities such as campaigns, ad groups, and keywords are now correctly linked to advertising profiles, so your agent can resolve data across multiple accounts more accurately.
+- Fixed an issue where certain connectors were not displayed correctly in your connector list and could not be used by your agent.
+
+Other
+
+- Upgraded the AI model powering Chats and Automations for improved response quality.
+
+## June 18, 2026
+
+Web app
+
+- Your credentials page now shows a "Direct only" badge on connectors that support direct queries but not Context Store search.
+- The option to convert a chat to an automation is no longer available in the chat interface.
+- The "New workspace" button now appears at the top of the workspace picker for faster access.
+- Fixed an issue where shared workspaces could be hidden from organization members who didn't have a direct workspace grant.
+
+Connectors
+
+- Setting up and using direct-only connectors is now more reliable.
+
 ## June 17, 2026
 
 Other
