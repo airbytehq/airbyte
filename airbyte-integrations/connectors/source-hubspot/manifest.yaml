@@ -2296,6 +2296,330 @@ definitions:
       path: /account-info/v3/details
       required_scopes: oauth
 
+  # ── Web Analytics base definition ─────────────────────────────────
+  # Restored in v6.8.0 (removed during manifest-only migration in v5.8.0).
+  # Each stream fans out over parent-object IDs and queries the Events API
+  # with 30-day datetime windows.  Records are flattened so that
+  # `properties.hs_*` becomes `properties_hs_*`, matching v5.7.0 output.
+  # Gated behind `enable_experimental_streams`.
+  web_analytics_base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+      path: "/events/v3/events"
+      request_parameters:
+        objectType: "{{ parameters['object_type'] }}"
+        objectId: "{{ stream_partition['parent_id'] }}"
+    record_selector:
+      $ref: "#/definitions/base_selector"
+      schema_normalization: Default
+    paginator:
+      $ref: "#/definitions/cursor_paginator"
+
+  web_analytics_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: occurredAt
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: PT0.001S
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+    step: P30D
+    start_time_option:
+      type: RequestOption
+      field_name: occurredAfter
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: occurredBefore
+      inject_into: request_parameter
+
+  web_analytics_schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: "#/schemas/web_analytics"
+
+  web_analytics_transformations:
+    - type: DpathFlattenFields
+      field_path:
+        - properties
+      delete_origin_value: true
+      key_transformation:
+        type: KeyTransformation
+        prefix: properties_
+
+  # ── 12 Web Analytics stream definitions ────────────────────────────
+
+  contacts_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/contacts_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: contacts_web_analytics
+      primary_key: id
+      object_type: contact
+
+  companies_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/companies_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: companies_web_analytics
+      primary_key: id
+      object_type: company
+
+  deals_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/deals_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: deals_web_analytics
+      primary_key: id
+      object_type: deal
+
+  tickets_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/tickets_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: tickets_web_analytics
+      primary_key: id
+      object_type: ticket
+
+  engagements_calls_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/engagements_calls_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_calls_web_analytics
+      primary_key: id
+      object_type: calls
+
+  engagements_emails_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/engagements_emails_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_emails_web_analytics
+      primary_key: id
+      object_type: emails
+
+  engagements_meetings_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/engagements_meetings_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_meetings_web_analytics
+      primary_key: id
+      object_type: meetings
+
+  engagements_notes_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/engagements_notes_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_notes_web_analytics
+      primary_key: id
+      object_type: notes
+
+  engagements_tasks_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/engagements_tasks_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_tasks_web_analytics
+      primary_key: id
+      object_type: tasks
+
+  goals_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/goals_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: goals_web_analytics
+      primary_key: id
+      object_type: goal_targets
+
+  line_items_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/line_items_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: line_items_web_analytics
+      primary_key: id
+      object_type: line_item
+
+  products_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/products_stream"
+            parent_key: id
+            partition_field: parent_id
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: products_web_analytics
+      primary_key: id
+      object_type: product
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
@@ -2333,6 +2657,21 @@ streams:
   - "#/definitions/workflows_stream"
   - "#/definitions/properties_stream"
   - "#/definitions/account_details_stream"
+  - type: ConditionalStreams
+    condition: "{{ config.get('enable_experimental_streams', false) }}"
+    streams:
+      - "#/definitions/contacts_web_analytics_stream"
+      - "#/definitions/companies_web_analytics_stream"
+      - "#/definitions/deals_web_analytics_stream"
+      - "#/definitions/tickets_web_analytics_stream"
+      - "#/definitions/engagements_calls_web_analytics_stream"
+      - "#/definitions/engagements_emails_web_analytics_stream"
+      - "#/definitions/engagements_meetings_web_analytics_stream"
+      - "#/definitions/engagements_notes_web_analytics_stream"
+      - "#/definitions/engagements_tasks_web_analytics_stream"
+      - "#/definitions/goals_web_analytics_stream"
+      - "#/definitions/line_items_web_analytics_stream"
+      - "#/definitions/products_web_analytics_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2972,6 +3311,211 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  web_analytics:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      objectId:
+        type:
+          - "null"
+          - string
+      objectType:
+        type:
+          - "null"
+          - string
+      eventType:
+        type:
+          - "null"
+          - string
+      occurredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_asset_description:
+        type:
+          - "null"
+          - string
+      properties_hs_asset_type:
+        type:
+          - "null"
+          - string
+      properties_hs_browser:
+        type:
+          - "null"
+          - string
+      properties_hs_campaign_id:
+        type:
+          - "null"
+          - string
+      properties_hs_city:
+        type:
+          - "null"
+          - string
+      properties_hs_country:
+        type:
+          - "null"
+          - string
+      properties_hs_device_name:
+        type:
+          - "null"
+          - string
+      properties_hs_device_type:
+        type:
+          - "null"
+          - string
+      properties_hs_title:
+        type:
+          - "null"
+          - string
+      properties_hs_form_correlation_id:
+        type:
+          - "null"
+          - string
+      properties_hs_element_class:
+        type:
+          - "null"
+          - string
+      properties_hs_element_id:
+        type:
+          - "null"
+          - string
+      properties_hs_element_text:
+        type:
+          - "null"
+          - string
+      properties_hs_language:
+        type:
+          - "null"
+          - string
+      properties_hs_document_id:
+        type:
+          - "null"
+          - string
+      properties_hs_presentation_id:
+        type:
+          - "null"
+          - string
+      properties_hs_user_id:
+        type:
+          - "null"
+          - string
+      properties_hs_link_href:
+        type:
+          - "null"
+          - string
+      properties_hs_operating_system:
+        type:
+          - "null"
+          - string
+      properties_hs_operating_version:
+        type:
+          - "null"
+          - string
+      properties_hs_page_content_type:
+        type:
+          - "null"
+          - string
+      properties_hs_page_id:
+        type:
+          - "null"
+          - string
+      properties_hs_page_title:
+        type:
+          - "null"
+          - string
+      properties_hs_page_url:
+        type:
+          - "null"
+          - string
+      properties_hs_parent_module_id:
+        type:
+          - "null"
+          - string
+      properties_hs_referrer:
+        type:
+          - "null"
+          - string
+      properties_hs_region:
+        type:
+          - "null"
+          - string
+      properties_hs_url:
+        type:
+          - "null"
+          - string
+      properties_hs_screen_height:
+        type:
+          - "null"
+          - string
+      properties_hs_screen_width:
+        type:
+          - "null"
+          - string
+      properties_hs_touchpoint_source:
+        type:
+          - "null"
+          - string
+      properties_hs_tracking_name:
+        type:
+          - "null"
+          - string
+      properties_hs_user_agent:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_campaign:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_content:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_medium:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_source:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_term:
+        type:
+          - "null"
+          - string
+      properties_hs_base_url:
+        type:
+          - "null"
+          - string
+      properties_hs_form_id:
+        type:
+          - "null"
+          - string
+      properties_hs_form_type:
+        type:
+          - "null"
+          - string
+      properties_hs_url_domain:
+        type:
+          - "null"
+          - string
+      properties_hs_url_path:
+        type:
+          - "null"
+          - string
+      properties_hs_visitor_type:
+        type:
+          - "null"
+          - string
+
   base_association:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
