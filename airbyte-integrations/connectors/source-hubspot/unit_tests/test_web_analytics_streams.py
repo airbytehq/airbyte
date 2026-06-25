@@ -174,15 +174,10 @@ def manifest():
 
 @pytest.mark.parametrize(
     "wa_stream_name, expected_parent, expected_object_type",
-    [
-        (name, *STREAM_EXPECTED_PARENT_AND_OBJECT[name])
-        for name in WEB_ANALYTICS_STREAMS
-    ],
+    [(name, *STREAM_EXPECTED_PARENT_AND_OBJECT[name]) for name in WEB_ANALYTICS_STREAMS],
     ids=WEB_ANALYTICS_STREAMS,
 )
-def test_web_analytics_correct_parent_and_object_type(
-    wa_stream_name, expected_parent, expected_object_type, manifest
-):
+def test_web_analytics_correct_parent_and_object_type(wa_stream_name, expected_parent, expected_object_type, manifest):
     """Each WA stream references the correct parent stream definition and object type."""
     stream_def_key = f"{wa_stream_name}_stream"
     stream_def = manifest["definitions"][stream_def_key]
@@ -323,9 +318,9 @@ def test_web_analytics_fresh_state_from_start_date(requests_mock, config_experim
     assert len(history) > 0, "Should make at least one Events API request"
 
     first_request = history[0]
-    assert re.search(
-        r"occurredAfter=2023-12-01", first_request.url
-    ), f"First request should start from config start_date (2023-12-01), got: {first_request.url}"
+    assert re.search(r"occurredAfter=2023-12-01", first_request.url), (
+        f"First request should start from config start_date (2023-12-01), got: {first_request.url}"
+    )
 
 
 # ── Test 10: Per-partition state and separate object-specific requests
