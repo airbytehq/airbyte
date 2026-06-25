@@ -3,14 +3,16 @@
 #
 
 import re
+from pathlib import Path
 
 import freezegun
 import pytest
+import yaml
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import discover
 
-from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
+from .conftest import get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
 
 
 WEB_ANALYTICS_STREAMS = [
@@ -27,6 +29,24 @@ WEB_ANALYTICS_STREAMS = [
     "line_items_web_analytics",
     "products_web_analytics",
 ]
+
+STREAM_EXPECTED_PARENT_AND_OBJECT = {
+    "contacts_web_analytics": ("contacts_stream", "contact"),
+    "companies_web_analytics": ("companies_stream", "company"),
+    "deals_web_analytics": ("deals_stream", "deal"),
+    "tickets_web_analytics": ("tickets_stream", "ticket"),
+    "engagements_calls_web_analytics": ("engagements_calls_stream", "calls"),
+    "engagements_emails_web_analytics": ("engagements_emails_stream", "emails"),
+    "engagements_meetings_web_analytics": ("engagements_meetings_stream", "meetings"),
+    "engagements_notes_web_analytics": ("engagements_notes_stream", "notes"),
+    "engagements_tasks_web_analytics": ("engagements_tasks_stream", "tasks"),
+    "goals_web_analytics": ("goals_stream", "goal_targets"),
+    "line_items_web_analytics": ("line_items_stream", "line_item"),
+    "products_web_analytics": ("products_stream", "product"),
+}
+
+EVENTS_API_URL = "https://api.hubapi.com/events/event-occurrences/2026-03"
+EVENTS_API_PATH = "/events/event-occurrences/2026-03"
 
 SAMPLE_WEB_ANALYTICS_RESPONSE = {
     "results": [
@@ -145,15 +165,37 @@ def test_web_analytics_streams_present_when_experimental_enabled(requests_mock, 
 # ── Test 3: Correct parent stream and object type ───────────────────
 
 
-@pytest.mark.parametrize("wa_stream_name", WEB_ANALYTICS_STREAMS)
-def test_web_analytics_correct_parent_and_object_type(wa_stream_name, requests_mock, config_experimental):
-    """Each WA stream references the correct parent and uses the right objectType."""
-    _mock_all_common(requests_mock)
-    stream = find_stream(wa_stream_name, config_experimental)
+@pytest.fixture(scope="module")
+def manifest():
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    with open(manifest_path) as f:
+        return yaml.safe_load(f)
 
-    retriever = stream._stream_partition_generator._partition_factory._retriever
-    request_params = retriever.requester._request_options_provider.request_parameters
-    assert request_params is not None, f"request_parameters not found for {wa_stream_name}"
+
+@pytest.mark.parametrize(
+    "wa_stream_name, expected_parent, expected_object_type",
+    [
+        (name, *STREAM_EXPECTED_PARENT_AND_OBJECT[name])
+        for name in WEB_ANALYTICS_STREAMS
+    ],
+    ids=WEB_ANALYTICS_STREAMS,
+)
+def test_web_analytics_correct_parent_and_object_type(
+    wa_stream_name, expected_parent, expected_object_type, manifest
+):
+    """Each WA stream references the correct parent stream definition and object type."""
+    stream_def_key = f"{wa_stream_name}_stream"
+    stream_def = manifest["definitions"][stream_def_key]
+
+    parent_ref = stream_def["retriever"]["partition_router"]["parent_stream_configs"][0]["stream"]
+    assert parent_ref == f"#/definitions/{expected_parent}", (
+        f"{wa_stream_name}: expected parent '#/definitions/{expected_parent}', got '{parent_ref}'"
+    )
+
+    actual_object_type = stream_def["$parameters"]["object_type"]
+    assert actual_object_type == expected_object_type, (
+        f"{wa_stream_name}: expected object_type '{expected_object_type}', got '{actual_object_type}'"
+    )
 
 
 # ── Test 4 & 5: objectId and time params in requests ────────────────
@@ -161,20 +203,20 @@ def test_web_analytics_correct_parent_and_object_type(wa_stream_name, requests_m
 
 @freezegun.freeze_time(FROZEN_TIME)
 def test_web_analytics_request_params(requests_mock, config_experimental_narrow):
-    """objectId, occurredAfter, and occurredBefore are included in requests."""
+    """objectId, objectType, occurredAfter, and occurredBefore are included in requests."""
     _mock_all_common(requests_mock)
     _mock_contacts_parent_full(requests_mock, ["123"])
 
     requests_mock.register_uri(
         "GET",
-        "https://api.hubapi.com/events/v3/events",
+        EVENTS_API_URL,
         json=SAMPLE_WEB_ANALYTICS_RESPONSE,
     )
 
     output = read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
     assert len(output.records) >= 1
 
-    history = [h for h in requests_mock.request_history if "/events/v3/events" in h.url]
+    history = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
     assert len(history) > 0, "Expected at least one Events API request"
 
     first_request = history[0]
@@ -195,7 +237,7 @@ def test_web_analytics_pagination(requests_mock, config_experimental_narrow):
 
     requests_mock.register_uri(
         "GET",
-        "https://api.hubapi.com/events/v3/events",
+        EVENTS_API_URL,
         [
             {"json": SAMPLE_PAGINATED_RESPONSE_PAGE1, "status_code": 200},
             {"json": SAMPLE_PAGINATED_RESPONSE_PAGE2, "status_code": 200},
@@ -205,7 +247,7 @@ def test_web_analytics_pagination(requests_mock, config_experimental_narrow):
     output = read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
     assert len(output.records) >= 2
 
-    history = [h for h in requests_mock.request_history if "/events/v3/events" in h.url]
+    history = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
     after_requests = [h for h in history if "after=cursor-abc123" in h.url]
     assert len(after_requests) >= 1, "Should follow paging.next.after for pagination"
 
@@ -221,7 +263,7 @@ def test_web_analytics_records_from_results(requests_mock, config_experimental_n
 
     requests_mock.register_uri(
         "GET",
-        "https://api.hubapi.com/events/v3/events",
+        EVENTS_API_URL,
         json=SAMPLE_WEB_ANALYTICS_RESPONSE,
     )
 
@@ -245,7 +287,7 @@ def test_web_analytics_properties_flattened(requests_mock, config_experimental_n
 
     requests_mock.register_uri(
         "GET",
-        "https://api.hubapi.com/events/v3/events",
+        EVENTS_API_URL,
         json=SAMPLE_WEB_ANALYTICS_RESPONSE,
     )
 
@@ -271,13 +313,13 @@ def test_web_analytics_fresh_state_from_start_date(requests_mock, config_experim
 
     requests_mock.register_uri(
         "GET",
-        "https://api.hubapi.com/events/v3/events",
+        EVENTS_API_URL,
         json={"results": []},
     )
 
     read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
 
-    history = [h for h in requests_mock.request_history if "/events/v3/events" in h.url]
+    history = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
     assert len(history) > 0, "Should make at least one Events API request"
 
     first_request = history[0]
@@ -286,12 +328,13 @@ def test_web_analytics_fresh_state_from_start_date(requests_mock, config_experim
     ), f"First request should start from config start_date (2023-12-01), got: {first_request.url}"
 
 
-# ── Test 10: State maintained per parent partition ──────────────────
+# ── Test 10: Per-partition state and separate object-specific requests
 
 
 @freezegun.freeze_time(FROZEN_TIME)
 def test_web_analytics_per_partition_state(requests_mock, config_experimental_narrow):
-    """State is maintained independently for each parent object partition."""
+    """State is maintained independently for each parent object partition and each partition
+    generates its own object-specific Events API request with the correct objectId."""
     _mock_all_common(requests_mock)
     _mock_contacts_parent_full(requests_mock, ["100", "200"])
 
@@ -322,7 +365,7 @@ def test_web_analytics_per_partition_state(requests_mock, config_experimental_na
 
     requests_mock.register_uri(
         "GET",
-        "https://api.hubapi.com/events/v3/events",
+        EVENTS_API_URL,
         [
             {"json": response_contact_100, "status_code": 200},
             {"json": response_contact_200, "status_code": 200},
@@ -336,6 +379,16 @@ def test_web_analytics_per_partition_state(requests_mock, config_experimental_na
     ids_seen = {r.record.data["objectId"] for r in records}
     assert "100" in ids_seen
     assert "200" in ids_seen
+
+    # Verify separate requests were made for each parent object
+    event_requests = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
+    object_ids_requested = set()
+    for req in event_requests:
+        match = re.search(r"objectId=(\d+)", req.url)
+        if match:
+            object_ids_requested.add(match.group(1))
+    assert "100" in object_ids_requested, "Should make a separate request for contact 100"
+    assert "200" in object_ids_requested, "Should make a separate request for contact 200"
 
     state_messages = output.state_messages
     assert len(state_messages) > 0, "Should emit at least one state message"
