@@ -1301,9 +1301,7 @@ class TestVendorJsonReportsFullRefresh:
         ],
     )
     @HttpMocker()
-    def test_given_report_when_read_then_return_records(
-        self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_report_when_read_then_return_records(self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker) -> None:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.post(
@@ -1324,7 +1322,9 @@ class TestVendorJsonReportsFullRefresh:
         )
 
         # These streams have P1D incremental sync; each daily slice returns 2 records
-        single_day_config = config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        single_day_config = (
+            config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        )
         output = self._read(stream_name, single_day_config)
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
@@ -1361,7 +1361,9 @@ class TestVendorJsonReportsFullRefresh:
             response_with_status(status_code=HTTPStatus.FORBIDDEN),
         )
 
-        single_day_config = config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        single_day_config = (
+            config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        )
         output = self._read(stream_name, single_day_config)
         message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
@@ -1375,9 +1377,7 @@ class TestVendorJsonReportsIncremental:
     data_format = "json"
 
     @staticmethod
-    def _read(
-        stream_name: str, config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None
-    ) -> EntrypointOutput:
+    def _read(stream_name: str, config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None) -> EntrypointOutput:
         return read_output(
             config_builder=config_.with_account_type("Vendor"),
             stream_name=stream_name,
