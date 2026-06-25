@@ -41,18 +41,17 @@ class DatabricksConfigurationFactory :
             acceptTerms = pojo.acceptTerms,
             hostname = pojo.hostname,
             httpPath = pojo.httpPath,
-            port = pojo.port.ifBlank { "443" },
+            port = pojo.port?.takeIf { it.isNotBlank() } ?: "443",
             database = pojo.database,
-            schema = pojo.schema.ifBlank { "default" },
+            schema = pojo.schema?.takeIf { it.isNotBlank() } ?: "default",
             authType = pojo.authentication.toConfiguration(),
             purgeStagingData = pojo.purgeStagingData ?: true,
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
         )
 }
 
-private fun DatabricksAuthSpecification?.toConfiguration(): DatabricksAuthConfiguration =
+private fun DatabricksAuthSpecification.toConfiguration(): DatabricksAuthConfiguration =
     when (this) {
         is OAuthSpecification -> OAuthConfiguration(clientId, secret)
         is PersonalAccessTokenSpecification -> PersonalAccessTokenConfiguration(personalAccessToken)
-        null -> throw IllegalArgumentException("Authentication configuration is required.")
     }
