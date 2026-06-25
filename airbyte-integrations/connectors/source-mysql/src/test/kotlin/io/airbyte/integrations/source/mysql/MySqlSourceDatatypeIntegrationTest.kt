@@ -13,6 +13,10 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.jdbc.LocalDateFieldType
+import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
+import io.airbyte.cdk.jdbc.LocalTimeFieldType
+import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.read.DatatypeTestCase
 import io.airbyte.cdk.read.DatatypeTestOperations
@@ -34,6 +38,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MySqlSourceDatatypeIntegrationTest {
 
@@ -170,6 +176,417 @@ class MySqlSourceDatatypeIntegrationTest {
                     "treat_tinyint1_as_integer=true: $record",
             )
         }
+    }
+
+    /**
+     * Regression test for https://github.com/airbytehq/oncall/issues/12600.
+     *
+     * Debezium injects zeroDateTimeBehavior=CONVERT_TO_NULL in the JDBC param which will convert zero dates (i.e.
+     * 0000-00-00 00:00:00) to NULL (ref https://github.com/debezium/debezium/blob/f13c18f0db7bb5be47c8c4b427e7138da2a29d99/debezium-connector-mysql/src/main/java/io/debezium/connector/mysql/jdbc/MySqlConnectionConfiguration.java#L23),
+     * since they are invalid date/time values in JDBC.
+     *
+     * The issue occurs when a zero date is converted to NULL for a non-nullable column. In this
+     * case, Kafka throws `Invalid value: null used for required field` and terminates the sync. To handle
+     * this, the DATE and DATETIME converter handlers register their output schema as optional(), so a
+     * zero-date that converts to NULL no longer violates a required field.
+     *
+     * Here is the mapping:
+     * - Datetime (micro and millis): invalid, interpreted as NULL
+     * - Date: invalid, interpreted as NULL
+     * - Timestamp: interpreted as 0, which is then converted to the Unix epoch, 1970-01-01. Snapshot reads can still
+     * produce NULL values.
+     * - Time: 00:00:00 represents midnight, which is a valid time value.
+     */
+    @Test
+    @Timeout(300)
+    fun cdcRespectsTestZeroDateTimeHandling() {
+        // Reuse the testcontainer's default `test` database; the test MySQL user only has full
+        // privileges there.
+        val database = "test"
+        val tableName = "zero_datetime_tbl"
+        val streamName = tableName
+
+        fun configSpec(): MySqlSourceConfigurationSpecification =
+            MySqlContainerFactory.config(dbContainer).apply {
+                this.database = database
+                setIncrementalValue(Cdc())
+                jdbcUrlParams = "zeroDateTimeBehavior=convertToNull" // mimic Debezium configuration
+            }
+
+        val cdcConfigSpec = configSpec()
+        val cdcConfig = MySqlSourceConfigurationFactory().make(cdcConfigSpec)
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("USE $database") }
+            connection.createStatement().use {it.execute("SET SESSION sql_mode = ''")}
+            connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
+            connection.createStatement().use {
+                it.execute("CREATE TABLE $tableName (k INT PRIMARY KEY, v DATETIME(3) NOT NULL, w DATETIME(6) NOT NULL, " +
+                        "y DATETIME(3) NOT NULL DEFAULT '2020-03-30 10:30:00', x DATETIME(6) NOT NULL DEFAULT '2020-03-30 10:30:00')")
+            }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $tableName (k, v, w, y, x) VALUES (1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', " +
+                        "'0000-00-00 00:00:00', '0000-00-00 00:00:00') ")
+            }
+        }
+
+        // Build a catalog around the DATETIME(3) & DATETIME(6) column. A zero-date insert should produce a null value.
+        // If default value is configured, it should default to that.
+        fun buildCatalog(
+            spec: MySqlSourceConfigurationSpecification,
+        ): ConfiguredAirbyteCatalog {
+            val descriptor = StreamDescriptor().withName(streamName).withNamespace(database)
+            val discoveredStream =
+                DiscoveredStream(
+                    id = StreamIdentifier.Companion.from(descriptor),
+                    columns =
+                        listOf(
+                            Field("k", IntFieldType),
+                            Field("v", LocalDateTimeFieldType),
+                            Field("w", LocalDateTimeFieldType),
+                            Field("y", LocalDateTimeFieldType),
+                            Field("x", LocalDateTimeFieldType),
+                        ),
+                    primaryKeyColumnIDs = listOf(listOf("k")),
+                )
+            val airbyteStream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(spec),
+                        discoveredStream,
+                    )
+            val configuredStream: ConfiguredAirbyteStream =
+                CatalogHelpers.toDefaultConfiguredStream(airbyteStream)
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
+                    .apply {
+                        cursorField = listOf(MySqlSourceCdcMetaFields.CDC_CURSOR.id)
+                    }
+            return ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
+        }
+
+        // Snapshot read: Debezium reads the zero-date via JDBC (convertToNull) -> null.
+        val initialOutput =
+            CliRunner.source("read", cdcConfigSpec, buildCatalog(cdcConfigSpec)).run()
+        val initialState: AirbyteStateMessage = initialOutput.states().last()
+        assertTrue(initialOutput.records().isNotEmpty())
+        assertTrue(initialOutput.records()[0].data["v"].isNull)
+        assertTrue(initialOutput.records()[0].data["w"].isNull)
+        assertTrue(initialOutput.records()[0].data["y"].isNull)
+        assertTrue(initialOutput.records()[0].data["x"].isNull)
+
+        // Binlog read: insert another zero-date row and verify the converter nulls it on the streaming path too and
+        // doesn't crush due to the column be non-nullable or use the dafault value when exists.
+        // Fresh connection -> must relax sql_mode again.
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("SET SESSION sql_mode = ''") }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $database.$tableName (k, v, w, y, x) VALUES (2, '0000-00-00 00:00:00', '0000-00-00 00:00:00'," +
+                        "'0000-00-00 00:00:00', '0000-00-00 00:00:00')")
+            }
+        }
+        val cdcOutput =
+            CliRunner.source(
+                "read",
+                cdcConfigSpec,
+                buildCatalog(cdcConfigSpec),
+                listOf(initialState),
+            )
+                .run()
+        assertTrue(cdcOutput.records().isNotEmpty())
+        assertTrue(cdcOutput.records()[0].data["v"].isNull)
+        assertTrue(cdcOutput.records()[0].data["w"].isNull)
+        // Default values
+        assertEquals("2020-03-30T10:30:00.000000", cdcOutput.records()[0].data["y"].asText()) // millis
+        assertEquals("2020-03-30T10:30:00.000000", cdcOutput.records()[0].data["x"].asText()) // micro
+
+    }
+
+    @Test
+    @Timeout(300)
+    fun cdcRespectsTestDateHandling() {
+        // Reuse the testcontainer's default `test` database; the test MySQL user only has full
+        // privileges there.
+        val database = "test"
+        val tableName = "zero_date_tbl"
+        val streamName = tableName
+
+        fun configSpec(): MySqlSourceConfigurationSpecification =
+            MySqlContainerFactory.config(dbContainer).apply {
+                this.database = database
+                setIncrementalValue(Cdc())
+                jdbcUrlParams = "zeroDateTimeBehavior=convertToNull" // mimic Debezium configuration
+            }
+
+        val cdcConfigSpec = configSpec()
+        val cdcConfig = MySqlSourceConfigurationFactory().make(cdcConfigSpec)
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("USE $database") }
+            connection.createStatement().use {it.execute("SET SESSION sql_mode = ''")}
+            connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
+            connection.createStatement().use {
+                it.execute("CREATE TABLE $tableName (k INT PRIMARY KEY, v DATE NOT NULL, w DATE NOT NULL DEFAULT '2025-05-05')")
+            }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $tableName (k, v, w) VALUES (1, '0000-00-00', '0000-00-00') ")
+            }
+        }
+
+        // Build a catalog around the DATE column. A zero-date insert should produce a null value.
+        fun buildCatalog(
+            spec: MySqlSourceConfigurationSpecification,
+        ): ConfiguredAirbyteCatalog {
+            val descriptor = StreamDescriptor().withName(streamName).withNamespace(database)
+            val discoveredStream =
+                DiscoveredStream(
+                    id = StreamIdentifier.Companion.from(descriptor),
+                    columns =
+                        listOf(
+                            Field("k", IntFieldType),
+                            Field("v", LocalDateFieldType),
+                            Field("w", LocalDateFieldType),
+                        ),
+                    primaryKeyColumnIDs = listOf(listOf("k")),
+                )
+            val airbyteStream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(spec),
+                        discoveredStream,
+                    )
+            val configuredStream: ConfiguredAirbyteStream =
+                CatalogHelpers.toDefaultConfiguredStream(airbyteStream)
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
+                    .apply {
+                        cursorField = listOf(MySqlSourceCdcMetaFields.CDC_CURSOR.id)
+                    }
+            return ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
+        }
+
+        // Snapshot read: Debezium reads the zero-date via JDBC (convertToNull) -> null.
+        val initialOutput =
+            CliRunner.source("read", cdcConfigSpec, buildCatalog(cdcConfigSpec)).run()
+        val initialState: AirbyteStateMessage = initialOutput.states().last()
+        assertTrue(initialOutput.records().isNotEmpty())
+        assertTrue(initialOutput.records()[0].data["v"].isNull)
+        assertTrue(initialOutput.records()[0].data["w"].isNull)
+
+        // Binlog read: insert another zero-date row and verify the converter nulls it on the streaming path too and
+        // doesn't crush due to the column be non-nullable. Fresh connection -> must relax sql_mode again.
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("SET SESSION sql_mode = ''") }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $database.$tableName (k, v, w) VALUES (2, '0000-00-00', '0000-00-00')")
+            }
+        }
+        val cdcOutput =
+            CliRunner.source(
+                "read",
+                cdcConfigSpec,
+                buildCatalog(cdcConfigSpec),
+                listOf(initialState),
+            )
+                .run()
+        assertTrue(cdcOutput.records().isNotEmpty())
+        assertTrue(cdcOutput.records()[0].data["v"].isNull)
+        // Default value
+        assertEquals("2025-05-05", cdcOutput.records()[0].data["w"].asText())
+
+    }
+
+    @Test
+    @Timeout(300)
+    fun cdcRespectsTestTimestampHandling() {
+        // Reuse the testcontainer's default `test` database; the test MySQL user only has full
+        // privileges there.
+        val database = "test"
+        val tableName = "zero_timestamp_tbl"
+        val streamName = tableName
+
+        fun configSpec(): MySqlSourceConfigurationSpecification =
+            MySqlContainerFactory.config(dbContainer).apply {
+                this.database = database
+                setIncrementalValue(Cdc())
+                jdbcUrlParams = "zeroDateTimeBehavior=convertToNull" // mimic Debezium configuration
+            }
+
+        val cdcConfigSpec = configSpec()
+        val cdcConfig = MySqlSourceConfigurationFactory().make(cdcConfigSpec)
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("USE $database") }
+            connection.createStatement().use {it.execute("SET SESSION sql_mode = ''")}
+            connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
+            connection.createStatement().use {
+                it.execute("CREATE TABLE $tableName (k INT PRIMARY KEY, v TIMESTAMP NOT NULL, w TIMESTAMP NOT NULL DEFAULT '2025-05-05 00:00:00') ")
+            }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $tableName (k, v, w) VALUES (1, '0000-00-00 00:00:00', '0000-00-00 00:00:00') ")
+            }
+        }
+
+        // Build a catalog around the TIMESTAMP column. A zero-date insert should produce a null value.
+        fun buildCatalog(
+            spec: MySqlSourceConfigurationSpecification,
+        ): ConfiguredAirbyteCatalog {
+            val descriptor = StreamDescriptor().withName(streamName).withNamespace(database)
+            val discoveredStream =
+                DiscoveredStream(
+                    id = StreamIdentifier.Companion.from(descriptor),
+                    columns =
+                        listOf(
+                            Field("k", IntFieldType),
+                            Field("v", OffsetDateTimeFieldType),
+                            Field("w", OffsetDateTimeFieldType),
+                        ),
+                    primaryKeyColumnIDs = listOf(listOf("k")),
+                )
+            val airbyteStream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(spec),
+                        discoveredStream,
+                    )
+            val configuredStream: ConfiguredAirbyteStream =
+                CatalogHelpers.toDefaultConfiguredStream(airbyteStream)
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
+                    .apply {
+                        cursorField = listOf(MySqlSourceCdcMetaFields.CDC_CURSOR.id)
+                    }
+            return ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
+        }
+
+
+
+        // Snapshot read: Debezium reads the zero-date via JDBC (convertToNull) -> null.
+        val initialOutput =
+            CliRunner.source("read", cdcConfigSpec, buildCatalog(cdcConfigSpec)).run()
+        val initialState: AirbyteStateMessage = initialOutput.states().last()
+        assertTrue(initialOutput.records().isNotEmpty())
+        assertTrue(initialOutput.records()[0].data["v"].isNull)
+        assertTrue(initialOutput.records()[0].data["w"].isNull)
+
+        // Binlog read: insert another zero-date row and verify the converter convert this to Unix epoch.
+        // Fresh connection -> must relax sql_mode again.
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("SET SESSION sql_mode = ''") }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $database.$tableName (k, v, w) VALUES (2, '0000-00-00 00:00:00', '0000-00-00 00:00:00')")
+            }
+        }
+        val cdcOutput =
+            CliRunner.source(
+                "read",
+                cdcConfigSpec,
+                buildCatalog(cdcConfigSpec),
+                listOf(initialState),
+            )
+                .run()
+        assertTrue(cdcOutput.records().isNotEmpty())
+        // Timestamp zero dates are converted to 0 which is represent as Unix epoch.
+        // Since the column is not getting a NULL value, the default value will be ignored.
+        assertEquals(expected = "1970-01-01T00:00:00.000000Z", actual = cdcOutput.records()[0].data["v"].asText())
+        assertEquals(expected = "1970-01-01T00:00:00.000000Z", actual = cdcOutput.records()[0].data["w"].asText())
+
+    }
+
+    @Test
+    @Timeout(300)
+    fun cdcRespectsTestTimeHandling() {
+        // Reuse the testcontainer's default `test` database; the test MySQL user only has full
+        // privileges there.
+        val database = "test"
+        val tableName = "zero_time_tbl"
+        val streamName = tableName
+
+        fun configSpec(): MySqlSourceConfigurationSpecification =
+            MySqlContainerFactory.config(dbContainer).apply {
+                this.database = database
+                setIncrementalValue(Cdc())
+                jdbcUrlParams = "zeroDateTimeBehavior=convertToNull" // mimic Debezium configuration
+            }
+
+        val cdcConfigSpec = configSpec()
+        val cdcConfig = MySqlSourceConfigurationFactory().make(cdcConfigSpec)
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("USE $database") }
+            connection.createStatement().use {it.execute("SET SESSION sql_mode = ''")}
+            connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
+            connection.createStatement().use {
+                it.execute("CREATE TABLE $tableName (k INT PRIMARY KEY, v TIME NOT NULL)")
+            }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $tableName (k, v) VALUES (1, '00:00:00') ")
+            }
+        }
+
+        // Build a catalog around the TIME column. A zero-date is valid (midnight)
+        fun buildCatalog(
+            spec: MySqlSourceConfigurationSpecification,
+        ): ConfiguredAirbyteCatalog {
+            val descriptor = StreamDescriptor().withName(streamName).withNamespace(database)
+            val discoveredStream =
+                DiscoveredStream(
+                    id = StreamIdentifier.Companion.from(descriptor),
+                    columns =
+                        listOf(
+                            Field("k", IntFieldType),
+                            Field("v", LocalTimeFieldType),
+                        ),
+                    primaryKeyColumnIDs = listOf(listOf("k")),
+                )
+            val airbyteStream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(spec),
+                        discoveredStream,
+                    )
+            val configuredStream: ConfiguredAirbyteStream =
+                CatalogHelpers.toDefaultConfiguredStream(airbyteStream)
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
+                    .apply {
+                        cursorField = listOf(MySqlSourceCdcMetaFields.CDC_CURSOR.id)
+                    }
+            return ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
+        }
+
+
+
+        // Snapshot read: Debezium reads the values as midnight.
+        val initialOutput =
+            CliRunner.source("read", cdcConfigSpec, buildCatalog(cdcConfigSpec)).run()
+        val initialState: AirbyteStateMessage = initialOutput.states().last()
+        assertTrue(initialOutput.records().isNotEmpty())
+        assertEquals("00:00:00.000000", initialOutput.records()[0].data["v"].asText())
+
+        // Binlog read: insert another zero-date row.
+        // Fresh connection -> must relax sql_mode again.
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { it.execute("SET SESSION sql_mode = ''") }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $database.$tableName (k, v) VALUES (2, '00:00:00')")
+            }
+        }
+        val cdcOutput =
+            CliRunner.source(
+                "read",
+                cdcConfigSpec,
+                buildCatalog(cdcConfigSpec),
+                listOf(initialState),
+            )
+                .run()
+        assertTrue(cdcOutput.records().isNotEmpty())
+        assertEquals(expected = "00:00:00.000000", actual = cdcOutput.records()[0].data["v"].asText())
+
     }
 
     companion object {

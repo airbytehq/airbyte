@@ -44,7 +44,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             column.typeName().equals("DATETIME", ignoreCase = true) &&
                 column.length().orElse(0) <= 3
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
@@ -76,7 +76,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
         override fun matches(column: RelationalColumn): Boolean =
             column.typeName().equals("DATETIME", ignoreCase = true) && column.length().orElse(0) > 3
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
@@ -108,7 +108,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
         override fun matches(column: RelationalColumn): Boolean =
             column.typeName().equals("DATE", ignoreCase = true)
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
