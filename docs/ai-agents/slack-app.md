@@ -11,9 +11,15 @@ description: Connect your AI agents to Slack with Airbyte Agents. Read and write
 
 Airbyte Agents connects your AI agents to Slack so they can read, search, and write across your workspace in real time. Manage channels, send messages, track conversations, and search your Slack data — all through a single, secure integration.
 
-Airbyte Agents is a data and context layer for AI agents. It gives agents reliable access to the tools your organization runs on through managed connectors, secure credential storage, and a pre-indexed search layer called the Context Store. The Slack connector is one of 50+ connectors available on the platform.
+Airbyte Agents is a data and context layer for AI agents. It gives agents reliable access to the tools your organization runs on through managed connectors and secure credential storage. The Slack connector is one the connectors available on the platform.
 
 [Get started with Airbyte Agents](https://app.airbyte.ai)
+
+:::info
+
+Airbyte Agents uses AI and can generate inaccurate or incomplete responses. Verify important information before acting on it.
+
+:::
 
 ## What the Slack connector does
 
@@ -25,7 +31,7 @@ The Slack connector equips AI agents to interact with your Slack workspace throu
 - **Channels**: List public channels and view channel details.
 - **Channel messages**: Retrieve recent messages from channels.
 - **Threads**: View thread replies on messages.
-- **Context Store search**: Instantly search across users, channels, messages, and threads using the pre-indexed Context Store.
+- **Context Store search**: Search recent users, channels, messages, and threads.
 
 ### Write operations
 
@@ -82,7 +88,7 @@ Click **Save**. Airbyte Agents verifies your credentials and checks that the sel
 
 ### Step 5: Start using the connector
 
-Once saved, you'll see a confirmation that your connector was added. The Context Store begins populating in the background so agents can search your Slack data with low latency. You can start working with the connector immediately.
+Once saved, you'll see a confirmation that your connector was added. The Context Store works in the background to power low latency search across your workspace. You can start working with the connector immediately.
 
 ![Success dialog confirming the Slack connector was added, with options to start a chat or add another connector.](assets/slack-app/connector-added-success.png)
 
@@ -99,11 +105,11 @@ There are several ways to install and use the Slack connector:
 1. Go to [app.airbyte.ai](https://app.airbyte.ai) and sign in or create a free account.
 2. Navigate to **Connectors** and click **Add Connector**.
 3. Select **Slack** and authenticate with OAuth.
-4. Start using the connector in chats, through the MCP server, or via the API.
+4. Start using the connector in chats, the MCP serer, the API, the CLI, or the SDK.
 
 ### API
 
-You can also add the Slack connector programmatically through the [Airbyte Agents API](https://docs.airbyte.com/ai-agents/reference/api/):
+You can add the Slack connector programmatically through the [Agent API](https://docs.airbyte.com/ai-agents/reference/api/):
 
 ```bash
 curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
@@ -142,9 +148,9 @@ For complete SDK documentation, see the [Slack connector docs](https://docs.airb
 
 Once the Slack connector is installed:
 
-- **Context Store populates automatically.** Airbyte Agents indexes your Slack users, channels, and messages so agents can search them instantly. This runs in the background and you can start working immediately.
 - **Use the connector across all interfaces.** The same Slack connector works in the web app chat, through the MCP server (for Claude, ChatGPT, and other AI tools), the Python SDK, the CLI, and the REST API.
-- **Manage your connector from the Connectors page.** View connection status, re-authenticate if needed, and monitor Context Store health from the [Connectors page](https://app.airbyte.ai).
+- **Context Store powers fast search.** A background process powers fast search across your Slack workspace.
+- **Manage your connector from the Connectors page.** View connection status and reauthenticate if needed from the [Connectors page](https://app.airbyte.ai).
 
 ## Support
 
