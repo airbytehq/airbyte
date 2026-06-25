@@ -32,7 +32,15 @@ The UUID is the durable identifier. The name is a convenience for routing, but i
 
 ## Create a workspace
 
-Workspaces are created programmatically through the API or SDK. They can't be created through the web app. The first time you mint a [scoped token](../../interfaces/api/authentication#scoped-token) against a new `workspace_name`, Airbyte creates the workspace for you. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
+Workspaces are created programmatically. There is no dedicated "create workspace" endpoint or button in the web app. Instead, Airbyte creates a workspace automatically the first time you mint a token against a new `workspace_name`. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
+
+You can create a workspace in three ways:
+
+- **API**: Mint a [scoped token](../../interfaces/api/authentication#scoped-token) with a new `workspace_name`. The workspace is created and the returned token is scoped to it.
+- **Widget**: Mint a widget token (via `POST /api/v1/account/applications/widget-token`) with a new `workspace_name`. The workspace is created and the returned token powers the embedded authentication UI.
+- **SDK**: Open a [`Workspace`](../../interfaces/sdk/workspaces) with a new `workspace_name`. The SDK mints a scoped token internally, which creates the workspace.
+
+For concrete examples, see [Create a new workspace (API)](../../interfaces/api/workspaces#create-a-new-workspace).
 
 ## Scoped tokens
 

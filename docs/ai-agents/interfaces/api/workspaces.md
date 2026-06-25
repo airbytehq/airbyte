@@ -31,7 +31,68 @@ rename rejects reuse of the old name.
 
 ## Create a new workspace
 
-You don't create workspaces directly. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) against a new `workspace_name`. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
+There is no dedicated "create workspace" endpoint. Airbyte creates a workspace automatically the first time you mint a token against a new `workspace_name`. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
+
+### Create via scoped token (API / backend)
+
+Mint a [scoped token](./authentication#scoped-token) with a `workspace_name` that doesn't exist yet. Airbyte creates the workspace and returns a token scoped to it.
+
+```bash title="Request"
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
+  -H 'Authorization: Bearer <application_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "workspace_name": "tenant-123"
+  }'
+```
+
+```json title="Response"
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+The workspace now exists. You can verify it with [List workspaces](#list-workspaces) or use the returned scoped token to add connectors.
+
+### Create via widget token (embedded UI)
+
+If you embed the authentication module in your frontend, the widget token endpoint also creates the workspace when the `workspace_name` is new.
+
+```bash title="Request"
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
+  -H 'Authorization: Bearer <application_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "workspace_name": "tenant-123",
+    "allowed_origin": "https://yourapp.com"
+  }'
+```
+
+```json title="Response"
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+Pass the returned token to the `AirbyteEmbeddedWidget` on your frontend. The widget handles connector selection, credential input, and validation inside the new workspace.
+
+### Create via SDK
+
+The Python SDK mints a scoped token internally when you open a `Workspace`. Passing a new `workspace_name` creates the workspace.
+
+```python title="agent.py"
+import asyncio
+from airbyte_agent_sdk import Workspace
+
+async def main():
+    async with Workspace(workspace_name="tenant-123") as ws:
+        connectors = await ws.list_connectors()
+        print(connectors)  # [] for a brand-new workspace
+
+asyncio.run(main())
+```
+
+See [Manage workspaces (SDK)](../sdk/workspaces) for the full SDK workspace interface.
 
 <!--
 AGENTIC-1140: create-connector doesn't autocreate a workspace. It 404s
