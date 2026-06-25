@@ -381,6 +381,9 @@ class Salesforce:
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
+        # Salesforce returns a new refresh token only when Refresh Token Rotation is enabled on the connected app.
+        if auth.get("refresh_token"):
+            self.refresh_token = auth["refresh_token"]
 
     def describe(self, sobject: str = None, sobject_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""

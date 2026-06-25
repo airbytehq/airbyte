@@ -133,6 +133,53 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     assert err.value.message == expected_error_msg
 
 
+def _register_login(requests_mock, **extra):
+    response = {"access_token": "fake_access_token", "instance_url": "https://fake.salesforce.com"}
+    response.update(extra)
+    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=response)
+
+
+def _consume_control_messages(source):
+    return [message for message in source.message_repository.consume_queue() if message.type == Type.CONTROL]
+
+
+def test_rotated_refresh_token_is_persisted(requests_mock):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    list(source.message_repository.consume_queue())
+    _register_login(requests_mock, refresh_token="new_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "new_refresh_token"
+    control_messages = _consume_control_messages(source)
+    assert len(control_messages) == 1
+    assert control_messages[0].control.connectorConfig.config["refresh_token"] == "new_refresh_token"
+
+
+def test_no_refresh_token_in_response_does_not_emit_control_message(requests_mock):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    list(source.message_repository.consume_queue())
+    _register_login(requests_mock)
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "old_refresh_token"
+    assert _consume_control_messages(source) == []
+
+
+def test_unchanged_refresh_token_does_not_emit_control_message(requests_mock):
+    config = ConfigBuilder().refresh_token("same_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    list(source.message_repository.consume_queue())
+    _register_login(requests_mock, refresh_token="same_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert _consume_control_messages(source) == []
+
+
 def test_stream_unsupported_by_bulk(stream_config, stream_api):
     """
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
