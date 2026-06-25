@@ -15,7 +15,7 @@
     },
     "name": { "type": "string" },
     "title": { "type": "string" },
-    "age": { "type": "integer" },
+    "age": { "type": "string" },
     "email": { "type": "string" },
     "telephone": { "type": "string" },
     "gender": { "type": "string" },
