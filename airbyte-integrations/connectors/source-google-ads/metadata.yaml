@@ -18,8 +18,12 @@ data:
     - title: Release notes
       url: https://developers.google.com/google-ads/api/docs/release-notes
       type: api_release_history
+    - title: Deprecation and sunset dates
+      url: https://developers.google.com/google-ads/api/docs/sunset-dates
+      type: api_deprecations
     - title: Developer blog
       url: https://ads-developers.googleblog.com/
+      type: api_release_history
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2

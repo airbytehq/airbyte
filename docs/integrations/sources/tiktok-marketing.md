@@ -55,8 +55,9 @@ To access the Sandbox environment:
 7. Choose a **Start date**. Any data before this date is not replicated.
 8. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 9. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-10. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
-11. Click **Set up source**.
+10. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+11. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
+12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -70,8 +71,9 @@ To access the Sandbox environment:
 5. Choose a **Start date**. Any data before this date is not replicated.
 6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-8. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
-9. Click `Set up source`.
+8. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+9. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
+10. Click `Set up source`.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -127,8 +129,8 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | PixelEventsStatistics                     | Prod         | -                                          | No          |
 | AdsReportsByCountryDaily                  | Prod         | ad_id, stat_time_day, country_code         | Yes         |
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
-| AdGroupsByCountryDaily                    | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
-| AdGroupsByCountryHourly                   | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
+| AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
 
 The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
 
@@ -148,6 +150,8 @@ The connector is restricted by the TikTok Marketing API [rate limits](https://bu
 
 The connector automatically retries transient TikTok API errors, including service maintenance periods (error 60001). If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
 
+For daily report streams, if the TikTok API returns error 40067 ("query too large"), the connector surfaces a configuration error directing you to reduce the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. Reduce the value to 7 or 1 and retry the sync.
+
 ## Upgrading
 
 For information on breaking changes and migration steps, see the [TikTok Marketing Migration Guide](./tiktok-marketing-migrations.md).
@@ -163,6 +167,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.1 | 2026-06-23 | [80705](https://github.com/airbytehq/airbyte/pull/80705) | Update dependencies |
+| 5.1.0 | 2026-06-18 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |
 | 5.0.11 | 2026-06-16 | [80094](https://github.com/airbytehq/airbyte/pull/80094) | Update dependencies |
 | 5.0.10 | 2026-06-09 | [79549](https://github.com/airbytehq/airbyte/pull/79549) | Update dependencies |
 | 5.0.9 | 2026-06-02 | [78999](https://github.com/airbytehq/airbyte/pull/78999) | Update dependencies |
