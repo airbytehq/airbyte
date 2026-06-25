@@ -1263,3 +1263,176 @@ class TestSalesAndTrafficReportRequestBody:
 
         output = self._read(stream_name, config().with_asin_granularity("SKU"))
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorJsonReportsFullRefresh:
+    """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
+
+    data_format = "json"
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @pytest.mark.parametrize(
+        "stream_name, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_report_when_read_then_return_records(
+        self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        # These streams have P1D incremental sync; each daily slice returns 2 records
+        single_day_config = config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        output = self._read(stream_name, single_day_config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_report_access_forbidden_when_read_then_config_error(
+        self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            response_with_status(status_code=HTTPStatus.FORBIDDEN),
+        )
+
+        single_day_config = config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        output = self._read(stream_name, single_day_config)
+        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorJsonReportsIncremental:
+    """Tests for incremental sync of vendor JSON report streams."""
+
+    data_format = "json"
+
+    @staticmethod
+    def _read(
+        stream_name: str, config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.incremental,
+            state=state,
+        )
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                "endDate",
+                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                "endDate",
+                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                "endTime",
+                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_state_when_read_incrementally_then_return_records(
+        self, stream_name: str, cursor_field: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        cursor_value = "2023-01-29T00:00:00Z"
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: cursor_value}).build()
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config(), state=initial_state)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
