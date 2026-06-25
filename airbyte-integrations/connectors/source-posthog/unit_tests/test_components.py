@@ -3,12 +3,16 @@
 #
 
 import pytest as pytest
-from source_posthog.components import EventsCartesianProductStreamSlicer
+import requests
+from requests_mock import Mocker
+from source_posthog.components import EventsCartesianProductStreamSlicer, PosthogErrorHandler
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 stream_slicers = [
@@ -126,3 +130,43 @@ def test_stream_slices(test_name, stream_state, expected_stream_slices):
     slicer.set_initial_state(stream_state)
     stream_slices = slicer.stream_slices()
     assert list(stream_slices) == expected_stream_slices
+
+
+@pytest.mark.parametrize(
+    "status_code,expected_message",
+    [
+        pytest.param(401, "API key is invalid or expired.", id="http_401_config_error"),
+        pytest.param(403, "API key lacks required scopes for this resource.", id="http_403_config_error"),
+    ],
+)
+def test_posthog_error_handler_classifies_auth_errors_as_config_error(status_code, expected_message):
+    handler = PosthogErrorHandler(parameters={}, config={})
+
+    with Mocker() as m:
+        m.get("https://app.posthog.com/api/projects/", status_code=status_code, json={"detail": "forbidden"})
+        response = requests.get("https://app.posthog.com/api/projects/")
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        handler.interpret_response(response)
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert exc_info.value.message == expected_message
+
+
+@pytest.mark.parametrize(
+    "status_code",
+    [
+        pytest.param(200, id="http_200_success"),
+        pytest.param(429, id="http_429_rate_limit"),
+        pytest.param(500, id="http_500_server_error"),
+    ],
+)
+def test_posthog_error_handler_delegates_non_auth_errors(status_code):
+    handler = PosthogErrorHandler(parameters={}, config={})
+
+    with Mocker() as m:
+        m.get("https://app.posthog.com/api/projects/", status_code=status_code, json={})
+        response = requests.get("https://app.posthog.com/api/projects/")
+
+    result = handler.interpret_response(response)
+    assert not isinstance(result, AirbyteTracedException)
