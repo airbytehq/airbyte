@@ -183,14 +183,14 @@ def test_web_analytics_correct_parent_and_object_type(wa_stream_name, expected_p
     stream_def = manifest["definitions"][stream_def_key]
 
     parent_ref = stream_def["retriever"]["partition_router"]["parent_stream_configs"][0]["stream"]
-    assert parent_ref == f"#/definitions/{expected_parent}", (
-        f"{wa_stream_name}: expected parent '#/definitions/{expected_parent}', got '{parent_ref}'"
-    )
+    assert (
+        parent_ref == f"#/definitions/{expected_parent}"
+    ), f"{wa_stream_name}: expected parent '#/definitions/{expected_parent}', got '{parent_ref}'"
 
     actual_object_type = stream_def["$parameters"]["object_type"]
-    assert actual_object_type == expected_object_type, (
-        f"{wa_stream_name}: expected object_type '{expected_object_type}', got '{actual_object_type}'"
-    )
+    assert (
+        actual_object_type == expected_object_type
+    ), f"{wa_stream_name}: expected object_type '{expected_object_type}', got '{actual_object_type}'"
 
 
 # ── Test 4 & 5: objectId and time params in requests ────────────────
@@ -318,9 +318,9 @@ def test_web_analytics_fresh_state_from_start_date(requests_mock, config_experim
     assert len(history) > 0, "Should make at least one Events API request"
 
     first_request = history[0]
-    assert re.search(r"occurredAfter=2023-12-01", first_request.url), (
-        f"First request should start from config start_date (2023-12-01), got: {first_request.url}"
-    )
+    assert re.search(
+        r"occurredAfter=2023-12-01", first_request.url
+    ), f"First request should start from config start_date (2023-12-01), got: {first_request.url}"
 
 
 # ── Test 10: Per-partition state and separate object-specific requests
