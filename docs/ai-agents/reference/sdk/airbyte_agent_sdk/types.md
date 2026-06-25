@@ -318,6 +318,9 @@ Classes
     `search_field_paths: dict[str, list[str]] | None`
     :   The type of the None singleton.
 
+    `semantic_search_fields: dict[str, dict[str, airbyte_agent_sdk.schema.extensions.SemanticSearchConfig]]`
+    :   The type of the None singleton.
+
     `server_variable_defaults: dict[str, str]`
     :   The type of the None singleton.
 

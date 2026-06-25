@@ -129,8 +129,8 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | PixelEventsStatistics                     | Prod         | -                                          | No          |
 | AdsReportsByCountryDaily                  | Prod         | ad_id, stat_time_day, country_code         | Yes         |
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
-| AdGroupsByCountryDaily                    | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
-| AdGroupsByCountryHourly                   | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
+| AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
 
 The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
 
@@ -150,6 +150,8 @@ The connector is restricted by the TikTok Marketing API [rate limits](https://bu
 
 The connector automatically retries transient TikTok API errors, including service maintenance periods (error 60001). If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
 
+For daily report streams, if the TikTok API returns error 40067 ("query too large"), the connector surfaces a configuration error directing you to reduce the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. Reduce the value to 7 or 1 and retry the sync.
+
 ## Upgrading
 
 For information on breaking changes and migration steps, see the [TikTok Marketing Migration Guide](./tiktok-marketing-migrations.md).
@@ -165,7 +167,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.0 | 2026-06-17 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |
+| 5.1.1 | 2026-06-23 | [80705](https://github.com/airbytehq/airbyte/pull/80705) | Update dependencies |
+| 5.1.0 | 2026-06-18 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |
 | 5.0.11 | 2026-06-16 | [80094](https://github.com/airbytehq/airbyte/pull/80094) | Update dependencies |
 | 5.0.10 | 2026-06-09 | [79549](https://github.com/airbytehq/airbyte/pull/79549) | Update dependencies |
 | 5.0.9 | 2026-06-02 | [78999](https://github.com/airbytehq/airbyte/pull/78999) | Update dependencies |
