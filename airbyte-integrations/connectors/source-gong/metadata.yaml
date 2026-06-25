@@ -1,3 +1,4 @@
+metadataSpecVersion: "1.0"
 data:
   ab_internal:
     ql: 100
@@ -58,4 +59,3 @@ data:
     - title: Gong rate limits
       url: https://us-66463.app.gong.io/settings/api/documentation#rate-limits
       type: rate_limits
-metadataSpecVersion: "1.0"
