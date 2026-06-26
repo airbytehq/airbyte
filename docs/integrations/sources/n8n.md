@@ -2,18 +2,40 @@
 
 ## Sync overview
 
-This source can sync data from [N8n](https://docs.n8n.io/api/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch.
+The n8n source connector extracts data from your n8n workflow automation instance (both Cloud and Self-Hosted). It connects via the n8n API to seamlessly replicate comprehensive operational and metadata records, enabling you to monitor workflow performance, user activity, and manage custom data structures.
+
+The connector supports syncing executions (tracking workflow run history), as well as an expanded catalog of data including workflows, users, credentials, tags, and nested data table contents. Both Full Refresh and Incremental sync modes are supported.
 
 ## This Source Supports the Following Streams
 
 - [executions](https://docs.n8n.io/api/api-reference/#tag/Execution/paths/~1executions/get)
+- [users](https://docs.n8n.io/api/api-reference/#tag/Users)
+- [workflows](https://docs.n8n.io/api/api-reference/#tag/Workflow/paths/~1workflows/get)
+- [credentials](https://docs.n8n.io/api/api-reference/#tag/Credential/paths/~1credentials/get)
+- [tags](https://docs.n8n.io/api/api-reference/#tag/Tag/paths/~1tags/get)
+- [data-tables](https://docs.n8n.io/api/api-reference/#tag/Data-Tables/paths/~1data-tables/get)
+- [data-table-rows](https://docs.n8n.io/api/api-reference/#tag/Data-Tables/paths/~1data-tables~1{tableId}~1rows/get)
+- [data-table-columns](https://docs.n8n.io/api/api-reference/#tag/Data-Tables/paths/~1data-tables~1{tableId}~1columns/get)
+
+### Stream Details
+
+| Stream | Primary Key | Incremental Cursor | Sync Modes | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| executions | id | startedAt | Full Refresh, Incremental | History of workflow runs |
+| users | id | updatedAt | Full Refresh, Incremental | User profiles and metadata |
+| workflows | id | updatedAt | Full Refresh, Incremental | Workflow definitions, node configurations, and parameters |
+| credentials | id | updatedAt | Full Refresh, Incremental | Credential names and sharing access (excludes sensitive secrets) |
+| tags | id | updatedAt | Full Refresh, Incremental | Workflow tags |
+| data-tables | id | updatedAt | Full Refresh, Incremental | Custom n8n data table metadata |
+| data-table-rows | - | - | Full Refresh | Individual row data per table (substream of data-tables) |
+| data-table-columns | - | - | Full Refresh | Column schemas per table (substream of data-tables) |
 
 ### Features
 
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
+| Incremental Sync  | Yes                  | executions tracks `startedAt`; all other streams track `updatedAt` |
 
 ## Getting started
 
