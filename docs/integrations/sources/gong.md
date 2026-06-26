@@ -91,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.8 | 2026-06-26 | [0](https://github.com/airbytehq/airbyte/pull/0) | chore: bump-version patch |
 | 1.2.7 | 2026-06-23 | [80481](https://github.com/airbytehq/airbyte/pull/80481) | Update dependencies |
 | 1.2.6 | 2026-06-16 | [79879](https://github.com/airbytehq/airbyte/pull/79879) | Update dependencies |
 | 1.2.5 | 2026-06-10 | [78521](https://github.com/airbytehq/airbyte/pull/78521) | Send OAuth refresh `grant_type` and `refresh_token` as URL query parameters to match Gong's documented refresh endpoint shape |
