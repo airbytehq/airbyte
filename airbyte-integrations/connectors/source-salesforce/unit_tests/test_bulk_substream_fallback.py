@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 from config_builder import ConfigBuilder
 from conftest import generate_stream, mock_stream_api
 from source_salesforce.rate_limiting import BulkNotSupportedException
@@ -32,8 +31,6 @@ def _patch_instantiate(stream, side_effect=None):
         mock_bulk_job.retriever.stream_slicer.stream_slices.side_effect = side_effect
     else:
         mock_bulk_job.retriever.stream_slicer.stream_slices.return_value = iter([{"partition": "slice1"}])
-
-    original_instantiate = stream._instantiate_declarative_stream
 
     def fake_instantiate(*args, **kwargs):
         stream._bulk_job_stream = mock_bulk_job
