@@ -9,9 +9,8 @@ This page contains the setup guide and reference information for the [Gong](http
 ## Prerequisites
 
 - A Gong account with technical administrator permissions
-- For API Key authentication: an access key and access key secret generated from the Gong API settings
 - For OAuth 2.0 authentication: the following API scopes must be granted: `api:calls:read:basic`, `api:calls:read:extensive`, `api:calls:read:transcript`, `api:users:read`, `api:stats:scorecards`, `api:stats:interaction`, `api:settings:scorecards:read`
-- For API Key authentication: the API key must have the same scopes listed above granted in the Gong API settings
+- For API Key authentication: an access key and access key secret generated from the Gong API settings, with the same scopes listed above
 
 ## Setup guide
 
@@ -40,6 +39,12 @@ You can authenticate to Gong using one of two methods:
 <FieldAnchor field="start_date">
 
 - **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector fetches data from the last 90 days.
+
+</FieldAnchor>
+
+<FieldAnchor field="num_workers">
+
+- **Number of Concurrent Threads** (optional). Controls how many streams are synced in parallel. Higher values can speed up syncs but increase API rate-limit usage. The default of 4 is tuned to stay within Gong's standard 3 requests-per-second limit. Valid range: 1–10.
 
 </FieldAnchor>
 
@@ -86,13 +91,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.7 | 2026-06-23 | [80481](https://github.com/airbytehq/airbyte/pull/80481) | Update dependencies |
+| 1.2.6 | 2026-06-16 | [79879](https://github.com/airbytehq/airbyte/pull/79879) | Update dependencies |
+| 1.2.5 | 2026-06-10 | [78521](https://github.com/airbytehq/airbyte/pull/78521) | Send OAuth refresh `grant_type` and `refresh_token` as URL query parameters to match Gong's documented refresh endpoint shape |
 | 1.2.4 | 2026-06-10 | [78476](https://github.com/airbytehq/airbyte/pull/78476) | Add `context: Extended` and `contextTiming` to `extensiveCalls` request body so Gong returns context fields |
 | 1.2.3 | 2026-06-09 | [79338](https://github.com/airbytehq/airbyte/pull/79338) | Update dependencies |
 | 1.2.2 | 2026-06-02 | [77254](https://github.com/airbytehq/airbyte/pull/77254) | Update dependencies |
-| 1.2.1 | 2026-05-07 | [77858](https://github.com/airbytehq/airbyte/pull/77858) | Expose num_workers config field for user-configurable concurrency |
+| 1.2.1 | 2026-05-11 | [77858](https://github.com/airbytehq/airbyte/pull/77858) | Expose num_workers config field for user-configurable concurrency |
 | 1.2.0 | 2026-05-07 | [77859](https://github.com/airbytehq/airbyte/pull/77859) | Promoted release candidate to GA |
-| 1.2.0-rc.3 | 2026-05-05 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Revert default_concurrency from 5 to 4 based on Phase 2 results |
-| 1.2.0-rc.2 | 2026-04-28 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Increase default_concurrency from 4 to 5 based on Phase 1 health check results |
+| 1.2.0-rc.3 | 2026-05-05 | [77785](https://github.com/airbytehq/airbyte/pull/77785) | Revert default_concurrency from 5 to 4 based on Phase 2 results |
+| 1.2.0-rc.2 | 2026-04-28 | [77549](https://github.com/airbytehq/airbyte/pull/77549) | Increase default_concurrency from 4 to 5 based on Phase 1 health check results |
 | 1.2.0-rc.1 | 2026-04-27 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Add concurrency support with default_concurrency=4; enable progressive rollout |
 | 1.1.1 | 2026-04-21 | [76593](https://github.com/airbytehq/airbyte/pull/76593) | Update dependencies |
 | 1.1.0 | 2026-04-20 | [76454](https://github.com/airbytehq/airbyte/pull/76454) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |

@@ -297,7 +297,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 | ad_creatives_from_ads | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)               | ✅                    | ❌                   |
 | ad_sets            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                  | ✅                    | ✅                   |
 | ads                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                      | ✅                    | ✅                   |
-| ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)                  | ✅                    | ✅                   |
+| ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/insights/)                  | ✅                    | ✅                   |
 | campaigns          | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)            | ✅                    | ✅                   |
 | custom_conversions | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)                  | ✅                    | ❌                   |
 | custom_audiences   | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)                    | ✅                    | ❌                   |
@@ -331,9 +331,9 @@ Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 | Ad Insights Delivery Platform And Device Platform |            `publisher_platform`, `device_platform`             |                      `action_type`                      |
 | Ad Insights Demographics Age                      |                             `age`                              |                      `action_type`                      |
 | Ad Insights Demographics Country                  |                           `country`                            |                      `action_type`                      |
-| Ad Insights Demographics DMA Region               |                             `dma`                              |                      `action_type`                      |
+| Ad Insights Demographics Comscore Market Region    |                       `comscore_market`                        |                      `action_type`                      |
 | Ad Insights Demographics Gender                   |                            `gender`                            |                      `action_type`                      |
-| Ad Insights DMA                                   |                             `dma`                              | `action_type`, `action_target_id`, `action_destination` |
+| Ad Insights Comscore Market                        |                       `comscore_market`                        | `action_type`, `action_target_id`, `action_destination` |
 | Ad Insights Country                               |                           `country`                            | `action_type`, `action_target_id`, `action_destination` |
 | Ad Insights Platform And Device                   | `publisher_platform`, `platform_position`, `impression_device` |                      `action_type`                      |
 | Ad Insights Region                                |                            `region`                            | `action_type`, `action_target_id`, `action_destination` |
@@ -341,12 +341,12 @@ Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 You can segment the Ad Insights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
 - Country
-- DMA (Designated Market Area)
+- Comscore Market
 - Gender & Age
 - Platform & Device
 - Region
 
-For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
+For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/insights/)
 
 <!-- Christo: the note below was commented out as its accuracy could not be verified. If it can be verified and clarified for users, it should be added back in.
 
@@ -484,7 +484,10 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.13 | 2026-05-31 | [78060](https://github.com/airbytehq/airbyte/pull/78060) | Fixed sync failures on Ads Insights breakdown streams caused by invalid field requests; cap async-job status-poll batches at Meta's 50-per-batch limit when a parent job has many children; tolerate malformed responses on the throttle-refresh ping instead of failing the whole sync. |
+| 6.0.1 | 2026-06-24 | [80779](https://github.com/airbytehq/airbyte/pull/80779) | Fix TypeError in `CursorPatch.load_next_page()` when Facebook API returns malformed (non-dict) responses or data items |
+| 6.0.0 | 2026-06-23 | [80324](https://github.com/airbytehq/airbyte/pull/80324) | Replace deprecated `ads_insights_dma` and `ads_insights_demographics_dma_region` streams with `ads_insights_comscore_market` and `ads_insights_demographics_comscore_market_region` following Meta's DMA → Comscore Market transition. Remove `dma` from Custom Insights breakdowns. |
+| 5.2.14 | 2026-06-11 | [79643](https://github.com/airbytehq/airbyte/pull/79643) | Replace the cryptic `system_error` on un-generatable Ads Insights reports with a clear, actionable `config_error` that names the offending stream/field/breakdown and how to resolve it (unselect the field, or disable the incrementality attribution window) (oncall #12088). |
+| 5.2.13 | 2026-06-03 | [78060](https://github.com/airbytehq/airbyte/pull/78060) | Fixed sync failures on Ads Insights breakdown streams caused by invalid field requests; cap async-job status-poll batches at Meta's 50-per-batch limit when a parent job has many children; tolerate malformed responses on the throttle-refresh ping instead of failing the whole sync. |
 | 5.2.12 | 2026-05-27 | [78451](https://github.com/airbytehq/airbyte/pull/78451) | Promoted release candidate to GA |
 | 5.2.12-rc.1 | 2026-05-20 | [75457](https://github.com/airbytehq/airbyte/pull/75457) | Bump facebook-business SDK from v23 to v25 to support Marketing API v25.0 before v23.0 sunset on June 9, 2026 |
 | 5.2.11 | 2026-04-28 | [76977](https://github.com/airbytehq/airbyte/pull/76977) | Bump airbyte-cdk to ^7.17.4; facebook-business updated to 23.0.3 via lockfile refresh |

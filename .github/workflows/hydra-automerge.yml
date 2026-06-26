@@ -20,9 +20,6 @@ on:
       pr:
         description: "PR number"
         required: true
-      comment-id:
-        description: "Comment ID (from slash command dispatcher)"
-        required: false
       dry-run:
         description: "If 'true', evaluate only -- do not approve or merge"
         required: false
@@ -32,10 +29,6 @@ on:
       pr:
         description: "PR number"
         required: true
-        type: string
-      comment-id:
-        description: "Comment ID"
-        required: false
         type: string
       dry-run:
         description: "If 'true', evaluate only -- do not approve or merge"
@@ -82,12 +75,13 @@ jobs:
             echo "::warning::PR #$PR_NUMBER is no longer open (state=$state). Skipping."
           fi
 
-      - name: Update command comment with progress
-        if: inputs.comment-id && steps.pre-check.outputs.state == 'OPEN'
+      - name: Post status comment
+        if: steps.pre-check.outputs.state == 'OPEN'
+        id: status-comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
-          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
           body: |
             > **Auto-merge evaluation in progress...**
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
@@ -119,7 +113,8 @@ jobs:
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
-          comment-id: ${{ inputs.comment-id }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
           body: |
             > **Auto-merge evaluation: SKIPPED**
             >
@@ -127,17 +122,6 @@ jobs:
             > Auto-merge is only available for PRs that exclusively touch connector-related files.
             >
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      - name: Post new comment if no command comment (path fail)
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'false' && !inputs.comment-id
-        env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-        run: |
-          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "## Auto-merge evaluation: **SKIPPED**
-
-          This PR modifies files outside the allowed connector paths. Auto-merge is only available for PRs that exclusively touch connector-related files.
-
-          > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
 
       - name: Fetch required checks for master branch
         if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
@@ -215,25 +199,14 @@ jobs:
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
-          comment-id: ${{ inputs.comment-id }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
           body: |
             > **Auto-merge evaluation: BLOCKED**
             >
             > Required status checks are not passing. Missing: `${{ steps.verify-checks.outputs.missing }}`
             >
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      - name: Post new comment if no command comment (checks fail)
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true' && steps.verify-checks.outputs.ready == 'false' && !inputs.comment-id
-        env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-          MISSING_CHECKS: ${{ steps.verify-checks.outputs.missing }}
-        run: |
-          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "## Auto-merge evaluation: **BLOCKED**
-
-          Required status checks are not passing. Missing: \`${MISSING_CHECKS}\`
-
-          > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
 
       # ── Devin AI evaluation ────────────────────────────────────────
       - name: Checkout code
@@ -254,12 +227,10 @@ jobs:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
-          issue-number: ${{ inputs.pr }}
           max-acu-limit: "2"
           wait-for-stopped-status: "true"
           wait-minutes-max: "10"
           structured-output-required: "true"
-          start-message: "**Auto-merge evaluation** starting..."
           tags: |
             auto-merge-eval
             hyd-ready
@@ -323,7 +294,7 @@ jobs:
                     required: [pass, reasoning]
                   dependency_version_bump:
                     type: object
-                    description: "Set pass to true ONLY if the PR exclusively bumps dependency versions (e.g. changes to pyproject.toml, setup.py, build.gradle, package.json version pins, or lockfiles) without any other functional code changes. The version bump must be a patch or minor version increment, NOT a major version bump. If the PR includes any other changes beyond the version bump and its lockfile updates, set pass to false."
+                    description: "Set pass to true if the PR is a dependency version bump with no functional code changes. Allowed files: dependency manifests (pyproject.toml, setup.py, build.gradle, package.json), lockfiles (poetry.lock, package-lock.json, yarn.lock), connector version metadata (metadata.yaml version/dockerImageTag fields), and changelog entries (docs/integrations/**/*.md). Set pass to false ONLY if the PR also modifies source code, test files, or other functional files beyond the categories listed above."
                     properties:
                       pass:
                         type: boolean
@@ -339,7 +310,16 @@ jobs:
                       reasoning:
                         type: string
                     required: [pass, reasoning]
-                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change]
+                  net_new_stream_addition:
+                    type: object
+                    description: "Set pass to true ONLY if the PR exclusively adds net-new streams to an existing connector without modifying any existing streams or core connector logic. Allowed changes: new stream class definitions, new stream registrations, new tests for the new streams, new or updated documentation/changelogs for the new streams, version bumps in metadata.yaml, new or updated schema files for the new streams, and trivial updates to existing tests that are a direct mechanical consequence of adding the new stream (e.g. incrementing an expected stream count assertion). Set pass to false if any existing stream definition, existing schema, or core connector logic (e.g. auth, base classes, shared utilities) is modified, or if existing tests are changed in ways beyond trivial count updates."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change, net_new_stream_addition]
             required: [preconditions, change_scope]
 
       - name: Check for structured output
@@ -383,8 +363,9 @@ jobs:
           comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')
           dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
           metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
+          new_streams=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.net_new_stream_addition.pass')
 
-          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" ]]; then
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" ]]; then
             scope_pass="true"
           else
             scope_pass="false"
@@ -444,7 +425,7 @@ jobs:
             echo ""
             scope_matched=false
             has_scope_row=false
-            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then
@@ -474,46 +455,28 @@ jobs:
             echo "EVAL_EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Update command comment with results
-        if: steps.report.outputs.comment && inputs.comment-id
+      - name: Update status comment with results
+        if: steps.report.outputs.comment && steps.status-comment.outputs.comment-id
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
-          comment-id: ${{ inputs.comment-id }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
           body: ${{ steps.report.outputs.comment }}
 
-      - name: Post new comment with results (no command comment)
-        if: steps.report.outputs.comment && !inputs.comment-id
-        env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-          EVAL_COMMENT: ${{ steps.report.outputs.comment }}
-        run: |
-          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "$EVAL_COMMENT"
-
-      - name: Update command comment on Devin error
-        if: always() && steps.check-output.outcome != 'skipped' && steps.check-output.outputs.success != 'true' && inputs.comment-id
+      - name: Update status comment on Devin error
+        if: always() && steps.check-output.outcome != 'skipped' && steps.check-output.outputs.success != 'true' && steps.status-comment.outputs.comment-id
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
-          comment-id: ${{ inputs.comment-id }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
           body: |
             > **Auto-merge evaluation: ERROR**
             >
             > The Devin AI evaluation session did not produce structured output.
             >
             > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      - name: Post new comment on Devin error (no command comment)
-        if: always() && steps.check-output.outcome != 'skipped' && steps.check-output.outputs.success != 'true' && !inputs.comment-id
-        env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-          SESSION_URL: ${{ steps.devin.outputs.session-url }}
-        run: |
-          gh pr comment "$PR_NUMBER" --repo airbytehq/airbyte --body "## Auto-merge evaluation: **ERROR**
-
-          The Devin AI evaluation session did not produce structured output.
-
-          > [Devin session](${SESSION_URL}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
 
       # ── Merge (if evaluation passed and not dry-run) ────────────────
       - name: Authenticate as 'octavia-bot-admin' GitHub App

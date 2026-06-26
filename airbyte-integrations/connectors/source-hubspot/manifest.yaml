@@ -322,6 +322,18 @@ definitions:
       schema_pointer:
         - properties
       types_mapping:
+        # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+        # `number` and `bool` properties to `string` so destinations do not reject
+        # non-numeric / non-boolean values returned by HubSpot (for example,
+        # semicolon-separated IDs in a `number` field).
+        - type: TypesMap
+          target_type: string
+          current_type: number
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+        - type: TypesMap
+          target_type: string
+          current_type: bool
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
         - type: TypesMap
           target_type: boolean
           current_type: bool
@@ -449,6 +461,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -539,6 +552,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms"
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -661,6 +675,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -1950,6 +1965,18 @@ definitions:
         type_pointer: ["type"]
         schema_pointer: ["properties"]
         types_mapping:
+          # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+          # `number` and `bool` properties to `string` so destinations do not reject
+          # non-numeric / non-boolean values returned by HubSpot (for example,
+          # semicolon-separated IDs in a `number` field).
+          - type: TypesMap
+            target_type: string
+            current_type: number
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+          - type: TypesMap
+            target_type: string
+            current_type: bool
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
           - type: TypesMap
             target_type: string
             current_type: enumeration
@@ -2586,14 +2613,29 @@ spec:
       lookback_window:
         default: 0
         description: >-
-          How far back (in minutes) to re-fetch records during incremental syncs. 
-          Set this if you notice missing records in CRMSearch streams to recover data 
-          that may be delayed by the HubSpot API.
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for CRM Search streams (e.g. contacts, companies, deals, tickets).
+          Set this if you notice missing records in CRM Search streams to recover
+          data that may be delayed by the HubSpot API. Does not affect property
+          history streams.
         examples:
           - 60
         maximum: 576000
         minimum: 0
-        title: Lookback window
+        title: CRM Search Lookback Window (minutes)
+        type: integer
+      property_history_lookback_window:
+        default: 0
+        description: >-
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for property history streams (deals, contacts, companies property
+          history). Set this if you notice missing records in property history
+          streams caused by cursor drift from HubSpot calculated properties.
+        examples:
+          - 43200
+        maximum: 576000
+        minimum: 0
+        title: Property History Lookback Window (minutes)
         type: integer
       credentials:
         title: Authentication
@@ -2666,6 +2708,17 @@ spec:
       enable_experimental_streams:
         title: Enable experimental streams
         description: If enabled then experimental streams become available for sync.
+        type: boolean
+        default: false
+      treat_numbers_and_booleans_as_strings:
+        title: Treat dynamic number and boolean properties as strings
+        description: >-
+          If enabled, HubSpot dynamic `number` and `boolean` properties are
+          exposed as `string`. Useful when HubSpot returns values that do not
+          match the declared type and the destination rejects the records.
+          After changing this setting, refresh the source schema and refresh
+          the affected stream data. See the connector documentation for
+          details.
         type: boolean
         default: false
       num_worker:
