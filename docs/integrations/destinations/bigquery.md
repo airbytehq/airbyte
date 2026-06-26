@@ -252,6 +252,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.20 | 2026-05-30 | [76902](https://github.com/airbytehq/airbyte/pull/76902) | Retry typing+deduping queries on transient BigQuery timeouts and concurrent-update aborts. |
 | 3.0.19 | 2026-05-21 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Promoting release candidate 3.0.19-rc.1 to a main version. |
 | 3.0.19-rc.1 | 2026-05-19 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
