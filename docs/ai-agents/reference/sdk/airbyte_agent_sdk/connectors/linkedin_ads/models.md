@@ -3350,6 +3350,9 @@ Classes
 
     ### Class variables
 
+    `account_ids: str | None`
+    :   Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all accounts accessible by the authenticated user. See the LinkedIn docs to locate these IDs.
+
     `model_config`
     :   The type of the None singleton.
 
