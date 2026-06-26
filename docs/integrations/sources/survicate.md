@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
-| 0.0.57 | 2026-06-26 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix schema validation dropping records when `answer` is a string, array, or number |
+| 0.0.57 | 2026-06-26 | [80929](https://github.com/airbytehq/airbyte/pull/80929) | Fix schema validation dropping records when `answer` is a string, array, or number |
 | 0.0.56 | 2026-06-23 | [80685](https://github.com/airbytehq/airbyte/pull/80685) | Update dependencies |
 | 0.0.55 | 2026-06-16 | [80087](https://github.com/airbytehq/airbyte/pull/80087) | Update dependencies |
 | 0.0.54 | 2026-06-09 | [79547](https://github.com/airbytehq/airbyte/pull/79547) | Update dependencies |
