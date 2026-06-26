@@ -49,9 +49,11 @@ def test_given_bulk_not_supported_exception_when_stream_slices_then_falls_back_t
     mock_rest_stream.name = _STREAM_NAME
     mock_rest_stream.stream_slices.return_value = iter([{"parents": [{"Id": "abc"}]}])
 
-    with _patch_instantiate(stream, side_effect=BulkNotSupportedException()), \
-         patch.object(stream, "get_standard_instance", return_value=mock_rest_stream) as mock_get_standard, \
-         patch("source_salesforce.streams.SalesforceAvailabilityStrategy") as mock_availability:
+    with (
+        _patch_instantiate(stream, side_effect=BulkNotSupportedException()),
+        patch.object(stream, "get_standard_instance", return_value=mock_rest_stream) as mock_get_standard,
+        patch("source_salesforce.streams.SalesforceAvailabilityStrategy") as mock_availability,
+    ):
 
         mock_availability.return_value.check_availability.return_value = (True, None)
 
@@ -69,9 +71,11 @@ def test_given_bulk_not_supported_and_rest_unavailable_when_stream_slices_then_y
     mock_rest_stream = MagicMock()
     mock_rest_stream.name = _STREAM_NAME
 
-    with _patch_instantiate(stream, side_effect=BulkNotSupportedException()), \
-         patch.object(stream, "get_standard_instance", return_value=mock_rest_stream), \
-         patch("source_salesforce.streams.SalesforceAvailabilityStrategy") as mock_availability:
+    with (
+        _patch_instantiate(stream, side_effect=BulkNotSupportedException()),
+        patch.object(stream, "get_standard_instance", return_value=mock_rest_stream),
+        patch("source_salesforce.streams.SalesforceAvailabilityStrategy") as mock_availability,
+    ):
 
         mock_availability.return_value.check_availability.return_value = (False, "stream is not queryable")
 
