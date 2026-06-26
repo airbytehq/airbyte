@@ -11,7 +11,7 @@ data:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: vectorstore
   connectorType: destination
-  # definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
+  definitionId: 1d997572-3dac-4d2a-a857-adc6e4af1c02
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-opengauss-datavec
   documentationUrl: https://docs.airbyte.com/integrations/destinations/opengauss-datavec
