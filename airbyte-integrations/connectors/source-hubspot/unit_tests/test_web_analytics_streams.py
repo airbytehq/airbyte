@@ -48,12 +48,14 @@ STREAM_EXPECTED_PARENT_AND_OBJECT = {
 EVENTS_API_URL = "https://api.hubapi.com/events/event-occurrences/2026-03"
 EVENTS_API_PATH = "/events/event-occurrences/2026-03"
 
+WEB_ANALYTICS_EVENT_TYPES = ["e_visited_page", "e_submitted_form"]
+
 SAMPLE_WEB_ANALYTICS_RESPONSE = {
     "results": [
         {
             "objectType": "CONTACT",
             "objectId": "123",
-            "eventType": "pe8727216_airbyte_contact_custom_event",
+            "eventType": "e_visited_page",
             "occurredAt": "2023-12-01T21:50:11.801000Z",
             "id": "b850d903-254c-4df6-b159-9263b2b7eed8",
             "properties": {
@@ -71,7 +73,7 @@ SAMPLE_PAGINATED_RESPONSE_PAGE1 = {
         {
             "objectType": "CONTACT",
             "objectId": "123",
-            "eventType": "page_view",
+            "eventType": "e_visited_page",
             "occurredAt": "2023-12-01T10:00:00.000000Z",
             "id": "event-1",
             "properties": {"hs_page_url": "https://example.com/1"},
@@ -85,13 +87,15 @@ SAMPLE_PAGINATED_RESPONSE_PAGE2 = {
         {
             "objectType": "CONTACT",
             "objectId": "123",
-            "eventType": "page_view",
+            "eventType": "e_visited_page",
             "occurredAt": "2023-12-01T11:00:00.000000Z",
             "id": "event-2",
             "properties": {"hs_page_url": "https://example.com/2"},
         }
     ],
 }
+
+EMPTY_EVENTS_RESPONSE = {"results": []}
 
 FROZEN_TIME = "2023-12-15T00:00:00Z"
 
@@ -140,6 +144,11 @@ def _mock_contacts_parent_full(requests_mock, parent_ids):
         )
 
 
+def _events_api_requests(requests_mock):
+    """Return all requests made to the Events API."""
+    return [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
+
+
 # ── Test 1 & 2: Discovery gating ───────────────────────────────────
 
 
@@ -162,7 +171,7 @@ def test_web_analytics_streams_present_when_experimental_enabled(requests_mock, 
         assert wa_stream in discovered_names, f"{wa_stream} should be discovered when experimental=true"
 
 
-# ── Test 3: Correct parent stream and object type ───────────────────
+# ── Test 3: Correct parent stream, object type, and event type router
 
 
 @pytest.fixture(scope="module")
@@ -178,14 +187,24 @@ def manifest():
     ids=WEB_ANALYTICS_STREAMS,
 )
 def test_web_analytics_correct_parent_and_object_type(wa_stream_name, expected_parent, expected_object_type, manifest):
-    """Each WA stream references the correct parent stream definition and object type."""
+    """Each WA stream references the correct parent stream and object type,
+    and includes the event type router as a second partition router."""
     stream_def_key = f"{wa_stream_name}_stream"
     stream_def = manifest["definitions"][stream_def_key]
 
-    parent_ref = stream_def["retriever"]["partition_router"]["parent_stream_configs"][0]["stream"]
+    partition_router = stream_def["retriever"]["partition_router"]
+    assert isinstance(partition_router, list), "partition_router should be a list (CartesianProduct)"
+    assert len(partition_router) == 2, "Should have SubstreamPartitionRouter + ListPartitionRouter"
+
+    substream_router = partition_router[0]
+    assert substream_router["type"] == "SubstreamPartitionRouter"
+    parent_ref = substream_router["parent_stream_configs"][0]["stream"]
     assert (
         parent_ref == f"#/definitions/{expected_parent}"
     ), f"{wa_stream_name}: expected parent '#/definitions/{expected_parent}', got '{parent_ref}'"
+
+    event_type_router = partition_router[1]
+    assert event_type_router["type"] == "ListPartitionRouter"
 
     actual_object_type = stream_def["$parameters"]["object_type"]
     assert (
@@ -193,32 +212,50 @@ def test_web_analytics_correct_parent_and_object_type(wa_stream_name, expected_p
     ), f"{wa_stream_name}: expected object_type '{expected_object_type}', got '{actual_object_type}'"
 
 
-# ── Test 4 & 5: objectId and time params in requests ────────────────
+# ── Test: Event type router definition in manifest ──────────────────
+
+
+def test_web_analytics_event_type_router_definition(manifest):
+    """The shared event type router definition uses the correct event types and injects eventType."""
+    router = manifest["definitions"]["web_analytics_event_type_router"]
+    assert router["type"] == "ListPartitionRouter"
+    assert router["values"] == WEB_ANALYTICS_EVENT_TYPES
+    assert router["cursor_field"] == "event_type"
+    assert router["request_option"]["field_name"] == "eventType"
+    assert router["request_option"]["inject_into"] == "request_parameter"
+
+
+# ── Test 4 & 5: objectId, eventType, and time params in requests ────
 
 
 @freezegun.freeze_time(FROZEN_TIME)
 def test_web_analytics_request_params(requests_mock, config_experimental_narrow):
-    """objectId, objectType, occurredAfter, and occurredBefore are included in requests."""
+    """objectId, objectType, eventType, occurredAfter, and occurredBefore are included in requests."""
     _mock_all_common(requests_mock)
     _mock_contacts_parent_full(requests_mock, ["123"])
 
-    requests_mock.register_uri(
-        "GET",
-        EVENTS_API_URL,
-        json=SAMPLE_WEB_ANALYTICS_RESPONSE,
-    )
+    requests_mock.register_uri("GET", EVENTS_API_URL, json=SAMPLE_WEB_ANALYTICS_RESPONSE)
 
     output = read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
     assert len(output.records) >= 1
 
-    history = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
-    assert len(history) > 0, "Expected at least one Events API request"
+    history = _events_api_requests(requests_mock)
+    assert len(history) >= 2, "Expected at least 2 Events API requests (one per event type)"
 
-    first_request = history[0]
-    assert "objectId=123" in first_request.url
-    assert "objectType=contact" in first_request.url
-    assert "occurredAfter=" in first_request.url
-    assert "occurredBefore=" in first_request.url
+    for req in history:
+        assert "objectId=123" in req.url, f"Missing objectId in {req.url}"
+        assert "objectType=contact" in req.url, f"Missing objectType in {req.url}"
+        assert "occurredAfter=" in req.url, f"Missing occurredAfter in {req.url}"
+        assert "occurredBefore=" in req.url, f"Missing occurredBefore in {req.url}"
+
+    event_types_requested = set()
+    for req in history:
+        match = re.search(r"eventType=([^&]+)", req.url)
+        assert match, f"Missing eventType parameter in {req.url}"
+        event_types_requested.add(match.group(1))
+    assert event_types_requested == set(WEB_ANALYTICS_EVENT_TYPES), (
+        f"Expected requests for event types {WEB_ANALYTICS_EVENT_TYPES}, got {event_types_requested}"
+    )
 
 
 # ── Test 6: Pagination follows paging.next.after ────────────────────
@@ -236,13 +273,14 @@ def test_web_analytics_pagination(requests_mock, config_experimental_narrow):
         [
             {"json": SAMPLE_PAGINATED_RESPONSE_PAGE1, "status_code": 200},
             {"json": SAMPLE_PAGINATED_RESPONSE_PAGE2, "status_code": 200},
+            {"json": EMPTY_EVENTS_RESPONSE, "status_code": 200},
         ],
     )
 
     output = read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
     assert len(output.records) >= 2
 
-    history = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
+    history = _events_api_requests(requests_mock)
     after_requests = [h for h in history if "after=cursor-abc123" in h.url]
     assert len(after_requests) >= 1, "Should follow paging.next.after for pagination"
 
@@ -256,11 +294,7 @@ def test_web_analytics_records_from_results(requests_mock, config_experimental_n
     _mock_all_common(requests_mock)
     _mock_contacts_parent_full(requests_mock, ["123"])
 
-    requests_mock.register_uri(
-        "GET",
-        EVENTS_API_URL,
-        json=SAMPLE_WEB_ANALYTICS_RESPONSE,
-    )
+    requests_mock.register_uri("GET", EVENTS_API_URL, json=SAMPLE_WEB_ANALYTICS_RESPONSE)
 
     output = read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
     assert len(output.records) >= 1
@@ -268,7 +302,7 @@ def test_web_analytics_records_from_results(requests_mock, config_experimental_n
     record = output.records[0].record.data
     assert record["id"] == "b850d903-254c-4df6-b159-9263b2b7eed8"
     assert record["objectId"] == "123"
-    assert record["eventType"] == "pe8727216_airbyte_contact_custom_event"
+    assert record["eventType"] == "e_visited_page"
 
 
 # ── Test 8: Properties flattened and normalized ─────────────────────
@@ -280,11 +314,7 @@ def test_web_analytics_properties_flattened(requests_mock, config_experimental_n
     _mock_all_common(requests_mock)
     _mock_contacts_parent_full(requests_mock, ["123"])
 
-    requests_mock.register_uri(
-        "GET",
-        EVENTS_API_URL,
-        json=SAMPLE_WEB_ANALYTICS_RESPONSE,
-    )
+    requests_mock.register_uri("GET", EVENTS_API_URL, json=SAMPLE_WEB_ANALYTICS_RESPONSE)
 
     output = read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
     assert len(output.records) >= 1
@@ -306,15 +336,11 @@ def test_web_analytics_fresh_state_from_start_date(requests_mock, config_experim
     _mock_all_common(requests_mock)
     _mock_contacts_parent_full(requests_mock, ["123"])
 
-    requests_mock.register_uri(
-        "GET",
-        EVENTS_API_URL,
-        json={"results": []},
-    )
+    requests_mock.register_uri("GET", EVENTS_API_URL, json=EMPTY_EVENTS_RESPONSE)
 
     read_from_stream(config_experimental_narrow, "contacts_web_analytics", SyncMode.incremental)
 
-    history = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
+    history = _events_api_requests(requests_mock)
     assert len(history) > 0, "Should make at least one Events API request"
 
     first_request = history[0]
@@ -338,7 +364,7 @@ def test_web_analytics_per_partition_state(requests_mock, config_experimental_na
             {
                 "objectType": "CONTACT",
                 "objectId": "100",
-                "eventType": "page_view",
+                "eventType": "e_visited_page",
                 "occurredAt": "2023-12-01T10:00:00.000000Z",
                 "id": "event-100",
                 "properties": {"hs_page_url": "https://example.com/100"},
@@ -350,7 +376,7 @@ def test_web_analytics_per_partition_state(requests_mock, config_experimental_na
             {
                 "objectType": "CONTACT",
                 "objectId": "200",
-                "eventType": "page_view",
+                "eventType": "e_visited_page",
                 "occurredAt": "2023-12-05T15:00:00.000000Z",
                 "id": "event-200",
                 "properties": {"hs_page_url": "https://example.com/200"},
@@ -363,7 +389,9 @@ def test_web_analytics_per_partition_state(requests_mock, config_experimental_na
         EVENTS_API_URL,
         [
             {"json": response_contact_100, "status_code": 200},
+            {"json": EMPTY_EVENTS_RESPONSE, "status_code": 200},
             {"json": response_contact_200, "status_code": 200},
+            {"json": EMPTY_EVENTS_RESPONSE, "status_code": 200},
         ],
     )
 
@@ -375,8 +403,7 @@ def test_web_analytics_per_partition_state(requests_mock, config_experimental_na
     assert "100" in ids_seen
     assert "200" in ids_seen
 
-    # Verify separate requests were made for each parent object
-    event_requests = [h for h in requests_mock.request_history if EVENTS_API_PATH in h.url]
+    event_requests = _events_api_requests(requests_mock)
     object_ids_requested = set()
     for req in event_requests:
         match = re.search(r"objectId=(\d+)", req.url)

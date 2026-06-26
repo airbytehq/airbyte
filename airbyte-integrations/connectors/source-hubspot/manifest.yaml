@@ -2354,6 +2354,17 @@ definitions:
         type: KeyTransformation
         prefix: properties_
 
+  web_analytics_event_type_router:
+    type: ListPartitionRouter
+    values:
+      - "e_visited_page"
+      - "e_submitted_form"
+    cursor_field: event_type
+    request_option:
+      type: RequestOption
+      field_name: eventType
+      inject_into: request_parameter
+
   # ── 12 Web Analytics stream definitions ────────────────────────────
 
   contacts_web_analytics_stream:
@@ -2361,12 +2372,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/contacts_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/contacts_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2383,12 +2396,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/companies_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/companies_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2405,12 +2420,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/deals_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/deals_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2427,12 +2444,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/tickets_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/tickets_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2449,12 +2468,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/engagements_calls_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_calls_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2471,12 +2492,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/engagements_emails_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_emails_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2493,12 +2516,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/engagements_meetings_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_meetings_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2515,12 +2540,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/engagements_notes_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_notes_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2537,12 +2564,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/engagements_tasks_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_tasks_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2559,12 +2588,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/goals_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/goals_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2581,12 +2612,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/line_items_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/line_items_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
@@ -2603,12 +2636,14 @@ definitions:
     retriever:
       $ref: "#/definitions/web_analytics_base_retriever"
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/products_stream"
-            parent_key: id
-            partition_field: parent_id
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/products_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
     incremental_sync:
       $ref: "#/definitions/web_analytics_incremental_sync"
     transformations:
