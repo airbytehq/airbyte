@@ -55,15 +55,7 @@ class TestMondayActivityExtractorNullData:
         """Verify the fix does not break normal extraction."""
         response = MagicMock()
         response_body = {
-            "data": {
-                "boards": [
-                    {
-                        "activity_logs": [
-                            {"data": '{"pulse_id": 456}', "entity": "pulse", "created_at": "16367386880000000"}
-                        ]
-                    }
-                ]
-            }
+            "data": {"boards": [{"activity_logs": [{"data": '{"pulse_id": 456}', "entity": "pulse", "created_at": "16367386880000000"}]}]}
         }
         response.content = json.dumps(response_body).encode("utf-8")
 
