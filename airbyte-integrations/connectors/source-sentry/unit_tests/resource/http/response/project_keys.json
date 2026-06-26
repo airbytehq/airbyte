@@ -1,0 +1,42 @@
+[
+  {
+    "id": "key123abc",
+    "name": "Default",
+    "label": "Default",
+    "public": "abc123public",
+    "secret": "abc123secret",
+    "projectId": 12345,
+    "isActive": true,
+    "rateLimit": {
+      "window": 3600,
+      "count": 1000
+    },
+    "dsn": {
+      "secret": "https://abc123public:abc123secret@sentry.io/12345",
+      "public": "https://abc123public@sentry.io/12345",
+      "csp": "https://sentry.io/api/12345/csp-report/?sentry_key=abc123public",
+      "security": "https://sentry.io/api/12345/security/?sentry_key=abc123public",
+      "minidump": "https://sentry.io/api/12345/minidump/?sentry_key=abc123public",
+      "nel": "https://sentry.io/api/12345/nel/?sentry_key=abc123public",
+      "unreal": "https://sentry.io/api/12345/unreal/abc123public/",
+      "crons": "https://sentry.io/api/12345/cron/abc123public/",
+      "cdn": "https://js.sentry-cdn.com/abc123public.min.js"
+    },
+    "browserSdkVersion": "7.x",
+    "browserSdk": {
+      "choices": [
+        ["latest", "latest"],
+        ["7.x", "7.x"]
+      ]
+    },
+    "dateCreated": "2023-01-01T00:00:00.000000Z",
+    "dynamicSdkLoaderOptions": {
+      "hasReplay": true,
+      "hasPerformance": true,
+      "hasDebug": false,
+      "hasFeedback": false,
+      "hasLogsAndMetrics": false
+    },
+    "useCase": "default"
+  }
+]
