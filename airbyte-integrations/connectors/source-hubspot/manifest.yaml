@@ -376,6 +376,45 @@ definitions:
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
+  contacts_archived_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/contact/properties
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_lifecyclestage_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+
+  companies_archived_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/company/properties
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+
+  tickets_archived_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/ticket/properties
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+
   forms_schema_loader:
     $ref: "#/definitions/base_dynamic_schema_loader"
     retriever:
@@ -868,6 +907,240 @@ definitions:
       - type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/deals_archived"
+
+  contacts_archived_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: contacts_archived
+    $parameters:
+      name: contacts_archived
+      required_scopes: crm.objects.contacts.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/contacts
+        request_parameters:
+          associations: "['contacts', 'companies']"
+          archived: "true"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/contact/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["archivedAt"]
+            value: "{{ record.get('archivedAt') or record['createdAt'] }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_lifecyclestage_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: archivedAt
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
+        cursor_field: archivedAt
+    schema_loader:
+      - $ref: "#/definitions/contacts_archived_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_archived"
+
+  companies_archived_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: companies_archived
+    $parameters:
+      name: companies_archived
+      required_scopes: crm.objects.contacts.read, crm.objects.companies.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/companies
+        request_parameters:
+          associations: "['contacts']"
+          archived: "true"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/company/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["archivedAt"]
+            value: "{{ record.get('archivedAt') or record['createdAt'] }}"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: archivedAt
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
+        cursor_field: archivedAt
+    schema_loader:
+      - $ref: "#/definitions/companies_archived_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies_archived"
+
+  tickets_archived_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: tickets_archived
+    $parameters:
+      name: tickets_archived
+      required_scopes: tickets
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/tickets
+        request_parameters:
+          associations: "['companies', 'contacts', 'deals']"
+          archived: "true"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/ticket/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["archivedAt"]
+            value: "{{ record.get('archivedAt') or record['createdAt'] }}"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: archivedAt
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
+        cursor_field: archivedAt
+    schema_loader:
+      - $ref: "#/definitions/tickets_archived_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets_archived"
 
   forms_stream:
     primary_key:
@@ -2298,9 +2571,11 @@ definitions:
 
 streams:
   - "#/definitions/campaigns_stream"
+  - "#/definitions/companies_archived_stream"
   - "#/definitions/companies_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
+  - "#/definitions/contacts_archived_stream"
   - "#/definitions/contacts_stream"
   - "#/definitions/list_memberships_stream"
   - "#/definitions/contacts_property_history_stream"
@@ -2329,6 +2604,7 @@ streams:
   - "#/definitions/products_stream"
   - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
+  - "#/definitions/tickets_archived_stream"
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
   - "#/definitions/properties_stream"
@@ -4473,6 +4749,168 @@ schemas:
             - "null"
             - string
       line_items:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  contacts_archived:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier for the contact
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the contact was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the contact was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the contact is archived
+        type:
+          - "null"
+          - boolean
+      archivedAt:
+        description: The date and time when the contact was archived
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      companies:
+        description: List of companies associated with the contact
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  companies_archived:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier for the company
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the company was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the company was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the company is archived
+        type:
+          - "null"
+          - boolean
+      archivedAt:
+        description: The date and time when the company was archived
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      contacts:
+        description: List of contacts associated with the company
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  tickets_archived:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier for the ticket
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the ticket was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the ticket was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the ticket is archived
+        type:
+          - "null"
+          - boolean
+      archivedAt:
+        description: The date and time when the ticket was archived
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      contacts:
+        description: Contacts associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: Companies associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: Deals associated with the ticket
         type:
           - "null"
           - array
