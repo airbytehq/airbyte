@@ -116,6 +116,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0 | 2026-06-10 | [79635](https://github.com/airbytehq/airbyte/pull/79635) | 🚨 Breaking: Restructure `users` stream schema — custom fields moved to `data` object, `itblInternal` flattened to dotted keys, removed `format: date-time` from non-RFC3339 date fields, added `itblUserId` |
 | 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
 | 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
 | 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
