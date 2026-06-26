@@ -204,13 +204,20 @@ class MarketoExportBase(IncrementalMarketoStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
+    # Timeout values (in seconds) for bulk export file downloads.
+    # connect_timeout: max seconds to wait for a TCP connection to be established.
+    # read_timeout: max seconds to wait between consecutive data chunks when streaming;
+    # this is per-chunk, NOT the total download time, so large files are safe.
+    EXPORT_CONNECT_TIMEOUT = 30
+    EXPORT_READ_TIMEOUT = 300
+
     def request_kwargs(
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        return {"stream": True}
+        return {"stream": True, "timeout": (self.EXPORT_CONNECT_TIMEOUT, self.EXPORT_READ_TIMEOUT)}
 
     def stream_slices(
         self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs

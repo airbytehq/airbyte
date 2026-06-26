@@ -198,7 +198,31 @@ def test_memory_usage(send_email_stream, file_generator):
 
 
 def test_export_request_kwargs_streams_response(send_email_stream):
-    assert send_email_stream.request_kwargs(stream_state={}) == {"stream": True}
+    kwargs = send_email_stream.request_kwargs(stream_state={})
+    assert kwargs["stream"] is True
+    assert "timeout" in kwargs
+    assert kwargs["timeout"] == (send_email_stream.EXPORT_CONNECT_TIMEOUT, send_email_stream.EXPORT_READ_TIMEOUT)
+
+
+def test_export_request_kwargs_timeout_is_tuple(send_email_stream):
+    """Timeout must be a (connect, read) tuple so requests.Session.send() applies
+    both connect and read timeouts independently. Without this, bulk export
+    downloads hang indefinitely when Marketo stops sending data mid-transfer."""
+    kwargs = send_email_stream.request_kwargs(stream_state={})
+    timeout = kwargs["timeout"]
+    assert isinstance(timeout, tuple)
+    assert len(timeout) == 2
+    connect_timeout, read_timeout = timeout
+    assert connect_timeout > 0
+    assert read_timeout > 0
+    # read timeout should be larger than connect timeout for streaming downloads
+    assert read_timeout > connect_timeout
+
+
+def test_export_timeout_constants(send_email_stream):
+    """Verify the timeout constants have reasonable default values."""
+    assert send_email_stream.EXPORT_CONNECT_TIMEOUT == 30
+    assert send_email_stream.EXPORT_READ_TIMEOUT == 300
 
 
 @pytest.mark.parametrize("job_statuses", ((("Created",), ("Completed",)), (("Created",), ("Cancelled",))))
