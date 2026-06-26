@@ -177,6 +177,9 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                 if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
                     return ConfigErrorException(e.reason, e)
                 }
+                if (e.errors.any { it.message.contains(CUSTOM_QUOTA_EXCEEDED_ERROR) }) {
+                    return ConfigErrorException(e.reason, e)
+                }
             }
         }
         return e
@@ -184,5 +187,6 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
 
     companion object {
         private const val BILLING_CONFIG_ERROR = "Billing has not been enabled for this project"
+        private const val CUSTOM_QUOTA_EXCEEDED_ERROR = "Custom quota exceeded"
     }
 }

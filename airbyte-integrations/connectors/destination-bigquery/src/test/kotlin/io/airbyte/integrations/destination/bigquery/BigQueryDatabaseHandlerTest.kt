@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryError
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobStatus
 import io.airbyte.cdk.ConfigErrorException
@@ -20,6 +21,8 @@ class BigQueryDatabaseHandlerTest {
     companion object {
         const val BILLING_ERROR =
             """Billing has not been enabled for this project. Enable billing at https://console.cloud.google.com/billing. DML queries are not allowed in the free tier. Set up a billing account to remove this restriction."""
+        const val CUSTOM_QUOTA_ERROR =
+            """Custom quota exceeded: Your usage exceeded the custom quota for QueryUsagePerDay, which limits the total data processed by queries in a given day."""
     }
 
     @Test
@@ -36,5 +39,38 @@ class BigQueryDatabaseHandlerTest {
         val handler = BigQueryDatabaseHandler(bq, "location")
 
         assertThrows<ConfigErrorException> { handler.execute(Sql.of("select * from nowhere")) }
+    }
+
+    @Test
+    fun `custom quota exceeded errors are wrapped as ConfigErrorException`() {
+        val bqError = BigQueryError(CUSTOM_QUOTA_ERROR, "loc", CUSTOM_QUOTA_ERROR)
+        val bq: BigQuery = mockk {
+            every { create(any(JobInfo::class), *anyVararg()).status } returns
+                mockk {
+                    every { state } returns JobStatus.State.DONE
+                    every { error } returns bqError
+                    every { executionErrors } returns listOf(bqError)
+                }
+        }
+        val handler = BigQueryDatabaseHandler(bq, "location")
+
+        assertThrows<ConfigErrorException> { handler.execute(Sql.of("select * from nowhere")) }
+    }
+
+    @Test
+    fun `transient quota exceeded errors are not wrapped as ConfigErrorException`() {
+        val transientError = "Quota exceeded: too many DML statements outstanding"
+        val bqError = BigQueryError(transientError, "loc", transientError)
+        val bq: BigQuery = mockk {
+            every { create(any(JobInfo::class), *anyVararg()).status } returns
+                mockk {
+                    every { state } returns JobStatus.State.DONE
+                    every { error } returns bqError
+                    every { executionErrors } returns listOf(bqError)
+                }
+        }
+        val handler = BigQueryDatabaseHandler(bq, "location")
+
+        assertThrows<BigQueryException> { handler.execute(Sql.of("select * from nowhere")) }
     }
 }
