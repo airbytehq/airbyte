@@ -4,8 +4,7 @@
 
 Web app
 
-- Organization editors can now create embedded widgets for their workspaces. Previously, this required organization admin permissions.
-- Fixed an issue where signing in could result in the wrong organization context being active after enrollment.
+- Fixed an issue where completing enrollment could leave you viewing the wrong organization.
 - Fixed an issue where adding or removing workspace members could fail or behave incorrectly when editing multiple members at once.
 
 Connectors
