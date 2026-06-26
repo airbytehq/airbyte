@@ -1,5 +1,17 @@
 # Airbyte Agents release notes
 
+## June 25, 2026
+
+Web app
+
+- Your recent chats in the sidebar now show only conversations from your current workspace.
+- When you create or edit a workspace, the member picker now scrolls properly with long lists and options are sorted alphabetically. The workspace picker is also centered correctly on mobile devices.
+- New workspaces you create now default to private visibility. Minting API tokens for a workspace now requires workspace admin access.
+
+Connectors
+
+- The Facebook Marketing connector now uses Facebook Graph API v25.0 for improved compatibility.
+
 ## June 23, 2026
 
 Web app
