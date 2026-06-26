@@ -479,6 +479,9 @@ schemas:
             answer:
               type:
                 - object
+                - string
+                - array
+                - number
                 - "null"
               properties:
                 content:
@@ -584,6 +587,9 @@ schemas:
                 answer:
                   type:
                     - object
+                    - string
+                    - array
+                    - number
                     - "null"
                   properties:
                     content:
