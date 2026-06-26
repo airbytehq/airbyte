@@ -6,8 +6,15 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlob
+import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
@@ -25,7 +32,6 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
-import io.airbyte.integrations.destination.mssql.v2.BulkInsert.Companion.CONFIG_FILE
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.DataSourceFactory
@@ -34,13 +40,14 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfigurationFac
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -89,6 +96,51 @@ abstract class MSSQLWriterTest(
     @Disabled("there's a bug in the connector")
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
+    }
+
+    @Test
+    open fun testBigDecimalScientificNotation() {
+        val schema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "number" to FieldType(NumberType, nullable = true),
+                ),
+            )
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
+                importType = Append,
+                schema = schema,
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = NamespaceMapper(),
+            )
+
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(stream, """{"id": 1, "number": 1.5E8}""", emittedAtMs = 100),
+            ),
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data = mapOf("id" to 1, "number" to BigDecimal("150000000")),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
     }
 }
 
@@ -158,10 +210,11 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
 }
 
 object MSSQLDataCleaner : DestinationCleaner {
+    private const val CLEANER_CONFIG_FILE = "secrets/azure_bulk_config.json"
     private val mssqlSpecification =
         ValidatedJsonUtils.parseOne(
             MSSQLSpecification::class.java,
-            Files.readString(Path.of(CONFIG_FILE))
+            Files.readString(Path.of(CLEANER_CONFIG_FILE)),
         )
     private val config =
         MSSQLConfigurationFactory().makeWithOverrides(mssqlSpecification, emptyMap())
@@ -281,11 +334,6 @@ internal class StandardInsert :
         dataCleaner = MSSQLDataCleaner,
     ) {
 
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-
     companion object {
         @JvmStatic
         @BeforeAll
@@ -302,8 +350,6 @@ internal class StandardInsert :
     }
 }
 
-// Re-enable once we fix our Azure account
-@Disabled("Our Azure creds are not functioning right now")
 internal class BulkInsert :
     MSSQLWriterTest(
         configPath = Path.of(CONFIG_FILE),
@@ -314,12 +360,8 @@ internal class BulkInsert :
             },
         dataCleaner = MSSQLDataCleaner,
     ) {
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
 
     companion object {
-        const val CONFIG_FILE = "secrets/bulk_upload_config.json"
+        const val CONFIG_FILE = "secrets/azure_bulk_config.json"
     }
 }

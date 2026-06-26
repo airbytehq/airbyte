@@ -41,21 +41,10 @@ class MSSQLCsvRowGeneratorTest {
     }
 
     @Test
-    fun `large numbers serialize without scientific notation for DECIMAL column`() {
-        // BigDecimal("1.5E+8").toString() == "1.5E+8", which BULK INSERT rejects for a DECIMAL
-        // column. toPlainString() must be used instead.
-        assertEquals("150000000", NumberValue(BigDecimal("1.5E+8")).toMssqlCsvValue())
-    }
-
-    @Test
-    fun `small numbers serialize without scientific notation for DECIMAL column`() {
-        // BigDecimal("1E-8").toString() == "1E-8"; plain string must be "0.00000001".
-        assertEquals("0.00000001", NumberValue(BigDecimal("1E-8")).toMssqlCsvValue())
-    }
-
-    @Test
-    fun `plain numbers serialize unchanged`() {
-        assertEquals("123.45", NumberValue(BigDecimal("123.45")).toMssqlCsvValue())
-        assertEquals("-42", NumberValue(BigDecimal("-42")).toMssqlCsvValue())
+    fun `numbers pass through as BigDecimal via default toCsvValue`() {
+        assertEquals(BigDecimal("1.5E+8"), NumberValue(BigDecimal("1.5E+8")).toMssqlCsvValue())
+        assertEquals(BigDecimal("1E-8"), NumberValue(BigDecimal("1E-8")).toMssqlCsvValue())
+        assertEquals(BigDecimal("123.45"), NumberValue(BigDecimal("123.45")).toMssqlCsvValue())
+        assertEquals(BigDecimal("-42"), NumberValue(BigDecimal("-42")).toMssqlCsvValue())
     }
 }
