@@ -513,33 +513,6 @@ Classes
     `versioned_representations: dict[str, typing.Any]`
     :   The versions of each field on the issue
 
-<a id="JiraAuthConfig"></a>
-
-`JiraAuthConfig(**data: Any)`
-:   Jira API Token Authentication - Authenticate using your Atlassian account email and API token
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `password: str`
-    :   Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens
-
-    `username: str`
-    :   Your Atlassian account email address
-
 <a id="JiraConnector"></a>
 
 `JiraConnector(auth_config: JiraAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
@@ -560,7 +533,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            subdomain: Your Jira Cloud subdomain
     Examples:
         # Local mode (direct API calls)
-        connector = JiraConnector(auth_config=JiraAuthConfig(username="...", password="..."))
+        connector = JiraConnector(auth_config=JiraAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = JiraConnector(
             auth_config=AirbyteAuthConfig(
@@ -718,6 +691,33 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="JiraOAuthCredentials"></a>
+
+`JiraOAuthCredentials(**data: Any)`
+:   Jira OAuth App Credentials - Provide your own Jira OAuth app credentials to override the default Airbyte-managed ones.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `client_id: str`
+    :   Your Jira OAuth app's client ID
+
+    `client_secret: str`
+    :   Your Jira OAuth app's client secret
+
+    `model_config`
+    :   The type of the None singleton.
 
 <a id="ProjectsSearchData"></a>
 

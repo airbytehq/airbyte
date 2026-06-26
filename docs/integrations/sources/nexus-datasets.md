@@ -176,6 +176,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.9 | 2026-06-23 | [80544](https://github.com/airbytehq/airbyte/pull/80544) | Update dependencies |
+| 0.1.8 | 2026-06-16 | [79933](https://github.com/airbytehq/airbyte/pull/79933) | Update dependencies |
+| 0.1.7 | 2026-06-09 | [78847](https://github.com/airbytehq/airbyte/pull/78847) | Update dependencies |
 | 0.1.6 | 2026-04-28 | [77333](https://github.com/airbytehq/airbyte/pull/77333) | Update dependencies |
 | 0.1.5 | 2026-04-21 | [73832](https://github.com/airbytehq/airbyte/pull/73832) | Update dependencies |
 | 0.1.4 | 2026-04-09 | [76138](https://github.com/airbytehq/airbyte/pull/76138) | Add missing imports for AirbyteTracedException and FailureType in components.py |

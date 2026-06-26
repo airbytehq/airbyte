@@ -382,8 +382,8 @@ class AdsInsightsRegion(AdsInsights):
     breakdowns = ["region"]
 
 
-class AdsInsightsDma(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsComscoreMarket(AdsInsights):
+    breakdowns = ["comscore_market"]
 
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
@@ -449,8 +449,8 @@ class AdsInsightsDemographicsCountry(AdsInsights):
     action_breakdowns = ["action_type"]
 
 
-class AdsInsightsDemographicsDMARegion(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsDemographicsComscoreMarketRegion(AdsInsights):
+    breakdowns = ["comscore_market"]
     action_breakdowns = ["action_type"]
 
 

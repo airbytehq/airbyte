@@ -27,7 +27,6 @@ Classes
         
         Available filter fields (BranchesSearchFilter):
         - name: Branch name (e.g. `main`, `feature/foo`)
-        - prefix: Git ref prefix for the branch (typically `refs/heads/`)
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -92,7 +91,6 @@ Classes
         - created_at: ISO 8601 timestamp when the comment was created
         - updated_at: ISO 8601 timestamp when the comment was last updated
         - url: Permalink to the comment on GitHub
-        - is_minimized: Whether the comment has been hidden/collapsed
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -171,16 +169,9 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (CommitsSearchFilter):
-        - oid: Full Git commit SHA
-        - abbreviated_oid: Abbreviated Git commit SHA (typically 7 characters)
-        - message_headline: First line of the commit message
-        - message: Full commit message
-        - committed_date: ISO 8601 timestamp when the commit was applied to its tree
-        - authored_date: ISO 8601 timestamp when the commit was originally authored
-        - additions: Number of lines added across all files in the commit
-        - deletions: Number of lines deleted across all files in the commit
-        - changed_files: Number of files changed in the commit
+        - sha: Full Git commit SHA
         - url: Permalink to the commit on GitHub
+        - created_at: ISO 8601 timestamp of the commit
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -604,8 +595,8 @@ Classes
         - database_id: REST API numeric identifier for the issue
         - number: Repository-scoped issue number
         - title: Issue title
-        - state: Issue state: `OPEN` or `CLOSED`
-        - state_reason: Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+        - state: Issue state in the cache: lowercase `open` or `closed`
+        - state_reason: Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
         - created_at: ISO 8601 timestamp when the issue was created
         - updated_at: ISO 8601 timestamp when the issue was last updated
         - closed_at: ISO 8601 timestamp when the issue was closed, if applicable
@@ -715,8 +706,7 @@ Classes
         - name: Label name
         - color: Label color as a 6-character hex string without a leading `#`
         - description: Short description of what the label is used for
-        - created_at: ISO 8601 timestamp when the label was created
-        - url: Permalink to the label on GitHub
+        - url: API URL to the label resource
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -779,12 +769,11 @@ Classes
         - number: Repository-scoped milestone number
         - title: Milestone title
         - description: Milestone description
-        - state: Milestone state: `OPEN` or `CLOSED`
+        - state: Milestone state in the cache: lowercase `open` or `closed`
         - due_on: ISO 8601 timestamp for the milestone's due date, if set
         - closed_at: ISO 8601 timestamp when the milestone was closed, if applicable
         - created_at: ISO 8601 timestamp when the milestone was created
         - updated_at: ISO 8601 timestamp when the milestone was last updated
-        - progress_percentage: Percentage of associated issues/PRs that are closed
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1145,15 +1134,12 @@ Classes
         - database_id: REST API numeric identifier for the pull request
         - number: Repository-scoped pull request number
         - title: Pull request title
-        - state: Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+        - state: Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
         - is_draft: Whether the pull request is still a draft
-        - merged: Whether the pull request has been merged
         - created_at: ISO 8601 timestamp when the pull request was created
         - updated_at: ISO 8601 timestamp when the pull request was last updated
         - closed_at: ISO 8601 timestamp when the pull request was closed, if applicable
         - merged_at: ISO 8601 timestamp when the pull request was merged, if applicable
-        - base_ref_name: Name of the branch being merged into
-        - head_ref_name: Name of the branch with the proposed changes
         - url: Permalink to the pull request on GitHub
         
         Args:
@@ -1393,7 +1379,7 @@ Classes
         Available filter fields (ReviewsSearchFilter):
         - id: GraphQL node ID of the review
         - database_id: REST API numeric identifier for the review
-        - state: Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+        - state: Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
         - body: Review body text
         - submitted_at: ISO 8601 timestamp when the review was submitted
         - created_at: ISO 8601 timestamp when the review was created
@@ -1492,7 +1478,6 @@ Classes
         
         Available filter fields (TagsSearchFilter):
         - name: Tag name (e.g. `v1.2.3`)
-        - prefix: Git ref prefix for the tag (typically `refs/tags/`)
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1556,10 +1541,8 @@ Classes
         - slug: URL-friendly slug for the team within its organization
         - name: Display name of the team
         - description: Short description of the team
-        - privacy: Team visibility: `SECRET` or `VISIBLE`
+        - privacy: Team visibility: `secret` or `closed` (REST API values)
         - url: Permalink to the team on GitHub
-        - created_at: ISO 8601 timestamp when the team was created
-        - updated_at: ISO 8601 timestamp when the team was last updated
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1632,14 +1615,7 @@ Classes
         - id: GraphQL node ID of the user
         - database_id: REST API numeric identifier for the user
         - login: User login/handle
-        - name: Public display name of the user, if set
-        - email: Public email address of the user, if set
-        - company: Public company affiliation of the user, if set
-        - location: Public location of the user, if set
-        - twitter_username: Public Twitter/X username of the user, if set
         - url: Permalink to the user's profile on GitHub
-        - created_at: ISO 8601 timestamp when the user account was created
-        - is_hireable: Whether the user has marked themselves as available for hire
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,

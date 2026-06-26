@@ -2,7 +2,7 @@
 
 The Tiktok-Marketing agent connector is a Python package that equips AI agents to interact with Tiktok-Marketing through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, creative assets (images and videos), and daily performance reports at the advertiser, campaign, ad group, and ad levels. Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
+Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, creative assets (images and videos), Spark Ads, product catalogs, and daily performance reports at the advertiser, campaign, ad group, and ad levels. Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
 
 ## Example prompts
 
@@ -18,6 +18,8 @@ The Tiktok-Marketing connector is optimized to handle prompts like these.
 - Show me daily ad performance reports
 - Get campaign performance metrics for the last 30 days
 - Show me advertiser spend reports
+- List all Spark Ad posts
+- Show me my product catalogs
 - Which campaigns have the highest budget?
 - Find all paused ad groups
 - What ads were created last month?
@@ -25,6 +27,8 @@ The Tiktok-Marketing connector is optimized to handle prompts like these.
 - Which ads had the most impressions yesterday?
 - What is my total ad spend this month?
 - Which campaigns have the highest click-through rate?
+- Which Spark Ads are currently authorized?
+- Find catalogs with the most products
 
 ## Unsupported prompts
 
@@ -47,6 +51,8 @@ This connector supports the following entities and actions. For more details, se
 | Audiences | [List](./REFERENCE.md#audiences-list), [Context Store Search](./REFERENCE.md#audiences-context-store-search) |
 | Creative Assets Images | [List](./REFERENCE.md#creative-assets-images-list), [Context Store Search](./REFERENCE.md#creative-assets-images-context-store-search) |
 | Creative Assets Videos | [List](./REFERENCE.md#creative-assets-videos-list), [Context Store Search](./REFERENCE.md#creative-assets-videos-context-store-search) |
+| Spark Ads | [List](./REFERENCE.md#spark-ads-list), [Context Store Search](./REFERENCE.md#spark-ads-context-store-search) |
+| Catalogs | [List](./REFERENCE.md#catalogs-list) |
 | Advertisers Reports Daily | [List](./REFERENCE.md#advertisers-reports-daily-list), [Context Store Search](./REFERENCE.md#advertisers-reports-daily-context-store-search) |
 | Campaigns Reports Daily | [List](./REFERENCE.md#campaigns-reports-daily-list), [Context Store Search](./REFERENCE.md#campaigns-reports-daily-context-store-search) |
 | Ad Groups Reports Daily | [List](./REFERENCE.md#ad-groups-reports-daily-list), [Context Store Search](./REFERENCE.md#ad-groups-reports-daily-context-store-search) |

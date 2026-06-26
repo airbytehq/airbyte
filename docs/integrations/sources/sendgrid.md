@@ -109,6 +109,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.35 | 2026-06-23 | [80649](https://github.com/airbytehq/airbyte/pull/80649) | Update dependencies |
+| 1.3.34 | 2026-06-16 | [80013](https://github.com/airbytehq/airbyte/pull/80013) | Update dependencies |
+| 1.3.33 | 2026-06-09 | [79501](https://github.com/airbytehq/airbyte/pull/79501) | Update dependencies |
+| 1.3.32 | 2026-06-02 | [78949](https://github.com/airbytehq/airbyte/pull/78949) | Update dependencies |
 | 1.3.31 | 2026-04-28 | [77509](https://github.com/airbytehq/airbyte/pull/77509) | Update dependencies |
 | 1.3.30 | 2026-04-25 | [77009](https://github.com/airbytehq/airbyte/pull/77009) | Promoted release candidate to GA |
 | 1.3.30-rc.1 | 2026-04-16 | [76407](https://github.com/airbytehq/airbyte/pull/76407) | Increase HTTPAPIBudget rate limit from 50 to 70 req/s |

@@ -1942,6 +1942,7 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CampaignsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsImagesSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsVideosSearchData]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[SparkAdsSearchData]
 
     ### Class variables
 
@@ -2368,6 +2369,45 @@ Classes
 <a id="CreativeAssetsVideosSearchResult"></a>
 
 `CreativeAssetsVideosSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[SparkAdsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SparkAdsSearchResult"></a>
+
+`SparkAdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -2971,6 +3011,75 @@ Classes
     `split_test_variable: str | None`
     :   Variable being tested in a split test campaign
 
+<a id="Catalog"></a>
+
+`Catalog(**data: Any)`
+:   TikTok product catalog
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `advertiser_id: str | None`
+    :   The type of the None singleton.
+
+    `catalog_id: str | None`
+    :   The type of the None singleton.
+
+    `catalog_name: str | None`
+    :   The type of the None singleton.
+
+    `catalog_status: str | None`
+    :   The type of the None singleton.
+
+    `catalog_type: str | None`
+    :   The type of the None singleton.
+
+    `create_time: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `modify_time: str | None`
+    :   The type of the None singleton.
+
+    `product_count: int | None`
+    :   The type of the None singleton.
+
+<a id="CatalogsListResultMeta"></a>
+
+`CatalogsListResultMeta(**data: Any)`
+:   Metadata for catalogs.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `page_info: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
 <a id="CreativeAssetImage"></a>
 
 `CreativeAssetImage(**data: Any)`
@@ -3259,6 +3368,234 @@ Classes
     `width: int | None`
     :   Width of the video in pixels.
 
+<a id="SparkAd"></a>
+
+`SparkAd(**data: Any)`
+:   TikTok Spark Ad post authorization
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `auth_info: airbyte_agent_sdk.connectors.tiktok_marketing.models.SparkAdAuthInfo | None`
+    :   The type of the None singleton.
+
+    `item_info: airbyte_agent_sdk.connectors.tiktok_marketing.models.SparkAdItemInfo | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `user_info: airbyte_agent_sdk.connectors.tiktok_marketing.models.SparkAdUserInfo | None`
+    :   The type of the None singleton.
+
+    `video_info: airbyte_agent_sdk.connectors.tiktok_marketing.models.SparkAdVideoInfo | None`
+    :   The type of the None singleton.
+
+<a id="SparkAdAuthInfo"></a>
+
+`SparkAdAuthInfo(**data: Any)`
+:   Information about the authorization
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `ad_auth_status: str | None`
+    :   The authorization status (e.g. AUTHORIZED)
+
+    `auth_end_time: str | None`
+    :   The time when the authorization code expires (UTC+0)
+
+    `auth_start_time: str | None`
+    :   The time when the authorization code becomes valid (UTC+0)
+
+    `invite_start_time: str | None`
+    :   The time when the authorization starts (UTC+0)
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SparkAdItemInfo"></a>
+
+`SparkAdItemInfo(**data: Any)`
+:   Information about the Spark Ads post
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `auth_code: str | None`
+    :   The authorization code for the Spark Ads post
+
+    `item_id: str | None`
+    :   The ID of the Spark Ads post
+
+    `item_type: str | None`
+    :   The type of Spark Ads post (VIDEO or CAROUSEL)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   Item status (e.g. HESITATE_RECOMMEND)
+
+    `text: str | None`
+    :   The description of the Spark Ads post
+
+<a id="SparkAdUserInfo"></a>
+
+`SparkAdUserInfo(**data: Any)`
+:   Information about the TikTok account
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `identity_id: str | None`
+    :   Identity ID
+
+    `identity_type: str | None`
+    :   Identity type
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `tiktok_name: str | None`
+    :   The user name of the TikTok account
+
+<a id="SparkAdVideoInfo"></a>
+
+`SparkAdVideoInfo(**data: Any)`
+:   Information about the video post
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `duration: float | None`
+    :   The duration of the video, in seconds
+
+    `height: int | None`
+    :   The height of the video
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `poster_url: str | None`
+    :   The URL to the video poster
+
+    `preview_url: str | None`
+    :   The preview URL for the video
+
+    `size: int | None`
+    :   The size of the video, in bytes
+
+    `width: int | None`
+    :   The width of the video
+
+<a id="SparkAdsListResultMeta"></a>
+
+`SparkAdsListResultMeta(**data: Any)`
+:   Metadata for spark_ads.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `page_info: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+<a id="SparkAdsSearchData"></a>
+
+`SparkAdsSearchData(**data: Any)`
+:   Search result data for spark_ads entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `auth_info: dict[str, typing.Any] | None`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: dict[str, typing.Any] | None`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `user_info: dict[str, typing.Any] | None`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: dict[str, typing.Any] | None`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
 <a id="TiktokMarketingAuthConfig"></a>
 
 `TiktokMarketingAuthConfig(**data: Any)`
@@ -3380,8 +3717,10 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[Audience], AudiencesListResultMeta]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[CampaignsReportDaily], CampaignsReportsDailyListResultMeta]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[Catalog], CatalogsListResultMeta]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[CreativeAssetImage], CreativeAssetsImagesListResultMeta]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[CreativeAssetVideo], CreativeAssetsVideosListResultMeta]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[SparkAd], SparkAdsListResultMeta]
 
     ### Class variables
 
@@ -3793,6 +4132,51 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`TiktokMarketingExecuteResultWithMeta[list[Catalog], CatalogsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="CatalogsListResult"></a>
+
+`CatalogsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `TiktokMarketingExecuteResultWithMeta[list[CreativeAssetImage], CreativeAssetsImagesListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3865,6 +4249,51 @@ Classes
 <a id="CreativeAssetsVideosListResult"></a>
 
 `CreativeAssetsVideosListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`TiktokMarketingExecuteResultWithMeta[list[SparkAd], SparkAdsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SparkAdsListResult"></a>
+
+`SparkAdsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).

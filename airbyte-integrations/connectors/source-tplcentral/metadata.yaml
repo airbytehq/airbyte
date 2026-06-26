@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f9b6c538-ee12-42fe-8d4b-0c10f5955417
-  dockerImageTag: 0.1.47
+  dockerImageTag: 0.1.48
   dockerRepository: airbyte/source-tplcentral
   githubIssueLabel: source-tplcentral
   icon: tplcentral.svg
@@ -29,7 +29,7 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   externalDocumentationUrls:
     - title: TPL Central API
       url: https://api.3plcentral.com/

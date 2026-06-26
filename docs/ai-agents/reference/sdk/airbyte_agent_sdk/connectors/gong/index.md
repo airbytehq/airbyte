@@ -138,6 +138,7 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[CallTranscriptsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[CallsExtensiveSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[CallsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[SettingsScorecardsSearchData]
@@ -154,6 +155,24 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallTranscriptsSearchResult"></a>
+
+`CallTranscriptsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 <a id="CallsExtensiveSearchResult"></a>
 
@@ -244,6 +263,36 @@ Classes
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallTranscriptsSearchData"></a>
+
+`CallTranscriptsSearchData(**data: Any)`
+:   Search result data for call_transcripts entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `call_id: str | None`
+    :   Unique identifier for the call.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `started: str | None`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: list[typing.Any] | None`
+    :   Gong transcript speaker turns.
 
 <a id="CallsExtensiveSearchData"></a>
 
