@@ -253,9 +253,9 @@ def test_web_analytics_request_params(requests_mock, config_experimental_narrow)
         match = re.search(r"eventType=([^&]+)", req.url)
         assert match, f"Missing eventType parameter in {req.url}"
         event_types_requested.add(match.group(1))
-    assert event_types_requested == set(WEB_ANALYTICS_EVENT_TYPES), (
-        f"Expected requests for event types {WEB_ANALYTICS_EVENT_TYPES}, got {event_types_requested}"
-    )
+    assert event_types_requested == set(
+        WEB_ANALYTICS_EVENT_TYPES
+    ), f"Expected requests for event types {WEB_ANALYTICS_EVENT_TYPES}, got {event_types_requested}"
 
 
 # ── Test 6: Pagination follows paging.next.after ────────────────────
