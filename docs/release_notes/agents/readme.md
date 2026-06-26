@@ -1,5 +1,19 @@
 # Airbyte Agents release notes
 
+## June 26, 2026
+
+Web app
+
+- Organization editors can now create embedded widgets for their workspaces. Previously, this required organization admin permissions.
+- Fixed an issue where signing in could result in the wrong organization context being active after enrollment.
+- Fixed an issue where adding or removing workspace members could fail or behave incorrectly when editing multiple members at once.
+
+Connectors
+
+- Your agents can now create and update contacts, deals, companies, and tickets in HubSpot.
+- The Google Ads connector has been upgraded from API version 20 to version 23 for continued compatibility with Google's platform.
+- Fixed an issue where connector health checks could fail when your configuration included multiple values for fields like property IDs or account IDs.
+
 ## June 23, 2026
 
 Web app
