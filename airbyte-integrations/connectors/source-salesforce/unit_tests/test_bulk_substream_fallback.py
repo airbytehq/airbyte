@@ -54,7 +54,6 @@ def test_given_bulk_not_supported_exception_when_stream_slices_then_falls_back_t
         patch.object(stream, "get_standard_instance", return_value=mock_rest_stream) as mock_get_standard,
         patch("source_salesforce.streams.SalesforceAvailabilityStrategy") as mock_availability,
     ):
-
         mock_availability.return_value.check_availability.return_value = (True, None)
 
         slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
@@ -76,7 +75,6 @@ def test_given_bulk_not_supported_and_rest_unavailable_when_stream_slices_then_y
         patch.object(stream, "get_standard_instance", return_value=mock_rest_stream),
         patch("source_salesforce.streams.SalesforceAvailabilityStrategy") as mock_availability,
     ):
-
         mock_availability.return_value.check_availability.return_value = (False, "stream is not queryable")
 
         slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
