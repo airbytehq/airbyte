@@ -3,11 +3,15 @@
  */
 package io.airbyte.integrations.destination.bigquery.typing_deduping.direct_load_tables
 
+import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
+import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
+import com.google.cloud.bigquery.Table
+import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TimePartitioning
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -20,15 +24,26 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -283,5 +298,166 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     .build()
             )
         Assertions.assertTrue(partitioningMatches(existingTable))
+    }
+
+    /**
+     * When a column being type-changed is also a clustering column, ensureSchemaMatches should use
+     * the recreateTable path (which uses INSERT...SELECT with CAST) instead of the alterTable path
+     * (which uses RENAME COLUMN and would fail on BigQuery clustering columns).
+     */
+    @Test
+    fun testEnsureSchemaMatchesRecreatesTableWhenClusteringColumnTypeChanges() {
+        // Stream with PK "id" that is now INT64 (was STRING in existing table)
+        val stream =
+            DestinationStream(
+                "test_namespace",
+                "campaigns",
+                Dedupe(listOf(listOf("id")), emptyList()),
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "name" to FieldType(StringType, nullable = true),
+                    )
+                ),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+                namespaceMapper = NamespaceMapper()
+            )
+        val columnNameMapping = ColumnNameMapping(mapOf("id" to "id", "name" to "name"))
+        val tableName = TableName("test_namespace", "campaigns")
+
+        // Mock the existing table: "id" is STRING (will be changed to INT64)
+        // Clustering is on "id" + "_airbyte_extracted_at", partitioning matches
+        val existingTableDef = Mockito.mock(StandardTableDefinition::class.java)
+        Mockito.`when`(existingTableDef.schema)
+            .thenReturn(
+                Schema.of(
+                    Field.of("id", StandardSQLTypeName.STRING),
+                    Field.of("name", StandardSQLTypeName.STRING),
+                    Field.of("_airbyte_extracted_at", StandardSQLTypeName.TIMESTAMP),
+                    Field.of("_airbyte_meta", StandardSQLTypeName.JSON),
+                    Field.of("_airbyte_generation_id", StandardSQLTypeName.INT64),
+                    Field.of("_airbyte_raw_id", StandardSQLTypeName.STRING),
+                )
+            )
+        Mockito.`when`(existingTableDef.clustering)
+            .thenReturn(
+                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build()
+            )
+        Mockito.`when`(existingTableDef.timePartitioning)
+            .thenReturn(
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+                    .setField("_airbyte_extracted_at")
+                    .build()
+            )
+
+        // Mock BigQuery to return the existing table
+        val mockBigQuery: BigQuery = mockk()
+        val mockTable: Table = mockk()
+        every { mockBigQuery.getTable(any<TableId>()) } returns mockTable
+        every { mockTable.getDefinition<StandardTableDefinition>() } returns existingTableDef
+
+        // Mock sqlOperations and databaseHandler
+        val mockSqlOperations: BigqueryDirectLoadSqlTableOperations = mockk()
+        val mockDatabaseHandler: BigQueryDatabaseHandler = mockk()
+        coEvery { mockSqlOperations.createTable(any(), any(), any(), any()) } just runs
+        every { mockDatabaseHandler.execute(any()) } just runs
+        coEvery { mockSqlOperations.overwriteTable(any(), any()) } just runs
+
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                mockBigQuery,
+                mockSqlOperations,
+                mockDatabaseHandler,
+                projectId = "test-project",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("test_namespace"),
+            )
+
+        runBlocking { operations.ensureSchemaMatches(stream, tableName, columnNameMapping) }
+
+        // Verify the recreateTable path was taken (createTable is called for temp table)
+        coVerify { mockSqlOperations.createTable(stream, any(), columnNameMapping, true) }
+        // Verify the alterTable path was NOT taken
+        coVerify(exactly = 0) { mockDatabaseHandler.executeWithRetries(any()) }
+    }
+
+    /**
+     * When a column being type-changed is NOT a clustering column, ensureSchemaMatches should use
+     * the alterTable path (RENAME COLUMN approach) as normal.
+     */
+    @Test
+    fun testEnsureSchemaMatchesAltersTableWhenNonClusteringColumnTypeChanges() {
+        // Stream where "name" column type changes from STRING to INT64 (not a clustering column)
+        val stream =
+            DestinationStream(
+                "test_namespace",
+                "campaigns",
+                Dedupe(listOf(listOf("id")), emptyList()),
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "name" to FieldType(IntegerType, nullable = true),
+                    )
+                ),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+                namespaceMapper = NamespaceMapper()
+            )
+        val columnNameMapping = ColumnNameMapping(mapOf("id" to "id", "name" to "name"))
+        val tableName = TableName("test_namespace", "campaigns")
+
+        // Mock the existing table: "id" is already INT64 (no change), "name" is STRING (will
+        // change)
+        val existingTableDef = Mockito.mock(StandardTableDefinition::class.java)
+        Mockito.`when`(existingTableDef.schema)
+            .thenReturn(
+                Schema.of(
+                    Field.of("id", StandardSQLTypeName.INT64),
+                    Field.of("name", StandardSQLTypeName.STRING),
+                    Field.of("_airbyte_extracted_at", StandardSQLTypeName.TIMESTAMP),
+                    Field.of("_airbyte_meta", StandardSQLTypeName.JSON),
+                    Field.of("_airbyte_generation_id", StandardSQLTypeName.INT64),
+                    Field.of("_airbyte_raw_id", StandardSQLTypeName.STRING),
+                )
+            )
+        Mockito.`when`(existingTableDef.clustering)
+            .thenReturn(
+                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build()
+            )
+        Mockito.`when`(existingTableDef.timePartitioning)
+            .thenReturn(
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+                    .setField("_airbyte_extracted_at")
+                    .build()
+            )
+
+        // Mock BigQuery to return the existing table
+        val mockBigQuery: BigQuery = mockk()
+        val mockTable: Table = mockk()
+        every { mockBigQuery.getTable(any<TableId>()) } returns mockTable
+        every { mockTable.getDefinition<StandardTableDefinition>() } returns existingTableDef
+
+        // Mock sqlOperations and databaseHandler
+        val mockSqlOperations: BigqueryDirectLoadSqlTableOperations = mockk()
+        val mockDatabaseHandler: BigQueryDatabaseHandler = mockk()
+        coEvery { mockDatabaseHandler.executeWithRetries(any()) } just runs
+
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                mockBigQuery,
+                mockSqlOperations,
+                mockDatabaseHandler,
+                projectId = "test-project",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("test_namespace"),
+            )
+
+        runBlocking { operations.ensureSchemaMatches(stream, tableName, columnNameMapping) }
+
+        // Verify the alterTable path was taken (executeWithRetries is called for ALTER TABLE DDL)
+        coVerify(atLeast = 1) { mockDatabaseHandler.executeWithRetries(any()) }
+        // Verify the recreateTable path was NOT taken
+        coVerify(exactly = 0) { mockSqlOperations.createTable(any(), any(), any(), any()) }
     }
 }

@@ -49,15 +49,33 @@ class BigqueryDirectLoadNativeTableOperations(
     ) {
         val existingTable =
             bigquery.getTable(tableName.toTableId()).getDefinition<TableDefinition>()
-        val shouldRecreateTable = shouldRecreateTable(stream, columnNameMapping, existingTable)
+        var shouldRecreateTable = shouldRecreateTable(stream, columnNameMapping, existingTable)
         val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
+
+        // BigQuery prohibits renaming clustering columns. If any columns being type-changed
+        // are clustering columns, we must use the recreateTable path instead of alterTable.
+        if (
+            !shouldRecreateTable &&
+                existingTable is StandardTableDefinition &&
+                existingTable.clustering != null
+        ) {
+            val clusteringFields = existingTable.clustering!!.fields
+            val typeChangeOverlapsClustering =
+                alterTableReport.columnsToChangeType.any { columnChange ->
+                    clusteringFields.any { it.equals(columnChange.name, ignoreCase = true) }
+                }
+            if (typeChangeOverlapsClustering) {
+                shouldRecreateTable = true
+            }
+        }
+
         logger.info {
             "Stream ${stream.mappedDescriptor.toPrettyString()} had alter table report $alterTableReport"
         }
         try {
             if (shouldRecreateTable) {
                 logger.info {
-                    "Stream ${stream.mappedDescriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
+                    "Stream ${stream.mappedDescriptor.toPrettyString()} detected change in partitioning/clustering config or type change in clustering column. Recreating the table."
                 }
                 recreateTable(
                     stream,
