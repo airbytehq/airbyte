@@ -15,6 +15,11 @@ data:
           secretStore:
             alias: airbyte-connector-testing-secret-store
             type: GSM
+        - fileName: azure_bulk_config.json
+          name: SECRET_DESTINATION_MSSQL_AZURE_BULK_LOAD_CONFIG
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerImageTag: 2.2.18
