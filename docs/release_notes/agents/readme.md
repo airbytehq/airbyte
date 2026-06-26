@@ -1,5 +1,80 @@
 # Airbyte Agents release notes
 
+## June 25, 2026
+
+Web app
+
+- Your recent chats in the sidebar now show only conversations from your current workspace.
+- When you create or edit a workspace, the member picker now scrolls properly with long lists and options are sorted alphabetically. The workspace picker is also centered correctly on mobile devices.
+- New workspaces you create now default to private visibility. Minting API tokens for a workspace now requires workspace admin access.
+
+Connectors
+
+- The Facebook Marketing connector now uses Facebook Graph API v25.0 for improved compatibility.
+
+## June 23, 2026
+
+Web app
+
+- You can now add team members directly when creating a new workspace, so everyone has access from the start.
+- The workspace picker shows an "Admin" badge on workspaces where you have admin privileges.
+- Switching workspaces while in a chat shows a toast confirming which workspace you switched to.
+- Member lists in workspace settings are now sorted alphabetically.
+
+Connectors
+
+- Gong call transcripts now support semantic search, allowing your agent to find relevant conversations based on meaning rather than exact keyword matches.
+- Your agent can now search GitHub data using more natural field names, and sorting results by fields like creation date works correctly.
+
+## June 19, 2026
+
+Web app
+
+- Chat connections to your agent are now more reliable. If the initial connection fails due to a temporary network issue, the app automatically retries instead of showing an error.
+
+SDK
+
+- Fixed an issue where connectors with an empty authentication header prefix would send a leading space in API requests, potentially causing authentication failures.
+
+Connectors
+
+- The Shopify connector is now generally available. You can connect your Shopify store to read orders, products, customers, inventory, and more.
+- Amazon Ads entities such as campaigns, ad groups, and keywords are now correctly linked to advertising profiles, so your agent can resolve data across multiple accounts more accurately.
+- Fixed an issue where certain connectors were not displayed correctly in your connector list and could not be used by your agent.
+
+Other
+
+- Upgraded the AI model powering Chats and Automations for improved response quality.
+
+## June 18, 2026
+
+Web app
+
+- Your credentials page now shows a "Direct only" badge on connectors that support direct queries but not Context Store search.
+- The option to convert a chat to an automation is no longer available in the chat interface.
+- The "New workspace" button now appears at the top of the workspace picker for faster access.
+- Fixed an issue where shared workspaces could be hidden from organization members who didn't have a direct workspace grant.
+
+Connectors
+
+- Setting up and using direct-only connectors is now more reliable.
+
+## June 17, 2026
+
+Other
+
+- The Context Store now pauses automatically for connectors that haven't been searched recently. When you next search a paused connector, it resumes immediately and you'll see a notice while its data refreshes.
+
+## June 16, 2026
+
+API
+
+- You now see only the workspaces you belong to, and deleting a workspace requires workspace admin permission.
+
+Connectors
+
+- The incident.io connector now lets you list and retrieve teams from your incident.io account.
+
 ## June 15, 2026
 
 Web app
