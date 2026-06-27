@@ -142,6 +142,7 @@ internal class GcsDataLakeStreamLoaderTest {
         every { manageSnapshots.commit() } just runs
         val table: Table = mockk {
             every { schema() } returns icebergSchema
+            every { refresh() } just runs
             every { manageSnapshots() } returns manageSnapshots
             every { history() } returns emptyList()
         }
@@ -258,6 +259,7 @@ internal class GcsDataLakeStreamLoaderTest {
         every { manageSnapshots.commit() } just runs
         val table: Table = mockk {
             every { schema() } returns icebergSchema
+            every { refresh() } just runs
             every { manageSnapshots() } returns manageSnapshots
             every { history() } returns emptyList()
         }
