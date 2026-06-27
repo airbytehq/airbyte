@@ -25,9 +25,9 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
-import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
-import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.BigLakeCatalogConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.generateStagingBranchName
 import io.mockk.every
 import io.mockk.just
@@ -35,8 +35,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.ManageSnapshots
@@ -46,9 +46,10 @@ import org.junit.jupiter.api.Test
 
 internal class GcsDataLakeStreamLoaderTest {
 
-    private val streamStateStore = StreamStateStore<GcsDataLakeStreamState>().also {
-        // Mock setup handled per test
-    }
+    private val streamStateStore =
+        StreamStateStore<GcsDataLakeStreamState>().also {
+            // Mock setup handled per test
+        }
 
     private fun makeTableSchema(schema: ObjectType, importType: ImportType): StreamTableSchema {
         val inputSchema = schema.properties
@@ -96,14 +97,16 @@ internal class GcsDataLakeStreamLoaderTest {
             gcpLocation = "us-central1",
             gcsEndpoint = null,
             namespace = "test_namespace",
-            gcsCatalogConfiguration = GcsCatalogConfiguration(
-                warehouseLocation = "gs://test-bucket/warehouse",
-                mainBranchName = "main",
-                catalogConfiguration = BigLakeCatalogConfiguration(
-                    catalogName = "test-catalog",
-                    gcpLocation = "us-central1",
+            gcsCatalogConfiguration =
+                GcsCatalogConfiguration(
+                    warehouseLocation = "gs://test-bucket/warehouse",
+                    mainBranchName = "main",
+                    catalogConfiguration =
+                        BigLakeCatalogConfiguration(
+                            catalogName = "test-catalog",
+                            gcpLocation = "us-central1",
+                        ),
                 ),
-            ),
         )
     }
 
@@ -283,9 +286,7 @@ internal class GcsDataLakeStreamLoaderTest {
                 streamStateStore = stateStore,
             )
 
-        runBlocking {
-            streamLoader.start()
-        }
+        runBlocking { streamLoader.start() }
 
         val state = stateStore.get(stream.mappedDescriptor)!!
         assertEquals(stagingBranchName, state.stagingBranchName)
@@ -310,12 +311,13 @@ internal class GcsDataLakeStreamLoaderTest {
         every { manageSnapshots.createBranch(stagingBranchName) } returns manageSnapshots
         every { manageSnapshots.replaceBranch("main", stagingBranchName) } returns manageSnapshots
         every { manageSnapshots.removeBranch(stagingBranchName) } returns manageSnapshots
-        every { manageSnapshots.commit() } answers {
-            commitCount += 1
-            if (commitCount == 2) {
-                throw RuntimeException("promotion failed")
+        every { manageSnapshots.commit() } answers
+            {
+                commitCount += 1
+                if (commitCount == 2) {
+                    throw RuntimeException("promotion failed")
+                }
             }
-        }
         val table: Table = mockk {
             every { schema() } returns icebergSchema
             every { refresh() } just runs
