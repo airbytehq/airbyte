@@ -2,11 +2,12 @@ data:
   allowedHosts:
     hosts:
       - api.xero.com
+      - identity.xero.com
   registryOverrides:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   remoteRegistries:
     pypi:
       enabled: false
@@ -31,7 +32,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
-  dockerImageTag: 2.1.5
+  dockerImageTag: 2.2.0
   dockerRepository: airbyte/source-xero
   githubIssueLabel: source-xero
   icon: xero.svg
@@ -49,15 +50,13 @@ data:
     ql: 300
   connectorTestSuitesOptions:
     - suite: unitTests
-    # Disabling acceptance tests
-    # No/Low Airbyte Cloud Usage
-    # - suite: acceptanceTests
-    #   testSecrets:
-    #     - name: SECRET_SOURCE-XERO__CREDS
-    #       fileName: config.json
-    #       secretStore:
-    #         type: GSM
-    #         alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-XERO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Xero API reference
       url: https://developer.xero.com/documentation/

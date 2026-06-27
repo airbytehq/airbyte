@@ -24,12 +24,20 @@ For multi-tenant Xero accounts, you'll need to select which organization to conn
 
 ## Authentication
 
-There are two currently supported ways to authenticate with Xero:
+There are three currently supported ways to authenticate with Xero:
+
+For OAuth (recommended on Airbyte Cloud), authorize the connection through Xero's standard [OAuth 2.0 flow](https://developer.xero.com/documentation/guides/oauth2/auth-flow/). On Airbyte Cloud you can authenticate with the **Authenticate via Xero (OAuth)** button. When configuring the connector yourself you provide:
+
+- Client ID
+- Client Secret
+- Refresh Token
 
 For the bearer token strategy, please follow [instructions](https://developer.xero.com/documentation/guides/oauth2/pkce-flow/) to obtain all requirements:
+
 - Client ID
 
 For the OAuth client credentials, please follow [instructions](https://developer.xero.com/documentation/guides/oauth2/custom-connections) to obtain all requirements:
+
 - Client ID
 - Client Secret
 
@@ -125,6 +133,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 2.2.0 | 2026-06-22 | [80344](https://github.com/airbytehq/airbyte/pull/80344) | Add standard OAuth 2.0 authorization flow and enable on Airbyte Cloud |
 | 2.1.5 | 2026-02-25 | [71340](https://github.com/airbytehq/airbyte/pull/71340) | Resolve the generator returned from JsonDecoder into dictionary |
 | 2.1.4 | 2025-03-01 | [55142](https://github.com/airbytehq/airbyte/pull/55142) | Update dependencies |
 | 2.1.3 | 2025-02-22 | [54526](https://github.com/airbytehq/airbyte/pull/54526) | Update dependencies |
