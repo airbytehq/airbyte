@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.gcs_data_lake.write.GcsDataLakeStreamState
 import jakarta.inject.Singleton
 
@@ -40,7 +39,7 @@ class GcsDataLakeAggregateFactory(
             stream = stream,
             table = state.table,
             schema = state.schema,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
+            stagingBranchName = state.stagingBranchName,
             writer = writer,
         )
     }
