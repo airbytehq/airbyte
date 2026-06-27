@@ -50,7 +50,7 @@ access to the database.
 
 ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
-7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`. 
+1. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`.
 
 :::info
 Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
@@ -58,6 +58,8 @@ This allows you to sync multiple collections across different databases using a 
 
 The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
 :::
+
+For CDC syncs, the MongoDB user must also have the `changeStream` and `find` actions on each collection, database, or cluster scope that Airbyte watches.
 
 ![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
 
@@ -247,6 +249,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.8   | 2026-05-09 | [77914](https://github.com/airbytehq/airbyte/pull/77914) | Surface missing MongoDB CDC changeStream permissions as a configuration error. |
 | 2.0.7 | 2026-01-21 | [71049](https://github.com/airbytehq/airbyte/pull/71049) | Use debezium's own token validation logic to ensure that the saved resume token is present on the server (h/t @ed-kyu) |
 | 2.0.6   | 2026-01-21 | [70980](https://github.com/airbytehq/airbyte/pull/70980) | Convert non-array MongoDB values into arrays when the schema expects an array to prevent nulls.        |
 | 2.0.5   | 2026-01-14 | [71255](https://github.com/airbytehq/airbyte/pull/71255) | fix(source-mongodb-v2): Add helpful error message for BSONObjectTooLarge errors during CDC syncs |

@@ -58,6 +58,10 @@ public class MongoConstants {
           "(3) Identify and restructure the large documents in your MongoDB collection to stay under 16MB. " +
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
+  public static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String MONGODB_UNAUTHORIZED_ERROR_CODE_NAME = "Unauthorized";
+  public static final String MONGODB_CDC_UNAUTHORIZED_ERROR_MESSAGE =
+      "MongoDB credentials lack required changeStream permissions for CDC.";
 
   private MongoConstants() {}
 
