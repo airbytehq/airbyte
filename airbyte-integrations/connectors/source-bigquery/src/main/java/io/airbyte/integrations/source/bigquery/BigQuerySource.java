@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved. 
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -64,7 +64,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final var conf = ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
-        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText());
+        .put(CONFIG_CREDS, config.has(CONFIG_CREDS) ? config.get(CONFIG_CREDS).asText() : "");
     if (config.hasNonNull(CONFIG_DATASET_ID)) {
       conf.put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText());
     }
