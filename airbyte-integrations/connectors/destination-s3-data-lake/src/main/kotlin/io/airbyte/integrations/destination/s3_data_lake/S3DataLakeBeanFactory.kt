@@ -8,9 +8,10 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
-import io.airbyte.cdk.load.dataflow.config.model.JsonConverterConfig
 import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -22,19 +23,23 @@ class S3DataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
 
     @Singleton
-    fun aggregatePublishingConfig() =
-        AggregatePublishingConfig(
+    fun aggregatePublishingConfig(config: S3DataLakeConfiguration): AggregatePublishingConfig {
+        val batchSize = config.resolvedFlushBatchSizeBytes
+        log.info {
+            "Configured flush batch size: $batchSize bytes (${batchSize / 1024 / 1024} MiB)"
+        }
+        return AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000L,
-            maxEstBytesPerAgg =
-                200L * 1024L * 1024L, // copied from DEFAULT_RECORD_BATCH_SIZE_BYTES in legacy-cdk
+            maxEstBytesPerAgg = batchSize,
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,
         )
+    }
 
     /** Iceberg has specific timestamp requirements */
     @Singleton
-    fun jsonConvertConfig() =
-        JsonConverterConfig(
+    fun mediumConverterConfig() =
+        MediumConverterConfig(
             extractedAtAsTimestampWithTimezone = false,
         )
 
@@ -60,7 +65,7 @@ class S3DataLakeBeanFactory {
     @Singleton
     @Requires(notEnv = [Environment.TEST])
     fun dataFlowSocketConfig(catalog: DestinationCatalog): DataFlowSocketConfig {
-        val hasDedupStreams = catalog.streams.any { it.importType is Dedupe }
+        val hasDedupStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
         return if (hasDedupStreams) {
             log.info { "Dedup streams detected, limiting to 1 socket for data consistency" }
             object : DataFlowSocketConfig {

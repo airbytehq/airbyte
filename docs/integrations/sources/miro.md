@@ -18,6 +18,10 @@ Airbyte connector for Miro can be used to extract data related to board content,
 | board_groups |  | No pagination | ✅ |  ❌  |
 | board_connectors | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,18 @@ Airbyte connector for Miro can be used to extract data related to board content,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-06-23 | [80539](https://github.com/airbytehq/airbyte/pull/80539) | Update dependencies |
+| 0.0.56 | 2026-06-16 | [79939](https://github.com/airbytehq/airbyte/pull/79939) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79425](https://github.com/airbytehq/airbyte/pull/79425) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [78814](https://github.com/airbytehq/airbyte/pull/78814) | Update dependencies |
+| 0.0.53 | 2026-04-28 | [77346](https://github.com/airbytehq/airbyte/pull/77346) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76672](https://github.com/airbytehq/airbyte/pull/76672) | Update dependencies |
+| 0.0.51 | 2026-03-31 | [75802](https://github.com/airbytehq/airbyte/pull/75802) | Update dependencies |
+| 0.0.50 | 2026-03-24 | [75389](https://github.com/airbytehq/airbyte/pull/75389) | Update dependencies |
+| 0.0.49 | 2026-03-10 | [74593](https://github.com/airbytehq/airbyte/pull/74593) | Update dependencies |
+| 0.0.48 | 2026-03-03 | [74189](https://github.com/airbytehq/airbyte/pull/74189) | Update dependencies |
+| 0.0.47 | 2026-02-17 | [73222](https://github.com/airbytehq/airbyte/pull/73222) | Update dependencies |
+| 0.0.46 | 2026-02-03 | [72721](https://github.com/airbytehq/airbyte/pull/72721) | Update dependencies |
 | 0.0.45 | 2026-01-20 | [72023](https://github.com/airbytehq/airbyte/pull/72023) | Update dependencies |
 | 0.0.44 | 2026-01-14 | [71529](https://github.com/airbytehq/airbyte/pull/71529) | Update dependencies |
 | 0.0.43 | 2025-12-18 | [70774](https://github.com/airbytehq/airbyte/pull/70774) | Update dependencies |

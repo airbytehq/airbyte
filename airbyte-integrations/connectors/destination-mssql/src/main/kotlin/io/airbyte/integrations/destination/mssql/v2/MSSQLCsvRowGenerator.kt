@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object LIMITS {
@@ -39,8 +40,21 @@ object LIMITS {
     val MAX_NUMERIC: BigDecimal = BigDecimal("1e38").minus(BigDecimal.ONE).divide(NUMERIC_SCALE)
     val MIN_NUMERIC: BigDecimal = BigDecimal("-1e38").plus(BigDecimal.ONE).divide(NUMERIC_SCALE)
 
+    // Minimum value for DATETIME in SQL Server (1753-01-01 00:00:00.000)
+    val MIN_DATETIME: LocalDateTime = LocalDateTime.of(1753, 1, 1, 0, 0, 0)
+
     val TRUE = IntegerValue(1)
     val FALSE = IntegerValue(0)
+
+    fun validateTimestamp(value: EnrichedAirbyteValue): LocalDateTime? {
+        val tsValue = (value.abValue as TimestampWithoutTimezoneValue).value
+        return if (tsValue < MIN_DATETIME) {
+            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+            null
+        } else {
+            tsValue
+        }
+    }
 
     fun validateNumber(value: EnrichedAirbyteValue): BigDecimal? {
         val numValue = (value.abValue as NumberValue).value
@@ -105,13 +119,16 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
                                     .value
                                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                             )
-                    is TimestampTypeWithoutTimezone ->
+                    is TimestampTypeWithoutTimezone -> {
+                        LIMITS.validateTimestamp(value)
+                            ?: return@forEach // nullified; skip formatting
                         value.abValue =
                             StringValue(
                                 (actualValue as TimestampWithoutTimezoneValue)
                                     .value
                                     .format(DateTimeFormatter.ISO_DATE_TIME)
                             )
+                    }
 
                     // serialize complex types to string
                     is ArrayType,

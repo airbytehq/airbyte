@@ -197,7 +197,11 @@ def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_respons
     monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False, None)))
     with pytest.raises(AirbyteTracedException) as e:
         SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
-    assert str(e.value) == "No streams available. Please check permissions"
+    assert str(e.value) == (
+        "No streams available. Looks like your config for repositories or organizations is not valid."
+        " Please, check your permissions, names of repositories and organizations."
+        " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, workflow."
+    )
 
 
 def test_streams_page_size(rate_limit_mock_response, requests_mock):
@@ -271,7 +275,7 @@ def test_streams_config_start_date(config, expected, rate_limit_mock_response, r
         ),
         (
             "401 Client Error: Unauthorized for url",
-            "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token.",
+            "GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth credentials are valid and not expired.",
         ),
     ],
 )

@@ -8,15 +8,22 @@ This page contains the setup guide and reference information for the [Jira](http
 
 ## Prerequisites
 
-- API Token
-- Domain
-- Email
+- A Jira Cloud site hostname, for example `airbyteio.atlassian.net`
+- One of the following authentication methods:
+  - OAuth 2.0 access to Jira
+  - An Atlassian account email and an Atlassian API token without scopes
+  - An Atlassian Service Account API token
+- Jira permissions for the data you want to sync. To sync all workflow records, the authenticating user needs the **Administer Jira** global permission. Project-scoped workflows require at least one of the **Administer projects** and **View (read-only) workflow** project permissions.
 
 ## Setup guide
 
 ### Step 1: Set up Jira
 
-1. To get access to the Jira API you need to create an API token, please follow the instructions in this [documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+Choose how you want Airbyte to authenticate to Jira.
+
+- To use OAuth 2.0, authorize Airbyte to access your Jira site. If you configure a custom OAuth app, see Atlassian's [OAuth 2.0 (3LO) documentation](https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/). The connector requests the scopes it needs, including `offline_access`, `read:workflow:jira`, and `manage:jira-configuration`.
+- To use an API token, create an Atlassian API token without scopes by following Atlassian's [API token instructions](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). API token authentication uses HTTP Basic authentication with your Atlassian account email and Jira site hostname.
+- To use a Service Account token, create an Atlassian Service Account API token with scopes by following Atlassian's [Service Account API token instructions](https://support.atlassian.com/user-management/docs/manage-api-tokens-for-service-accounts/).
 
 ### Step 2: Set up the Jira connector in Airbyte
 
@@ -28,11 +35,10 @@ This page contains the setup guide and reference information for the [Jira](http
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Jira from the Source type dropdown.
 4. Enter a name for the Jira connector.
-5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
-6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
-7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
-8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+5. Choose an authentication method. To use OAuth 2.0, authenticate your Jira account. To use API token authentication, enter the **Email** for your Atlassian account and the **API Token** you created. To use Service Account authentication, enter the **Service Account Token**.
+6. Enter the **Domain** for your Jira site, for example `airbyteio.atlassian.net`. Don't include `https://` or a path.
+7. Enter the list of **Projects (Optional)** to replicate data for, or leave it empty to replicate data for all projects the authenticated user can access.
+8. Enter the **Start Date (Optional)** from which you'd like to replicate Jira data in the format `YYYY-MM-DDTHH:MM:SSZ`. The connector uses this value only for these streams: Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues. Other streams always sync all available records.
 
 <!-- /env:cloud -->
 
@@ -43,13 +49,72 @@ This page contains the setup guide and reference information for the [Jira](http
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Jira from the Source type dropdown.
 4. Enter a name for the Jira connector.
-5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
-6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
-7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
-8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+5. Choose an authentication method. To use API token authentication, enter the **Email** for your Atlassian account and the **API Token** you created. To use OAuth 2.0, enter the client ID, client secret, and refresh token from your Atlassian OAuth app. To use Service Account authentication, enter the **Service Account Token**.
+6. Enter the **Domain** for your Jira site, for example `airbyteio.atlassian.net`. Don't include `https://` or a path.
+7. Enter the list of **Projects (Optional)** to replicate data for, or leave it empty to replicate data for all projects the authenticated user can access.
+8. Enter the **Start Date (Optional)** from which you'd like to replicate Jira data in the format `YYYY-MM-DDTHH:MM:SSZ`. The connector uses this value only for these streams: Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues. Other streams always sync all available records.
 
 <!-- /env:oss -->
+
+### Use Atlassian Service Account API tokens
+
+Atlassian Service Account API tokens must use Atlassian's Platform API Gateway. To use one in Airbyte, set **Authentication** to **Service Account** and enter the **Domain** for your Jira site. The connector resolves the Cloud ID from the domain, routes Jira requests through `https://api.atlassian.com/ex/jira/{cloudId}/`, and authenticates with a Bearer token.
+
+To create a Service Account API token:
+
+1. Go to [admin.atlassian.com](https://admin.atlassian.com/).
+2. Go to **Directory** > **Service accounts**.
+3. Create a service account, or choose an existing service account.
+4. Under **Credentials**, click **Create credential**.
+5. Select **API token**.
+6. Set a token name and expiration date. The maximum expiration is 365 days.
+7. Add the required scopes. You can paste the full comma-separated scope list into scope search to filter the list.
+8. Select the scopes, click **Next**, and create the token.
+
+Service Account API tokens use the same Jira OAuth scopes as OAuth 2.0 credentials. Select these scopes when creating the token:
+
+```text
+read:jira-work
+read:jql:jira
+read:group:jira
+read:project-role:jira
+read:issue-details:jira
+read:status:jira
+read:jira-user
+read:user:jira
+read:avatar:jira
+read:webhook:jira
+read:project-category:jira
+read:screenable-field:jira
+read:screen-field:jira
+offline_access
+read:board-scope:jira-software
+read:project:jira
+read:sprint:jira-software
+read:application-role:jira
+read:notification-scheme:jira
+read:issue-security-scheme:jira
+read:issue-security-level:jira
+read:issue-type-scheme:jira
+read:issue-type-screen-scheme:jira
+read:permission-scheme:jira
+read:screen:jira
+read:screen-scheme:jira
+read:screen-tab:jira
+read:workflow:jira
+read:workflow-scheme:jira
+read:project.email:jira
+read:custom-field-contextual-configuration:jira
+manage:jira-configuration
+```
+
+You can paste this comma-separated scope list into Atlassian's scope search:
+
+```text
+read:jira-work,read:jql:jira,read:group:jira,read:project-role:jira,read:issue-details:jira,read:status:jira,read:jira-user,read:user:jira,read:avatar:jira,read:webhook:jira,read:project-category:jira,read:screenable-field:jira,read:screen-field:jira,offline_access,read:board-scope:jira-software,read:project:jira,read:sprint:jira-software,read:application-role:jira,read:notification-scheme:jira,read:issue-security-scheme:jira,read:issue-security-level:jira,read:issue-type-scheme:jira,read:issue-type-screen-scheme:jira,read:permission-scheme:jira,read:screen:jira,read:screen-scheme:jira,read:screen-tab:jira,read:workflow:jira,read:workflow-scheme:jira,read:project.email:jira,read:custom-field-contextual-configuration:jira,manage:jira-configuration
+```
+
+The service account must also have Jira app access and the project permissions required for the streams you sync. To sync all workflow records, the service account needs the **Administer Jira** global permission.
 
 ## Supported sync modes
 
@@ -72,7 +137,6 @@ This connector outputs the following full refresh streams:
 - [Filter sharing](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get)
 - [Groups](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-groups-picker-get)
 - [Issue fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get)
-- [Issue field configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get)
 - [Issue custom field contexts](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get)
 - [Issue custom field options](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get)
 - [Issue link types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get)
@@ -110,7 +174,7 @@ This connector outputs the following full refresh streams:
 - [Time tracking](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get)
 - [Users](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-search-get)
 - [UsersGroupsDetailed](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get)
-- [Workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get)
+- [Workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflows-search-get)
 - [Workflow schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get)
 - [Workflow statuses](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get)
 - [Workflow status categories](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get)
@@ -118,6 +182,7 @@ This connector outputs the following full refresh streams:
 This connector outputs the following incremental streams:
 
 - [Board issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get)
+- [Issue changelogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-changelog-get)
 - [Issue comments](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get)
 - [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
 - [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
@@ -125,34 +190,27 @@ This connector outputs the following incremental streams:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+### Workflows stream
+
+The `workflows` stream uses Jira's [`GET /rest/api/3/workflows/search`](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflows-search-get) endpoint. Jira's deprecated `GET /rest/api/3/workflow/search` endpoint is scheduled for removal on June 1, 2026, so version `5.0.0` of this connector moved the stream to the replacement endpoint.
+
+If you sync the `workflows` stream and upgrade from a version earlier than `5.0.0`, refresh the source schema and clear the `workflows` stream before syncing again. For details, see the [Jira migration guide](/integrations/sources/jira-migrations#upgrading-to-500).
+
 ### Streams on I/O Usage
 
-In the list above, there is a subset of streams which requires to make one HTTP request per issue. Those streams can significantly slow down that a sync given a high number of issues. If you have one or many of those streams and experience slowness, we recommend filtering the list of issues using the list of projects in the configuration or simply removing those streams from the sync.
+In the list above, a subset of streams makes one HTTP request per issue. These streams can significantly slow down a sync when you have many issues. If you use one or more of these streams and experience slowness, filter the issue list using the **Projects** configuration field, or remove these streams from the sync.
+
+* Issue changelogs
 * Issue comments
 * Issue properties
 * Issue remote links
-* Issue transactions
+* Issue transitions
 * Issue votes
 * Issue watchers
 * Issue worklogs
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
-
-## Experimental Tables
-
-The following tables depend on undocumented internal Jira API endpoints and are
-therefore subject to stop working if those endpoints undergo major changes.
-While they will not cause a sync to fail, they may not be able to pull any data.
-Use the "Enable Experimental Streams" option when setting up the source to allow
-or disallow these tables to be selected when configuring a connection.
-
-- [Pull Requests](https://docs.airbyte.com/integrations/sources/jira#experimental-tables)
-
-:::note
-The experimental Pull Requests stream was removed in version 4.0.0 and is no longer available in the catalog.
-If you want to sync data using this stream, you must use version `<= 3.5.4`. This is only possible on self-deployed instances of Airbyte, and this stream is no longer supported on Airbyte Cloud.
-:::
 
 ## Troubleshooting
 
@@ -162,6 +220,29 @@ Check out common troubleshooting issues for the Jira connector on our Airbyte Fo
 
 The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Reference
+
+The connector uses these configuration fields for programmatic setup with PyAirbyte, Terraform, or the Airbyte API:
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `credentials.auth_type` | Yes | Authentication method. Valid values are `API Token`, `OAuth2.0`, and `Service Account`. |
+| `credentials.email` | Required for API token authentication | Atlassian account email used with the API token. |
+| `credentials.api_token` | Required for API token authentication | Atlassian API token. Use an API token without scopes. |
+| `credentials.client_id` | Required for OAuth 2.0 authentication | Client ID of your Atlassian OAuth app. |
+| `credentials.client_secret` | Required for OAuth 2.0 authentication | Client secret of your Atlassian OAuth app. |
+| `credentials.refresh_token` | Required for OAuth 2.0 authentication | Refresh token returned by the Atlassian OAuth flow. |
+| `credentials.service_account_token` | Required for Service Account authentication | Atlassian Service Account API token with the required Jira scopes. |
+| `domain` | Yes | Jira site hostname, for example `airbyteio.atlassian.net`. Don't include `https://` or a path. |
+| `projects` | No | List of Jira project keys to replicate. Leave empty to replicate all projects the authenticated user can access. |
+| `start_date` | No | UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Applies to the Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues streams. If unset, defaults to two years before the first sync. |
+| `lookback_window_minutes` | No | Number of minutes to re-read on each incremental sync. Defaults to `0`. |
+| `num_workers` | No | Number of concurrent threads to use for the sync. Valid values are `1` through `40`. Defaults to `3`. |
+
 ## Changelog
 
 <details>
@@ -169,6 +250,23 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2026-06-24 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
+| 5.1.1 | 2026-06-09 | [79606](https://github.com/airbytehq/airbyte/pull/79606) | Clean up cancelled RC; revert source to previous stable |
+| 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
+| 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
+| 5.0.0 | 2026-05-20 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
+| 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
+| 4.4.0 | 2026-05-11 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |
+| 4.3.21 | 2026-05-05 | [77751](https://github.com/airbytehq/airbyte/pull/77751) | Add input validation for `domain` field |
+| 4.3.20 | 2026-04-22 | [76354](https://github.com/airbytehq/airbyte/pull/76354) | Bump SDM base image for deadlock fix |
+| 4.3.19 | 2026-04-21 | [76631](https://github.com/airbytehq/airbyte/pull/76631) | Update dependencies |
+| 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
+| 4.3.16 | 2026-03-10 | [74500](https://github.com/airbytehq/airbyte/pull/74500) | Update dependencies |
+| 4.3.15 | 2026-02-24 | [73898](https://github.com/airbytehq/airbyte/pull/73898) | Update dependencies |
+| 4.3.14 | 2026-02-17 | [73494](https://github.com/airbytehq/airbyte/pull/73494) | Update dependencies |
+| 4.3.13 | 2026-02-10 | [73044](https://github.com/airbytehq/airbyte/pull/73044) | Update dependencies |
+| 4.3.12 | 2026-02-03 | [72758](https://github.com/airbytehq/airbyte/pull/72758) | Update dependencies |
 | 4.3.11 | 2026-01-20 | [71963](https://github.com/airbytehq/airbyte/pull/71963) | Update dependencies |
 | 4.3.10 | 2026-01-14 | [71423](https://github.com/airbytehq/airbyte/pull/71423) | Update dependencies |
 | 4.3.9 | 2025-12-18 | [70533](https://github.com/airbytehq/airbyte/pull/70533) | Update dependencies |
@@ -187,72 +285,72 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 | 4.2.2 | 2025-08-02 | [64216](https://github.com/airbytehq/airbyte/pull/64216) | Update dependencies |
 | 4.2.1 | 2025-07-26 | [63916](https://github.com/airbytehq/airbyte/pull/63916) | Update dependencies |
 | 4.2.0 | 2025-07-24 | [63761](https://github.com/airbytehq/airbyte/pull/63761) | Promoting release candidate 4.2.0-rc.1 to a main version. |
-| 4.2.0-rc.1 | 2025-07-21  | [63366](https://github.com/airbytehq/airbyte/pull/63366)       | Migrate the issues stream from `/search` to `/search/jql` due to API deprecation                                                                                       |
-| 4.1.7      | 2025-07-19 | [63461](https://github.com/airbytehq/airbyte/pull/63461) | Update dependencies |
-| 4.1.6      | 2025-07-12 | [63104](https://github.com/airbytehq/airbyte/pull/63104) | Update dependencies |
-| 4.1.5      | 2025-07-05 | [62640](https://github.com/airbytehq/airbyte/pull/62640) | Update dependencies |
-| 4.1.4      | 2025-06-28 | [62186](https://github.com/airbytehq/airbyte/pull/62186) | Update dependencies |
-| 4.1.3      | 2025-06-21 | [61812](https://github.com/airbytehq/airbyte/pull/61812) | Update dependencies |
-| 4.1.2      | 2025-06-14 | [52790](https://github.com/airbytehq/airbyte/pull/52790) | Update dependencies |
-| 4.1.1      | 2025-05-26 | [60908](https://github.com/airbytehq/airbyte/pull/60908) | Update dependencies |
-| 4.1.0      | 2025-05-15 | [60298](https://github.com/airbytehq/airbyte/pull/60298) | Promoting release candidate 4.1.0-rc.1 to a main version. |
+| 4.2.0-rc.1 | 2025-07-21 | [63366](https://github.com/airbytehq/airbyte/pull/63366) | Migrate the issues stream from `/search` to `/search/jql` due to API deprecation |
+| 4.1.7 | 2025-07-19 | [63461](https://github.com/airbytehq/airbyte/pull/63461) | Update dependencies |
+| 4.1.6 | 2025-07-12 | [63104](https://github.com/airbytehq/airbyte/pull/63104) | Update dependencies |
+| 4.1.5 | 2025-07-05 | [62640](https://github.com/airbytehq/airbyte/pull/62640) | Update dependencies |
+| 4.1.4 | 2025-06-28 | [62186](https://github.com/airbytehq/airbyte/pull/62186) | Update dependencies |
+| 4.1.3 | 2025-06-21 | [61812](https://github.com/airbytehq/airbyte/pull/61812) | Update dependencies |
+| 4.1.2 | 2025-06-14 | [52790](https://github.com/airbytehq/airbyte/pull/52790) | Update dependencies |
+| 4.1.1 | 2025-05-26 | [60908](https://github.com/airbytehq/airbyte/pull/60908) | Update dependencies |
+| 4.1.0 | 2025-05-15 | [60298](https://github.com/airbytehq/airbyte/pull/60298) | Promoting release candidate 4.1.0-rc.1 to a main version. |
 | 4.1.0-rc.1 | 2025-05-12 | [59689](https://github.com/airbytehq/airbyte/pull/59689) | Migrate to manifest-only format |
-| 4.0.0      | 2025-05-07 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
-| 3.5.4      | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
-| 3.5.3      | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
-| 3.5.2      | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
-| 3.5.1      | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |
-| 3.5.0      | 2025-01-23 | [52105](https://github.com/airbytehq/airbyte/pull/52105) | Update incremental per partition streams to use concurrency |
-| 3.4.8      | 2025-01-11 | [51189](https://github.com/airbytehq/airbyte/pull/51189) | Update dependencies |
-| 3.4.7      | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
-| 3.4.6      | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
-| 3.4.5      | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
-| 3.4.4      | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 3.4.3      | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
-| 3.4.2      | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |
-| 3.4.1      | 2024-12-09 | [48859](https://github.com/airbytehq/airbyte/pull/48859) | Add a couple of fixes regarding memory usage |
-| 3.4.0      | 2024-12-05 | [48738](https://github.com/airbytehq/airbyte/pull/48738) | Enable concurrency for substreams without cursor |
-| 3.3.1      | 2024-11-18 | [48539](https://github.com/airbytehq/airbyte/pull/48539) | Update dependencies |
-| 3.3.0-rc.3 | 2024-11-14 | [48395](https://github.com/airbytehq/airbyte/pull/48395)   | Change JQL filters comparing cursor values to use milliseconds since unix epoch so that data isn't skipped when the active timezone is a negative UTC offset           |
-| 3.3.0-rc.2 | 2024-11-08 | [38612](https://github.com/airbytehq/airbyte/pull/38612)   | Add substream state migration. Update CDK to v6.                                                                                                                       |
-| 3.3.0-rc.1 | 2024-10-28 | [38612](https://github.com/airbytehq/airbyte/pull/38612)   | Migrate IssueComments and IssueWorklogs streams to low-code (This change is irreversible)                                                                              |
-| 3.2.1      | 2024-10-12 | [44650](https://github.com/airbytehq/airbyte/pull/44650)   | Update dependencies                                                                                                                                                    |
-| 3.2.0      | 2024-10-10 | [46344](https://github.com/airbytehq/airbyte/pull/46344)   | Update CDK v5                                                                                                                                                          |
-| 3.1.1      | 2024-08-17 | [44251](https://github.com/airbytehq/airbyte/pull/44251)   | Update dependencies                                                                                                                                                    |
-| 3.1.0      | 2024-08-13 | [39558](https://github.com/airbytehq/airbyte/pull/39558)   | Ensure config_error when state has improper format                                                                                                                     |
-| 3.0.14     | 2024-08-12 | [43885](https://github.com/airbytehq/airbyte/pull/43885)   | Update dependencies                                                                                                                                                    |
-| 3.0.13     | 2024-08-10 | [43542](https://github.com/airbytehq/airbyte/pull/43542)   | Update dependencies                                                                                                                                                    |
-| 3.0.12     | 2024-08-03 | [43196](https://github.com/airbytehq/airbyte/pull/43196)   | Update dependencies                                                                                                                                                    |
-| 3.0.11     | 2024-07-27 | [42802](https://github.com/airbytehq/airbyte/pull/42802)   | Update dependencies                                                                                                                                                    |
-| 3.0.10     | 2024-07-20 | [42231](https://github.com/airbytehq/airbyte/pull/42231)   | Update dependencies                                                                                                                                                    |
-| 3.0.9      | 2024-07-13 | [41842](https://github.com/airbytehq/airbyte/pull/41842)   | Update dependencies                                                                                                                                                    |
-| 3.0.8      | 2024-07-10 | [41453](https://github.com/airbytehq/airbyte/pull/41453)   | Update dependencies                                                                                                                                                    |
-| 3.0.7      | 2024-07-09 | [41175](https://github.com/airbytehq/airbyte/pull/41175)   | Update dependencies                                                                                                                                                    |
-| 3.0.6      | 2024-07-06 | [40785](https://github.com/airbytehq/airbyte/pull/40785)   | Update dependencies                                                                                                                                                    |
-| 3.0.5      | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215)   | Replaced deprecated AirbyteLogger with logging.Logger                                                                                                                  |
-| 3.0.4      | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549)   | Migrate off deprecated auth package                                                                                                                                    |
-| 3.0.3      | 2024-06-25 | [40444](https://github.com/airbytehq/airbyte/pull/40444)   | Update dependencies                                                                                                                                                    |
-| 3.0.2      | 2024-06-21 | [40121](https://github.com/airbytehq/airbyte/pull/40121)   | Update dependencies                                                                                                                                                    |
-| 3.0.1      | 2024-06-13 | [39458](https://github.com/airbytehq/airbyte/pull/39458)   | Fix skipping custom_field_options entities when schema.items is options                                                                                                |
-| 3.0.0      | 2024-06-14 | [39467](https://github.com/airbytehq/airbyte/pull/39467)   | Update pk for Workflows stream from Id(object) to entityId, name(string, string)                                                                                       |
-| 2.0.3      | 2024-06-10 | [39347](https://github.com/airbytehq/airbyte/pull/39347)   | Update state handling for incremental Python streams                                                                                                                   |
-| 2.0.2      | 2024-06-06 | [39310](https://github.com/airbytehq/airbyte/pull/39310)   | Fix projects substreams for deleted projects                                                                                                                           |
-| 2.0.1      | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341)   | Update CDK authenticator package                                                                                                                                       |
-| 2.0.0      | 2024-04-20 | [37374](https://github.com/airbytehq/airbyte/pull/37374)   | Migrate to low-code and fix `Project Avatars` stream                                                                                                                   |
-| 1.2.2      | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | Updating to 0.80.0 CDK                                                                                                                                                 |
-| 1.2.1      | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | schema descriptions                                                                                                                                                    |
-| 1.2.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                                                                        |
-| 1.1.0      | 2024-02-27 | [35656](https://github.com/airbytehq/airbyte/pull/35656)   | Add new fields to streams `board_issues`, `filter_sharing`, `filters`, `issues`, `permission_schemes`, `sprint_issues`, `users_groups_detailed`, and `workflows`       |
-| 1.0.2      | 2024-02-12 | [35160](https://github.com/airbytehq/airbyte/pull/35160)   | Manage dependencies with Poetry.                                                                                                                                       |
-| 1.0.1      | 2024-01-24 | [34470](https://github.com/airbytehq/airbyte/pull/34470)   | Add state checkpoint interval for all streams                                                                                                                          |
-| 1.0.0      | 2024-01-01 | [33715](https://github.com/airbytehq/airbyte/pull/33715)   | Save state for stream `Board Issues` per `board`                                                                                                                       |
-| 0.14.1     | 2023-12-19 | [33625](https://github.com/airbytehq/airbyte/pull/33625)   | Skip 404 error                                                                                                                                                         |
-| 0.14.0     | 2023-12-15 | [33532](https://github.com/airbytehq/airbyte/pull/33532)   | Add lookback window                                                                                                                                                    |
-| 0.13.0     | 2023-12-12 | [33353](https://github.com/airbytehq/airbyte/pull/33353)   | Fix check command to check access for all available streams                                                                                                            |
-| 0.12.0     | 2023-12-01 | [33011](https://github.com/airbytehq/airbyte/pull/33011)   | Fix BoardIssues stream; increase number of retries for backoff policy to 10                                                                                            |
-| 0.11.0     | 2023-11-29 | [32927](https://github.com/airbytehq/airbyte/pull/32927)   | Fix incremental syncs for stream Issues                                                                                                                                |
-| 0.10.2     | 2023-10-26 | [31896](https://github.com/airbytehq/airbyte/pull/31896)   | Provide better guidance when configuring the connector with an invalid domain                                                                                          |
-| 0.10.1     | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702)   | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                        |
+| 4.0.0 | 2025-05-07 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
+| 3.5.4 | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
+| 3.5.3 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
+| 3.5.2 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
+| 3.5.1 | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |
+| 3.5.0 | 2025-01-23 | [52105](https://github.com/airbytehq/airbyte/pull/52105) | Update incremental per partition streams to use concurrency |
+| 3.4.8 | 2025-01-11 | [51189](https://github.com/airbytehq/airbyte/pull/51189) | Update dependencies |
+| 3.4.7 | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
+| 3.4.6 | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
+| 3.4.5 | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
+| 3.4.4 | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.4.3 | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
+| 3.4.2 | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |
+| 3.4.1 | 2024-12-09 | [48859](https://github.com/airbytehq/airbyte/pull/48859) | Add a couple of fixes regarding memory usage |
+| 3.4.0 | 2024-12-05 | [48738](https://github.com/airbytehq/airbyte/pull/48738) | Enable concurrency for substreams without cursor |
+| 3.3.1 | 2024-11-18 | [48539](https://github.com/airbytehq/airbyte/pull/48539) | Update dependencies |
+| 3.3.0-rc.3 | 2024-11-14 | [48395](https://github.com/airbytehq/airbyte/pull/48395) | Change JQL filters comparing cursor values to use milliseconds since unix epoch so that data isn't skipped when the active timezone is a negative UTC offset |
+| 3.3.0-rc.2 | 2024-11-08 | [38612](https://github.com/airbytehq/airbyte/pull/38612) | Add substream state migration. Update CDK to v6. |
+| 3.3.0-rc.1 | 2024-10-28 | [38612](https://github.com/airbytehq/airbyte/pull/38612) | Migrate IssueComments and IssueWorklogs streams to low-code (This change is irreversible) |
+| 3.2.1 | 2024-10-12 | [44650](https://github.com/airbytehq/airbyte/pull/44650) | Update dependencies |
+| 3.2.0 | 2024-10-10 | [46344](https://github.com/airbytehq/airbyte/pull/46344) | Update CDK v5 |
+| 3.1.1 | 2024-08-17 | [44251](https://github.com/airbytehq/airbyte/pull/44251) | Update dependencies |
+| 3.1.0 | 2024-08-13 | [39558](https://github.com/airbytehq/airbyte/pull/39558) | Ensure config_error when state has improper format |
+| 3.0.14 | 2024-08-12 | [43885](https://github.com/airbytehq/airbyte/pull/43885) | Update dependencies |
+| 3.0.13 | 2024-08-10 | [43542](https://github.com/airbytehq/airbyte/pull/43542) | Update dependencies |
+| 3.0.12 | 2024-08-03 | [43196](https://github.com/airbytehq/airbyte/pull/43196) | Update dependencies |
+| 3.0.11 | 2024-07-27 | [42802](https://github.com/airbytehq/airbyte/pull/42802) | Update dependencies |
+| 3.0.10 | 2024-07-20 | [42231](https://github.com/airbytehq/airbyte/pull/42231) | Update dependencies |
+| 3.0.9 | 2024-07-13 | [41842](https://github.com/airbytehq/airbyte/pull/41842) | Update dependencies |
+| 3.0.8 | 2024-07-10 | [41453](https://github.com/airbytehq/airbyte/pull/41453) | Update dependencies |
+| 3.0.7 | 2024-07-09 | [41175](https://github.com/airbytehq/airbyte/pull/41175) | Update dependencies |
+| 3.0.6 | 2024-07-06 | [40785](https://github.com/airbytehq/airbyte/pull/40785) | Update dependencies |
+| 3.0.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 3.0.4 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 3.0.3 | 2024-06-25 | [40444](https://github.com/airbytehq/airbyte/pull/40444) | Update dependencies |
+| 3.0.2 | 2024-06-21 | [40121](https://github.com/airbytehq/airbyte/pull/40121) | Update dependencies |
+| 3.0.1 | 2024-06-13 | [39458](https://github.com/airbytehq/airbyte/pull/39458) | Fix skipping custom_field_options entities when schema.items is options |
+| 3.0.0 | 2024-06-14 | [39467](https://github.com/airbytehq/airbyte/pull/39467) | Update pk for Workflows stream from Id(object) to entityId, name(string, string) |
+| 2.0.3 | 2024-06-10 | [39347](https://github.com/airbytehq/airbyte/pull/39347) | Update state handling for incremental Python streams |
+| 2.0.2 | 2024-06-06 | [39310](https://github.com/airbytehq/airbyte/pull/39310) | Fix projects substreams for deleted projects |
+| 2.0.1 | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341) | Update CDK authenticator package |
+| 2.0.0 | 2024-04-20 | [37374](https://github.com/airbytehq/airbyte/pull/37374) | Migrate to low-code and fix `Project Avatars` stream |
+| 1.2.2 | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646) | Updating to 0.80.0 CDK |
+| 1.2.1 | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646) | schema descriptions |
+| 1.2.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 1.1.0 | 2024-02-27 | [35656](https://github.com/airbytehq/airbyte/pull/35656) | Add new fields to streams `board_issues`, `filter_sharing`, `filters`, `issues`, `permission_schemes`, `sprint_issues`, `users_groups_detailed`, and `workflows` |
+| 1.0.2 | 2024-02-12 | [35160](https://github.com/airbytehq/airbyte/pull/35160) | Manage dependencies with Poetry. |
+| 1.0.1 | 2024-01-24 | [34470](https://github.com/airbytehq/airbyte/pull/34470) | Add state checkpoint interval for all streams |
+| 1.0.0 | 2024-01-01 | [33715](https://github.com/airbytehq/airbyte/pull/33715) | Save state for stream `Board Issues` per `board` |
+| 0.14.1 | 2023-12-19 | [33625](https://github.com/airbytehq/airbyte/pull/33625) | Skip 404 error |
+| 0.14.0 | 2023-12-15 | [33532](https://github.com/airbytehq/airbyte/pull/33532) | Add lookback window |
+| 0.13.0 | 2023-12-12 | [33353](https://github.com/airbytehq/airbyte/pull/33353) | Fix check command to check access for all available streams |
+| 0.12.0 | 2023-12-01 | [33011](https://github.com/airbytehq/airbyte/pull/33011) | Fix BoardIssues stream; increase number of retries for backoff policy to 10 |
+| 0.11.0 | 2023-11-29 | [32927](https://github.com/airbytehq/airbyte/pull/32927) | Fix incremental syncs for stream Issues |
+| 0.10.2 | 2023-10-26 | [31896](https://github.com/airbytehq/airbyte/pull/31896) | Provide better guidance when configuring the connector with an invalid domain |
+| 0.10.1 | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.10.0     | 2023-10-13 | [\#31385](https://github.com/airbytehq/airbyte/pull/31385) | Fixed `aggregatetimeoriginalestimate, timeoriginalestimate` field types for the `Issues` stream schema                                                                 |
 | 0.9.0      | 2023-09-26 | [\#30688](https://github.com/airbytehq/airbyte/pull/30688) | Added `createdDate` field to sprints schema, Removed `Expand Issues stream` from spec                                                                                  |
 | 0.8.0      | 2023-09-26 | [\#30755](https://github.com/airbytehq/airbyte/pull/30755) | Add new streams: `Issue custom field options`, `IssueTypes`, `Project Roles`                                                                                           |

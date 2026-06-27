@@ -245,7 +245,7 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
     )
 
 
-@freezegun.freeze_time(NOW.isoformat())
+@freezegun.freeze_time("2023-01-10T00:00:00Z")
 class TestFullRefresh(TestCase):
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False, json_schema: Optional[Dict[str, any]] = None) -> EntrypointOutput:
@@ -356,6 +356,7 @@ class TestFullRefresh(TestCase):
         output = self._read(config())
         assert len(output.records) == 1
 
+    @freezegun.freeze_time(NOW.isoformat())
     @HttpMocker()
     def test_given_multiple_days_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         start_date = NOW - timedelta(days=1)

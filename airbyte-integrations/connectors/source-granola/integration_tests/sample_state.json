@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": "2024-01-01" },
+      "stream_descriptor": { "name": "notes" }
+    }
+  }
+]

@@ -24,6 +24,10 @@ In addition, PyPI reserves the right to temporarily or permanently prohibit a co
 
 Try not to make a lot of requests (thousands) in a short amount of time (minutes). Generally PyPI can handle it, but it’s preferred to make requests in serial over a longer amount of time if possible.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -31,6 +35,18 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.55 | 2026-06-23 | [80574](https://github.com/airbytehq/airbyte/pull/80574) | Update dependencies |
+| 0.2.54 | 2026-06-16 | [79969](https://github.com/airbytehq/airbyte/pull/79969) | Update dependencies |
+| 0.2.53 | 2026-06-09 | [79457](https://github.com/airbytehq/airbyte/pull/79457) | Update dependencies |
+| 0.2.52 | 2026-06-02 | [78870](https://github.com/airbytehq/airbyte/pull/78870) | Update dependencies |
+| 0.2.51 | 2026-04-28 | [77370](https://github.com/airbytehq/airbyte/pull/77370) | Update dependencies |
+| 0.2.50 | 2026-04-21 | [76731](https://github.com/airbytehq/airbyte/pull/76731) | Update dependencies |
+| 0.2.49 | 2026-03-31 | [75848](https://github.com/airbytehq/airbyte/pull/75848) | Update dependencies |
+| 0.2.48 | 2026-03-17 | [74913](https://github.com/airbytehq/airbyte/pull/74913) | Update dependencies |
+| 0.2.47 | 2026-03-10 | [74641](https://github.com/airbytehq/airbyte/pull/74641) | Update dependencies |
+| 0.2.46 | 2026-03-03 | [74211](https://github.com/airbytehq/airbyte/pull/74211) | Update dependencies |
+| 0.2.45 | 2026-02-17 | [73500](https://github.com/airbytehq/airbyte/pull/73500) | Update dependencies |
+| 0.2.44 | 2026-02-10 | [72672](https://github.com/airbytehq/airbyte/pull/72672) | Update dependencies |
 | 0.2.43 | 2026-01-20 | [72063](https://github.com/airbytehq/airbyte/pull/72063) | Update dependencies |
 | 0.2.42 | 2026-01-14 | [71482](https://github.com/airbytehq/airbyte/pull/71482) | Update dependencies |
 | 0.2.41 | 2025-12-18 | [70583](https://github.com/airbytehq/airbyte/pull/70583) | Update dependencies |

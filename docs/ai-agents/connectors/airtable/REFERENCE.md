@@ -8,8 +8,8 @@ The Airtable connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Bases | [List](#bases-list), [Search](#bases-search) |
-| Tables | [List](#tables-list), [Search](#tables-search) |
+| Bases | [List](#bases-list), [Context Store Search](#bases-context-store-search) |
+| Tables | [List](#tables-list), [Context Store Search](#tables-context-store-search) |
 | Records | [List](#records-list), [Get](#records-get) |
 
 ## Bases
@@ -17,6 +17,17 @@ The Airtable connector supports the following entities and actions.
 ### Bases List
 
 Returns a list of all bases the user has access to
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "bases",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -27,7 +38,7 @@ await airtable.bases.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -56,16 +67,42 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `permissionLevel` | `string \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `offset` | `string \| null` |  |
+
 </details>
 
-### Bases Search
+### Bases Context Store Search
 
 Search and filter bases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "bases",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await airtable.bases.search(
+await airtable.bases.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -73,12 +110,12 @@ await airtable.bases.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "bases",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -93,7 +130,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -109,15 +146,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Unique identifier for the base |
-| `hits[].data.name` | `string` | Name of the base |
-| `hits[].data.permissionLevel` | `string` | Permission level for the base |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the base |
+| `data[].name` | `string` | Name of the base |
+| `data[].permissionLevel` | `string` | Permission level for the base |
 
 </details>
 
@@ -126,6 +162,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Tables List
 
 Returns a list of all tables in the specified base with their schema information
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "tables",
+  "action": "list",
+  "params": {
+    "base_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -138,7 +188,7 @@ await airtable.tables.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -181,14 +231,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Tables Search
+### Tables Context Store Search
 
 Search and filter tables records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "tables",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await airtable.tables.search(
+await airtable.tables.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -196,12 +266,12 @@ await airtable.tables.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tables",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -216,7 +286,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -234,17 +304,16 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Unique identifier for the table |
-| `hits[].data.name` | `string` | Name of the table |
-| `hits[].data.primaryFieldId` | `string` | ID of the primary field |
-| `hits[].data.fields` | `array` | List of fields in the table |
-| `hits[].data.views` | `array` | List of views in the table |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the table |
+| `data[].name` | `string` | Name of the table |
+| `data[].primaryFieldId` | `string` | ID of the primary field |
+| `data[].fields` | `array` | List of fields in the table |
+| `data[].views` | `array` | List of views in the table |
 
 </details>
 
@@ -253,6 +322,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Records List
 
 Returns a paginated list of records from the specified table
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "records",
+  "action": "list",
+  "params": {
+    "base_id": "<str>",
+    "table_id_or_name": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -266,7 +350,7 @@ await airtable.records.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -305,11 +389,33 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `fields` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `offset` | `string \| null` |  |
+
 </details>
 
 ### Records Get
 
 Returns a single record by ID from the specified table
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "airtable",
+  "entity": "records",
+  "action": "get",
+  "params": {
+    "base_id": "<str>",
+    "table_id_or_name": "<str>",
+    "record_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -324,7 +430,7 @@ await airtable.records.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{

@@ -55,6 +55,10 @@ Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting y
 | teammates_message_templates | id | DefaultPaginator | ✅ |  ❌  |
 | teams_message_templates | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -62,6 +66,17 @@ Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting y
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.47 | 2026-06-23 | [80463](https://github.com/airbytehq/airbyte/pull/80463) | Update dependencies |
+| 0.0.46 | 2026-06-16 | [79853](https://github.com/airbytehq/airbyte/pull/79853) | Update dependencies |
+| 0.0.45 | 2026-06-09 | [79289](https://github.com/airbytehq/airbyte/pull/79289) | Update dependencies |
+| 0.0.44 | 2026-06-02 | [78728](https://github.com/airbytehq/airbyte/pull/78728) | Update dependencies |
+| 0.0.43 | 2026-04-28 | [77235](https://github.com/airbytehq/airbyte/pull/77235) | Update dependencies |
+| 0.0.42 | 2026-04-21 | [76586](https://github.com/airbytehq/airbyte/pull/76586) | Update dependencies |
+| 0.0.41 | 2026-03-17 | [74966](https://github.com/airbytehq/airbyte/pull/74966) | Update dependencies |
+| 0.0.40 | 2026-03-10 | [74529](https://github.com/airbytehq/airbyte/pull/74529) | Update dependencies |
+| 0.0.39 | 2026-02-24 | [73773](https://github.com/airbytehq/airbyte/pull/73773) | Update dependencies |
+| 0.0.38 | 2026-02-10 | [73066](https://github.com/airbytehq/airbyte/pull/73066) | Update dependencies |
+| 0.0.37 | 2026-02-03 | [72591](https://github.com/airbytehq/airbyte/pull/72591) | Update dependencies |
 | 0.0.36 | 2026-01-20 | [71925](https://github.com/airbytehq/airbyte/pull/71925) | Update dependencies |
 | 0.0.35 | 2026-01-14 | [71419](https://github.com/airbytehq/airbyte/pull/71419) | Update dependencies |
 | 0.0.34 | 2025-12-18 | [70580](https://github.com/airbytehq/airbyte/pull/70580) | Update dependencies |

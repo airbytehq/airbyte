@@ -1,4 +1,4 @@
-version: 6.51.0
+version: 6.52.0
 
 type: DeclarativeSource
 
@@ -40,7 +40,8 @@ definitions:
       $ref: "#/definitions/base_error_handler"
 
   base_error_handler:
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -48,7 +49,7 @@ definitions:
       - type: ExponentialBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
-        action: RETRY
+        action: RATE_LIMITED
         http_codes:
           - 429
         error_message: >-
@@ -61,7 +62,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -81,6 +82,131 @@ definitions:
           Access denied (403). The authenticated user does not have permissions to access the resource.
           Verify your scopes: {{ parameters.required_scopes }} to access stream {{ parameters.name }}.
           See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: >-
+          Bad request (400). Please verify your credentials and try again.
+
+  error_handler_ignore_invalid_object_type_for_list:
+    # Same as the base error handler, but ignores 400 responses with
+    # `subCategory: ListError.INVALID_OBJECT_TYPE_FOR_LIST`. The
+    # `GET /crm/v3/lists/{listId}/memberships` endpoint rejects lists whose
+    # `objectTypeId` is not active for the portal (e.g. Leads, `0-136`),
+    # even though `POST /crm/v3/lists/search` happily returns them. Those
+    # lists are unsyncable via this endpoint, so we skip them instead of
+    # failing the whole stream.
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      # HubSpot API does not always return Retry-After value for 429 HTTP error
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        failure_type: transient_error
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        failure_type: transient_error
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        failure_type: config_error
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        failure_type: config_error
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        failure_type: config_error
+        error_message: >-
+          Access denied (403). The authenticated user does not have permissions to access the resource.
+          Verify your scopes: {{ parameters.required_scopes }} to access stream {{ parameters.name }}.
+          See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only
+      - type: HttpResponseFilter
+        action: IGNORE
+        # `http_codes`, `predicate`, and `error_message_contains` are OR'd by the CDK
+        # (see `HttpResponseFilter._matches_filter`), so we cannot combine
+        # `http_codes: [400]` with `error_message_contains` to narrow the match.
+        # Instead, we key solely on the HubSpot error body's `subCategory` field
+        # via `predicate`. That field is specific enough on its own — HubSpot only
+        # returns `ListError.INVALID_OBJECT_TYPE_FOR_LIST` on the 400 response when
+        # a list's `objectTypeId` is not active for the portal.
+        predicate: "{{ response.get('subCategory') == 'ListError.INVALID_OBJECT_TYPE_FOR_LIST' }}"
+        error_message: >-
+          Ignoring list whose objectTypeId is not valid for this portal (VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST).
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        failure_type: system_error
+        error_message: >-
+          Bad request (400). Please verify your credentials and try again.
+
+  error_handler_ignore_403:
+    # Same as the base error handler, but ignores 403 errors
+    # to avoid failing the sync when fetching dynamic streams.
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      # HubSpot API does not always return Retry-After value for 429 HTTP error
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
       - type: HttpResponseFilter
         action: FAIL
         http_codes:
@@ -196,6 +322,18 @@ definitions:
       schema_pointer:
         - properties
       types_mapping:
+        # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+        # `number` and `bool` properties to `string` so destinations do not reject
+        # non-numeric / non-boolean values returned by HubSpot (for example,
+        # semicolon-separated IDs in a `number` field).
+        - type: TypesMap
+          target_type: string
+          current_type: number
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+        - type: TypesMap
+          target_type: string
+          current_type: bool
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
         - type: TypesMap
           target_type: boolean
           current_type: bool
@@ -323,6 +461,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -413,6 +552,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms"
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -535,6 +675,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -944,6 +1085,33 @@ definitions:
       schema:
         $ref: "#/schemas/owners_archived"
 
+  users_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: users
+    $parameters:
+      name: users
+      required_scopes: >-
+        crm.objects.users.read, settings.users.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /settings/v3/users
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
+
   ticket_pipelines_stream:
     primary_key:
       - id
@@ -1118,6 +1286,54 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/contact_lists"
+
+  list_memberships_stream:
+    $ref: "#/definitions/stream_base"
+    name: list_memberships
+    primary_key:
+      - recordId
+      - listId
+    $parameters:
+      name: list_memberships
+      required_scopes: crm.lists.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/lists/{{ stream_partition['list_id'] }}/memberships"
+        # Some lists returned by `POST /crm/v3/lists/search` reference an
+        # `objectTypeId` that is not active for the portal (notably Leads,
+        # `0-136`). The memberships endpoint then rejects them with a 400
+        # `VALIDATION_ERROR` / `ListError.INVALID_OBJECT_TYPE_FOR_LIST`. We
+        # ignore that specific 400 so the unsyncable list is skipped without
+        # failing the rest of the stream.
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_invalid_object_type_for_list"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/contact_lists_stream"
+            parent_key: "listId"
+            partition_field: "list_id"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["listId"]
+            value: "{{ stream_partition['list_id'] }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/list_memberships"
 
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
@@ -1391,14 +1607,13 @@ definitions:
             type: SimpleRetriever
             requester:
               $ref: "#/definitions/base_requester"
-              path: "/properties/v2/{{ parameters['entity'] }}/properties"
-            decoder:
-              type: JsonDecoder
+              path: "/crm/v3/properties/{{ parameters['entity'] }}"
             record_selector:
               type: RecordSelector
               extractor:
                 type: DpathExtractor
-                field_path: []
+                field_path:
+                  - results
         request_body_json:
           limit: 200
           sorts:
@@ -1443,6 +1658,60 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
+      step: P30D
+      cursor_granularity: PT0.001S
+      lookback_window: PT{{ config.get('lookback_window', 0) }}M
+
+  base_crm_search_incremental_parent_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+        http_method: POST
+        request_body_json:
+          limit: 100
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          filters:
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
+              operator: GTE
+              value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
+              operator: LTE
+              value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+            - propertyName: hs_object_id
+              operator: GTE
+              value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+          properties:
+            - hs_object_id
+            - "{{ parameters['cursor_filter_property_field'] }}"
+          after: "{{ next_page_token['next_page_token']['after'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_declarative_manifest.components.HubspotCRMSearchPaginationStrategy
+          page_size: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["hs_lastmodifieddate"]
+            value: "{{ record.get('properties', {}).get(parameters['cursor_filter_property_field']) }}"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: hs_lastmodifieddate
       step: P30D
       cursor_granularity: PT0.001S
       lookback_window: PT{{ config.get('lookback_window', 0) }}M
@@ -1696,6 +1965,18 @@ definitions:
         type_pointer: ["type"]
         schema_pointer: ["properties"]
         types_mapping:
+          # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+          # `number` and `bool` properties to `string` so destinations do not reject
+          # non-numeric / non-boolean values returned by HubSpot (for example,
+          # semicolon-separated IDs in a `number` field).
+          - type: TypesMap
+            target_type: string
+            current_type: number
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+          - type: TypesMap
+            target_type: string
+            current_type: bool
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
           - type: TypesMap
             target_type: string
             current_type: enumeration
@@ -1845,12 +2126,183 @@ definitions:
           $ref: "#/schemas/tickets"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  # Association Streams Base Definition
+  base_association_stream:
+    type: DeclarativeStream
+    primary_key:
+      - from_id
+      - to_id
+      - association_type_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v4/associations/{{ parameters['from_object'] }}/{{ parameters['to_object'] }}/batch/read"
+        http_method: POST
+        request_body_json:
+          inputs: >-
+            {% set transformed = [] -%}
+            {%- for id in stream_partition['id'] -%}
+            {%- set _ = transformed.append({'id': id}) -%}
+            {%- endfor -%}
+            {{ transformed }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.HubspotAssociationStreamExtractor
+          from_object: "{{ parameters['from_object'] }}"
+          to_object: "{{ parameters['to_object'] }}"
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1000
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream:
+                $ref: "#/definitions/base_crm_search_incremental_parent_stream"
+                $parameters:
+                  entity: from_object_name # e.g. tickets, will be set by components resolver
+                  cursor_filter_property_field: hs_lastmodifieddate # default, will be overridden for contacts
+                name: stream_name # e.g. tickets, will be set by components resolver
+              parent_key: id
+              partition_field: id
+              incremental_dependency: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/base_association"
+    $parameters:
+      name: ""
+      from_object: ""
+      to_object: ""
+
+  # Custom object association stream - extends base_association_stream with error handling for invalid custom object names
+  base_custom_object_association_stream:
+    $ref: "#/definitions/base_association_stream"
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_association_stream/retriever/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+            - type: ExponentialBackoffStrategy
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message: >-
+                HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+                - 503
+              error_message: >-
+                HubSpot server error (5xx). Retrying with exponential backoff...
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 400
+              error_message: >-
+                Bad request (400). The custom object name provided in the configuration is invalid.
+                Please verify that 'from_object' and 'to_object' values are correct custom object
+                identifiers (e.g., the fullyQualifiedName like 'p_my_custom_object' or the objectTypeId like '2-12345').
+                You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 403
+              error_message: >-
+                Access denied (403). The authenticated user does not have permissions to access the custom object associations.
+                Ensure the 'crm.objects.custom.read' scope is granted for your OAuth or Private App credentials.
+
+  properties_stream:
+    type: DeclarativeStream
+    name: properties
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/properties/{{ stream_partition['objectType'] }}
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_403"
+      record_selector:
+        $ref: "#/definitions/base_selector"
+      partition_router:
+        type: ListPartitionRouter
+        values:
+          - company
+          - contact
+          - deal
+          - ticket
+          - call
+          - communication
+          - email
+          - lead
+          - meeting
+          - note
+          - order
+          - product
+          - quote
+          - service
+          - subscription
+          - task
+          - user
+        cursor_field: objectType
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - objectType
+            value: "{{ stream_partition['objectType'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/properties"
+
+  account_details_stream:
+    $ref: "#/definitions/stream_without_pagination"
+    name: account_details
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /account-info/v3/details
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_details"
+    $parameters:
+      name: account_details
+      path: /account-info/v3/details
+      required_scopes: oauth
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
   - "#/definitions/contacts_stream"
+  - "#/definitions/list_memberships_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deal_splits_stream"
@@ -1873,11 +2325,14 @@ streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/owners_archived_stream"
   - "#/definitions/owners_stream"
+  - "#/definitions/users_stream"
   - "#/definitions/products_stream"
   - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
+  - "#/definitions/properties_stream"
+  - "#/definitions/account_details_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -1998,53 +2453,7 @@ dynamic_streams:
           path: /crm/v3/schemas
           http_method: GET
           error_handler:
-            # Same as the base error handler, but ignores 403 errors
-            # to avoid failing the sync when fetching dynamic streams.
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-              # HubSpot API does not always return Retry-After value for 429 HTTP error
-              - type: ExponentialBackoffStrategy
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                error_message: >-
-                  HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 502
-                  - 503
-                error_message: >-
-                  HubSpot server error (5xx). Retrying with exponential backoff...
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 401
-                error_message: >-
-                  Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
-              # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 530
-                error_message: >-
-                  The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 403
-                error_message: >-
-                  Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 400
-                error_message: >-
-                  Bad request (400). Please verify your credentials and try again.
+            $ref: "#/definitions/error_handler_ignore_403"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2093,6 +2502,91 @@ dynamic_streams:
             - $parameters
             - schema_properties
           value: "{{ components_values.properties }}"
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/base_association_stream"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - association_streams
+      components_mapping:
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "name" ]
+          value: "{{ components_values['stream_name'] if components_values.get('stream_name') else 'associations_' + components_values['from_object'] + '_' + components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "from_object"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "to_object"]
+          value: "{{ components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "$parameters", "entity"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", '0', "name"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "$parameters", "cursor_filter_property_field"]
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "incremental_sync", "cursor_field"]
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "transformations", "0", "fields", "0", "path", "0"]
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/base_custom_object_association_stream"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - custom_object_association_streams
+      components_mapping:
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "name" ]
+          value: "{{ components_values['stream_name'] if components_values.get('stream_name') else 'associations_' + components_values['from_object'] + '_' + components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "from_object"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "to_object"]
+          value: "{{ components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "$parameters", "entity"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", '0', "name"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "$parameters", "cursor_filter_property_field"]
+          value: "hs_lastmodifieddate"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "incremental_sync", "cursor_field"]
+          value: "hs_lastmodifieddate"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "transformations", "0", "fields", "0", "path", "0"]
+          value: "hs_lastmodifieddate"
+
 
 spec:
   type: Spec
@@ -2119,14 +2613,29 @@ spec:
       lookback_window:
         default: 0
         description: >-
-          How far back (in minutes) to re-fetch records during incremental syncs. 
-          Set this if you notice missing records in CRMSearch streams to recover data 
-          that may be delayed by the HubSpot API.
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for CRM Search streams (e.g. contacts, companies, deals, tickets).
+          Set this if you notice missing records in CRM Search streams to recover
+          data that may be delayed by the HubSpot API. Does not affect property
+          history streams.
         examples:
           - 60
         maximum: 576000
         minimum: 0
-        title: Lookback window
+        title: CRM Search Lookback Window (minutes)
+        type: integer
+      property_history_lookback_window:
+        default: 0
+        description: >-
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for property history streams (deals, contacts, companies property
+          history). Set this if you notice missing records in property history
+          streams caused by cursor drift from HubSpot calculated properties.
+        examples:
+          - 43200
+        maximum: 576000
+        minimum: 0
+        title: Property History Lookback Window (minutes)
         type: integer
       credentials:
         title: Authentication
@@ -2201,14 +2710,150 @@ spec:
         description: If enabled then experimental streams become available for sync.
         type: boolean
         default: false
+      treat_numbers_and_booleans_as_strings:
+        title: Treat dynamic number and boolean properties as strings
+        description: >-
+          If enabled, HubSpot dynamic `number` and `boolean` properties are
+          exposed as `string`. Useful when HubSpot returns values that do not
+          match the declared type and the destination rejects the records.
+          After changing this setting, refresh the source schema and refresh
+          the affected stream data. See the connector documentation for
+          details.
+        type: boolean
+        default: false
       num_worker:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
+      association_streams:
+        type: array
+        title: Association Between Objects Streams
+        items:
+          type: object
+          description: Association Between Objects Streams. Associations represent the relationships between objects and activities in the HubSpot CRM.
+          required:
+            - from_object
+            - to_object
+          properties:
+            from_object:
+              title: From Object
+              description: The name of the object associating.
+              type: string
+              enum:
+                - appointments # crm.objects.appointments.read scope is needed
+                - calls
+                - carts # crm.objects.carts.read
+                - communications
+                - companies
+                - contacts
+                - courses # crm.objects.courses.read
+                - deals
+                - discounts
+                - emails
+                - feedback_submissions
+                - fees
+                - goals
+                - invoices # crm.objects.invoices.read
+                - leads
+                - line_items
+                - listings # crm.objects.listings.read
+                - meetings
+                - notes
+                - orders # crm.objects.orders.read
+                - payments # crm.objects.commercepayments.read
+                - postal_mail
+                - projects # crm.objects.projects.read
+                - quotes # crm.objects.quotes.read
+                - services # crm.objects.services.read
+                - subscriptions # crm.objects.subscriptions.read
+                - tasks
+                - taxes
+                - tickets
+            to_object:
+              title: To Object
+              description: The name of the object associating the record to.
+              type: string
+              enum:
+                - appointments
+                - calls
+                - carts
+                - communications
+                - companies
+                - contacts
+                - courses
+                - deals
+                - discounts
+                - emails
+                - feedback_submissions
+                - fees
+                - goals
+                - invoices
+                - leads
+                - line_items
+                - listings
+                - meetings
+                - notes
+                - orders
+                - payments
+                - postal_mail
+                - projects
+                - quotes
+                - services
+                - subscriptions
+                - tasks
+                - taxes
+                - tickets
+            stream_name:
+              type: string
+              title: Stream Name
+              description: The name to use for the Association Between Objects Stream. If not provided, default name associations_<from_object>_<to_object> will be used.
+      custom_object_association_streams:
+        type: array
+        title: Custom Object Association Streams
+        items:
+          type: object
+          description: >-
+            Association streams involving custom objects. Use this to sync associations where at least one side
+            is a custom object. Custom objects should be referenced by their fullyQualifiedName (e.g., 'p_my_custom_object')
+            or objectTypeId (e.g., '2-12345'). You can find these identifiers in HubSpot Settings or via the /crm/v3/schemas API.
+            Standard object names (e.g., 'contacts', 'companies') can also be used for the other side of the association.
+          required:
+            - from_object
+            - to_object
+          properties:
+            from_object:
+              title: From Object
+              description: >-
+                The name or identifier of the source object. For custom objects, use the fullyQualifiedName
+                (e.g., 'p_my_custom_object') or objectTypeId (e.g., '2-12345'). For standard objects, use the
+                object name (e.g., 'contacts', 'companies', 'deals').
+              type: string
+              examples:
+                - "p_my_custom_object"
+                - "2-12345"
+                - "contacts"
+            to_object:
+              title: To Object
+              description: >-
+                The name or identifier of the target object. For custom objects, use the fullyQualifiedName
+                (e.g., 'p_my_custom_object') or objectTypeId (e.g., '2-12345'). For standard objects, use the
+                object name (e.g., 'contacts', 'companies', 'deals').
+              type: string
+              examples:
+                - "contacts"
+                - "p_my_custom_object"
+                - "2-12345"
+            stream_name:
+              type: string
+              title: Stream Name
+              description: >-
+                The name to use for the association stream. If not provided, the default name
+                associations_<from_object>_<to_object> will be used.
+
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -2216,6 +2861,54 @@ spec:
       - credentials_title
     predicate_value: OAuth Credentials
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://app.hubspot.com/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}&{{optional_scopes_param}}"
+        access_token_url: "https://api.hubapi.com/oauth/v1/token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          grant_type: "authorization_code"
+        scopes:
+          - scope: "crm.schemas.contacts.read"
+          - scope: "crm.objects.contacts.read"
+          - scope: "oauth"
+        optional_scopes:
+          - scope: "content"
+          - scope: "automation"
+          - scope: "e-commerce"
+          - scope: "forms"
+          - scope: "sales-email-read"
+          - scope: "tickets"
+          - scope: "crm.lists.read"
+          - scope: "crm.objects.appointments.read"
+          - scope: "crm.objects.carts.read"
+          - scope: "crm.objects.commercepayments.read"
+          - scope: "crm.objects.companies.read"
+          - scope: "crm.objects.courses.read"
+          - scope: "crm.objects.custom.read"
+          - scope: "crm.objects.deals.read"
+          - scope: "crm.objects.goals.read"
+          - scope: "crm.objects.invoices.read"
+          - scope: "crm.objects.leads.read"
+          - scope: "crm.objects.listings.read"
+          - scope: "crm.objects.marketing_events.read"
+          - scope: "crm.objects.orders.read"
+          - scope: "crm.objects.owners.read"
+          - scope: "crm.objects.projects.read"
+          - scope: "crm.objects.quotes.read"
+          - scope: "crm.objects.services.read"
+          - scope: "crm.objects.subscriptions.read"
+          - scope: "crm.objects.users.read"
+          - scope: "crm.schemas.companies.read"
+          - scope: "crm.schemas.custom.read"
+          - scope: "crm.schemas.deals.read"
+          - scope: "settings.users.read"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
@@ -2279,6 +2972,83 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  base_association:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      from_id:
+        description: Source object ID
+        type:
+          - "null"
+          - string
+      to_id:
+        description: Target object ID
+        type:
+          - "null"
+          - string
+      association_type_id:
+        description: Numeric association type identifier
+        type:
+          - "null"
+          - integer
+      category:
+        description: Association category (HUBSPOT_DEFINED or USER_DEFINED)
+        type:
+          - "null"
+          - string
+      label:
+        description: Association label (null for unlabeled associations)
+        type:
+          - "null"
+          - string
+
+  account_details:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      accountType:
+        type:
+          - "string"
+          - "null"
+      additionalCurrencies:
+        type:
+          - "array"
+          - "null"
+        items:
+          type:
+            - "string"
+            - "null"
+      companyCurrency:
+        type:
+          - "string"
+          - "null"
+      dataHostingLocation:
+        type:
+          - "string"
+          - "null"
+      portalId:
+        type:
+          - "number"
+          - "null"
+      timeZone:
+        type:
+          - "string"
+          - "null"
+      uiDomain:
+        type:
+          - "string"
+          - "null"
+      utcOffset:
+        type:
+          - "string"
+          - "null"
+      utcOffsetMilliseconds:
+        type:
+          - "number"
+          - "null"
+
   contact_lists:
     $schema: http://json-schema.org/draft-07/schema#
     type:
@@ -2360,6 +3130,27 @@ schemas:
           - "null"
           - string
       updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  list_memberships:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      recordId:
+        type:
+          - "null"
+          - string
+      listId:
+        type:
+          - "null"
+          - string
+      membershipTimestamp:
         type:
           - "null"
           - string
@@ -5469,6 +6260,75 @@ schemas:
                 - "null"
                 - string
 
+  users:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The user's unique ID.
+        type:
+          - "null"
+          - string
+      email:
+        description: The user's email.
+        type:
+          - "null"
+          - string
+      firstName:
+        description: The user's first name.
+        type:
+          - "null"
+          - string
+      lastName:
+        description: The user's last name.
+        type:
+          - "null"
+          - string
+      primaryTeamId:
+        description: The user's primary team.
+        type:
+          - "null"
+          - string
+      roleId:
+        description: The user's role.
+        type:
+          - "null"
+          - string
+      roleIds:
+        description: A list of role IDs assigned to the user.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      secondaryTeamIds:
+        description: The user's additional teams.
+        type:
+          - "null"
+          - array
+        items:
+          type: 
+            - "null"
+            - string
+      sendWelcomeEmail:
+        description:
+          Whether a welcome email was sent to the user.
+          This value will only be populated in response to a provisioning request.
+          Subsequent queries will be false.
+        type:
+          - "null"
+          - boolean
+      superAdmin:
+        description: Whether the user has super admin privileges.
+        type:
+          - "null"
+          - boolean
+
   workflows:
     $schema: "http://json-schema.org/draft-07/schema#"
     type:
@@ -7462,3 +8322,155 @@ schemas:
         type:
           - "null"
           - boolean
+
+  properties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      calculated:
+        type:
+          - boolean
+          - "null"
+      calculationFormula:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdUserId:
+        type:
+          - string
+          - "null"
+      dataSensitivity:
+        type:
+          - string
+          - "null"
+      dateDisplayHint:
+        type:
+          - string
+          - "null"
+      displayOrder:
+        type:
+          - number
+          - "null"
+      externalOptions:
+        type:
+          - boolean
+          - "null"
+      fieldType:
+        type:
+          - string
+          - "null"
+      formField:
+        type:
+          - boolean
+          - "null"
+      groupName:
+        type:
+          - string
+          - "null"
+      hasUniqueValue:
+        type:
+          - boolean
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      hubspotDefined:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      modificationMetadata:
+        type:
+          - object
+          - "null"
+        properties:
+          archivable:
+            type:
+              - boolean
+              - "null"
+          readOnlyDefinition:
+            type:
+              - boolean
+              - "null"
+          readOnlyOptions:
+            type:
+              - boolean
+              - "null"
+          readOnlyValue:
+            type:
+              - boolean
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objectType:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            displayOrder:
+              type:
+                - number
+                - "null"
+            hidden:
+              type:
+                - boolean
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      referencedObjectType:
+        type:
+          - string
+          - "null"
+      showCurrencySymbol:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedUserId:
+        type:
+          - string
+          - "null"

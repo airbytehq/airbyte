@@ -23,6 +23,10 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 | workspace_users | emailId | No pagination | ✅ |  ❌  |
 | folders | folderId | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,18 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.56 | 2026-06-23 | [80727](https://github.com/airbytehq/airbyte/pull/80727) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [80125](https://github.com/airbytehq/airbyte/pull/80125) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79565](https://github.com/airbytehq/airbyte/pull/79565) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [79067](https://github.com/airbytehq/airbyte/pull/79067) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77501](https://github.com/airbytehq/airbyte/pull/77501) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76815](https://github.com/airbytehq/airbyte/pull/76815) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75831](https://github.com/airbytehq/airbyte/pull/75831) | Update dependencies |
+| 0.0.49 | 2026-03-24 | [74461](https://github.com/airbytehq/airbyte/pull/74461) | Update dependencies |
+| 0.0.48 | 2026-02-24 | [73989](https://github.com/airbytehq/airbyte/pull/73989) | Update dependencies |
+| 0.0.47 | 2026-02-17 | [73591](https://github.com/airbytehq/airbyte/pull/73591) | Update dependencies |
+| 0.0.46 | 2026-02-10 | [73150](https://github.com/airbytehq/airbyte/pull/73150) | Update dependencies |
+| 0.0.45 | 2026-02-03 | [72609](https://github.com/airbytehq/airbyte/pull/72609) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [72045](https://github.com/airbytehq/airbyte/pull/72045) | Update dependencies |
 | 0.0.43 | 2026-01-14 | [71680](https://github.com/airbytehq/airbyte/pull/71680) | Update dependencies |
 | 0.0.42 | 2025-12-18 | [70678](https://github.com/airbytehq/airbyte/pull/70678) | Update dependencies |

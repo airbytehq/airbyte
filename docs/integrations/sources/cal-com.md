@@ -18,6 +18,10 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 | bookings | id | DefaultPaginator | ✅ |  ❌  |
 | conferencing | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,16 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-06-23 | [80368](https://github.com/airbytehq/airbyte/pull/80368) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79779](https://github.com/airbytehq/airbyte/pull/79779) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79218](https://github.com/airbytehq/airbyte/pull/79218) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78586](https://github.com/airbytehq/airbyte/pull/78586) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77188](https://github.com/airbytehq/airbyte/pull/77188) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76540](https://github.com/airbytehq/airbyte/pull/76540) | Update dependencies |
+| 0.0.46 | 2026-03-31 | [75684](https://github.com/airbytehq/airbyte/pull/75684) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [74941](https://github.com/airbytehq/airbyte/pull/74941) | Update dependencies |
+| 0.0.44 | 2026-03-10 | [74603](https://github.com/airbytehq/airbyte/pull/74603) | Update dependencies |
+| 0.0.43 | 2026-02-03 | [72081](https://github.com/airbytehq/airbyte/pull/72081) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71505](https://github.com/airbytehq/airbyte/pull/71505) | Update dependencies |
 | 0.0.41 | 2025-12-18 | [70624](https://github.com/airbytehq/airbyte/pull/70624) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [69968](https://github.com/airbytehq/airbyte/pull/69968) | Update dependencies |

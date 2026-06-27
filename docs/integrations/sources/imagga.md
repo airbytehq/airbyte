@@ -21,6 +21,10 @@ API Reference: https://docs.imagga.com/#introduction
 | usage | uuid | DefaultPaginator | ❌ |  ❌  |
 | barcodes | uuid | DefaultPaginator | ❌ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,16 @@ API Reference: https://docs.imagga.com/#introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2026-06-23 | [80507](https://github.com/airbytehq/airbyte/pull/80507) | Update dependencies |
+| 0.0.37 | 2026-06-16 | [79914](https://github.com/airbytehq/airbyte/pull/79914) | Update dependencies |
+| 0.0.36 | 2026-06-09 | [79351](https://github.com/airbytehq/airbyte/pull/79351) | Update dependencies |
+| 0.0.35 | 2026-06-02 | [78760](https://github.com/airbytehq/airbyte/pull/78760) | Update dependencies |
+| 0.0.34 | 2026-04-28 | [77285](https://github.com/airbytehq/airbyte/pull/77285) | Update dependencies |
+| 0.0.33 | 2026-04-21 | [76643](https://github.com/airbytehq/airbyte/pull/76643) | Update dependencies |
+| 0.0.32 | 2026-03-31 | [75677](https://github.com/airbytehq/airbyte/pull/75677) | Update dependencies |
+| 0.0.31 | 2026-03-24 | [75339](https://github.com/airbytehq/airbyte/pull/75339) | Update dependencies |
+| 0.0.30 | 2026-03-10 | [74497](https://github.com/airbytehq/airbyte/pull/74497) | Update dependencies |
+| 0.0.29 | 2026-03-03 | [73084](https://github.com/airbytehq/airbyte/pull/73084) | Update dependencies |
 | 0.0.28 | 2026-01-20 | [71934](https://github.com/airbytehq/airbyte/pull/71934) | Update dependencies |
 | 0.0.27 | 2026-01-14 | [71429](https://github.com/airbytehq/airbyte/pull/71429) | Update dependencies |
 | 0.0.26 | 2025-12-18 | [70463](https://github.com/airbytehq/airbyte/pull/70463) | Update dependencies |

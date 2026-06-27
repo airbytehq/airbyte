@@ -72,6 +72,10 @@ You should now have all the requirements needed to configure Firebase Realtime D
 
 Once you've configured Firebase Realtime Database as a source, delete the Service Account Key from your computer.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -79,6 +83,7 @@ Once you've configured Firebase Realtime Database as a source, delete the Servic
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.49 | 2026-06-02 | [78673](https://github.com/airbytehq/airbyte/pull/78673) | Update dependencies |
 | 0.1.48 | 2025-05-24 | [60381](https://github.com/airbytehq/airbyte/pull/60381) | Update dependencies |
 | 0.1.47 | 2025-05-10 | [59978](https://github.com/airbytehq/airbyte/pull/59978) | Update dependencies |
 | 0.1.46 | 2025-05-03 | [59371](https://github.com/airbytehq/airbyte/pull/59371) | Update dependencies |

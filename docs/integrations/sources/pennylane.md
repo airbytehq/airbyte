@@ -20,6 +20,9 @@
 | `category_groups` | `id` | DefaultPaginator | ✅ |  ✅  |
 | `categories` | `source_id` | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -28,6 +31,18 @@
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.36 | 2026-06-23 | [80572](https://github.com/airbytehq/airbyte/pull/80572) | Update dependencies |
+| 0.3.35 | 2026-06-16 | [79988](https://github.com/airbytehq/airbyte/pull/79988) | Update dependencies |
+| 0.3.34 | 2026-06-09 | [79463](https://github.com/airbytehq/airbyte/pull/79463) | Update dependencies |
+| 0.3.33 | 2026-06-02 | [78873](https://github.com/airbytehq/airbyte/pull/78873) | Update dependencies |
+| 0.3.32 | 2026-04-28 | [77368](https://github.com/airbytehq/airbyte/pull/77368) | Update dependencies |
+| 0.3.31 | 2026-04-21 | [76695](https://github.com/airbytehq/airbyte/pull/76695) | Update dependencies |
+| 0.3.30 | 2026-03-31 | [75817](https://github.com/airbytehq/airbyte/pull/75817) | Update dependencies |
+| 0.3.29 | 2026-03-17 | [75030](https://github.com/airbytehq/airbyte/pull/75030) | Update dependencies |
+| 0.3.28 | 2026-03-10 | [74480](https://github.com/airbytehq/airbyte/pull/74480) | Update dependencies |
+| 0.3.27 | 2026-02-24 | [73839](https://github.com/airbytehq/airbyte/pull/73839) | Update dependencies |
+| 0.3.26 | 2026-02-17 | [73193](https://github.com/airbytehq/airbyte/pull/73193) | Update dependencies |
+| 0.3.25 | 2026-02-03 | [72664](https://github.com/airbytehq/airbyte/pull/72664) | Update dependencies |
 | 0.3.24 | 2026-01-20 | [72189](https://github.com/airbytehq/airbyte/pull/72189) | Update dependencies |
 | 0.3.23 | 2026-01-14 | [71545](https://github.com/airbytehq/airbyte/pull/71545) | Update dependencies |
 | 0.3.22 | 2025-12-18 | [70487](https://github.com/airbytehq/airbyte/pull/70487) | Update dependencies |

@@ -76,6 +76,10 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 | widgets | id | DefaultPaginator | ✅ |  ❌  |
 | workflow_statuses | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -83,6 +87,16 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.51 | 2026-06-23 | [80611](https://github.com/airbytehq/airbyte/pull/80611) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [79996](https://github.com/airbytehq/airbyte/pull/79996) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [78899](https://github.com/airbytehq/airbyte/pull/78899) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77358](https://github.com/airbytehq/airbyte/pull/77358) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76727](https://github.com/airbytehq/airbyte/pull/76727) | Update dependencies |
+| 0.0.46 | 2026-03-31 | [75873](https://github.com/airbytehq/airbyte/pull/75873) | Update dependencies |
+| 0.0.45 | 2026-03-24 | [75375](https://github.com/airbytehq/airbyte/pull/75375) | Update dependencies |
+| 0.0.44 | 2026-03-10 | [74624](https://github.com/airbytehq/airbyte/pull/74624) | Update dependencies |
+| 0.0.43 | 2026-02-24 | [73855](https://github.com/airbytehq/airbyte/pull/73855) | Update dependencies |
+| 0.0.42 | 2026-02-10 | [72670](https://github.com/airbytehq/airbyte/pull/72670) | Update dependencies |
 | 0.0.41 | 2026-01-20 | [71498](https://github.com/airbytehq/airbyte/pull/71498) | Update dependencies |
 | 0.0.40 | 2025-12-18 | [70584](https://github.com/airbytehq/airbyte/pull/70584) | Update dependencies |
 | 0.0.39 | 2025-11-25 | [70041](https://github.com/airbytehq/airbyte/pull/70041) | Update dependencies |

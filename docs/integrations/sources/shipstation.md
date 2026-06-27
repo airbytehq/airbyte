@@ -44,6 +44,10 @@ Copy your key and secret and paste them into the respective fields.
 | warehouses | warehouseId | No pagination | ✅ |  ❌  |
 | webhooks | WebHookID | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -51,6 +55,17 @@ Copy your key and secret and paste them into the respective fields.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.37 | 2026-06-23 | [80626](https://github.com/airbytehq/airbyte/pull/80626) | Update dependencies |
+| 0.2.36 | 2026-06-16 | [80018](https://github.com/airbytehq/airbyte/pull/80018) | Update dependencies |
+| 0.2.35 | 2026-06-09 | [79471](https://github.com/airbytehq/airbyte/pull/79471) | Update dependencies |
+| 0.2.34 | 2026-06-02 | [78974](https://github.com/airbytehq/airbyte/pull/78974) | Update dependencies |
+| 0.2.33 | 2026-04-28 | [77448](https://github.com/airbytehq/airbyte/pull/77448) | Update dependencies |
+| 0.2.32 | 2026-04-21 | [75332](https://github.com/airbytehq/airbyte/pull/75332) | Update dependencies |
+| 0.2.31 | 2026-03-10 | [74592](https://github.com/airbytehq/airbyte/pull/74592) | Update dependencies |
+| 0.2.30 | 2026-02-24 | [73945](https://github.com/airbytehq/airbyte/pull/73945) | Update dependencies |
+| 0.2.29 | 2026-02-17 | [73523](https://github.com/airbytehq/airbyte/pull/73523) | Update dependencies |
+| 0.2.28 | 2026-02-10 | [73202](https://github.com/airbytehq/airbyte/pull/73202) | Update dependencies |
+| 0.2.27 | 2026-02-03 | [72729](https://github.com/airbytehq/airbyte/pull/72729) | Update dependencies |
 | 0.2.26 | 2026-01-20 | [72120](https://github.com/airbytehq/airbyte/pull/72120) | Update dependencies |
 | 0.2.25 | 2026-01-14 | [71622](https://github.com/airbytehq/airbyte/pull/71622) | Update dependencies |
 | 0.2.24 | 2025-12-18 | [70674](https://github.com/airbytehq/airbyte/pull/70674) | Update dependencies |

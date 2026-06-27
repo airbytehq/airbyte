@@ -15,14 +15,15 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 
 ## Supported sync modes
 
-The connectors supports all sync modes.
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-| Feature                        | Supported?\(Yes/No\) | Notes                          |
-| :----------------------------- |:---------------------|:-------------------------------|
-| Full Refresh Sync              | Yes                  |                                |
-| Incremental - Append Sync      | Yes                  |                                |
-| Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
-| Namespaces                     | Yes                  |                                |
+Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) below for details.
 
 ## Deduplication
 
@@ -66,8 +67,8 @@ Ensure your ClickHouse database is accessible from Airbyte.
 
 | Airbyte deployment | Clickhouse deployment | Do this                                                                                                                                                                                           |
 | ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloud              | Cloud                 | Whitelist Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) in your ClickHouse Cloud settings.                                                                             |
-| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                                                                       |
+| Cloud              | Cloud                 | Add Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) to the allowlist in your ClickHouse Cloud settings.                                                                  |
+| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                         |
 | Self-managed       | Cloud                 | Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings.                                                                                                                   |
 | Self-managed       | Self-managed          | Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them. |
 
@@ -165,6 +166,10 @@ The connector converts Airbyte data types to ClickHouse types as follows:
 The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
 :::
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
+
 ## Changelog
 
 <!-- vale off -->
@@ -174,6 +179,7 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.24     | 2026-05-20 | [77673](https://github.com/airbytehq/airbyte/pull/77673)   | Upgrade CDK to 1.0.13. Migrate component tests to Testcontainers. |
 | 2.1.23     | 2026-02-04 | [72857](https://github.com/airbytehq/airbyte/pull/72857)   | No user-facing changes (Upgrade CDK to 0.2.8)                    |
 | 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
 | 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |

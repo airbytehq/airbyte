@@ -18,6 +18,10 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 | Splits |  | DefaultPaginator | ✅ |  ❌  |
 | Dividends |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,17 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.56 | 2026-06-23 | [80538](https://github.com/airbytehq/airbyte/pull/80538) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [79926](https://github.com/airbytehq/airbyte/pull/79926) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79401](https://github.com/airbytehq/airbyte/pull/79401) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78818](https://github.com/airbytehq/airbyte/pull/78818) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77389](https://github.com/airbytehq/airbyte/pull/77389) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76689](https://github.com/airbytehq/airbyte/pull/76689) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75829](https://github.com/airbytehq/airbyte/pull/75829) | Update dependencies |
+| 0.0.49 | 2026-03-24 | [73831](https://github.com/airbytehq/airbyte/pull/73831) | Update dependencies |
+| 0.0.48 | 2026-02-17 | [73396](https://github.com/airbytehq/airbyte/pull/73396) | Update dependencies |
+| 0.0.47 | 2026-02-10 | [73205](https://github.com/airbytehq/airbyte/pull/73205) | Update dependencies |
+| 0.0.46 | 2026-02-03 | [72695](https://github.com/airbytehq/airbyte/pull/72695) | Update dependencies |
 | 0.0.45 | 2026-01-20 | [72029](https://github.com/airbytehq/airbyte/pull/72029) | Update dependencies |
 | 0.0.44 | 2026-01-14 | [71528](https://github.com/airbytehq/airbyte/pull/71528) | Update dependencies |
 | 0.0.43 | 2025-12-18 | [70744](https://github.com/airbytehq/airbyte/pull/70744) | Update dependencies |

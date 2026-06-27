@@ -6,7 +6,9 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.data.BigDecimalCodec
+import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
@@ -33,10 +35,13 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.PartiallyOrdered
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.SyncMode
 import io.debezium.connector.sqlserver.Lsn
 import io.debezium.connector.sqlserver.SqlServerConnector
 import io.debezium.document.DocumentReader
@@ -56,17 +61,25 @@ import java.util.zip.GZIPOutputStream
 import kotlin.collections.plus
 import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
+import org.jetbrains.annotations.VisibleForTesting
 
-data class MsSqlServerCdcPosition(val lsn: String) : Comparable<MsSqlServerCdcPosition> {
+data class MsSqlServerCdcPosition(val lsn: String) : PartiallyOrdered<MsSqlServerCdcPosition> {
     override fun compareTo(other: MsSqlServerCdcPosition): Int {
         return lsn.compareTo(other.lsn)
     }
 }
 
+internal data class CaptureInstance(
+    val sourceSchema: String,
+    val sourceTable: String,
+    val captureInstanceName: String,
+)
+
 @Singleton
 class MsSqlServerDebeziumOperations(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
-    private val configuration: MsSqlServerSourceConfiguration
+    private val configuration: MsSqlServerSourceConfiguration,
+    private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) :
     CdcPartitionsCreatorDebeziumOperations<MsSqlServerCdcPosition>,
     CdcPartitionReaderDebeziumOperations<MsSqlServerCdcPosition> {
@@ -74,7 +87,7 @@ class MsSqlServerDebeziumOperations(
     // Generates globally unique cursor values for CDC records by combining
     // current timestamp with an incrementing counter. This ensures monotonically
     // increasing values across sync restarts and avoids collisions.
-    val cdcCursorGenerator = AtomicLong(Instant.now().toEpochMilli() * 10_000_000 + 1)
+    val cdcCursorGenerator = AtomicLong(Instant.now().epochSecond * 100_000_000 + 1)
 
     private val log = KotlinLogging.logger {}
 
@@ -113,6 +126,13 @@ class MsSqlServerDebeziumOperations(
                             fieldValue.isTextual && codec is BigDecimalCodec ->
                                 java.math.BigDecimal(fieldValue.asText())
                             fieldValue.isNumber && codec is BigDecimalCodec ->
+                                fieldValue.decimalValue()
+
+                            // BigDecimal-integer (NUMERIC/DECIMAL with scale 0):
+                            // Debezium emits these as JSON strings or numbers
+                            fieldValue.isTextual && codec is BigDecimalIntegerCodec ->
+                                java.math.BigDecimal(fieldValue.asText())
+                            fieldValue.isNumber && codec is BigDecimalIntegerCodec ->
                                 fieldValue.decimalValue()
 
                             // Int: handle both string and number
@@ -322,7 +342,17 @@ class MsSqlServerDebeziumOperations(
         // Validate the saved LSN is still available in SQL Server
         val isLsnValid =
             try {
-                validateLsnStillAvailable(savedLsn)
+                jdbcConnectionFactory.get().use { connection: Connection ->
+                    val captureInstances = getAccessibleCaptureInstances(connection)
+                    val configuredCaptureInstances =
+                        validateConfiguredStreamsAreAccessible(captureInstances)
+                    validateLsnStillAvailable(savedLsn, configuredCaptureInstances)
+                }
+            } catch (e: ConfigErrorException) {
+                // Permission/configuration mismatch. Re-throw the config error so
+                // CdcPartitionCreator identify this as
+                // abort as resetting the sync won't help here.
+                throw e
             } catch (e: Exception) {
                 log.error(e) { "Failed to validate LSN availability: ${savedLsn}" }
                 false
@@ -447,24 +477,113 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
+     * Running sys.fn_cdc_get_min_lsn(capture_instance) will query for the entire capture instance
+     * (also tables that are not configured). If the current user doesn't have access to one of the
+     * tables, this function will return zero LSN which is invalid.
+     *
+     * We are calling sys.sp_cdc_help_change_data_capture which returns all capture instances
+     * accessible to the user and map it to the Airbyte configured catalog to ensure the user have
+     * access to all tables.
+     */
+    @VisibleForTesting
+    internal fun getAccessibleCaptureInstances(connection: Connection): List<CaptureInstance> {
+        val results = mutableListOf<CaptureInstance>()
+        connection.createStatement().use { stmt ->
+            stmt.executeQuery("EXEC sys.sp_cdc_help_change_data_capture").use { rs ->
+                while (rs.next()) {
+                    results.add(
+                        CaptureInstance(
+                            sourceSchema = rs.getString("source_schema"),
+                            sourceTable = rs.getString("source_table"),
+                            captureInstanceName = rs.getString("capture_instance"),
+                        )
+                    )
+                }
+            }
+        }
+        return results
+    }
+
+    /**
+     * Verifies that the user have access to the configured schemas (tables). This maps the output
+     * of the sys.sp_cdc_help_change_data_capture with ConfiguredAirbyteCatalog. If the list doesn't
+     * match, throw ConfiErrorException with the missing tables to indicate that this is a config
+     * error and not a lost LSN.
+     */
+    private fun validateConfiguredStreamsAreAccessible(
+        captureInstances: List<CaptureInstance>
+    ): List<CaptureInstance> {
+        if (configuredCatalog == null) {
+            log.warn { "Catalog not available, skipping capture instance validation" }
+            return captureInstances
+        }
+
+        // Build a captureInstanceSet and configuredStreamsSet to compare and identify any selected
+        // tables without CDC access
+        val captureInstanceSet: Set<Pair<String, String>> =
+            captureInstances.map { it.sourceSchema to it.sourceTable }.toSet()
+
+        val configuredStreamsSet: Set<Pair<String, String>> =
+            configuredCatalog.streams
+                .filter { it.syncMode == SyncMode.INCREMENTAL }
+                .mapNotNullTo(mutableSetOf()) {
+                    val namespace = it.stream.namespace ?: return@mapNotNullTo null
+                    val tableName = it.stream.name ?: return@mapNotNullTo null
+                    namespace to tableName
+                }
+
+        val missing = configuredStreamsSet - captureInstanceSet
+
+        if (missing.isNotEmpty()) {
+            val missingFormatted = missing.joinToString(", ") { (s, t) -> "$s.$t" }
+            throw ConfigErrorException(
+                "CDC is not available for the following table(s): $missingFormatted. " +
+                    "This usually means CDC is not enabled on the table, or the user lacks access. " +
+                    "See https://docs.airbyte.com/integrations/sources/mssql#setting-up-cdc-for-mssql for setup instructions." +
+                    "After fixing access, refresh the connection to resume the sync."
+            )
+        }
+
+        // Return only the capture instances that are configured streams
+        return captureInstances.filter {
+            (it.sourceSchema to it.sourceTable) in configuredStreamsSet
+        }
+    }
+
+    /**
      * Validates if the given LSN is still available in SQL Server transaction logs. Returns true if
      * the LSN is available, false otherwise.
      */
-    private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
-        // Use jdbcConnectionFactory which handles SSH tunneling
+    private fun validateLsnStillAvailable(
+        lsn: Lsn,
+        configuredCaptureInstances: List<CaptureInstance>
+    ): Boolean {
+        if (configuredCaptureInstances.isEmpty()) {
+            log.warn { " No capture instances found, cannot validate LSN." }
+            return false
+        }
+
         jdbcConnectionFactory.get().use { connection: Connection ->
-            connection.createStatement().use { statement ->
-                // Check if the LSN is within the available range
-                // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
-                // sys.fn_cdc_get_max_lsn returns the current maximum LSN
-                val query =
-                    """
-                    SELECT
-                        sys.fn_cdc_get_min_lsn('') AS min_lsn,
-                        sys.fn_cdc_get_max_lsn() AS max_lsn
+            val instanceNames = configuredCaptureInstances.map { it.captureInstanceName }
+            val placeholders = instanceNames.joinToString(",") { "?" }
+            // Check if the LSN is within the available range
+            // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
+            // sys.fn_cdc_get_max_lsn returns the current maximum LSN
+            // We are running this for each capture instance to avoid zero LSN when the user doesn't
+            // have access to
+            // one of the not configured schemas.
+            val query =
+                """
+                SELECT
+                    MIN(sys.fn_cdc_get_min_lsn(capture_instance)) as min_lsn,
+                    sys.fn_cdc_get_max_lsn() as max_lsn
+                FROM cdc.change_tables
+                WHERE capture_instance IN ($placeholders)
                 """.trimIndent()
 
-                statement.executeQuery(query).use { resultSet ->
+            connection.prepareStatement(query).use { statement ->
+                instanceNames.forEachIndexed { index, name -> statement.setString(index + 1, name) }
+                statement.executeQuery().use { resultSet ->
                     if (resultSet.next()) {
                         val minLsnBytes = resultSet.getBytes("min_lsn")
                         val maxLsnBytes = resultSet.getBytes("max_lsn")
@@ -476,6 +595,21 @@ class MsSqlServerDebeziumOperations(
 
                         val minLsn = Lsn.valueOf(minLsnBytes)
                         val maxLsn = Lsn.valueOf(maxLsnBytes)
+
+                        log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
+
+                        // The access check in validateConfiguredStreamsAreAccessible should make
+                        // this impossible
+                        // (the only documented causes of zero are "instance does not exist" or "no
+                        // permission").
+                        // Keeping it here so we never query with zero LSN.
+                        if (minLsn == Lsn.ZERO) {
+                            log.warn {
+                                "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
+                                    "Treating saved LSN as invalid."
+                            }
+                            return false
+                        }
 
                         // Check if saved LSN is within the valid range
                         val isValid = lsn.compareTo(minLsn) >= 0 && lsn.compareTo(maxLsn) <= 0
@@ -598,6 +732,52 @@ class MsSqlServerDebeziumOperations(
         val messageKeyColumns = buildMessageKeyColumns(streams)
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
 
+        // Debezium 3.5 split SQL Server connector properties across two prefixes:
+        //  - `database.*` owns the Debezium-level keys (hostname, port, dbname, names, instance)
+        //    plus the auth identity (user, password). `database.password` is optional under
+        //    Microsoft Entra managed identity.
+        //  - `driver.*` is a pass-through to the Microsoft JDBC Driver for SQL Server. Debezium
+        //    strips the `driver.` prefix and forwards the key/value to mssql-jdbc as a connection
+        //    property. This includes SSL/TLS (`encrypt`, `trustServerCertificate`,
+        //    `hostNameInCertificate`, `trustStore`, `trustStorePassword`) and — critically for
+        //    Entra ID — the `authentication` mode (`SqlPassword`,
+        //    `ActiveDirectoryServicePrincipal`, `ActiveDirectoryManagedIdentity`, etc.).
+        //
+        // We split the flat `jdbcProperties` map from the config factory accordingly, and:
+        //  - hostname/port are always derived from the SSH tunnel session (not from
+        //    jdbc_url_params);
+        //  - dbname/names always match the configured database;
+        //  - user/password always come from the trusted resolved `authentication` mode, not
+        //    from any jdbc_url_params leakage (defense against `jdbc_url_params=user=attacker`);
+        //  - `authentication` under `driver.*` also comes from the trusted resolved mode for the
+        //    same reason.
+        val debeziumDatabaseProps: Map<String, String> = buildMap {
+            // Auth identity comes from the trusted resolved authentication, never from
+            // jdbcProperties (which can be polluted by jdbc_url_params).
+            putAll(configuration.authentication.toDebeziumDatabaseProperties())
+            // Debezium owns these and they are derived from tunnel session / config.
+            put("hostname", tunnelSession.address.hostName)
+            put("port", tunnelSession.address.port.toString())
+            put("dbname", databaseName)
+            put("names", databaseName)
+        }
+
+        val debeziumDriverProps: Map<String, String> = buildMap {
+            // Bulk-forward every JDBC connection property (encrypt, trustServerCertificate,
+            // hostNameInCertificate, trustStore, trustStorePassword, msiClientId, anything else
+            // the config factory placed in jdbcProperties) via Debezium's `driver.*` pass-through
+            // to mssql-jdbc. Exclude Debezium-owned keys and the auth identity (user/password)
+            // which are handled above under `database.*`.
+            putAll(
+                configuration.jdbcProperties.filterKeys {
+                    it !in DEBEZIUM_RESERVED_DB_KEYS && it !in DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS
+                }
+            )
+            // `authentication` mode comes from the trusted resolved authentication, overriding
+            // any stray value from jdbc_url_params.
+            putAll(configuration.authentication.toDebeziumDriverProperties())
+        }
+
         return DebeziumPropertiesBuilder()
             .withDefault()
             .withConnector(SqlServerConnector::class.java)
@@ -617,17 +797,8 @@ class MsSqlServerDebeziumOperations(
                     builder
                 }
             }
-            .withDatabase("hostname", tunnelSession.address.hostName)
-            .withDatabase("port", tunnelSession.address.port.toString())
-            .withDatabase("user", configuration.jdbcProperties["user"].toString())
-            .withDatabase("password", configuration.jdbcProperties["password"].toString())
-            .withDatabase("dbname", databaseName)
-            .withDatabase("names", databaseName)
-            .with("database.encrypt", configuration.jdbcProperties["encrypt"] ?: "false")
-            .with(
-                "driver.trustServerCertificate",
-                configuration.jdbcProperties["trustServerCertificate"] ?: "true"
-            )
+            .withDatabase(debeziumDatabaseProps)
+            .with(debeziumDriverProps.mapKeys { (k, _) -> "driver.$k" })
             // Register the MSSQL custom converter
             .with("converters", "mssql_converter")
             .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.name)
@@ -702,5 +873,25 @@ class MsSqlServerDebeziumOperations(
         const val MSSQL_CDC_OFFSET = "mssql_cdc_offset"
         const val MSSQL_DB_HISTORY = "mssql_db_history"
         const val MSSQL_IS_COMPRESSED = "is_compressed"
+
+        /**
+         * JDBC property keys that Debezium owns directly under `database.*` and must NOT be set via
+         * the bulk `jdbcProperties` passthrough. `hostname`, `port`, `dbname`, `names`, and
+         * `instance` are derived from the SSH tunnel session and configured database name.
+         *
+         * The auth identity keys (`user`, `password`) are pinned to the trusted resolved
+         * authentication mode via [DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS] below, so that a mistyped
+         * or malicious `jdbc_url_params=user=root` cannot silently override the auth identity.
+         */
+        private val DEBEZIUM_RESERVED_DB_KEYS: Set<String> =
+            setOf("hostname", "port", "dbname", "names", "instance")
+
+        /**
+         * Auth identity keys forwarded to Debezium under `database.*` from the trusted resolved
+         * authentication mode only (not from `jdbcProperties`, which can be polluted by
+         * `jdbc_url_params`). Mirrors the constant in
+         * `MsSqlServerSourceConfiguration.toDebeziumDatabaseProperties`.
+         */
+        private val DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS: Set<String> = setOf("user", "password")
     }
 }

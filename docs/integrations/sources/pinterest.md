@@ -31,6 +31,17 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 
 <!-- /env:oss -->
 
+Different streams in this connector require different Pinterest OAuth scopes:
+
+- **Account analytics** (`user_account_analytics`): Requires `user_accounts:read`.
+- **Boards, board sections, and board pins**: Require `boards:read` and `pins:read`.
+- **Ad accounts, campaigns, ad groups, ads, and their analytics**: Require `ads:read`.
+- **Catalogs, catalog feeds, and catalog product groups**: Require `catalogs:read`.
+
+If your Pinterest account has limited permissions, some streams may not return data. The connector
+validates your connection using the `user_account_analytics` stream, which requires only the
+`user_accounts:read` scope. This scope is available to all authenticated Pinterest users.
+
 ## Setup guide
 
 <!-- env:cloud -->
@@ -41,21 +52,22 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
 4. Enter the name for the Pinterest connector.
-5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date
-   will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API
-   restriction, the date cannot be more than 90 days in the past.
-6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Pinterest
+5. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Pinterest
    account**. Log in and authorize your Pinterest account.
-7. (Optional) Enter a Start Date using the provided date picker, or by manually entering the date in
-   YYYY-MM-DD format. Data added on and after this date will be replicated. If no date is set, it
-   will default to the latest allowed date by the report API (913 days from today).
-8. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
-   and campaigns streams, specifying a status will filter out records that do not match the
-   specified ones. If a status is not specified, the source will default to records with a status of
-   either ACTIVE or PAUSED.
-9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
+6. (Optional) For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates
+   data on and after this date. If you don't set a date, the connector defaults to the maximum
+   lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
+   streams can look back up to 913 days.
+7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
+   `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
+   status filters out records that do not match. If no status is specified, the source defaults to
+   `ACTIVE` and `PAUSED`.
+8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
+    connector makes during a sync. The default is 2. Higher values speed up syncs but increase
+    rate-limit pressure. If you encounter rate-limit errors, reduce this value.
 11. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -67,24 +79,25 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
 4. Enter the name for the Pinterest connector.
-5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date
-   will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API
-   restriction, the date cannot be more than 90 days in the past.
-6. The **OAuth2.0** authorization method is selected by default. For **Client ID** and **Client
+5. The **OAuth2.0** authorization method is selected by default. For **Client ID** and **Client
    Secret**, enter your Pinterest
    [App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/). For
    **Refresh Token**, enter your Pinterest
    [Refresh Token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
-7. (Optional) Enter a Start Date using the provided date picker, or by manually entering the date in
-   YYYY-MM-DD format. Data added on and after this date will be replicated. If no date is set, it
-   will default to the latest allowed date by the report API (913 days from today).
-8. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
-   and campaigns streams, specifying a status will filter out records that do not match the
-   specified ones. If a status is not specified, the source will default to records with a status of
-   either ACTIVE or PAUSED.
-9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
+6. (Optional) For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates
+   data on and after this date. If you don't set a date, the connector defaults to the maximum
+   lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
+   streams can look back up to 913 days.
+7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
+   `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
+   status filters out records that do not match. If no status is specified, the source defaults to
+   `ACTIVE` and `PAUSED`.
+8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
+    connector makes during a sync. The default is 2. Higher values speed up syncs but increase
+    rate-limit pressure. If you encounter rate-limit errors, reduce this value.
 11. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -98,7 +111,7 @@ The Pinterest source connector supports the following
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Account analytics](https://developers.pinterest.com/docs/api/v5/#operation/user_account/analytics)
   \(Incremental\)
@@ -115,7 +128,7 @@ The Pinterest source connector supports the following
   \(Incremental\)
 - [Campaigns](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/list)
   \(Incremental\)
-- [Campaign analytics](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/list)
+- [Campaign analytics](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/analytics)
   \(Incremental\)
 - [Campaign Analytics Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
@@ -125,9 +138,9 @@ The Pinterest source connector supports the following
   \(Incremental\)
 - [Ad Group Analytics](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
   \(Incremental\)
-- [Ad Group Report](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
+- [Ad Group Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Ad Group Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
+- [Ad Group Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
 - [Ads](https://developers.pinterest.com/docs/api/v5/#operation/ads/list) \(Incremental\)
 - [Ad analytics](https://developers.pinterest.com/docs/api/v5/#operation/ads/analytics)
@@ -144,9 +157,9 @@ The Pinterest source connector supports the following
   \(Full refresh\)
 - [Customer Lists](https://developers.pinterest.com/docs/api/v5/#tag/customer_lists) \(Full
   refresh\)
-- [Advertizer Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertiser Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Advertizer Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertiser Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
 - [Pin Promotion Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
@@ -174,20 +187,30 @@ properties:
    TOTAL, where metrics are aggregated over the specified date range.
 4. **Columns**: Identifies the data columns to be included in the report.
 5. **Click Window Days (Optional)**: The number of days used for conversion attribution from a pin
-   click action. This applies to Pinterest Tag conversion metrics. Defaults to 30 days if not
-   specified.
+   click action. This applies to Pinterest Tag conversion metrics. Valid values are 0, 1, 7, 14,
+   30, and 60. Defaults to 30 days if not specified. Set to 0 to disable click attribution.
 6. **Engagement Window Days (Optional)**: The number of days used for conversion attribution from an
    engagement action. Engagements include saves, closeups, link clicks, and carousel card swipes.
-   This applies to Pinterest Tag conversion metrics. Defaults to 30 days if not specified.
+   This applies to Pinterest Tag conversion metrics. Valid values are 0, 1, 7, 14, 30, and 60.
+   Defaults to 30 days if not specified. Set to 0 to disable engagement attribution.
 7. **View Window Days (Optional)**: The number of days used as the conversion attribution window for
-   a view action. This applies to Pinterest Tag conversion metrics. Defaults to 1 day if not
-   specified.
+   a view action. This applies to Pinterest Tag conversion metrics. Valid values are 0, 1, 7, 14,
+   30, and 60. Defaults to 30 days if not specified. Set to 0 to disable view attribution.
 8. **Conversion Report Time (Optional)**: Indicates the date by which the conversion metrics
    returned will be reported. There are two dates associated with a conversion event: the date of ad
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
 9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as
    INDIVIDUAL or HOUSEHOLD.
-10. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
+10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT. Include ARCHIVED to report on archived campaigns.
+11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select up to
+    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
+    and DELETED_DRAFT.
+12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select up to six values
+    from: APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. This filter is not supported for Product Item level reports.
+13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
 For more detailed information and guidelines on creating custom reports, please refer to the
@@ -196,7 +219,20 @@ For more detailed information and guidelines on creating custom reports, please 
 ## Performance considerations
 
 The connector is restricted by the Pinterest
-[requests limitation](https://developers.pinterest.com/docs/reference/ratelimits/).
+[rate limits](https://developers.pinterest.com/docs/reference/rate-limits/). The Pinterest API
+enforces rate limits per endpoint category. For example, the `ads_analytics` category allows 300
+requests per minute with standard access, while `ads_read` and `org_read` categories allow 1,000
+requests per minute. For details, see the
+[Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
+
+When the connector encounters a rate-limit response, it automatically waits using the
+`X-RateLimit-Reset` header and retries the request. You can reduce the **Number of concurrent
+workers** setting (default: 2, range: 1–40) to lower rate-limit pressure at the cost of slower
+syncs.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -205,101 +241,123 @@ The connector is restricted by the Pinterest
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.4 | 2026-06-23 | [80579](https://github.com/airbytehq/airbyte/pull/80579) | Update dependencies |
+| 2.2.3 | 2026-06-16 | [79987](https://github.com/airbytehq/airbyte/pull/79987) | Update dependencies |
+| 2.2.2 | 2026-06-15 | [79693](https://github.com/airbytehq/airbyte/pull/79693) | Handle Pinterest rate limits during report download target refresh and reduce default concurrency. |
+| 2.2.1 | 2026-06-10 | [78496](https://github.com/airbytehq/airbyte/pull/78496) | Refresh Pinterest async report download URLs immediately before fetching reports. |
+| 2.2.0 | 2026-06-10 | [79655](https://github.com/airbytehq/airbyte/pull/79655) | Promotes to stable release. |
+| 2.2.0-rc.1 | 2026-06-09 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added optional custom report status filters so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |
+| 2.1.30 | 2026-06-09 | [79465](https://github.com/airbytehq/airbyte/pull/79465) | Update dependencies |
+| 2.1.29 | 2026-06-02 | [75841](https://github.com/airbytehq/airbyte/pull/75841) | Update dependencies |
+| 2.1.28 | 2026-06-01 | [78538](https://github.com/airbytehq/airbyte/pull/78538) | Promoted release candidate to GA |
+| 2.1.28-rc.4 | 2026-05-27 | [78466](https://github.com/airbytehq/airbyte/pull/78466) | Remove the HTTP API budget while keeping default concurrency at 4 for continued tuning. |
+| 2.1.28-rc.3 | 2026-05-26 | [78432](https://github.com/airbytehq/airbyte/pull/78432) | Set default concurrency to 4 and use the standard num_workers override while preserving the Pinterest API budget. |
+| 2.1.28-rc.2 | 2026-05-21 | [78345](https://github.com/airbytehq/airbyte/pull/78345) | Increase default concurrency to 5 for the source-pinterest Phase 1 tuning cohort. |
+| 2.1.28-rc.1 | 2026-05-18 | [76952](https://github.com/airbytehq/airbyte/pull/76952) | Concurrency tuning (Path A): bump `default_concurrency` default to 4 via the `num_threads` fallback. No user-visible spec changes. |
+| 2.1.27 | 2026-04-07 | [75485](https://github.com/airbytehq/airbyte/pull/75485) | Add maxLength validation to account_id field to reject values longer than 18 characters at config time |
+| 2.1.26 | 2026-03-17 | [74453](https://github.com/airbytehq/airbyte/pull/74453) | Update dependencies |
+| 2.1.25 | 2026-03-09 | [74339](https://github.com/airbytehq/airbyte/pull/74339) | Add TOTAL_IMPRESSION column to custom reports |
+| 2.1.24 | 2026-03-09 | [74120](https://github.com/airbytehq/airbyte/pull/74120) | Fix custom reports `engagement_window_days` and `view_window_days` default values from array `[30]` to integer `30`; fix `or 30` fallback to correctly handle `0` as a valid value |
+| 2.1.23 | 2026-02-24 | [73845](https://github.com/airbytehq/airbyte/pull/73845) | Update dependencies |
+| 2.1.22 | 2026-02-17 | [73595](https://github.com/airbytehq/airbyte/pull/73595) | Update dependencies |
+| 2.1.21 | 2026-02-12 | [71030](https://github.com/airbytehq/airbyte/pull/71030) | Use user_account_analytics for connection check to support all permission sets |
+| 2.1.20 | 2026-02-10 | [73173](https://github.com/airbytehq/airbyte/pull/73173) | Update dependencies |
+| 2.1.19 | 2026-02-03 | [72668](https://github.com/airbytehq/airbyte/pull/72668) | Update dependencies |
 | 2.1.18 | 2026-01-20 | [69629](https://github.com/airbytehq/airbyte/pull/69629) | Update dependencies |
 | 2.1.17 | 2025-10-29 | [68961](https://github.com/airbytehq/airbyte/pull/68961) | Update dependencies |
 | 2.1.16 | 2025-10-21 | [68213](https://github.com/airbytehq/airbyte/pull/68213) | Update dependencies |
 | 2.1.15 | 2025-10-14 | [67808](https://github.com/airbytehq/airbyte/pull/67808) | Update dependencies |
 | 2.1.14 | 2025-10-07 | [62329](https://github.com/airbytehq/airbyte/pull/62329) | Update dependencies |
 | 2.1.13 | 2025-10-06 | [67105](https://github.com/airbytehq/airbyte/pull/67105) | Promoting release candidate 2.1.13-rc.2 to a main version. |
-| 2.1.13-rc.2 | 2025-10-03 | [67025](https://github.com/airbytehq/airbyte/pull/67025) | Add timeout status for reports                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 2.1.13-rc.1 | 2025-09-30 | [66755](https://github.com/airbytehq/airbyte/pull/66755) | Migrate to manifest-only                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| 2.1.12      | 2025-09-30 | [66820](https://github.com/airbytehq/airbyte/pull/66820) | Promoting release candidate 2.1.12-rc.1 to a main version.                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2.1.12-rc.1 | 2025-09-29 | [66564](https://github.com/airbytehq/airbyte/pull/66564) | Migrate Custom Reports streams                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 2.1.11      | 2025-09-29 | [66737](https://github.com/airbytehq/airbyte/pull/66737) | Promoting release candidate 2.1.11-rc.1 to a main version.                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2.1.11-rc.1 | 2025-09-23 | [66560](https://github.com/airbytehq/airbyte/pull/66560) | Migrate Targeting Analytics Reports streams                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 2.1.10      | 2025-09-22 | [66565](https://github.com/airbytehq/airbyte/pull/66565) | Promoting release candidate 2.1.10-rc.1 to a main version.                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2.1.10-rc.1 | 2025-09-16 | [66187](https://github.com/airbytehq/airbyte/pull/66187) | Migrate Analytics Reports streams                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| 2.1.9       | 2025-09-16 | [66281](https://github.com/airbytehq/airbyte/pull/66281) | Promoting release candidate 2.1.9-rc.2 to a main version.                                                                                                                                                                                                                                                                                                                                                                                               |
-| 2.1.9-rc.2  | 2025-09-12 | [66211](https://github.com/airbytehq/airbyte/pull/66211) | Add APIBudget and backoff strategy for analytics streams                                                                                                                                                                                                                                                                                                                                                                                                |
-| 2.1.9-rc.1  | 2025-09-05 | [65960](https://github.com/airbytehq/airbyte/pull/65960) | feat(source-pinterest): Update CDK to v6                                                                                                                                                                                                                                                                                                                                                                                                                |
-| 2.1.8       | 2025-06-21 | [61920](https://github.com/airbytehq/airbyte/pull/61920) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.7       | 2025-06-14 | [61067](https://github.com/airbytehq/airbyte/pull/61067) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.6       | 2025-05-24 | [60136](https://github.com/airbytehq/airbyte/pull/60136) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.5       | 2025-05-04 | [59069](https://github.com/airbytehq/airbyte/pull/59069) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.4       | 2025-04-19 | [58524](https://github.com/airbytehq/airbyte/pull/58524) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.3       | 2025-04-12 | [57926](https://github.com/airbytehq/airbyte/pull/57926) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.2       | 2025-04-05 | [57337](https://github.com/airbytehq/airbyte/pull/57337) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.1       | 2025-03-29 | [56721](https://github.com/airbytehq/airbyte/pull/56721) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.1.0       | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) | Added Account Id filter to allow retrieving data for a specific ad account                                                                                                                                                                                                                                                                                                                                                                              |
-| 2.0.32      | 2025-03-22 | [55055](https://github.com/airbytehq/airbyte/pull/55055) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.31      | 2025-02-23 | [54581](https://github.com/airbytehq/airbyte/pull/54581) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.30      | 2025-02-15 | [53977](https://github.com/airbytehq/airbyte/pull/53977) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.29      | 2025-02-01 | [53001](https://github.com/airbytehq/airbyte/pull/53001) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.28      | 2025-01-25 | [52502](https://github.com/airbytehq/airbyte/pull/52502) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.27      | 2025-01-11 | [51377](https://github.com/airbytehq/airbyte/pull/51377) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.26      | 2025-01-04 | [50933](https://github.com/airbytehq/airbyte/pull/50933) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.25      | 2024-12-28 | [50710](https://github.com/airbytehq/airbyte/pull/50710) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.24      | 2024-12-21 | [50302](https://github.com/airbytehq/airbyte/pull/50302) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.23      | 2024-12-14 | [49040](https://github.com/airbytehq/airbyte/pull/49040) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64                                                                                                                                                                                                                                                                                  |
-| 2.0.22      | 2024-11-04 | [48280](https://github.com/airbytehq/airbyte/pull/48280) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.21      | 2024-10-29 | [47074](https://github.com/airbytehq/airbyte/pull/47074) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.20      | 2024-10-12 | [46815](https://github.com/airbytehq/airbyte/pull/46815) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.19      | 2024-10-05 | [46482](https://github.com/airbytehq/airbyte/pull/46482) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.18      | 2024-09-28 | [46104](https://github.com/airbytehq/airbyte/pull/46104) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.17      | 2024-09-21 | [45838](https://github.com/airbytehq/airbyte/pull/45838) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.16      | 2024-09-14 | [45566](https://github.com/airbytehq/airbyte/pull/45566) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.15      | 2024-09-07 | [45283](https://github.com/airbytehq/airbyte/pull/45283) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.14      | 2024-08-31 | [45060](https://github.com/airbytehq/airbyte/pull/45060) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.13      | 2024-08-24 | [44752](https://github.com/airbytehq/airbyte/pull/44752) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.12      | 2024-08-17 | [44346](https://github.com/airbytehq/airbyte/pull/44346) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.11      | 2024-08-12 | [43838](https://github.com/airbytehq/airbyte/pull/43838) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.10      | 2024-08-10 | [43642](https://github.com/airbytehq/airbyte/pull/43642) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.9       | 2024-08-03 | [43280](https://github.com/airbytehq/airbyte/pull/43280) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.8       | 2024-07-30 | [39559](https://github.com/airbytehq/airbyte/pull/39559) | Ensure config_error when state has improper format and update CDK version                                                                                                                                                                                                                                                                                                                                                                               |
-| 2.0.7       | 2024-07-27 | [42603](https://github.com/airbytehq/airbyte/pull/42603) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.6       | 2024-07-20 | [42343](https://github.com/airbytehq/airbyte/pull/42343) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.5       | 2024-07-13 | [41765](https://github.com/airbytehq/airbyte/pull/41765) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.4       | 2024-07-10 | [41449](https://github.com/airbytehq/airbyte/pull/41449) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.3       | 2024-07-06 | [39972](https://github.com/airbytehq/airbyte/pull/39972) | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 2.0.2       | 2024-06-10 | [39367](https://github.com/airbytehq/airbyte/pull/39367) | Fix type error when start date was not provided                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 2.0.1       | 2024-06-04 | [39037](https://github.com/airbytehq/airbyte/pull/39037) | [autopull] Upgrade base image to v1.2.1                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 2.0.0       | 2024-05-20 | [37698](https://github.com/airbytehq/airbyte/pull/37698) | Migrate to low-code                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 1.3.3       | 2024-04-24 | [36655](https://github.com/airbytehq/airbyte/pull/36655) | Schema descriptions and CDK 0.80.0                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 1.3.2       | 2024-04-08 | [36912](https://github.com/airbytehq/airbyte/pull/36912) | Fix icon                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| 1.3.1       | 2024-04-03 | [36806](https://github.com/airbytehq/airbyte/pull/36806) | Update airbyte-cdk count bug to emit recordCount as float                                                                                                                                                                                                                                                                                                                                                                                               |
-| 1.3.0       | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 1.2.0       | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                                                                                                                                                                                                                                                                                                                                                |
-| 1.1.1       | 2024-02-12 | [35159](https://github.com/airbytehq/airbyte/pull/35159) | Manage dependencies with Poetry.                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| 1.1.0       | 2023-11-22 | [32747](https://github.com/airbytehq/airbyte/pull/32747) | Update docs and spec. Add missing `placement_traffic_type` field to AdGroups stream                                                                                                                                                                                                                                                                                                                                                                     |
-| 1.0.0       | 2023-11-16 | [32595](https://github.com/airbytehq/airbyte/pull/32595) | Add airbyte_type: timestamp_without_timezone to date-time fields across all streams. Rename `Advertizer*` streams to `Advertiser*`                                                                                                                                                                                                                                                                                                                      |
-| 0.8.2       | 2023-11-20 | [32672](https://github.com/airbytehq/airbyte/pull/32672) | Fix backoff waiting time                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| 0.8.1       | 2023-11-16 | [32601](https://github.com/airbytehq/airbyte/pull/32601) | added ability to create custom reports                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0.8.0       | 2023-11-16 | [32592](https://github.com/airbytehq/airbyte/pull/32592) | Make start_date optional; add suggested streams; add missing fields                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0.7.2       | 2023-11-08 | [32299](https://github.com/airbytehq/airbyte/pull/32299) | added default `AvailabilityStrategy`, fixed bug which cases duplicated requests, added new streams: Catalogs, CatalogsFeeds, CatalogsProductGroups, Audiences, Keywords, ConversionTags, CustomerLists, CampaignTargetingReport, AdvertizerReport, AdvertizerTargetingReport, AdGroupReport, AdGroupTargetingReport, PinPromotionReport, PinPromotionTargetingReport, ProductGroupReport, ProductGroupTargetingReport, ProductItemReport, KeywordReport |
-| 0.7.1       | 2023-11-01 | [32078](https://github.com/airbytehq/airbyte/pull/32078) | handle non json response                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| 0.7.0       | 2023-10-25 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | Migrated to base image, removed token based authentication mthod becuase access_token is valid for 1 day only                                                                                                                                                                                                                                                                                                                                           |
-| 0.6.0       | 2023-07-25 | [28672](https://github.com/airbytehq/airbyte/pull/28672) | Add report stream for `CAMPAIGN` level                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0.5.3       | 2023-07-05 | [27964](https://github.com/airbytehq/airbyte/pull/27964) | Add `id` field to `owner` field in `ad_accounts` stream                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 0.5.2       | 2023-06-02 | [26949](https://github.com/airbytehq/airbyte/pull/26949) | Update `BoardPins` stream with `note` property                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 0.5.1       | 2023-05-11 | [25984](https://github.com/airbytehq/airbyte/pull/25984) | Add pattern for start_date                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 0.5.0       | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Add `product_tags` field to the `BoardPins` stream                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 0.4.0       | 2023-05-16 | [26112](https://github.com/airbytehq/airbyte/pull/26112) | Add `is_standard` field to the `BoardPins` stream                                                                                                                                                                                                                                                                                                                                                                                                       |
-| 0.3.0       | 2023-05-09 | [25915](https://github.com/airbytehq/airbyte/pull/25915) | Add `creative_type` field to the `BoardPins` stream                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0.2.6       | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) | Fix `format` issue for `boards` stream schema for fields with `date-time`                                                                                                                                                                                                                                                                                                                                                                               |
-| 0.2.5       | 2023-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0.2.4       | 2023-02-25 | [23457](https://github.com/airbytehq/airbyte/pull/23457) | Add missing columns for analytics streams for pinterest source                                                                                                                                                                                                                                                                                                                                                                                          |
-| 0.2.3       | 2023-03-01 | [23649](https://github.com/airbytehq/airbyte/pull/23649) | Fix for `HTTP - 400 Bad Request` when requesting data >= 90 days                                                                                                                                                                                                                                                                                                                                                                                        |
-| 0.2.2       | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                                                                                                                                                                                                                                                                                                             |
-| 0.2.1       | 2022-12-15 | [20532](https://github.com/airbytehq/airbyte/pull/20532) | Bump CDK version                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| 0.2.0       | 2022-12-13 | [20242](https://github.com/airbytehq/airbyte/pull/20242) | Add data-type normalization up to the schemas declared                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0.1.9       | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Add filter based on statuses                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 0.1.8       | 2022-10-21 | [18285](https://github.com/airbytehq/airbyte/pull/18285) | Fix type of `start_date`                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| 0.1.7       | 2022-09-29 | [17387](https://github.com/airbytehq/airbyte/pull/17387) | Set `start_date` dynamically based on API restrictions.                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 0.1.6       | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Use CDK 0.1.89                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 0.1.5       | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 0.1.4       | 2022-09-06 | [16161](https://github.com/airbytehq/airbyte/pull/16161) | Add ability to handle `429 - Too Many Requests` error with respect to `Max Rate Limit Exceeded Error`                                                                                                                                                                                                                                                                                                                                                   |
-| 0.1.3       | 2022-09-02 | [16271](https://github.com/airbytehq/airbyte/pull/16271) | Add support of `OAuth2.0` authentication method                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 0.1.2       | 2021-12-22 | [10223](https://github.com/airbytehq/airbyte/pull/10223) | Fix naming of `AD_ID` and `AD_ACCOUNT_ID` fields                                                                                                                                                                                                                                                                                                                                                                                                        |
-| 0.1.1       | 2021-12-22 | [9043](https://github.com/airbytehq/airbyte/pull/9043) | Update connector fields title/description                                                                                                                                                                                                                                                                                                                                                                                                               |
-| 0.1.0       | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493) | Release Pinterest CDK Connector                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 2.1.13-rc.2 | 2025-10-03 | [67025](https://github.com/airbytehq/airbyte/pull/67025) | Add timeout status for reports |
+| 2.1.13-rc.1 | 2025-09-30 | [66755](https://github.com/airbytehq/airbyte/pull/66755) | Migrate to manifest-only |
+| 2.1.12 | 2025-09-30 | [66820](https://github.com/airbytehq/airbyte/pull/66820) | Promoting release candidate 2.1.12-rc.1 to a main version. |
+| 2.1.12-rc.1 | 2025-09-29 | [66564](https://github.com/airbytehq/airbyte/pull/66564) | Migrate Custom Reports streams |
+| 2.1.11 | 2025-09-29 | [66737](https://github.com/airbytehq/airbyte/pull/66737) | Promoting release candidate 2.1.11-rc.1 to a main version. |
+| 2.1.11-rc.1 | 2025-09-23 | [66560](https://github.com/airbytehq/airbyte/pull/66560) | Migrate Targeting Analytics Reports streams |
+| 2.1.10 | 2025-09-22 | [66565](https://github.com/airbytehq/airbyte/pull/66565) | Promoting release candidate 2.1.10-rc.1 to a main version. |
+| 2.1.10-rc.1 | 2025-09-16 | [66187](https://github.com/airbytehq/airbyte/pull/66187) | Migrate Analytics Reports streams |
+| 2.1.9 | 2025-09-16 | [66281](https://github.com/airbytehq/airbyte/pull/66281) | Promoting release candidate 2.1.9-rc.2 to a main version. |
+| 2.1.9-rc.2 | 2025-09-12 | [66211](https://github.com/airbytehq/airbyte/pull/66211) | Add APIBudget and backoff strategy for analytics streams |
+| 2.1.9-rc.1 | 2025-09-05 | [65960](https://github.com/airbytehq/airbyte/pull/65960) | feat(source-pinterest): Update CDK to v6 |
+| 2.1.8 | 2025-06-21 | [61920](https://github.com/airbytehq/airbyte/pull/61920) | Update dependencies |
+| 2.1.7 | 2025-06-14 | [61067](https://github.com/airbytehq/airbyte/pull/61067) | Update dependencies |
+| 2.1.6 | 2025-05-24 | [60136](https://github.com/airbytehq/airbyte/pull/60136) | Update dependencies |
+| 2.1.5 | 2025-05-04 | [59069](https://github.com/airbytehq/airbyte/pull/59069) | Update dependencies |
+| 2.1.4 | 2025-04-19 | [58524](https://github.com/airbytehq/airbyte/pull/58524) | Update dependencies |
+| 2.1.3 | 2025-04-12 | [57926](https://github.com/airbytehq/airbyte/pull/57926) | Update dependencies |
+| 2.1.2 | 2025-04-05 | [57337](https://github.com/airbytehq/airbyte/pull/57337) | Update dependencies |
+| 2.1.1 | 2025-03-29 | [56721](https://github.com/airbytehq/airbyte/pull/56721) | Update dependencies |
+| 2.1.0 | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) | Added Account Id filter to allow retrieving data for a specific ad account |
+| 2.0.32 | 2025-03-22 | [55055](https://github.com/airbytehq/airbyte/pull/55055) | Update dependencies |
+| 2.0.31 | 2025-02-23 | [54581](https://github.com/airbytehq/airbyte/pull/54581) | Update dependencies |
+| 2.0.30 | 2025-02-15 | [53977](https://github.com/airbytehq/airbyte/pull/53977) | Update dependencies |
+| 2.0.29 | 2025-02-01 | [53001](https://github.com/airbytehq/airbyte/pull/53001) | Update dependencies |
+| 2.0.28 | 2025-01-25 | [52502](https://github.com/airbytehq/airbyte/pull/52502) | Update dependencies |
+| 2.0.27 | 2025-01-11 | [51377](https://github.com/airbytehq/airbyte/pull/51377) | Update dependencies |
+| 2.0.26 | 2025-01-04 | [50933](https://github.com/airbytehq/airbyte/pull/50933) | Update dependencies |
+| 2.0.25 | 2024-12-28 | [50710](https://github.com/airbytehq/airbyte/pull/50710) | Update dependencies |
+| 2.0.24 | 2024-12-21 | [50302](https://github.com/airbytehq/airbyte/pull/50302) | Update dependencies |
+| 2.0.23 | 2024-12-14 | [49040](https://github.com/airbytehq/airbyte/pull/49040) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.0.22 | 2024-11-04 | [48280](https://github.com/airbytehq/airbyte/pull/48280) | Update dependencies |
+| 2.0.21 | 2024-10-29 | [47074](https://github.com/airbytehq/airbyte/pull/47074) | Update dependencies |
+| 2.0.20 | 2024-10-12 | [46815](https://github.com/airbytehq/airbyte/pull/46815) | Update dependencies |
+| 2.0.19 | 2024-10-05 | [46482](https://github.com/airbytehq/airbyte/pull/46482) | Update dependencies |
+| 2.0.18 | 2024-09-28 | [46104](https://github.com/airbytehq/airbyte/pull/46104) | Update dependencies |
+| 2.0.17 | 2024-09-21 | [45838](https://github.com/airbytehq/airbyte/pull/45838) | Update dependencies |
+| 2.0.16 | 2024-09-14 | [45566](https://github.com/airbytehq/airbyte/pull/45566) | Update dependencies |
+| 2.0.15 | 2024-09-07 | [45283](https://github.com/airbytehq/airbyte/pull/45283) | Update dependencies |
+| 2.0.14 | 2024-08-31 | [45060](https://github.com/airbytehq/airbyte/pull/45060) | Update dependencies |
+| 2.0.13 | 2024-08-24 | [44752](https://github.com/airbytehq/airbyte/pull/44752) | Update dependencies |
+| 2.0.12 | 2024-08-17 | [44346](https://github.com/airbytehq/airbyte/pull/44346) | Update dependencies |
+| 2.0.11 | 2024-08-12 | [43838](https://github.com/airbytehq/airbyte/pull/43838) | Update dependencies |
+| 2.0.10 | 2024-08-10 | [43642](https://github.com/airbytehq/airbyte/pull/43642) | Update dependencies |
+| 2.0.9 | 2024-08-03 | [43280](https://github.com/airbytehq/airbyte/pull/43280) | Update dependencies |
+| 2.0.8 | 2024-07-30 | [39559](https://github.com/airbytehq/airbyte/pull/39559) | Ensure config_error when state has improper format and update CDK version |
+| 2.0.7 | 2024-07-27 | [42603](https://github.com/airbytehq/airbyte/pull/42603) | Update dependencies |
+| 2.0.6 | 2024-07-20 | [42343](https://github.com/airbytehq/airbyte/pull/42343) | Update dependencies |
+| 2.0.5 | 2024-07-13 | [41765](https://github.com/airbytehq/airbyte/pull/41765) | Update dependencies |
+| 2.0.4 | 2024-07-10 | [41449](https://github.com/airbytehq/airbyte/pull/41449) | Update dependencies |
+| 2.0.3 | 2024-07-06 | [39972](https://github.com/airbytehq/airbyte/pull/39972) | Update dependencies |
+| 2.0.2 | 2024-06-10 | [39367](https://github.com/airbytehq/airbyte/pull/39367) | Fix type error when start date was not provided |
+| 2.0.1 | 2024-06-04 | [39037](https://github.com/airbytehq/airbyte/pull/39037) | [autopull] Upgrade base image to v1.2.1 |
+| 2.0.0 | 2024-05-20 | [37698](https://github.com/airbytehq/airbyte/pull/37698) | Migrate to low-code |
+| 1.3.3 | 2024-04-24 | [36655](https://github.com/airbytehq/airbyte/pull/36655) | Schema descriptions and CDK 0.80.0 |
+| 1.3.2 | 2024-04-08 | [36912](https://github.com/airbytehq/airbyte/pull/36912) | Fix icon |
+| 1.3.1 | 2024-04-03 | [36806](https://github.com/airbytehq/airbyte/pull/36806) | Update airbyte-cdk count bug to emit recordCount as float |
+| 1.3.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 1.2.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
+| 1.1.1 | 2024-02-12 | [35159](https://github.com/airbytehq/airbyte/pull/35159) | Manage dependencies with Poetry. |
+| 1.1.0 | 2023-11-22 | [32747](https://github.com/airbytehq/airbyte/pull/32747) | Update docs and spec. Add missing `placement_traffic_type` field to AdGroups stream |
+| 1.0.0 | 2023-11-16 | [32595](https://github.com/airbytehq/airbyte/pull/32595) | Add airbyte_type: timestamp_without_timezone to date-time fields across all streams. Rename `Advertizer*` streams to `Advertiser*` |
+| 0.8.2 | 2023-11-20 | [32672](https://github.com/airbytehq/airbyte/pull/32672) | Fix backoff waiting time |
+| 0.8.1 | 2023-11-16 | [32601](https://github.com/airbytehq/airbyte/pull/32601) | added ability to create custom reports |
+| 0.8.0 | 2023-11-16 | [32592](https://github.com/airbytehq/airbyte/pull/32592) | Make start_date optional; add suggested streams; add missing fields |
+| 0.7.2 | 2023-11-08 | [32299](https://github.com/airbytehq/airbyte/pull/32299) | added default `AvailabilityStrategy`, fixed bug which cases duplicated requests, added new streams: Catalogs, CatalogsFeeds, CatalogsProductGroups, Audiences, Keywords, ConversionTags, CustomerLists, CampaignTargetingReport, AdvertizerReport, AdvertizerTargetingReport, AdGroupReport, AdGroupTargetingReport, PinPromotionReport, PinPromotionTargetingReport, ProductGroupReport, ProductGroupTargetingReport, ProductItemReport, KeywordReport |
+| 0.7.1 | 2023-11-01 | [32078](https://github.com/airbytehq/airbyte/pull/32078) | handle non json response |
+| 0.7.0 | 2023-10-25 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | Migrated to base image, removed token based authentication method because access_token is valid for 1 day only |
+| 0.6.0 | 2023-07-25 | [28672](https://github.com/airbytehq/airbyte/pull/28672) | Add report stream for `CAMPAIGN` level |
+| 0.5.3 | 2023-07-05 | [27964](https://github.com/airbytehq/airbyte/pull/27964) | Add `id` field to `owner` field in `ad_accounts` stream |
+| 0.5.2 | 2023-06-02 | [26949](https://github.com/airbytehq/airbyte/pull/26949) | Update `BoardPins` stream with `note` property |
+| 0.5.1 | 2023-05-11 | [25984](https://github.com/airbytehq/airbyte/pull/25984) | Add pattern for start_date |
+| 0.5.0 | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Add `product_tags` field to the `BoardPins` stream |
+| 0.4.0 | 2023-05-16 | [26112](https://github.com/airbytehq/airbyte/pull/26112) | Add `is_standard` field to the `BoardPins` stream |
+| 0.3.0 | 2023-05-09 | [25915](https://github.com/airbytehq/airbyte/pull/25915) | Add `creative_type` field to the `BoardPins` stream |
+| 0.2.6 | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) | Fix `format` issue for `boards` stream schema for fields with `date-time` |
+| 0.2.5 | 2023-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days |
+| 0.2.4 | 2023-02-25 | [23457](https://github.com/airbytehq/airbyte/pull/23457) | Add missing columns for analytics streams for pinterest source |
+| 0.2.3 | 2023-03-01 | [23649](https://github.com/airbytehq/airbyte/pull/23649) | Fix for `HTTP - 400 Bad Request` when requesting data >= 90 days |
+| 0.2.2 | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.2.1 | 2022-12-15 | [20532](https://github.com/airbytehq/airbyte/pull/20532) | Bump CDK version |
+| 0.2.0 | 2022-12-13 | [20242](https://github.com/airbytehq/airbyte/pull/20242) | Add data-type normalization up to the schemas declared |
+| 0.1.9 | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Add filter based on statuses |
+| 0.1.8 | 2022-10-21 | [18285](https://github.com/airbytehq/airbyte/pull/18285) | Fix type of `start_date` |
+| 0.1.7 | 2022-09-29 | [17387](https://github.com/airbytehq/airbyte/pull/17387) | Set `start_date` dynamically based on API restrictions. |
+| 0.1.6 | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Use CDK 0.1.89 |
+| 0.1.5 | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state |
+| 0.1.4 | 2022-09-06 | [16161](https://github.com/airbytehq/airbyte/pull/16161) | Add ability to handle `429 - Too Many Requests` error with respect to `Max Rate Limit Exceeded Error` |
+| 0.1.3 | 2022-09-02 | [16271](https://github.com/airbytehq/airbyte/pull/16271) | Add support of `OAuth2.0` authentication method |
+| 0.1.2 | 2021-12-22 | [10223](https://github.com/airbytehq/airbyte/pull/10223) | Fix naming of `AD_ID` and `AD_ACCOUNT_ID` fields |
+| 0.1.1 | 2021-12-22 | [9043](https://github.com/airbytehq/airbyte/pull/9043) | Update connector fields title/description |
+| 0.1.0 | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493) | Release Pinterest CDK Connector |
 </details>

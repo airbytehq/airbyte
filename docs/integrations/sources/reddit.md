@@ -57,6 +57,9 @@ Hit send to receive `api_key` in the response under `access_token`
 | subreddit_popular |  | DefaultPaginator | ✅ |  ❌  |
 | subreddit_explore |  | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -65,6 +68,16 @@ Hit send to receive `api_key` in the response under `access_token`
 
 | Version          | Date       |Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.0.54 | 2026-06-23 | [80628](https://github.com/airbytehq/airbyte/pull/80628) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [80049](https://github.com/airbytehq/airbyte/pull/80049) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79512](https://github.com/airbytehq/airbyte/pull/79512) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78919](https://github.com/airbytehq/airbyte/pull/78919) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77395](https://github.com/airbytehq/airbyte/pull/77395) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76717](https://github.com/airbytehq/airbyte/pull/76717) | Update dependencies |
+| 0.0.48 | 2026-03-31 | [75878](https://github.com/airbytehq/airbyte/pull/75878) | Update dependencies |
+| 0.0.47 | 2026-03-17 | [74911](https://github.com/airbytehq/airbyte/pull/74911) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [73532](https://github.com/airbytehq/airbyte/pull/73532) | Update dependencies |
+| 0.0.45 | 2026-02-03 | [72651](https://github.com/airbytehq/airbyte/pull/72651) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [72024](https://github.com/airbytehq/airbyte/pull/72024) | Update dependencies |
 | 0.0.43 | 2026-01-14 | [71479](https://github.com/airbytehq/airbyte/pull/71479) | Update dependencies |
 | 0.0.42 | 2025-12-18 | [70617](https://github.com/airbytehq/airbyte/pull/70617) | Update dependencies |

@@ -46,6 +46,10 @@ rate limit issues that are not automatically retried successfully.
 Please follow the [their documentation for generating a PagerDuty API
 Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a-general-access-rest-api-key).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -53,6 +57,17 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 | Version | Date       | Pull Request                                                   | Subject                              |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------- |
+| 0.3.41 | 2026-06-23 | [80597](https://github.com/airbytehq/airbyte/pull/80597) | Update dependencies |
+| 0.3.40 | 2026-06-16 | [79976](https://github.com/airbytehq/airbyte/pull/79976) | Update dependencies |
+| 0.3.39 | 2026-06-09 | [79431](https://github.com/airbytehq/airbyte/pull/79431) | Update dependencies |
+| 0.3.38 | 2026-06-02 | [78877](https://github.com/airbytehq/airbyte/pull/78877) | Update dependencies |
+| 0.3.37 | 2026-04-28 | [77384](https://github.com/airbytehq/airbyte/pull/77384) | Update dependencies |
+| 0.3.36 | 2026-04-21 | [75667](https://github.com/airbytehq/airbyte/pull/75667) | Update dependencies |
+| 0.3.35 | 2026-03-24 | [75328](https://github.com/airbytehq/airbyte/pull/75328) | Update dependencies |
+| 0.3.34 | 2026-03-10 | [74629](https://github.com/airbytehq/airbyte/pull/74629) | Update dependencies |
+| 0.3.33 | 2026-03-03 | [74232](https://github.com/airbytehq/airbyte/pull/74232) | Update dependencies |
+| 0.3.32 | 2026-02-10 | [73120](https://github.com/airbytehq/airbyte/pull/73120) | Update dependencies |
+| 0.3.31 | 2026-02-03 | [72585](https://github.com/airbytehq/airbyte/pull/72585) | Update dependencies |
 | 0.3.30 | 2026-01-20 | [72171](https://github.com/airbytehq/airbyte/pull/72171) | Update dependencies |
 | 0.3.29 | 2026-01-14 | [71671](https://github.com/airbytehq/airbyte/pull/71671) | Update dependencies |
 | 0.3.28 | 2025-12-18 | [70522](https://github.com/airbytehq/airbyte/pull/70522) | Update dependencies |

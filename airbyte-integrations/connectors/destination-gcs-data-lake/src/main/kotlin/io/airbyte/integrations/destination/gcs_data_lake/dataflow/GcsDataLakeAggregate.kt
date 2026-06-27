@@ -8,11 +8,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
-import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
@@ -20,8 +17,6 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
 import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.math.BigInteger
-import java.time.ZoneOffset
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericRecord
@@ -44,7 +39,7 @@ class GcsDataLakeAggregate(
     }
 
     private val operationType =
-        if (stream.importType is Dedupe) {
+        if (stream.tableSchema.importType is Dedupe) {
             Operation.UPDATE
         } else {
             Operation.INSERT
@@ -55,8 +50,6 @@ class GcsDataLakeAggregate(
     private val schemaFields = schema.asStruct().fields()
 
     // Pre-compute which fields need special transformations to avoid repeated type checks
-    private val longFields =
-        schemaFields.filter { it.type().typeId() == Type.TypeID.LONG }.map { it.name() }.toSet()
     private val stringFields =
         schemaFields.filter { it.type().typeId() == Type.TypeID.STRING }.map { it.name() }.toSet()
 
@@ -98,19 +91,6 @@ class GcsDataLakeAggregate(
         val fieldName = field.name()
 
         return when {
-            // Timestamp → Integer for LONG fields (_airbyte_extracted_at)
-            // Use cached set lookup instead of repeated typeId() calls
-            fieldName in longFields &&
-                (value is TimestampWithTimezoneValue || value is TimestampWithoutTimezoneValue) -> {
-                val millis =
-                    when (value) {
-                        is TimestampWithTimezoneValue -> value.value.toInstant().toEpochMilli()
-                        is TimestampWithoutTimezoneValue ->
-                            value.value.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
-                        else -> 0L
-                    }
-                IntegerValue(BigInteger.valueOf(millis))
-            }
             // Object/Array → String for STRING fields (for stringifySchemalessObjects behavior)
             // Note: Union values are already stringified by ValueCoercer
             // Use cached set lookup instead of repeated typeId() calls

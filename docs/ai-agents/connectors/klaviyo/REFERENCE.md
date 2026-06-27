@@ -8,19 +8,30 @@ The Klaviyo connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](#profiles-list), [Get](#profiles-get), [Search](#profiles-search) |
-| Lists | [List](#lists-list), [Get](#lists-get), [Search](#lists-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Events | [List](#events-list), [Search](#events-search) |
-| Metrics | [List](#metrics-list), [Get](#metrics-get), [Search](#metrics-search) |
-| Flows | [List](#flows-list), [Get](#flows-get), [Search](#flows-search) |
-| Email Templates | [List](#email-templates-list), [Get](#email-templates-get), [Search](#email-templates-search) |
+| Profiles | [List](#profiles-list), [Get](#profiles-get), [Context Store Search](#profiles-context-store-search) |
+| Lists | [List](#lists-list), [Get](#lists-get), [Context Store Search](#lists-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
+| Events | [List](#events-list), [Context Store Search](#events-context-store-search) |
+| Metrics | [List](#metrics-list), [Get](#metrics-get), [Context Store Search](#metrics-context-store-search) |
+| Flows | [List](#flows-list), [Get](#flows-get), [Context Store Search](#flows-context-store-search) |
+| Email Templates | [List](#email-templates-list), [Get](#email-templates-get), [Context Store Search](#email-templates-context-store-search) |
 
 ## Profiles
 
 ### Profiles List
 
 Returns a paginated list of profiles (contacts) in your Klaviyo account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "profiles",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -31,7 +42,7 @@ await klaviyo.profiles.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -62,11 +73,31 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
 ### Profiles Get
 
 Get a single profile by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "profiles",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -79,7 +110,7 @@ await klaviyo.profiles.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -114,14 +145,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Profiles Search
+### Profiles Context Store Search
 
 Search and filter profiles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "profiles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attributes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await klaviyo.profiles.search(
+await klaviyo.profiles.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -129,12 +180,12 @@ await klaviyo.profiles.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "profiles",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -149,7 +200,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -169,19 +220,18 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.segments` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].segments` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -190,6 +240,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Lists List
 
 Returns a paginated list of all lists in your Klaviyo account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "lists",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -200,7 +261,7 @@ await klaviyo.lists.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -214,7 +275,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `page[size]` | `integer` | No | Number of results per page (max 10) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -231,11 +292,31 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
 ### Lists Get
 
 Get a single list by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "lists",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -248,7 +329,7 @@ await klaviyo.lists.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -283,14 +364,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Lists Search
+### Lists Context Store Search
 
 Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "lists",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attributes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await klaviyo.lists.search(
+await klaviyo.lists.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -298,12 +399,12 @@ await klaviyo.lists.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "lists",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -318,7 +419,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -337,18 +438,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -357,6 +457,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Campaigns List
 
 Returns a paginated list of campaigns. A channel filter is required.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "filter": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -369,7 +483,7 @@ await klaviyo.campaigns.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -387,7 +501,6 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `string` | Yes | Filter by channel (email or sms) |
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -404,11 +517,31 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
 ### Campaigns Get
 
 Get a single campaign by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -421,7 +554,7 @@ await klaviyo.campaigns.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -456,14 +589,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attributes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await klaviyo.campaigns.search(
+await klaviyo.campaigns.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -471,12 +624,12 @@ await klaviyo.campaigns.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -491,7 +644,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -510,18 +663,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated_at` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated_at` | `string` |  |
 
 </details>
 
@@ -530,6 +682,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Events List
 
 Returns a paginated list of events (actions taken by profiles)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "events",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -540,7 +703,7 @@ await klaviyo.events.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -573,16 +736,42 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
-### Events Search
+### Events Context Store Search
 
 Search and filter events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "events",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attributes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await klaviyo.events.search(
+await klaviyo.events.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -590,12 +779,12 @@ await klaviyo.events.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -610,7 +799,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -629,18 +818,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.datetime` | `string` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].datetime` | `string` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
 
 </details>
 
@@ -649,6 +837,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Metrics List
 
 Returns a paginated list of metrics (event types)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "metrics",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -659,7 +858,7 @@ await klaviyo.metrics.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -673,7 +872,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `filter` | `string` | No | Filter expression for metrics. Allowed fields are integration.name and integration.category. |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -690,11 +889,31 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
 ### Metrics Get
 
 Get a single metric by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "metrics",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -707,7 +926,7 @@ await klaviyo.metrics.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -742,14 +961,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Metrics Search
+### Metrics Context Store Search
 
 Search and filter metrics records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "metrics",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attributes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await klaviyo.metrics.search(
+await klaviyo.metrics.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -757,12 +996,12 @@ await klaviyo.metrics.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "metrics",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -777,7 +1016,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -796,18 +1035,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -816,6 +1054,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Flows List
 
 Returns a paginated list of flows (automated sequences)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "flows",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -826,7 +1075,7 @@ await klaviyo.flows.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -857,11 +1106,31 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
 ### Flows Get
 
 Get a single flow by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "flows",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -874,7 +1143,7 @@ await klaviyo.flows.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -909,14 +1178,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Flows Search
+### Flows Context Store Search
 
 Search and filter flows records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "flows",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attributes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await klaviyo.flows.search(
+await klaviyo.flows.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -924,12 +1213,12 @@ await klaviyo.flows.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "flows",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -944,7 +1233,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -963,18 +1252,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -983,6 +1271,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Email Templates List
 
 Returns a paginated list of email templates
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "email_templates",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -993,7 +1292,7 @@ await klaviyo.email_templates.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1007,7 +1306,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `page[size]` | `integer` | No | Number of results per page (max 10) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -1024,11 +1323,31 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
 ### Email Templates Get
 
 Get a single email template by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "email_templates",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1041,7 +1360,7 @@ await klaviyo.email_templates.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1076,14 +1395,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Email Templates Search
+### Email Templates Context Store Search
 
 Search and filter email templates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "email_templates",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attributes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await klaviyo.email_templates.search(
+await klaviyo.email_templates.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -1091,12 +1430,12 @@ await klaviyo.email_templates.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "email_templates",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -1111,7 +1450,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1129,17 +1468,16 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 

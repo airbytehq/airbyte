@@ -37,6 +37,10 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 | userpreferences_me | _id | DefaultPaginator | ✅ |  ❌  |
 | users_me | _id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -44,6 +48,17 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.34 | 2026-06-23 | [80535](https://github.com/airbytehq/airbyte/pull/80535) | Update dependencies |
+| 0.1.33 | 2026-06-16 | [79964](https://github.com/airbytehq/airbyte/pull/79964) | Update dependencies |
+| 0.1.32 | 2026-06-09 | [79404](https://github.com/airbytehq/airbyte/pull/79404) | Update dependencies |
+| 0.1.31 | 2026-06-02 | [78822](https://github.com/airbytehq/airbyte/pull/78822) | Update dependencies |
+| 0.1.30 | 2026-04-28 | [77356](https://github.com/airbytehq/airbyte/pull/77356) | Update dependencies |
+| 0.1.29 | 2026-04-21 | [76665](https://github.com/airbytehq/airbyte/pull/76665) | Update dependencies |
+| 0.1.28 | 2026-03-24 | [75364](https://github.com/airbytehq/airbyte/pull/75364) | Update dependencies |
+| 0.1.27 | 2026-02-24 | [73869](https://github.com/airbytehq/airbyte/pull/73869) | Update dependencies |
+| 0.1.26 | 2026-02-17 | [73552](https://github.com/airbytehq/airbyte/pull/73552) | Update dependencies |
+| 0.1.25 | 2026-02-10 | [73209](https://github.com/airbytehq/airbyte/pull/73209) | Update dependencies |
+| 0.1.24 | 2026-02-03 | [72719](https://github.com/airbytehq/airbyte/pull/72719) | Update dependencies |
 | 0.1.23 | 2026-01-20 | [72036](https://github.com/airbytehq/airbyte/pull/72036) | Update dependencies |
 | 0.1.22 | 2026-01-14 | [71510](https://github.com/airbytehq/airbyte/pull/71510) | Update dependencies |
 | 0.1.21 | 2025-12-18 | [70773](https://github.com/airbytehq/airbyte/pull/70773) | Update dependencies |

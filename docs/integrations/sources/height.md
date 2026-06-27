@@ -30,6 +30,10 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 | groups | id | No pagination | ✅ |  ✅  |
 | search | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -37,6 +41,17 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ---- | ---------------- |
+| 0.0.57 | 2026-06-23 | [80510](https://github.com/airbytehq/airbyte/pull/80510) | Update dependencies |
+| 0.0.56 | 2026-06-16 | [79904](https://github.com/airbytehq/airbyte/pull/79904) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79359](https://github.com/airbytehq/airbyte/pull/79359) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [78780](https://github.com/airbytehq/airbyte/pull/78780) | Update dependencies |
+| 0.0.53 | 2026-04-28 | [77281](https://github.com/airbytehq/airbyte/pull/77281) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76622](https://github.com/airbytehq/airbyte/pull/76622) | Update dependencies |
+| 0.0.51 | 2026-03-17 | [74929](https://github.com/airbytehq/airbyte/pull/74929) | Update dependencies |
+| 0.0.50 | 2026-03-03 | [74169](https://github.com/airbytehq/airbyte/pull/74169) | Update dependencies |
+| 0.0.49 | 2026-02-17 | [73385](https://github.com/airbytehq/airbyte/pull/73385) | Update dependencies |
+| 0.0.48 | 2026-02-10 | [73069](https://github.com/airbytehq/airbyte/pull/73069) | Update dependencies |
+| 0.0.47 | 2026-02-03 | [72662](https://github.com/airbytehq/airbyte/pull/72662) | Update dependencies |
 | 0.0.46 | 2026-01-20 | [71923](https://github.com/airbytehq/airbyte/pull/71923) | Update dependencies |
 | 0.0.45 | 2026-01-14 | [71697](https://github.com/airbytehq/airbyte/pull/71697) | Update dependencies |
 | 0.0.44 | 2025-12-18 | [70500](https://github.com/airbytehq/airbyte/pull/70500) | Update dependencies |

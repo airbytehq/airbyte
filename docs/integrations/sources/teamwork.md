@@ -50,6 +50,10 @@ Your default login username and password could be used as secrets, ref: `https:/
 | timesheets |  | DefaultPaginator | ✅ |  ❌  |
 | workload_planners |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -57,6 +61,17 @@ Your default login username and password could be used as secrets, ref: `https:/
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.54 | 2026-06-23 | [80691](https://github.com/airbytehq/airbyte/pull/80691) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [80080](https://github.com/airbytehq/airbyte/pull/80080) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79532](https://github.com/airbytehq/airbyte/pull/79532) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [79004](https://github.com/airbytehq/airbyte/pull/79004) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77462](https://github.com/airbytehq/airbyte/pull/77462) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76764](https://github.com/airbytehq/airbyte/pull/76764) | Update dependencies |
+| 0.0.48 | 2026-03-17 | [75047](https://github.com/airbytehq/airbyte/pull/75047) | Update dependencies |
+| 0.0.47 | 2026-03-10 | [74588](https://github.com/airbytehq/airbyte/pull/74588) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [73846](https://github.com/airbytehq/airbyte/pull/73846) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73129](https://github.com/airbytehq/airbyte/pull/73129) | Update dependencies |
+| 0.0.44 | 2026-02-03 | [72732](https://github.com/airbytehq/airbyte/pull/72732) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [72108](https://github.com/airbytehq/airbyte/pull/72108) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71621](https://github.com/airbytehq/airbyte/pull/71621) | Update dependencies |
 | 0.0.41 | 2025-12-18 | [70604](https://github.com/airbytehq/airbyte/pull/70604) | Update dependencies |

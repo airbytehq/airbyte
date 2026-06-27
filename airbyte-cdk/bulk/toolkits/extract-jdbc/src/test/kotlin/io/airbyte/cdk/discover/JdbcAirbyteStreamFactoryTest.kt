@@ -32,7 +32,12 @@ class JdbcAirbyteStreamFactoryTest {
         `when`(streamId.namespace).thenReturn("test_namespace")
         `when`(discoveredStream.id).thenReturn(streamId)
         `when`(discoveredStream.columns)
-            .thenReturn(listOf(Field("id", BigIntegerFieldType), Field("name", StringFieldType)))
+            .thenReturn(
+                listOf(
+                    EmittedField("id", BigIntegerFieldType),
+                    EmittedField("name", StringFieldType)
+                )
+            )
     }
 
     @Test
@@ -85,7 +90,7 @@ class JdbcAirbyteStreamFactoryTest {
         `when`(config.isCdc()).thenReturn(false)
         `when`(discoveredStream.primaryKeyColumnIDs).thenReturn(emptyList())
         `when`(discoveredStream.columns)
-            .thenReturn(listOf(Field("non_cursor_col", BooleanFieldType)))
+            .thenReturn(listOf(EmittedField("non_cursor_col", BooleanFieldType)))
 
         val factory = H2SourceOperations()
         val stream = factory.create(config, discoveredStream)

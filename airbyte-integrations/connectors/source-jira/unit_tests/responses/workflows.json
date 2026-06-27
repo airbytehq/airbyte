@@ -1,22 +1,64 @@
 {
   "values": [
     {
-      "id": {
-        "name": "Builds Workflow",
-        "entityId": "Builds Workflow"
+      "id": "385bb764-dfb6-89a7-2e43-a25bdd0cbaf4",
+      "name": "classic default workflow",
+      "description": "The classic JIRA default workflow",
+      "isEditable": true,
+      "scope": {
+        "type": "GLOBAL"
       },
-      "description": "Builds Workflow",
-      "created": "1969-12-31T16:00:00.000-0800",
-      "updated": "1969-12-31T16:00:00.000-0800"
+      "statuses": [
+        {
+          "statusReference": "statusReference-open",
+          "id": "1",
+          "name": "Open",
+          "statusCategory": "TODO"
+        },
+        {
+          "statusReference": "statusReference-done",
+          "id": "10001",
+          "name": "Done",
+          "statusCategory": "DONE"
+        }
+      ],
+      "transitions": [
+        {
+          "id": "11",
+          "name": "To Do",
+          "type": "INITIAL",
+          "toStatusReference": "statusReference-open",
+          "links": [],
+          "actions": [],
+          "validators": [],
+          "triggers": []
+        }
+      ],
+      "created": "2020-12-03T23:41:38.951-0800",
+      "updated": "2020-12-03T23:41:57.343-0800",
+      "taskId": null,
+      "version": {
+        "id": "v1",
+        "versionNumber": 1
+      }
     },
     {
-      "id": {
-        "name": "classic default workflow",
-        "entityId": "385bb764-dfb6-89a7-2e43-a25bdd0cbaf4"
+      "id": "9b1c1234-abcd-ef00-1234-56789abcdef0",
+      "name": "Builds Workflow",
+      "description": "Builds Workflow",
+      "isEditable": false,
+      "scope": {
+        "type": "GLOBAL"
       },
-      "description": "The classic JIRA default workflow",
-      "created": "2020-12-03T23:41:38.951-0800",
-      "updated": "2020-12-03T23:41:57.343-0800"
+      "statuses": [],
+      "transitions": [],
+      "created": null,
+      "updated": null,
+      "taskId": null,
+      "version": {
+        "id": "v2",
+        "versionNumber": 1
+      }
     }
   ]
 }

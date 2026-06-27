@@ -39,6 +39,10 @@ List of available streams:
 - [Tasks](https://developer.todoist.com/rest/v2/#tasks)
 - [Projects](https://developer.todoist.com/rest/v2/#projects)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -46,6 +50,7 @@ List of available streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.3.43 | 2026-02-03 | [72753](https://github.com/airbytehq/airbyte/pull/72753) | Update dependencies |
 | 0.3.42 | 2026-01-20 | [72017](https://github.com/airbytehq/airbyte/pull/72017) | Update dependencies |
 | 0.3.41 | 2026-01-14 | [71417](https://github.com/airbytehq/airbyte/pull/71417) | Update dependencies |
 | 0.3.40 | 2025-12-18 | [70737](https://github.com/airbytehq/airbyte/pull/70737) | Update dependencies |

@@ -8,15 +8,18 @@ import logging
 import re
 import threading
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from itertools import groupby
-from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import anyascii
 import requests
+from requests.adapters import HTTPAdapter
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
 from airbyte_cdk.sources.declarative.decoders.composite_raw_decoder import JsonParser
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
@@ -34,6 +37,40 @@ from .google_ads import GoogleAds
 
 logger = logging.getLogger("airbyte")
 
+# Default socket-level timeout (in seconds) for all Google Ads API HTTP calls.
+# This is an idle timeout per recv() call, not a total request timeout,
+# so streaming responses that keep sending data are unaffected.
+DEFAULT_HTTP_TIMEOUT = 300  # 5 minutes
+
+
+class TimeoutHTTPAdapter(HTTPAdapter):
+    """
+    HTTP adapter that enforces a default socket timeout on every request.
+    Prevents workers from hanging indefinitely on unresponsive API calls.
+    """
+
+    def __init__(self, timeout: int = DEFAULT_HTTP_TIMEOUT, *args: Any, **kwargs: Any) -> None:
+        self.timeout = timeout
+        super().__init__(*args, **kwargs)
+
+    def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
+        kwargs.setdefault("timeout", self.timeout)
+        return super().send(request, **kwargs)
+
+
+def _mount_timeout_adapter(requester: Any) -> None:
+    """Mount `TimeoutHTTPAdapter` on a requester's HTTP session.
+
+    Ensures every Google Ads HTTP call has a default socket-level idle timeout,
+    including parent-stream fetches that route through the stock CDK `HttpRequester`
+    (e.g. `customer_client`, `customer_client_non_manager`, `accessible_accounts`).
+    """
+    http_client = getattr(requester, "_http_client", None)
+    session = getattr(http_client, "_session", None) if http_client is not None else None
+    if session is not None:
+        session.mount("https://", TimeoutHTTPAdapter(timeout=DEFAULT_HTTP_TIMEOUT))
+
+
 REPORT_MAPPING = {
     "account_performance_report": "customer",
     "ad_group_ad_legacy": "ad_group_ad",
@@ -41,6 +78,7 @@ REPORT_MAPPING = {
     "ad_listing_group_criterion": "ad_group_criterion",
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
+    "geographic_view_with_metrics": "geographic_view",
     "service_accounts": "customer",
 }
 
@@ -142,6 +180,55 @@ class FlattenNestedDictsTransformation(RecordTransformation):
         for top_key in [k for k, v in list(record.items()) if isinstance(v, dict)]:
             nested = record.pop(top_key)
             _flatten(top_key, nested)
+
+
+@dataclass
+class SerializeMessageFieldsTransformation(RecordTransformation):
+    """
+    Serializes MESSAGE-type fields (nested dict values) to JSON strings before
+    flattening occurs. This prevents FlattenNestedDictsTransformation from
+    recursively flattening MESSAGE fields like change_event.old_resource and
+    change_event.new_resource, which would create sub-keys not present in
+    the schema and cause the original field values to be lost (returned as NULL).
+
+    This transformation must run AFTER KeysToSnakeCaseGoogleAdsTransformation
+    and BEFORE FlattenNestedDictsTransformation in the custom query stream
+    transformation chain.
+
+    The set of MESSAGE-type field names is populated by
+    CustomGAQuerySchemaLoader.get_json_schema() during stream initialization
+    and stored on the CustomGAQuerySchemaLoader class.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        message_fields: set = CustomGAQuerySchemaLoader._all_message_fields
+        if not message_fields:
+            return
+
+        for field_name in message_fields:
+            parts = field_name.split(".")
+            current = record
+            for part in parts[:-1]:
+                if isinstance(current, dict) and part in current:
+                    current = current[part]
+                else:
+                    current = None
+                    break
+
+            if current is not None and isinstance(current, dict):
+                last_part = parts[-1]
+                if last_part in current:
+                    value = current[last_part]
+                    if isinstance(value, dict):
+                        current[last_part] = json.dumps(value)
+                    elif isinstance(value, list):
+                        current[last_part] = [json.dumps(item) if isinstance(item, dict) else item for item in value]
 
 
 class DoubleQuotedDictTypeTransformer(TypeTransformer):
@@ -291,6 +378,7 @@ class GoogleAdsHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.stream_response = True
+        _mount_timeout_adapter(self)
 
     def get_request_body_json(
         self,
@@ -450,12 +538,20 @@ class CriterionRetriever(SimpleRetriever):
     Retrieves Criterion records based on ChangeStatus updates.
 
     For each parent_slice:
-      1) Emits a “deleted” record for any REMOVED status.
+      1) Emits a "deleted" record for any REMOVED status.
       2) Batches the remaining IDs into a single fetch.
       3) Attaches the original ChangeStatus timestamp to each returned record.
     """
 
     cursor_field: str = "change_status.last_change_date_time"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        # CustomRequester requires a name at init time but the real stream name is only
+        # available after the retriever is fully constructed; propagate it here.
+        if hasattr(self.requester, "name"):
+            self.requester.name = self.name
+        _mount_timeout_adapter(self.requester)
 
     def _read_pages(
         self,
@@ -514,6 +610,139 @@ class CriterionRetriever(SimpleRetriever):
                 # attach timestamp from ChangeStatus
                 rec.data[self.cursor_field] = time_map.get(rec.data.get(self.primary_key[0]))
                 yield rec
+
+
+@dataclass
+class GoogleAdsRetriever(SimpleRetriever):
+    """
+    Custom retriever for Google Ads that implements connector-level retry with slice splitting
+    for ChunkedEncodingError.
+
+    When streaming large responses from the Google Ads API, the connection may be interrupted
+    causing a ChunkedEncodingError. This retriever handles such errors by:
+    1. Splitting the date range slice in half to reduce response size
+    2. Processing each sub-slice separately
+    3. Continuing to split until reaching minimum slice size (1 day)
+    4. Failing with AirbyteTracedException if error persists on minimum slice
+
+    This approach is similar to the Iterable connector's IterableExportStreamAdjustableRange.
+    """
+
+    MAX_RETRIES: int = 3
+    DATE_FORMAT: str = "%Y-%m-%d"
+    decoder: Decoder | None = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        if hasattr(self.requester, "name"):
+            self.requester.name = self.name
+        if self.decoder and isinstance(self.record_selector.extractor, DpathExtractor):
+            self.record_selector.extractor.decoder = self.decoder
+        _mount_timeout_adapter(self.requester)
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        yield from self._read_pages_with_slice_splitting(records_generator_fn, stream_slice, retry_count=0)
+
+    def _read_pages_with_slice_splitting(
+        self,
+        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
+        stream_slice: StreamSlice,
+        retry_count: int,
+    ) -> Iterable[Record]:
+        """
+        Read pages with automatic slice splitting on ChunkedEncodingError.
+
+        When a ChunkedEncodingError occurs:
+        - For incremental streams with date boundaries: split the slice in half and retry each sub-slice
+        - For full refresh streams without date boundaries: retry the same slice up to MAX_RETRIES times
+        - For incremental streams at minimum slice size (1 day): retry up to MAX_RETRIES times
+
+        Note: if the error occurs after some records have already been yielded, those records
+        may be re-emitted on retry. This is acceptable because all Google Ads streams have
+        primary keys and destinations deduplicate accordingly.
+        """
+        try:
+            yield from super()._read_pages(records_generator_fn, stream_slice)
+        except requests.exceptions.ChunkedEncodingError:
+            sub_slices = self._split_slice(stream_slice)
+
+            if sub_slices is None:
+                # Determine if this is a non-date slice (full refresh) or minimum date slice (1 day)
+                has_date_boundaries = bool(stream_slice.cursor_slice.get("start_time") and stream_slice.cursor_slice.get("end_time"))
+
+                if retry_count < self.MAX_RETRIES:
+                    if has_date_boundaries:
+                        logger.warning(f"ChunkedEncodingError on minimum slice size (1 day). Retry {retry_count + 1}/{self.MAX_RETRIES}...")
+                    else:
+                        logger.warning(
+                            f"ChunkedEncodingError on slice without date boundaries (full refresh stream). "
+                            f"Retry {retry_count + 1}/{self.MAX_RETRIES}..."
+                        )
+                    yield from self._read_pages_with_slice_splitting(records_generator_fn, stream_slice, retry_count + 1)
+                else:
+                    if has_date_boundaries:
+                        raise AirbyteTracedException(
+                            message="Response stream was interrupted. The slice is already at minimum size (1 day) "
+                            f"and {self.MAX_RETRIES} retries were exhausted.",
+                            internal_message=f"ChunkedEncodingError persisted after {self.MAX_RETRIES} retries on minimum slice.",
+                            failure_type=FailureType.transient_error,
+                        )
+                    else:
+                        raise AirbyteTracedException(
+                            message=f"Response stream was interrupted. {self.MAX_RETRIES} retries were exhausted.",
+                            internal_message=f"ChunkedEncodingError persisted after {self.MAX_RETRIES} retries on full refresh slice.",
+                            failure_type=FailureType.transient_error,
+                        )
+            else:
+                slice_ranges = [f"[{s.cursor_slice.get('start_time')} - {s.cursor_slice.get('end_time')}]" for s in sub_slices]
+                logger.warning(f"ChunkedEncodingError occurred. Splitting slice into smaller ranges: {' and '.join(slice_ranges)}")
+                for sub_slice in sub_slices:
+                    yield from self._read_pages_with_slice_splitting(records_generator_fn, sub_slice, retry_count=0)
+
+    def _split_slice(self, stream_slice: StreamSlice) -> Optional[Tuple[StreamSlice, StreamSlice]]:
+        """
+        Split a stream slice into two halves based on date range.
+
+        Returns None if the slice cannot be split further (already at 1 day or less),
+        or if the slice doesn't have date-based cursor fields (e.g., full refresh streams).
+        """
+        start_time_str = stream_slice.cursor_slice.get("start_time")
+        end_time_str = stream_slice.cursor_slice.get("end_time")
+
+        if not start_time_str or not end_time_str:
+            return None
+
+        start_date = datetime.strptime(start_time_str, self.DATE_FORMAT)
+        end_date = datetime.strptime(end_time_str, self.DATE_FORMAT)
+
+        days_diff = (end_date - start_date).days
+        if days_diff <= 0:
+            return None
+
+        mid_date = start_date + timedelta(days=days_diff // 2)
+
+        first_slice = StreamSlice(
+            partition=stream_slice.partition,
+            cursor_slice={
+                "start_time": start_time_str,
+                "end_time": mid_date.strftime(self.DATE_FORMAT),
+            },
+            extra_fields=stream_slice.extra_fields,
+        )
+        second_slice = StreamSlice(
+            partition=stream_slice.partition,
+            cursor_slice={
+                "start_time": (mid_date + timedelta(days=1)).strftime(self.DATE_FORMAT),
+                "end_time": end_time_str,
+            },
+            extra_fields=stream_slice.extra_fields,
+        )
+
+        return first_slice, second_slice
 
 
 @dataclass
@@ -698,6 +927,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
         super().__post_init__(parameters=parameters)
         self.query = GAQL.parse(parameters.get("query"))
         self.stream_response = True
+        _mount_timeout_adapter(self)
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
@@ -786,6 +1016,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
     _google_ads_client: Optional[GoogleAds] = None
     _client_lock = threading.Lock()
+    _all_message_fields: ClassVar[Set[str]] = set()
 
     def __post_init__(self):
         self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
@@ -822,10 +1053,14 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         fields = self._get_list_of_fields()
         fields_metadata = self.google_ads_client(self.config).get_fields_metadata(fields)
 
+        message_fields: set = set()
         for field, field_metadata in fields_metadata.items():
+            if field_metadata.data_type.name == "MESSAGE":
+                message_fields.add(field)
             field_value = self._build_field_value(field, field_metadata)
             local_json_schema["properties"][field] = field_value
 
+        CustomGAQuerySchemaLoader._all_message_fields = CustomGAQuerySchemaLoader._all_message_fields | message_fields
         return local_json_schema
 
     def _build_field_value(self, field: str, field_metadata) -> Any:
@@ -873,8 +1108,8 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         except ValueError:
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
-                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
-                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
             )
 
 

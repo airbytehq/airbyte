@@ -25,6 +25,10 @@ The API is accessible from two environments, sandbox and production. You can lea
 | reports | id | DefaultPaginator | ✅ |  ❌  |
 | tags | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,14 @@ The API is accessible from two environments, sandbox and production. You can lea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-06-23 | [80431](https://github.com/airbytehq/airbyte/pull/80431) | Update dependencies |
+| 0.0.43 | 2026-06-16 | [79804](https://github.com/airbytehq/airbyte/pull/79804) | Update dependencies |
+| 0.0.42 | 2026-06-09 | [79265](https://github.com/airbytehq/airbyte/pull/79265) | Update dependencies |
+| 0.0.41 | 2026-06-02 | [78654](https://github.com/airbytehq/airbyte/pull/78654) | Update dependencies |
+| 0.0.40 | 2026-04-28 | [77203](https://github.com/airbytehq/airbyte/pull/77203) | Update dependencies |
+| 0.0.39 | 2026-04-21 | [76549](https://github.com/airbytehq/airbyte/pull/76549) | Update dependencies |
+| 0.0.38 | 2026-03-03 | [74153](https://github.com/airbytehq/airbyte/pull/74153) | Update dependencies |
+| 0.0.37 | 2026-02-17 | [73549](https://github.com/airbytehq/airbyte/pull/73549) | Update dependencies |
 | 0.0.36 | 2026-01-14 | [71569](https://github.com/airbytehq/airbyte/pull/71569) | Update dependencies |
 | 0.0.35 | 2025-11-18 | [69610](https://github.com/airbytehq/airbyte/pull/69610) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [65756](https://github.com/airbytehq/airbyte/pull/65756) | Update dependencies |

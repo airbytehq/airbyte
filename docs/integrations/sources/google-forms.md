@@ -16,6 +16,10 @@ Google Forms is a free online tool from Google that allows users to create custo
 | forms | `formId` | No pagination | ✅ |  ❌  |
 | form_responses | `responseId` | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,16 @@ Google Forms is a free online tool from Google that allows users to create custo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-06-23 | [80521](https://github.com/airbytehq/airbyte/pull/80521) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79916](https://github.com/airbytehq/airbyte/pull/79916) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79376](https://github.com/airbytehq/airbyte/pull/79376) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78793](https://github.com/airbytehq/airbyte/pull/78793) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77293](https://github.com/airbytehq/airbyte/pull/77293) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76615](https://github.com/airbytehq/airbyte/pull/76615) | Update dependencies |
+| 0.0.46 | 2026-03-24 | [74933](https://github.com/airbytehq/airbyte/pull/74933) | Update dependencies |
+| 0.0.45 | 2026-03-10 | [74652](https://github.com/airbytehq/airbyte/pull/74652) | Update dependencies |
+| 0.0.44 | 2026-02-24 | [73928](https://github.com/airbytehq/airbyte/pull/73928) | Update dependencies |
+| 0.0.43 | 2026-02-10 | [72682](https://github.com/airbytehq/airbyte/pull/72682) | Update dependencies |
 | 0.0.42 | 2026-01-20 | [71883](https://github.com/airbytehq/airbyte/pull/71883) | Update dependencies |
 | 0.0.41 | 2026-01-14 | [71718](https://github.com/airbytehq/airbyte/pull/71718) | Update dependencies |
 | 0.0.40 | 2025-12-18 | [70519](https://github.com/airbytehq/airbyte/pull/70519) | Update dependencies |

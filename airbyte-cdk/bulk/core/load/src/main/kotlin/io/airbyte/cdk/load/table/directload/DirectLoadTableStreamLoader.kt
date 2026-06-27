@@ -95,7 +95,7 @@ class DirectLoadTableDedupStreamLoader(
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream: ${stream.mappedDescriptor}"
             }
-            tableOperationsClient.createTable(
+            tableOperationsClient.createTempTable(
                 stream,
                 tempTableName,
                 columnNameMapping,
@@ -177,7 +177,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     logger.info {
                         "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
-                    tableOperationsClient.createTable(
+                    tableOperationsClient.createTempTable(
                         stream,
                         tempTableName,
                         columnNameMapping,
@@ -213,7 +213,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 logger.info {
                     "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.mappedDescriptor.toPrettyString()}"
                 }
-                tableOperationsClient.createTable(
+                tableOperationsClient.createTempTable(
                     stream,
                     tempTableName,
                     columnNameMapping,
@@ -238,6 +238,8 @@ class DirectLoadTableAppendTruncateStreamLoader(
             logger.info {
                 "Overwriting ${tempTableName.toPrettyString()} with ${realTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
             }
+            // overwriteTable consumes the source table (drops/renames it),
+            // so temp table is already gone after this call.
             tableOperationsClient.overwriteTable(
                 sourceTableName = tempTableName,
                 targetTableName = realTableName,
@@ -303,7 +305,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     logger.info {
                         "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
-                    tableOperationsClient.createTable(
+                    tableOperationsClient.createTempTable(
                         stream,
                         tempTableName,
                         columnNameMapping,
@@ -316,7 +318,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
             }
-            tableOperationsClient.createTable(
+            tableOperationsClient.createTempTable(
                 stream,
                 tempTableName,
                 columnNameMapping,
@@ -393,7 +395,12 @@ class DirectLoadTableDedupTruncateStreamLoader(
         val tempTempTable = tempTableNameGenerator.generate(tempTableName)
 
         // Create temporary table for intermediate operations
-        tableOperationsClient.createTable(stream, tempTempTable, columnNameMapping, replace = true)
+        tableOperationsClient.createTempTable(
+            stream,
+            tempTempTable,
+            columnNameMapping,
+            replace = true,
+        )
 
         // Upsert from temp to temp-temp table
         tableOperationsClient.upsertTable(
@@ -408,5 +415,12 @@ class DirectLoadTableDedupTruncateStreamLoader(
             sourceTableName = tempTempTable,
             targetTableName = realTableName,
         )
+
+        // Clean up the original temp table to prevent duplicate records on the next sync.
+        // Note: overwriteTable above consumed tempTempTable (not tempTableName), so
+        // tempTableName still exists with all its data. Without this drop, the next
+        // sync's start() would find a non-empty temp table with matching generation ID
+        // and reuse it, causing old records to accumulate alongside new ones.
+        tableOperationsClient.dropTable(tempTableName)
     }
 }

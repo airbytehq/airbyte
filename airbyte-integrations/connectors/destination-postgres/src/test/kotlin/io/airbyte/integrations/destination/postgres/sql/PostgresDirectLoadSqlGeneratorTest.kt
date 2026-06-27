@@ -4,15 +4,11 @@
 
 package io.airbyte.integrations.destination.postgres.sql
 
-import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
@@ -62,20 +58,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { getPrimaryKey() } returns emptyList()
                 every { getCursor() } returns emptyList()
             }
-        val stream =
-            mockk<DestinationStream> {
-                every { schema } returns
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "sourceId" to FieldType(StringType, nullable = true),
-                                "sourceName" to FieldType(StringType, nullable = false)
-                            )
-                    )
-
-                every { importType } returns Append
-                every { tableSchema } returns streamTableSchema
-            }
+        val stream = mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
         val tableName = TableName(namespace = "namespace", name = "name")
 
         val (createTableSql, createIndexesSql) =
@@ -126,19 +109,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { getPrimaryKey() } returns emptyList()
                 every { getCursor() } returns emptyList()
             }
-        val stream =
-            mockk<DestinationStream> {
-                every { schema } returns
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "sourceId" to FieldType(StringType, nullable = true),
-                            )
-                    )
-
-                every { importType } returns Append
-                every { tableSchema } returns streamTableSchema
-            }
+        val stream = mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
         val tableName = TableName(namespace = "namespace", name = "name")
 
         val (createTableSql, createIndexesSql) =
@@ -185,21 +156,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { getPrimaryKey() } returns listOf(listOf("id"))
                 every { getCursor() } returns listOf("updatedAt")
             }
-        val stream =
-            mockk<DestinationStream> {
-                every { schema } returns
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "id" to FieldType(IntegerType, nullable = true),
-                                "name" to FieldType(StringType, nullable = true),
-                                "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true)
-                            )
-                    )
-                every { importType } returns
-                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
-                every { tableSchema } returns streamTableSchema
-            }
+        val stream = mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
         val (createTableSql, createIndexesSql) =
@@ -261,20 +218,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             }
 
         val stream =
-            mockk<DestinationStream> {
-                every { schema } returns
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "id" to FieldType(IntegerType, nullable = true),
-                                "name" to FieldType(StringType, nullable = true),
-                                "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true)
-                            )
-                    )
-                every { importType } returns
-                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
-                every { tableSchema } returns rawModeStreamTableSchema
-            }
+            mockk<DestinationStream> { every { tableSchema } returns rawModeStreamTableSchema }
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
         val (createTableSql, createIndexesSql) =
@@ -397,31 +341,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 "updatedAt" to ColumnType("timestamp with time zone", true),
                 CDC_DELETED_AT_COLUMN to ColumnType("timestamp with time zone", true)
             )
-        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val inputSchema = mapOf(CDC_DELETED_AT_COLUMN to FieldType(TimestampTypeWithTimezone, true))
+        val columnSchema = ColumnSchema(inputSchema, emptyMap(), finalSchema)
         val streamTableSchema =
             mockk<StreamTableSchema> {
                 every { this@mockk.columnSchema } returns columnSchema
                 every { getPrimaryKey() } returns listOf(listOf("id"))
                 every { getCursor() } returns listOf("updatedAt")
-            }
-        val stream =
-            mockk<DestinationStream> {
-                every { schema } returns
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "id" to FieldType(IntegerType, nullable = false),
-                                "name" to FieldType(StringType, nullable = true),
-                                "updatedAt" to
-                                    FieldType(TimestampTypeWithTimezone, nullable = true),
-                                CDC_DELETED_AT_COLUMN to
-                                    FieldType(TimestampTypeWithTimezone, nullable = true)
-                            )
-                    )
                 every { importType } returns
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
-                every { tableSchema } returns streamTableSchema
             }
+        val stream = mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
 
         val sourceTableName = TableName(namespace = "test_schema", name = "staging_table")
         val targetTableName = TableName(namespace = "test_schema", name = "final_table")
@@ -518,10 +448,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testUpsertTableWithoutPrimaryKeyThrowsException() {
-        val stream =
-            mockk<DestinationStream> {
+        val streamTableSchema =
+            mockk<StreamTableSchema> {
                 every { importType } returns Dedupe(primaryKey = emptyList(), cursor = emptyList())
             }
+        val stream = mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
 
         val sourceTableName = TableName(namespace = "test_schema", name = "source_table")
         val targetTableName = TableName(namespace = "test_schema", name = "target_table")

@@ -8,19 +8,32 @@ The Intercom connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Conversations | [List](#conversations-list), [Get](#conversations-get), [Search](#conversations-search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [Search](#companies-search) |
-| Teams | [List](#teams-list), [Get](#teams-get), [Search](#teams-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Context Store Search](#contacts-context-store-search) |
+| Conversations | [List](#conversations-list), [Get](#conversations-get), [Context Store Search](#conversations-context-store-search) |
+| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Context Store Search](#companies-context-store-search) |
+| Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search) |
 | Admins | [List](#admins-list), [Get](#admins-get) |
-| Tags | [List](#tags-list), [Get](#tags-get) |
+| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get) |
+| Notes | [Create](#notes-create) |
 | Segments | [List](#segments-list), [Get](#segments-get) |
+| Internal Articles | [Create](#internal-articles-create) |
 
 ## Contacts
 
 ### Contacts List
 
 Returns a paginated list of contacts in the workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -31,7 +44,7 @@ await intercom.contacts.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -110,9 +123,167 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Contacts Create
+
+Create a new contact (user or lead)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "create",
+  "params": {
+    "role": "<str>",
+    "external_id": "<str>",
+    "email": "<str>",
+    "phone": "<str>",
+    "name": "<str>",
+    "avatar": "<str>",
+    "signed_up_at": 0,
+    "last_seen_at": 0,
+    "owner_id": 0,
+    "unsubscribed_from_emails": true,
+    "custom_attributes": {}
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.contacts.create(
+    role="<str>",
+    external_id="<str>",
+    email="<str>",
+    phone="<str>",
+    name="<str>",
+    avatar="<str>",
+    signed_up_at=0,
+    last_seen_at=0,
+    owner_id=0,
+    unsubscribed_from_emails=True,
+    custom_attributes={}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "create",
+    "params": {
+        "role": "<str>",
+        "external_id": "<str>",
+        "email": "<str>",
+        "phone": "<str>",
+        "name": "<str>",
+        "avatar": "<str>",
+        "signed_up_at": 0,
+        "last_seen_at": 0,
+        "owner_id": 0,
+        "unsubscribed_from_emails": True,
+        "custom_attributes": {}
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `role` | `string` | Yes | The role of the contact (user or lead) |
+| `external_id` | `string` | No | A unique identifier for the contact from your system |
+| `email` | `string` | No | The contact's email address |
+| `phone` | `string` | No | The contact's phone number |
+| `name` | `string` | No | The contact's full name |
+| `avatar` | `string` | No | An image URL for the contact's avatar |
+| `signed_up_at` | `integer` | No | Sign up timestamp (Unix) |
+| `last_seen_at` | `integer` | No | Last seen timestamp (Unix) |
+| `owner_id` | `integer` | No | The ID of the admin assigned as owner |
+| `unsubscribed_from_emails` | `boolean` | No | Whether the contact is unsubscribed from emails |
+| `custom_attributes` | `object` | No | Custom attributes for the contact |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `workspace_id` | `string \| null` |  |
+| `external_id` | `string \| null` |  |
+| `role` | `string \| null` |  |
+| `email` | `string \| null` |  |
+| `phone` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `avatar` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `social_profiles` | `object \| any` |  |
+| `has_hard_bounced` | `boolean \| null` |  |
+| `marked_email_as_spam` | `boolean \| null` |  |
+| `unsubscribed_from_emails` | `boolean \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `signed_up_at` | `integer \| null` |  |
+| `last_seen_at` | `integer \| null` |  |
+| `last_replied_at` | `integer \| null` |  |
+| `last_contacted_at` | `integer \| null` |  |
+| `last_email_opened_at` | `integer \| null` |  |
+| `last_email_clicked_at` | `integer \| null` |  |
+| `language_override` | `string \| null` |  |
+| `browser` | `string \| null` |  |
+| `browser_version` | `string \| null` |  |
+| `browser_language` | `string \| null` |  |
+| `os` | `string \| null` |  |
+| `location` | `object \| any` |  |
+| `android_app_name` | `string \| null` |  |
+| `android_app_version` | `string \| null` |  |
+| `android_device` | `string \| null` |  |
+| `android_os_version` | `string \| null` |  |
+| `android_sdk_version` | `string \| null` |  |
+| `android_last_seen_at` | `integer \| null` |  |
+| `ios_app_name` | `string \| null` |  |
+| `ios_app_version` | `string \| null` |  |
+| `ios_device` | `string \| null` |  |
+| `ios_os_version` | `string \| null` |  |
+| `ios_sdk_version` | `string \| null` |  |
+| `ios_last_seen_at` | `integer \| null` |  |
+| `custom_attributes` | `object \| null` |  |
+| `tags` | `object \| any` |  |
+| `notes` | `object \| any` |  |
+| `companies` | `object \| any` |  |
+
+
+</details>
+
 ### Contacts Get
 
 Get a single contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -125,7 +296,7 @@ await intercom.contacts.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -200,14 +371,182 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Contacts Search
+### Contacts Update
 
-Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Update an existing contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "update",
+  "params": {
+    "role": "<str>",
+    "external_id": "<str>",
+    "email": "<str>",
+    "phone": "<str>",
+    "name": "<str>",
+    "avatar": "<str>",
+    "signed_up_at": 0,
+    "last_seen_at": 0,
+    "owner_id": 0,
+    "unsubscribed_from_emails": true,
+    "custom_attributes": {},
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.contacts.search(
+await intercom.contacts.update(
+    role="<str>",
+    external_id="<str>",
+    email="<str>",
+    phone="<str>",
+    name="<str>",
+    avatar="<str>",
+    signed_up_at=0,
+    last_seen_at=0,
+    owner_id=0,
+    unsubscribed_from_emails=True,
+    custom_attributes={},
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "update",
+    "params": {
+        "role": "<str>",
+        "external_id": "<str>",
+        "email": "<str>",
+        "phone": "<str>",
+        "name": "<str>",
+        "avatar": "<str>",
+        "signed_up_at": 0,
+        "last_seen_at": 0,
+        "owner_id": 0,
+        "unsubscribed_from_emails": True,
+        "custom_attributes": {},
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `role` | `string` | No | The role of the contact (user or lead) |
+| `external_id` | `string` | No | A unique identifier for the contact from your system |
+| `email` | `string` | No | The contact's email address |
+| `phone` | `string` | No | The contact's phone number |
+| `name` | `string` | No | The contact's full name |
+| `avatar` | `string` | No | An image URL for the contact's avatar |
+| `signed_up_at` | `integer` | No | Sign up timestamp (Unix) |
+| `last_seen_at` | `integer` | No | Last seen timestamp (Unix) |
+| `owner_id` | `integer` | No | The ID of the admin assigned as owner |
+| `unsubscribed_from_emails` | `boolean` | No | Whether the contact is unsubscribed from emails |
+| `custom_attributes` | `object` | No | Custom attributes for the contact |
+| `id` | `string` | Yes | Contact ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `workspace_id` | `string \| null` |  |
+| `external_id` | `string \| null` |  |
+| `role` | `string \| null` |  |
+| `email` | `string \| null` |  |
+| `phone` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `avatar` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `social_profiles` | `object \| any` |  |
+| `has_hard_bounced` | `boolean \| null` |  |
+| `marked_email_as_spam` | `boolean \| null` |  |
+| `unsubscribed_from_emails` | `boolean \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `signed_up_at` | `integer \| null` |  |
+| `last_seen_at` | `integer \| null` |  |
+| `last_replied_at` | `integer \| null` |  |
+| `last_contacted_at` | `integer \| null` |  |
+| `last_email_opened_at` | `integer \| null` |  |
+| `last_email_clicked_at` | `integer \| null` |  |
+| `language_override` | `string \| null` |  |
+| `browser` | `string \| null` |  |
+| `browser_version` | `string \| null` |  |
+| `browser_language` | `string \| null` |  |
+| `os` | `string \| null` |  |
+| `location` | `object \| any` |  |
+| `android_app_name` | `string \| null` |  |
+| `android_app_version` | `string \| null` |  |
+| `android_device` | `string \| null` |  |
+| `android_os_version` | `string \| null` |  |
+| `android_sdk_version` | `string \| null` |  |
+| `android_last_seen_at` | `integer \| null` |  |
+| `ios_app_name` | `string \| null` |  |
+| `ios_app_version` | `string \| null` |  |
+| `ios_device` | `string \| null` |  |
+| `ios_os_version` | `string \| null` |  |
+| `ios_sdk_version` | `string \| null` |  |
+| `ios_last_seen_at` | `integer \| null` |  |
+| `custom_attributes` | `object \| null` |  |
+| `tags` | `object \| any` |  |
+| `notes` | `object \| any` |  |
+| `companies` | `object \| any` |  |
+
+
+</details>
+
+### Contacts Context Store Search
+
+Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "android_app_name": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.contacts.context_store_search(
     query={"filter": {"eq": {"android_app_name": "<str>"}}}
 )
 ```
@@ -215,12 +554,12 @@ await intercom.contacts.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"android_app_name": "<str>"}}}
     }
@@ -235,7 +574,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -302,66 +641,65 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.android_app_name` | `string` | The name of the Android app associated with the contact. |
-| `hits[].data.android_app_version` | `string` | The version of the Android app associated with the contact. |
-| `hits[].data.android_device` | `string` | The device used by the contact for Android. |
-| `hits[].data.android_last_seen_at` | `string` | The date and time when the contact was last seen on Android. |
-| `hits[].data.android_os_version` | `string` | The operating system version of the Android device. |
-| `hits[].data.android_sdk_version` | `string` | The SDK version of the Android device. |
-| `hits[].data.avatar` | `string` | URL pointing to the contact's avatar image. |
-| `hits[].data.browser` | `string` | The browser used by the contact. |
-| `hits[].data.browser_language` | `string` | The language preference set in the contact's browser. |
-| `hits[].data.browser_version` | `string` | The version of the browser used by the contact. |
-| `hits[].data.companies` | `object` | Companies associated with the contact. |
-| `hits[].data.created_at` | `integer` | The date and time when the contact was created. |
-| `hits[].data.custom_attributes` | `object` | Custom attributes defined for the contact. |
-| `hits[].data.email` | `string` | The email address of the contact. |
-| `hits[].data.external_id` | `string` | External identifier for the contact. |
-| `hits[].data.has_hard_bounced` | `boolean` | Flag indicating if the contact has hard bounced. |
-| `hits[].data.id` | `string` | The unique identifier of the contact. |
-| `hits[].data.ios_app_name` | `string` | The name of the iOS app associated with the contact. |
-| `hits[].data.ios_app_version` | `string` | The version of the iOS app associated with the contact. |
-| `hits[].data.ios_device` | `string` | The device used by the contact for iOS. |
-| `hits[].data.ios_last_seen_at` | `integer` | The date and time when the contact was last seen on iOS. |
-| `hits[].data.ios_os_version` | `string` | The operating system version of the iOS device. |
-| `hits[].data.ios_sdk_version` | `string` | The SDK version of the iOS device. |
-| `hits[].data.language_override` | `string` | Language override set for the contact. |
-| `hits[].data.last_contacted_at` | `integer` | The date and time when the contact was last contacted. |
-| `hits[].data.last_email_clicked_at` | `integer` | The date and time when the contact last clicked an email. |
-| `hits[].data.last_email_opened_at` | `integer` | The date and time when the contact last opened an email. |
-| `hits[].data.last_replied_at` | `integer` | The date and time when the contact last replied. |
-| `hits[].data.last_seen_at` | `integer` | The date and time when the contact was last seen overall. |
-| `hits[].data.location` | `object` | Location details of the contact. |
-| `hits[].data.marked_email_as_spam` | `boolean` | Flag indicating if the contact's email was marked as spam. |
-| `hits[].data.name` | `string` | The name of the contact. |
-| `hits[].data.notes` | `object` | Notes associated with the contact. |
-| `hits[].data.opted_in_subscription_types` | `object` | Subscription types the contact opted into. |
-| `hits[].data.opted_out_subscription_types` | `object` | Subscription types the contact opted out from. |
-| `hits[].data.os` | `string` | Operating system of the contact's device. |
-| `hits[].data.owner_id` | `integer` | The unique identifier of the contact's owner. |
-| `hits[].data.phone` | `string` | The phone number of the contact. |
-| `hits[].data.referrer` | `string` | Referrer information related to the contact. |
-| `hits[].data.role` | `string` | Role or position of the contact. |
-| `hits[].data.signed_up_at` | `integer` | The date and time when the contact signed up. |
-| `hits[].data.sms_consent` | `boolean` | Consent status for SMS communication. |
-| `hits[].data.social_profiles` | `object` | Social profiles associated with the contact. |
-| `hits[].data.tags` | `object` | Tags associated with the contact. |
-| `hits[].data.type` | `string` | Type of contact. |
-| `hits[].data.unsubscribed_from_emails` | `boolean` | Flag indicating if the contact unsubscribed from emails. |
-| `hits[].data.unsubscribed_from_sms` | `boolean` | Flag indicating if the contact unsubscribed from SMS. |
-| `hits[].data.updated_at` | `integer` | The date and time when the contact was last updated. |
-| `hits[].data.utm_campaign` | `string` | Campaign data from UTM parameters. |
-| `hits[].data.utm_content` | `string` | Content data from UTM parameters. |
-| `hits[].data.utm_medium` | `string` | Medium data from UTM parameters. |
-| `hits[].data.utm_source` | `string` | Source data from UTM parameters. |
-| `hits[].data.utm_term` | `string` | Term data from UTM parameters. |
-| `hits[].data.workspace_id` | `string` | The unique identifier of the workspace associated with the contact. |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].android_app_name` | `string` | The name of the Android app associated with the contact. |
+| `data[].android_app_version` | `string` | The version of the Android app associated with the contact. |
+| `data[].android_device` | `string` | The device used by the contact for Android. |
+| `data[].android_last_seen_at` | `string` | The date and time when the contact was last seen on Android. |
+| `data[].android_os_version` | `string` | The operating system version of the Android device. |
+| `data[].android_sdk_version` | `string` | The SDK version of the Android device. |
+| `data[].avatar` | `string` | URL pointing to the contact's avatar image. |
+| `data[].browser` | `string` | The browser used by the contact. |
+| `data[].browser_language` | `string` | The language preference set in the contact's browser. |
+| `data[].browser_version` | `string` | The version of the browser used by the contact. |
+| `data[].companies` | `object` | Companies associated with the contact. |
+| `data[].created_at` | `integer` | The date and time when the contact was created. |
+| `data[].custom_attributes` | `object` | Custom attributes defined for the contact. |
+| `data[].email` | `string` | The email address of the contact. |
+| `data[].external_id` | `string` | External identifier for the contact. |
+| `data[].has_hard_bounced` | `boolean` | Flag indicating if the contact has hard bounced. |
+| `data[].id` | `string` | The unique identifier of the contact. |
+| `data[].ios_app_name` | `string` | The name of the iOS app associated with the contact. |
+| `data[].ios_app_version` | `string` | The version of the iOS app associated with the contact. |
+| `data[].ios_device` | `string` | The device used by the contact for iOS. |
+| `data[].ios_last_seen_at` | `integer` | The date and time when the contact was last seen on iOS. |
+| `data[].ios_os_version` | `string` | The operating system version of the iOS device. |
+| `data[].ios_sdk_version` | `string` | The SDK version of the iOS device. |
+| `data[].language_override` | `string` | Language override set for the contact. |
+| `data[].last_contacted_at` | `integer` | The date and time when the contact was last contacted. |
+| `data[].last_email_clicked_at` | `integer` | The date and time when the contact last clicked an email. |
+| `data[].last_email_opened_at` | `integer` | The date and time when the contact last opened an email. |
+| `data[].last_replied_at` | `integer` | The date and time when the contact last replied. |
+| `data[].last_seen_at` | `integer` | The date and time when the contact was last seen overall. |
+| `data[].location` | `object` | Location details of the contact. |
+| `data[].marked_email_as_spam` | `boolean` | Flag indicating if the contact's email was marked as spam. |
+| `data[].name` | `string` | The name of the contact. |
+| `data[].notes` | `object` | Notes associated with the contact. |
+| `data[].opted_in_subscription_types` | `object` | Subscription types the contact opted into. |
+| `data[].opted_out_subscription_types` | `object` | Subscription types the contact opted out from. |
+| `data[].os` | `string` | Operating system of the contact's device. |
+| `data[].owner_id` | `integer` | The unique identifier of the contact's owner. |
+| `data[].phone` | `string` | The phone number of the contact. |
+| `data[].referrer` | `string` | Referrer information related to the contact. |
+| `data[].role` | `string` | Role or position of the contact. |
+| `data[].signed_up_at` | `integer` | The date and time when the contact signed up. |
+| `data[].sms_consent` | `boolean` | Consent status for SMS communication. |
+| `data[].social_profiles` | `object` | Social profiles associated with the contact. |
+| `data[].tags` | `object` | Tags associated with the contact. |
+| `data[].type` | `string` | Type of contact. |
+| `data[].unsubscribed_from_emails` | `boolean` | Flag indicating if the contact unsubscribed from emails. |
+| `data[].unsubscribed_from_sms` | `boolean` | Flag indicating if the contact unsubscribed from SMS. |
+| `data[].updated_at` | `integer` | The date and time when the contact was last updated. |
+| `data[].utm_campaign` | `string` | Campaign data from UTM parameters. |
+| `data[].utm_content` | `string` | Content data from UTM parameters. |
+| `data[].utm_medium` | `string` | Medium data from UTM parameters. |
+| `data[].utm_source` | `string` | Source data from UTM parameters. |
+| `data[].utm_term` | `string` | Term data from UTM parameters. |
+| `data[].workspace_id` | `string` | The unique identifier of the workspace associated with the contact. |
 
 </details>
 
@@ -370,6 +708,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Conversations List
 
 Returns a paginated list of conversations
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -380,7 +729,7 @@ await intercom.conversations.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -442,6 +791,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Get a single conversation by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -453,7 +816,7 @@ await intercom.conversations.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -507,14 +870,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Conversations Search
+### Conversations Context Store Search
 
 Search and filter conversations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "admin_assignee_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.conversations.search(
+await intercom.conversations.context_store_search(
     query={"filter": {"eq": {"admin_assignee_id": 0}}}
 )
 ```
@@ -522,12 +905,12 @@ await intercom.conversations.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "conversations",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"admin_assignee_id": 0}}}
     }
@@ -542,7 +925,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -588,45 +971,44 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.admin_assignee_id` | `integer` | The ID of the administrator assigned to the conversation |
-| `hits[].data.ai_agent` | `object` | Data related to AI Agent involvement in the conversation |
-| `hits[].data.ai_agent_participated` | `boolean` | Indicates whether AI Agent participated in the conversation |
-| `hits[].data.assignee` | `object` | The assigned user responsible for the conversation. |
-| `hits[].data.contacts` | `object` | List of contacts involved in the conversation. |
-| `hits[].data.conversation_message` | `object` | The main message content of the conversation. |
-| `hits[].data.conversation_rating` | `object` | Ratings given to the conversation by the customer and teammate. |
-| `hits[].data.created_at` | `integer` | The timestamp when the conversation was created |
-| `hits[].data.custom_attributes` | `object` | Custom attributes associated with the conversation |
-| `hits[].data.customer_first_reply` | `object` | Timestamp indicating when the customer first replied. |
-| `hits[].data.customers` | `array` | List of customers involved in the conversation |
-| `hits[].data.first_contact_reply` | `object` | Timestamp indicating when the first contact replied. |
-| `hits[].data.id` | `string` | The unique ID of the conversation |
-| `hits[].data.linked_objects` | `object` | Linked objects associated with the conversation |
-| `hits[].data.open` | `boolean` | Indicates if the conversation is open or closed |
-| `hits[].data.priority` | `string` | The priority level of the conversation |
-| `hits[].data.read` | `boolean` | Indicates if the conversation has been read |
-| `hits[].data.redacted` | `boolean` | Indicates if the conversation is redacted |
-| `hits[].data.sent_at` | `integer` | The timestamp when the conversation was sent |
-| `hits[].data.sla_applied` | `object` | Service Level Agreement details applied to the conversation. |
-| `hits[].data.snoozed_until` | `integer` | Timestamp until the conversation is snoozed |
-| `hits[].data.source` | `object` | Source details of the conversation. |
-| `hits[].data.state` | `string` | The state of the conversation (e.g., new, in progress) |
-| `hits[].data.statistics` | `object` | Statistics related to the conversation. |
-| `hits[].data.tags` | `object` | Tags applied to the conversation. |
-| `hits[].data.team_assignee_id` | `integer` | The ID of the team assigned to the conversation |
-| `hits[].data.teammates` | `object` | List of teammates involved in the conversation. |
-| `hits[].data.title` | `string` | The title of the conversation |
-| `hits[].data.topics` | `object` | Topics associated with the conversation. |
-| `hits[].data.type` | `string` | The type of the conversation |
-| `hits[].data.updated_at` | `integer` | The timestamp when the conversation was last updated |
-| `hits[].data.user` | `object` | The user related to the conversation. |
-| `hits[].data.waiting_since` | `integer` | Timestamp since waiting for a response |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].admin_assignee_id` | `integer` | The ID of the administrator assigned to the conversation |
+| `data[].ai_agent` | `object` | Data related to AI Agent involvement in the conversation |
+| `data[].ai_agent_participated` | `boolean` | Indicates whether AI Agent participated in the conversation |
+| `data[].assignee` | `object` | The assigned user responsible for the conversation. |
+| `data[].contacts` | `object` | List of contacts involved in the conversation. |
+| `data[].conversation_message` | `object` | The main message content of the conversation. |
+| `data[].conversation_rating` | `object` | Ratings given to the conversation by the customer and teammate. |
+| `data[].created_at` | `integer` | The timestamp when the conversation was created |
+| `data[].custom_attributes` | `object` | Custom attributes associated with the conversation |
+| `data[].customer_first_reply` | `object` | Timestamp indicating when the customer first replied. |
+| `data[].customers` | `array` | List of customers involved in the conversation |
+| `data[].first_contact_reply` | `object` | Timestamp indicating when the first contact replied. |
+| `data[].id` | `string` | The unique ID of the conversation |
+| `data[].linked_objects` | `object` | Linked objects associated with the conversation |
+| `data[].open` | `boolean` | Indicates if the conversation is open or closed |
+| `data[].priority` | `string` | The priority level of the conversation |
+| `data[].read` | `boolean` | Indicates if the conversation has been read |
+| `data[].redacted` | `boolean` | Indicates if the conversation is redacted |
+| `data[].sent_at` | `integer` | The timestamp when the conversation was sent |
+| `data[].sla_applied` | `object` | Service Level Agreement details applied to the conversation. |
+| `data[].snoozed_until` | `integer` | Timestamp until the conversation is snoozed |
+| `data[].source` | `object` | Source details of the conversation. |
+| `data[].state` | `string` | The state of the conversation (e.g., new, in progress) |
+| `data[].statistics` | `object` | Statistics related to the conversation. |
+| `data[].tags` | `object` | Tags applied to the conversation. |
+| `data[].team_assignee_id` | `integer` | The ID of the team assigned to the conversation |
+| `data[].teammates` | `object` | List of teammates involved in the conversation. |
+| `data[].title` | `string` | The title of the conversation |
+| `data[].topics` | `object` | Topics associated with the conversation. |
+| `data[].type` | `string` | The type of the conversation |
+| `data[].updated_at` | `integer` | The timestamp when the conversation was last updated |
+| `data[].user` | `object` | The user related to the conversation. |
+| `data[].waiting_since` | `integer` | Timestamp since waiting for a response |
 
 </details>
 
@@ -635,6 +1017,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Companies List
 
 Returns a paginated list of companies
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -645,7 +1038,7 @@ await intercom.companies.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -672,6 +1065,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |------------|------|-------------|
 | `type` | `string \| null` |  |
 | `id` | `string` |  |
+| `app_id` | `string \| null` |  |
 | `name` | `string \| null` |  |
 | `company_id` | `string \| null` |  |
 | `plan` | `object \| any` |  |
@@ -698,9 +1092,130 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Companies Create
+
+Create a new company or update an existing one by company_id
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "create",
+  "params": {
+    "company_id": "<str>",
+    "name": "<str>",
+    "plan": "<str>",
+    "monthly_spend": 0.0,
+    "size": 0,
+    "website": "<str>",
+    "industry": "<str>",
+    "custom_attributes": {}
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.companies.create(
+    company_id="<str>",
+    name="<str>",
+    plan="<str>",
+    monthly_spend=0.0,
+    size=0,
+    website="<str>",
+    industry="<str>",
+    custom_attributes={}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "create",
+    "params": {
+        "company_id": "<str>",
+        "name": "<str>",
+        "plan": "<str>",
+        "monthly_spend": 0.0,
+        "size": 0,
+        "website": "<str>",
+        "industry": "<str>",
+        "custom_attributes": {}
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `company_id` | `string` | Yes | A unique identifier for the company from your system |
+| `name` | `string` | No | The name of the company |
+| `plan` | `string` | No | The name of the plan the company is on |
+| `monthly_spend` | `number` | No | The monthly spend of the company |
+| `size` | `integer` | No | The number of employees in the company |
+| `website` | `string` | No | The URL of the company website |
+| `industry` | `string` | No | The industry the company operates in |
+| `custom_attributes` | `object` | No | Custom attributes for the company |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `app_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `company_id` | `string \| null` |  |
+| `plan` | `object \| any` |  |
+| `size` | `integer \| null` |  |
+| `industry` | `string \| null` |  |
+| `website` | `string \| null` |  |
+| `remote_created_at` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `last_request_at` | `integer \| null` |  |
+| `session_count` | `integer \| null` |  |
+| `monthly_spend` | `number \| null` |  |
+| `user_count` | `integer \| null` |  |
+| `tags` | `object \| any` |  |
+| `segments` | `object \| any` |  |
+| `custom_attributes` | `object \| null` |  |
+
+
+</details>
+
 ### Companies Get
 
 Get a single company by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -713,7 +1228,7 @@ await intercom.companies.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -742,6 +1257,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |------------|------|-------------|
 | `type` | `string \| null` |  |
 | `id` | `string` |  |
+| `app_id` | `string \| null` |  |
 | `name` | `string \| null` |  |
 | `company_id` | `string \| null` |  |
 | `plan` | `object \| any` |  |
@@ -762,14 +1278,141 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Companies Search
+### Companies Update
 
-Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Update an existing company by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "plan": "<str>",
+    "monthly_spend": 0.0,
+    "size": 0,
+    "website": "<str>",
+    "industry": "<str>",
+    "custom_attributes": {},
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.companies.search(
+await intercom.companies.update(
+    name="<str>",
+    plan="<str>",
+    monthly_spend=0.0,
+    size=0,
+    website="<str>",
+    industry="<str>",
+    custom_attributes={},
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "update",
+    "params": {
+        "name": "<str>",
+        "plan": "<str>",
+        "monthly_spend": 0.0,
+        "size": 0,
+        "website": "<str>",
+        "industry": "<str>",
+        "custom_attributes": {},
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | No | The name of the company |
+| `plan` | `string` | No | The name of the plan the company is on |
+| `monthly_spend` | `number` | No | The monthly spend of the company |
+| `size` | `integer` | No | The number of employees in the company |
+| `website` | `string` | No | The URL of the company website |
+| `industry` | `string` | No | The industry the company operates in |
+| `custom_attributes` | `object` | No | Custom attributes for the company |
+| `id` | `string` | Yes | Company ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `app_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `company_id` | `string \| null` |  |
+| `plan` | `object \| any` |  |
+| `size` | `integer \| null` |  |
+| `industry` | `string \| null` |  |
+| `website` | `string \| null` |  |
+| `remote_created_at` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `last_request_at` | `integer \| null` |  |
+| `session_count` | `integer \| null` |  |
+| `monthly_spend` | `number \| null` |  |
+| `user_count` | `integer \| null` |  |
+| `tags` | `object \| any` |  |
+| `segments` | `object \| any` |  |
+| `custom_attributes` | `object \| null` |  |
+
+
+</details>
+
+### Companies Context Store Search
+
+Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "app_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.companies.context_store_search(
     query={"filter": {"eq": {"app_id": "<str>"}}}
 )
 ```
@@ -777,12 +1420,12 @@ await intercom.companies.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "companies",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"app_id": "<str>"}}}
     }
@@ -797,7 +1440,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -828,30 +1471,29 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.app_id` | `string` | The ID of the application associated with the company |
-| `hits[].data.company_id` | `string` | The unique identifier of the company |
-| `hits[].data.created_at` | `integer` | The date and time when the company was created |
-| `hits[].data.custom_attributes` | `object` | Custom attributes specific to the company |
-| `hits[].data.id` | `string` | The ID of the company |
-| `hits[].data.industry` | `string` | The industry in which the company operates |
-| `hits[].data.monthly_spend` | `number` | The monthly spend of the company |
-| `hits[].data.name` | `string` | The name of the company |
-| `hits[].data.plan` | `object` | Details of the company's subscription plan |
-| `hits[].data.remote_created_at` | `integer` | The remote date and time when the company was created |
-| `hits[].data.segments` | `object` | Segments associated with the company |
-| `hits[].data.session_count` | `integer` | The number of sessions related to the company |
-| `hits[].data.size` | `integer` | The size of the company |
-| `hits[].data.tags` | `object` | Tags associated with the company |
-| `hits[].data.type` | `string` | The type of the company |
-| `hits[].data.updated_at` | `integer` | The date and time when the company was last updated |
-| `hits[].data.user_count` | `integer` | The number of users associated with the company |
-| `hits[].data.website` | `string` | The website of the company |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].app_id` | `string` | The ID of the application associated with the company |
+| `data[].company_id` | `string` | The unique identifier of the company |
+| `data[].created_at` | `integer` | The date and time when the company was created |
+| `data[].custom_attributes` | `object` | Custom attributes specific to the company |
+| `data[].id` | `string` | The ID of the company |
+| `data[].industry` | `string` | The industry in which the company operates |
+| `data[].monthly_spend` | `number` | The monthly spend of the company |
+| `data[].name` | `string` | The name of the company |
+| `data[].plan` | `object` | Details of the company's subscription plan |
+| `data[].remote_created_at` | `integer` | The remote date and time when the company was created |
+| `data[].segments` | `object` | Segments associated with the company |
+| `data[].session_count` | `integer` | The number of sessions related to the company |
+| `data[].size` | `integer` | The size of the company |
+| `data[].tags` | `object` | Tags associated with the company |
+| `data[].type` | `string` | The type of the company |
+| `data[].updated_at` | `integer` | The date and time when the company was last updated |
+| `data[].user_count` | `integer` | The number of users associated with the company |
+| `data[].website` | `string` | The website of the company |
 
 </details>
 
@@ -860,6 +1502,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Teams List
 
 Returns a list of all teams in the workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "teams",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -870,7 +1523,7 @@ await intercom.teams.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -901,6 +1554,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Get a single team by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -912,7 +1579,7 @@ await intercom.teams.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -948,14 +1615,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Teams Search
+### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "admin_ids": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.teams.search(
+await intercom.teams.context_store_search(
     query={"filter": {"eq": {"admin_ids": []}}}
 )
 ```
@@ -963,12 +1650,12 @@ await intercom.teams.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "teams",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"admin_ids": []}}}
     }
@@ -983,7 +1670,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1000,16 +1687,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.admin_ids` | `array` | Array of user IDs representing the admins of the team. |
-| `hits[].data.id` | `string` | Unique identifier for the team. |
-| `hits[].data.name` | `string` | Name of the team. |
-| `hits[].data.type` | `string` | Type of team (e.g., 'internal', 'external'). |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].admin_ids` | `array` | Array of user IDs representing the admins of the team. |
+| `data[].id` | `string` | Unique identifier for the team. |
+| `data[].name` | `string` | Name of the team. |
+| `data[].type` | `string` | Type of team (e.g., 'internal', 'external'). |
 
 </details>
 
@@ -1018,6 +1704,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Admins List
 
 Returns a list of all admins in the workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "admins",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1028,7 +1725,7 @@ await intercom.admins.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1065,6 +1762,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Get a single admin by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "admins",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1076,7 +1787,7 @@ await intercom.admins.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1124,6 +1835,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Returns a list of all tags in the workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1133,7 +1855,7 @@ await intercom.tags.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1160,9 +1882,88 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Tags Create
+
+Create a new tag or update an existing one
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "create",
+  "params": {
+    "name": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.tags.create(
+    name="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "create",
+    "params": {
+        "name": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | The name of the tag |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `applied_at` | `integer \| null` |  |
+| `applied_by` | `object \| any` |  |
+
+
+</details>
+
 ### Tags Get
 
 Get a single tag by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1175,7 +1976,7 @@ await intercom.tags.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1211,11 +2012,98 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+## Notes
+
+### Notes Create
+
+Create a note on an existing contact
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "notes",
+  "action": "create",
+  "params": {
+    "body": "<str>",
+    "admin_id": "<str>",
+    "contact_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.notes.create(
+    body="<str>",
+    admin_id="<str>",
+    contact_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "create",
+    "params": {
+        "body": "<str>",
+        "admin_id": "<str>",
+        "contact_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `body` | `string` | Yes | The body of the note in HTML format |
+| `admin_id` | `string` | No | The ID of the admin creating the note |
+| `contact_id` | `string` | Yes | Contact ID to add note to |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `created_at` | `integer \| null` |  |
+| `contact` | `object \| any` |  |
+| `author` | `object \| any` |  |
+| `body` | `string \| null` |  |
+
+
+</details>
+
 ## Segments
 
 ### Segments List
 
 Returns a list of all segments in the workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "segments",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1226,7 +2114,7 @@ await intercom.segments.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1265,6 +2153,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Get a single segment by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "segments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1276,7 +2178,7 @@ await intercom.segments.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1310,6 +2212,88 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `integer \| null` |  |
 | `person_type` | `string \| null` |  |
 | `count` | `integer \| null` |  |
+
+
+</details>
+
+## Internal Articles
+
+### Internal Articles Create
+
+Create a new internal article in the workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "internal_articles",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "body": "<str>",
+    "owner_id": 0,
+    "author_id": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.internal_articles.create(
+    title="<str>",
+    body="<str>",
+    owner_id=0,
+    author_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "internal_articles",
+    "action": "create",
+    "params": {
+        "title": "<str>",
+        "body": "<str>",
+        "owner_id": 0,
+        "author_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `title` | `string` | Yes | The title of the article |
+| `body` | `string` | No | The content of the article in HTML |
+| `owner_id` | `integer` | Yes | The ID of the owner of the article |
+| `author_id` | `integer` | Yes | The ID of the author of the article |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer \| string` |  |
+| `title` | `string \| null` |  |
+| `body` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `author_id` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `locale` | `string \| null` |  |
 
 
 </details>

@@ -3,7 +3,7 @@
 #
 
 
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 from pydantic.v1 import AnyUrl, BaseModel, Field
 
@@ -80,6 +80,17 @@ class Config(AbstractFileBasedSpec, BaseModel):
         group="advanced",
         default="use_records_transfer",
         airbyte_hidden=True,
+    )
+
+    sanitize_signed_urls: Optional[bool] = Field(
+        title="Sanitize File URLs",
+        description=(
+            "When enabled, removes credential-bearing query parameters from signed URLs "
+            "in the _ab_source_file_url record field. Only relevant for Service Account authentication."
+        ),
+        default=False,
+        order=4,
+        group="advanced",
     )
 
     @classmethod

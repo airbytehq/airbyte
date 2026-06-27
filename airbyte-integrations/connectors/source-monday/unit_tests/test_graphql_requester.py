@@ -169,11 +169,11 @@ def test_build_items_incremental_query(monday_requester):
 
     assert (
         built_query == "items(limit:100,ids:[1, 2, 3]){id,name,column_values{id,text,type,value,... on MirrorValue{display_value},"
-        "... on BoardRelationValue{display_value},... on DependencyValue{display_value}}}"
+        "... on BoardRelationValue{display_value,linked_item_ids},... on DependencyValue{display_value,linked_item_ids}}}"
     )
 
 
 def test_get_request_headers(monday_requester):
     headers = monday_requester.get_request_headers()
 
-    assert headers == {"API-Version": "2024-10"}
+    assert headers == {"API-Version": "2026-01"}

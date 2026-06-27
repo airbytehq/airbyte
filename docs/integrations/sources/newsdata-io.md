@@ -23,6 +23,9 @@ Historical News is only available for premium users of NewsData service.
 | latest_news | `article_id` | DefaultPaginator | ✅ |  ❌  |
 | historical_news | `article_id` | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -31,6 +34,15 @@ Historical News is only available for premium users of NewsData service.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-23 | [80536](https://github.com/airbytehq/airbyte/pull/80536) | Update dependencies |
+| 0.0.52 | 2026-06-16 | [79962](https://github.com/airbytehq/airbyte/pull/79962) | Update dependencies |
+| 0.0.51 | 2026-06-09 | [79390](https://github.com/airbytehq/airbyte/pull/79390) | Update dependencies |
+| 0.0.50 | 2026-06-02 | [78854](https://github.com/airbytehq/airbyte/pull/78854) | Update dependencies |
+| 0.0.49 | 2026-04-28 | [77307](https://github.com/airbytehq/airbyte/pull/77307) | Update dependencies |
+| 0.0.48 | 2026-04-21 | [76709](https://github.com/airbytehq/airbyte/pull/76709) | Update dependencies |
+| 0.0.47 | 2026-03-31 | [75359](https://github.com/airbytehq/airbyte/pull/75359) | Update dependencies |
+| 0.0.46 | 2026-03-10 | [74591](https://github.com/airbytehq/airbyte/pull/74591) | Update dependencies |
+| 0.0.45 | 2026-03-03 | [72594](https://github.com/airbytehq/airbyte/pull/72594) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [71655](https://github.com/airbytehq/airbyte/pull/71655) | Update dependencies |
 | 0.0.43 | 2025-12-18 | [70562](https://github.com/airbytehq/airbyte/pull/70562) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [69902](https://github.com/airbytehq/airbyte/pull/69902) | Update dependencies |

@@ -58,6 +58,10 @@ This connector outputs the following full refresh streams:
 
 The Chartmogul connector should not run into Chartmogul API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -65,6 +69,14 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.49 | 2026-06-09 | [79259](https://github.com/airbytehq/airbyte/pull/79259) | Update dependencies |
+| 1.1.48 | 2026-06-02 | [78648](https://github.com/airbytehq/airbyte/pull/78648) | Update dependencies |
+| 1.1.47 | 2026-04-28 | [77185](https://github.com/airbytehq/airbyte/pull/77185) | Update dependencies |
+| 1.1.46 | 2026-04-21 | [76534](https://github.com/airbytehq/airbyte/pull/76534) | Update dependencies |
+| 1.1.45 | 2026-03-24 | [75394](https://github.com/airbytehq/airbyte/pull/75394) | Update dependencies |
+| 1.1.44 | 2026-02-24 | [73793](https://github.com/airbytehq/airbyte/pull/73793) | Update dependencies |
+| 1.1.43 | 2026-02-10 | [72995](https://github.com/airbytehq/airbyte/pull/72995) | Update dependencies |
+| 1.1.42 | 2026-02-03 | [72699](https://github.com/airbytehq/airbyte/pull/72699) | Update dependencies |
 | 1.1.41 | 2026-01-20 | [72144](https://github.com/airbytehq/airbyte/pull/72144) | Update dependencies |
 | 1.1.40 | 2026-01-14 | [71721](https://github.com/airbytehq/airbyte/pull/71721) | Update dependencies |
 | 1.1.39 | 2025-12-18 | [70610](https://github.com/airbytehq/airbyte/pull/70610) | Update dependencies |

@@ -9,22 +9,35 @@ The Facebook-Marketing connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Current User | [Get](#current-user-get) |
-| Ad Accounts | [List](#ad-accounts-list), [Search](#ad-accounts-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Ad Sets | [List](#ad-sets-list), [Get](#ad-sets-get), [Search](#ad-sets-search) |
-| Ads | [List](#ads-list), [Get](#ads-get), [Search](#ads-search) |
-| Ad Creatives | [List](#ad-creatives-list), [Search](#ad-creatives-search) |
-| Ads Insights | [List](#ads-insights-list), [Search](#ads-insights-search) |
-| Ad Account | [Get](#ad-account-get), [Search](#ad-account-search) |
-| Custom Conversions | [List](#custom-conversions-list), [Search](#custom-conversions-search) |
-| Images | [List](#images-list), [Search](#images-search) |
-| Videos | [List](#videos-list), [Search](#videos-search) |
+| Ad Accounts | [List](#ad-accounts-list), [Get](#ad-accounts-get), [Context Store Search](#ad-accounts-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Context Store Search](#campaigns-context-store-search) |
+| Ad Sets | [List](#ad-sets-list), [Create](#ad-sets-create), [Get](#ad-sets-get), [Update](#ad-sets-update), [Context Store Search](#ad-sets-context-store-search) |
+| Ads | [List](#ads-list), [Create](#ads-create), [Get](#ads-get), [Update](#ads-update), [Context Store Search](#ads-context-store-search) |
+| Ad Creatives | [List](#ad-creatives-list), [Context Store Search](#ad-creatives-context-store-search) |
+| Ads Insights | [List](#ads-insights-list), [Context Store Search](#ads-insights-context-store-search) |
+| Custom Conversions | [List](#custom-conversions-list), [Context Store Search](#custom-conversions-context-store-search) |
+| Images | [List](#images-list), [Context Store Search](#images-context-store-search) |
+| Videos | [List](#videos-list), [Context Store Search](#videos-context-store-search) |
+| Pixels | [List](#pixels-list), [Get](#pixels-get) |
+| Pixel Stats | [List](#pixel-stats-list) |
+| Ad Library | [List](#ad-library-list) |
 
 ## Current User
 
 ### Current User Get
 
 Returns information about the current user associated with the access token
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "current_user",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 
@@ -35,7 +48,7 @@ await facebook_marketing.current_user.get()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -71,6 +84,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Returns a list of ad accounts associated with the current user
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_accounts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -80,7 +104,7 @@ await facebook_marketing.ad_accounts.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -131,14 +155,128 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ad Accounts Search
+### Ad Accounts Get
 
-Search and filter ad accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Returns information about the specified ad account including balance and currency
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_accounts",
+  "action": "get",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ad_accounts.search(
+await facebook_marketing.ad_accounts.get(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_accounts",
+    "action": "get",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `account_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `account_status` | `integer \| null` |  |
+| `age` | `number \| null` |  |
+| `amount_spent` | `string \| null` |  |
+| `balance` | `string \| null` |  |
+| `business` | `object \| any` |  |
+| `business_city` | `string \| null` |  |
+| `business_country_code` | `string \| null` |  |
+| `business_name` | `string \| null` |  |
+| `business_state` | `string \| null` |  |
+| `business_street` | `string \| null` |  |
+| `business_street2` | `string \| null` |  |
+| `business_zip` | `string \| null` |  |
+| `created_time` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `disable_reason` | `integer \| null` |  |
+| `end_advertiser` | `string \| null` |  |
+| `end_advertiser_name` | `string \| null` |  |
+| `funding_source` | `string \| null` |  |
+| `funding_source_details` | `object \| null` |  |
+| `has_migrated_permissions` | `boolean \| null` |  |
+| `is_personal` | `integer \| null` |  |
+| `is_prepay_account` | `boolean \| null` |  |
+| `is_tax_id_required` | `boolean \| null` |  |
+| `min_campaign_group_spend_cap` | `string \| null` |  |
+| `min_daily_budget` | `integer \| null` |  |
+| `owner` | `string \| null` |  |
+| `spend_cap` | `string \| null` |  |
+| `timezone_id` | `integer \| null` |  |
+| `timezone_name` | `string \| null` |  |
+| `timezone_offset_hours_utc` | `number \| null` |  |
+
+
+</details>
+
+### Ad Accounts Context Store Search
+
+Search and filter ad accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_accounts.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -146,12 +284,12 @@ await facebook_marketing.ad_accounts.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_accounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -166,7 +304,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -190,23 +328,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Ad account ID |
-| `hits[].data.account_id` | `string` | Ad account ID (numeric) |
-| `hits[].data.name` | `string` | Ad account name |
-| `hits[].data.balance` | `string` | Current balance of the ad account |
-| `hits[].data.currency` | `string` | Currency used by the ad account |
-| `hits[].data.account_status` | `integer` | Account status |
-| `hits[].data.amount_spent` | `string` | Total amount spent |
-| `hits[].data.business_name` | `string` | Business name |
-| `hits[].data.created_time` | `string` | Account creation time |
-| `hits[].data.spend_cap` | `string` | Spend cap |
-| `hits[].data.timezone_name` | `string` | Timezone name |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Ad account ID |
+| `data[].account_id` | `string` | Ad account ID (numeric) |
+| `data[].name` | `string` | Ad account name |
+| `data[].balance` | `string` | Current balance of the ad account |
+| `data[].currency` | `string` | Currency used by the ad account |
+| `data[].account_status` | `integer` | Account status |
+| `data[].amount_spent` | `string` | Total amount spent |
+| `data[].business_name` | `string` | Business name |
+| `data[].created_time` | `string` | Account creation time |
+| `data[].spend_cap` | `string` | Spend cap |
+| `data[].timezone_name` | `string` | Timezone name |
 
 </details>
 
@@ -215,6 +352,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Campaigns List
 
 Returns a list of campaigns for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -227,7 +378,7 @@ await facebook_marketing.campaigns.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -301,9 +452,84 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Campaigns Create
+
+Creates a new ad campaign in the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "campaigns",
+  "action": "create",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.campaigns.create(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "create",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+
+
+</details>
+
 ### Campaigns Get
 
 Returns a single campaign by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -316,7 +542,7 @@ await facebook_marketing.campaigns.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -382,14 +608,95 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Campaigns Search
+### Campaigns Update
 
-Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Updates an existing ad campaign
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "campaigns",
+  "action": "update",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.campaigns.search(
+await facebook_marketing.campaigns.update(
+    campaign_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "update",
+    "params": {
+        "campaign_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `campaign_id` | `string` | Yes | The campaign ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `success` | `boolean` |  |
+
+
+</details>
+
+### Campaigns Context Store Search
+
+Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.campaigns.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -397,12 +704,12 @@ await facebook_marketing.campaigns.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -417,7 +724,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -443,25 +750,24 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Campaign ID |
-| `hits[].data.name` | `string` | Campaign name |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.status` | `string` | Campaign status |
-| `hits[].data.effective_status` | `string` | Effective status |
-| `hits[].data.objective` | `string` | Campaign objective |
-| `hits[].data.daily_budget` | `number` | Daily budget in account currency |
-| `hits[].data.lifetime_budget` | `number` | Lifetime budget |
-| `hits[].data.budget_remaining` | `number` | Remaining budget |
-| `hits[].data.created_time` | `string` | Campaign creation time |
-| `hits[].data.start_time` | `string` | Campaign start time |
-| `hits[].data.stop_time` | `string` | Campaign stop time |
-| `hits[].data.updated_time` | `string` | Last update time |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Campaign ID |
+| `data[].name` | `string` | Campaign name |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].status` | `string` | Campaign status |
+| `data[].effective_status` | `string` | Effective status |
+| `data[].objective` | `string` | Campaign objective |
+| `data[].daily_budget` | `number` | Daily budget in account currency |
+| `data[].lifetime_budget` | `number` | Lifetime budget |
+| `data[].budget_remaining` | `number` | Remaining budget |
+| `data[].created_time` | `string` | Campaign creation time |
+| `data[].start_time` | `string` | Campaign start time |
+| `data[].stop_time` | `string` | Campaign stop time |
+| `data[].updated_time` | `string` | Last update time |
 
 </details>
 
@@ -470,6 +776,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Ad Sets List
 
 Returns a list of ad sets for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_sets",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -482,7 +802,7 @@ await facebook_marketing.ad_sets.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -546,9 +866,84 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Ad Sets Create
+
+Creates a new ad set in the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_sets",
+  "action": "create",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_sets.create(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_sets",
+    "action": "create",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+
+
+</details>
+
 ### Ad Sets Get
 
 Returns a single ad set by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_sets",
+  "action": "get",
+  "params": {
+    "adset_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -561,7 +956,7 @@ await facebook_marketing.ad_sets.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -617,14 +1012,95 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ad Sets Search
+### Ad Sets Update
 
-Search and filter ad sets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Updates an existing ad set
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_sets",
+  "action": "update",
+  "params": {
+    "adset_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ad_sets.search(
+await facebook_marketing.ad_sets.update(
+    adset_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_sets",
+    "action": "update",
+    "params": {
+        "adset_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `adset_id` | `string` | Yes | The ad set ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `success` | `boolean` |  |
+
+
+</details>
+
+### Ad Sets Context Store Search
+
+Search and filter ad sets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_sets",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_sets.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -632,12 +1108,12 @@ await facebook_marketing.ad_sets.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_sets",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -652,7 +1128,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -679,26 +1155,25 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Ad Set ID |
-| `hits[].data.name` | `string` | Ad Set name |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.campaign_id` | `string` | Parent campaign ID |
-| `hits[].data.effective_status` | `string` | Effective status |
-| `hits[].data.daily_budget` | `number` | Daily budget |
-| `hits[].data.lifetime_budget` | `number` | Lifetime budget |
-| `hits[].data.budget_remaining` | `number` | Remaining budget |
-| `hits[].data.bid_amount` | `number` | Bid amount |
-| `hits[].data.bid_strategy` | `string` | Bid strategy |
-| `hits[].data.created_time` | `string` | Ad set creation time |
-| `hits[].data.start_time` | `string` | Ad set start time |
-| `hits[].data.end_time` | `string` | Ad set end time |
-| `hits[].data.updated_time` | `string` | Last update time |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Ad Set ID |
+| `data[].name` | `string` | Ad Set name |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].campaign_id` | `string` | Parent campaign ID |
+| `data[].effective_status` | `string` | Effective status |
+| `data[].daily_budget` | `number` | Daily budget |
+| `data[].lifetime_budget` | `number` | Lifetime budget |
+| `data[].budget_remaining` | `number` | Remaining budget |
+| `data[].bid_amount` | `number` | Bid amount |
+| `data[].bid_strategy` | `string` | Bid strategy |
+| `data[].created_time` | `string` | Ad set creation time |
+| `data[].start_time` | `string` | Ad set start time |
+| `data[].end_time` | `string` | Ad set end time |
+| `data[].updated_time` | `string` | Last update time |
 
 </details>
 
@@ -707,6 +1182,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Ads List
 
 Returns a list of ads for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ads",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -719,7 +1208,7 @@ await facebook_marketing.ads.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -789,9 +1278,84 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Ads Create
+
+Creates a new ad in the specified ad account. Note - requires a Facebook Page to be connected to the ad account.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ads",
+  "action": "create",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.ads.create(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads",
+    "action": "create",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+
+
+</details>
+
 ### Ads Get
 
 Returns a single ad by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ads",
+  "action": "get",
+  "params": {
+    "ad_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -804,7 +1368,7 @@ await facebook_marketing.ads.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -866,14 +1430,95 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ads Search
+### Ads Update
 
-Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Updates an existing ad
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ads",
+  "action": "update",
+  "params": {
+    "ad_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ads.search(
+await facebook_marketing.ads.update(
+    ad_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads",
+    "action": "update",
+    "params": {
+        "ad_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `ad_id` | `string` | Yes | The ad ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `success` | `boolean` |  |
+
+
+</details>
+
+### Ads Context Store Search
+
+Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.ads.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -881,12 +1526,12 @@ await facebook_marketing.ads.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -901,7 +1546,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -923,21 +1568,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Ad ID |
-| `hits[].data.name` | `string` | Ad name |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.adset_id` | `string` | Parent ad set ID |
-| `hits[].data.campaign_id` | `string` | Parent campaign ID |
-| `hits[].data.status` | `string` | Ad status |
-| `hits[].data.effective_status` | `string` | Effective status |
-| `hits[].data.created_time` | `string` | Ad creation time |
-| `hits[].data.updated_time` | `string` | Last update time |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Ad ID |
+| `data[].name` | `string` | Ad name |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].adset_id` | `string` | Parent ad set ID |
+| `data[].campaign_id` | `string` | Parent campaign ID |
+| `data[].status` | `string` | Ad status |
+| `data[].effective_status` | `string` | Effective status |
+| `data[].created_time` | `string` | Ad creation time |
+| `data[].updated_time` | `string` | Last update time |
 
 </details>
 
@@ -946,6 +1590,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Ad Creatives List
 
 Returns a list of ad creatives for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_creatives",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -958,7 +1616,7 @@ await facebook_marketing.ad_creatives.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1015,14 +1673,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ad Creatives Search
+### Ad Creatives Context Store Search
 
 Search and filter ad creatives records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_creatives",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ad_creatives.search(
+await facebook_marketing.ad_creatives.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1030,12 +1708,12 @@ await facebook_marketing.ad_creatives.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_creatives",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1050,7 +1728,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1073,22 +1751,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Ad Creative ID |
-| `hits[].data.name` | `string` | Ad Creative name |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.body` | `string` | Ad body text |
-| `hits[].data.title` | `string` | Ad title |
-| `hits[].data.status` | `string` | Creative status |
-| `hits[].data.image_url` | `string` | Image URL |
-| `hits[].data.thumbnail_url` | `string` | Thumbnail URL |
-| `hits[].data.link_url` | `string` | Link URL |
-| `hits[].data.call_to_action_type` | `string` | Call to action type |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Ad Creative ID |
+| `data[].name` | `string` | Ad Creative name |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].body` | `string` | Ad body text |
+| `data[].title` | `string` | Ad title |
+| `data[].status` | `string` | Creative status |
+| `data[].image_url` | `string` | Image URL |
+| `data[].thumbnail_url` | `string` | Thumbnail URL |
+| `data[].link_url` | `string` | Link URL |
+| `data[].call_to_action_type` | `string` | Call to action type |
 
 </details>
 
@@ -1097,6 +1774,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Ads Insights List
 
 Returns performance insights for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ads_insights",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1109,7 +1800,7 @@ await facebook_marketing.ads_insights.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1192,14 +1883,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ads Insights Search
+### Ads Insights Context Store Search
 
 Search and filter ads insights records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ads_insights",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ads_insights.search(
+await facebook_marketing.ads_insights.context_store_search(
     query={"filter": {"eq": {"account_id": "<str>"}}}
 )
 ```
@@ -1207,12 +1918,12 @@ await facebook_marketing.ads_insights.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads_insights",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"account_id": "<str>"}}}
     }
@@ -1227,7 +1938,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1259,192 +1970,30 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.account_name` | `string` | Ad account name |
-| `hits[].data.campaign_id` | `string` | Campaign ID |
-| `hits[].data.campaign_name` | `string` | Campaign name |
-| `hits[].data.adset_id` | `string` | Ad set ID |
-| `hits[].data.adset_name` | `string` | Ad set name |
-| `hits[].data.ad_id` | `string` | Ad ID |
-| `hits[].data.ad_name` | `string` | Ad name |
-| `hits[].data.clicks` | `integer` | Number of clicks |
-| `hits[].data.impressions` | `integer` | Number of impressions |
-| `hits[].data.reach` | `integer` | Number of unique people reached |
-| `hits[].data.spend` | `number` | Amount spent |
-| `hits[].data.cpc` | `number` | Cost per click |
-| `hits[].data.cpm` | `number` | Cost per 1000 impressions |
-| `hits[].data.ctr` | `number` | Click-through rate |
-| `hits[].data.date_start` | `string` | Start date of the reporting period |
-| `hits[].data.date_stop` | `string` | End date of the reporting period |
-| `hits[].data.actions` | `array` | Total number of actions taken |
-| `hits[].data.action_values` | `array` | Action values taken on the ad |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
-
-</details>
-
-## Ad Account
-
-### Ad Account Get
-
-Returns information about the specified ad account including balance and currency
-
-#### Python SDK
-
-```python
-await facebook_marketing.ad_account.get(
-    account_id="<str>"
-)
-```
-
-#### API
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-    "entity": "ad_account",
-    "action": "get",
-    "params": {
-        "account_id": "<str>"
-    }
-}'
-```
-
-
-#### Parameters
-
-| Parameter Name | Type | Required | Description |
-|----------------|------|----------|-------------|
-| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
-| `fields` | `string` | No | Comma-separated list of fields to return |
-
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-#### Records
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `id` | `string` |  |
-| `account_id` | `string \| null` |  |
-| `name` | `string \| null` |  |
-| `account_status` | `integer \| null` |  |
-| `age` | `number \| null` |  |
-| `amount_spent` | `string \| null` |  |
-| `balance` | `string \| null` |  |
-| `business` | `object \| any` |  |
-| `business_city` | `string \| null` |  |
-| `business_country_code` | `string \| null` |  |
-| `business_name` | `string \| null` |  |
-| `business_state` | `string \| null` |  |
-| `business_street` | `string \| null` |  |
-| `business_street2` | `string \| null` |  |
-| `business_zip` | `string \| null` |  |
-| `created_time` | `string \| null` |  |
-| `currency` | `string \| null` |  |
-| `disable_reason` | `integer \| null` |  |
-| `end_advertiser` | `string \| null` |  |
-| `end_advertiser_name` | `string \| null` |  |
-| `funding_source` | `string \| null` |  |
-| `funding_source_details` | `object \| null` |  |
-| `has_migrated_permissions` | `boolean \| null` |  |
-| `is_personal` | `integer \| null` |  |
-| `is_prepay_account` | `boolean \| null` |  |
-| `is_tax_id_required` | `boolean \| null` |  |
-| `min_campaign_group_spend_cap` | `string \| null` |  |
-| `min_daily_budget` | `integer \| null` |  |
-| `owner` | `string \| null` |  |
-| `spend_cap` | `string \| null` |  |
-| `timezone_id` | `integer \| null` |  |
-| `timezone_name` | `string \| null` |  |
-| `timezone_offset_hours_utc` | `number \| null` |  |
-
-
-</details>
-
-### Ad Account Search
-
-Search and filter ad account records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
-
-#### Python SDK
-
-```python
-await facebook_marketing.ad_account.search(
-    query={"filter": {"eq": {"id": "<str>"}}}
-)
-```
-
-#### API
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-    "entity": "ad_account",
-    "action": "search",
-    "params": {
-        "query": {"filter": {"eq": {"id": "<str>"}}}
-    }
-}'
-```
-
-#### Parameters
-
-| Parameter Name | Type | Required | Description |
-|----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
-| `query.filter` | `object` | No | Filter conditions |
-| `query.sort` | `array` | No | Sort conditions |
-| `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
-| `fields` | `array` | No | Field paths to include in results |
-
-#### Searchable Fields
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `id` | `string` | Ad account ID |
-| `account_id` | `string` | Ad account ID (numeric) |
-| `name` | `string` | Ad account name |
-| `balance` | `string` | Current balance of the ad account |
-| `currency` | `string` | Currency used by the ad account |
-| `account_status` | `integer` | Account status |
-| `amount_spent` | `string` | Total amount spent |
-| `business_name` | `string` | Business name |
-| `created_time` | `string` | Account creation time |
-| `spend_cap` | `string` | Spend cap |
-| `timezone_name` | `string` | Timezone name |
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Ad account ID |
-| `hits[].data.account_id` | `string` | Ad account ID (numeric) |
-| `hits[].data.name` | `string` | Ad account name |
-| `hits[].data.balance` | `string` | Current balance of the ad account |
-| `hits[].data.currency` | `string` | Currency used by the ad account |
-| `hits[].data.account_status` | `integer` | Account status |
-| `hits[].data.amount_spent` | `string` | Total amount spent |
-| `hits[].data.business_name` | `string` | Business name |
-| `hits[].data.created_time` | `string` | Account creation time |
-| `hits[].data.spend_cap` | `string` | Spend cap |
-| `hits[].data.timezone_name` | `string` | Timezone name |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].account_name` | `string` | Ad account name |
+| `data[].campaign_id` | `string` | Campaign ID |
+| `data[].campaign_name` | `string` | Campaign name |
+| `data[].adset_id` | `string` | Ad set ID |
+| `data[].adset_name` | `string` | Ad set name |
+| `data[].ad_id` | `string` | Ad ID |
+| `data[].ad_name` | `string` | Ad name |
+| `data[].clicks` | `integer` | Number of clicks |
+| `data[].impressions` | `integer` | Number of impressions |
+| `data[].reach` | `integer` | Number of unique people reached |
+| `data[].spend` | `number` | Amount spent |
+| `data[].cpc` | `number` | Cost per click |
+| `data[].cpm` | `number` | Cost per 1000 impressions |
+| `data[].ctr` | `number` | Click-through rate |
+| `data[].date_start` | `string` | Start date of the reporting period |
+| `data[].date_stop` | `string` | End date of the reporting period |
+| `data[].actions` | `array` | Total number of actions taken |
+| `data[].action_values` | `array` | Action values taken on the ad |
 
 </details>
 
@@ -1453,6 +2002,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Custom Conversions List
 
 Returns a list of custom conversions for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "custom_conversions",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1465,7 +2028,7 @@ await facebook_marketing.custom_conversions.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1525,14 +2088,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Custom Conversions Search
+### Custom Conversions Context Store Search
 
 Search and filter custom conversions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "custom_conversions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.custom_conversions.search(
+await facebook_marketing.custom_conversions.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1540,12 +2123,12 @@ await facebook_marketing.custom_conversions.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "custom_conversions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1560,7 +2143,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1582,21 +2165,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Custom Conversion ID |
-| `hits[].data.name` | `string` | Custom Conversion name |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.description` | `string` | Description |
-| `hits[].data.custom_event_type` | `string` | Custom event type |
-| `hits[].data.creation_time` | `string` | Creation time |
-| `hits[].data.first_fired_time` | `string` | First fired time |
-| `hits[].data.last_fired_time` | `string` | Last fired time |
-| `hits[].data.is_archived` | `boolean` | Whether the conversion is archived |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Custom Conversion ID |
+| `data[].name` | `string` | Custom Conversion name |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].description` | `string` | Description |
+| `data[].custom_event_type` | `string` | Custom event type |
+| `data[].creation_time` | `string` | Creation time |
+| `data[].first_fired_time` | `string` | First fired time |
+| `data[].last_fired_time` | `string` | Last fired time |
+| `data[].is_archived` | `boolean` | Whether the conversion is archived |
 
 </details>
 
@@ -1605,6 +2187,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Images List
 
 Returns a list of ad images for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "images",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1617,7 +2213,7 @@ await facebook_marketing.images.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1674,14 +2270,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Images Search
+### Images Context Store Search
 
 Search and filter images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "images",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.images.search(
+await facebook_marketing.images.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1689,12 +2305,12 @@ await facebook_marketing.images.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "images",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1709,7 +2325,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1733,23 +2349,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Image ID |
-| `hits[].data.name` | `string` | Image name |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.hash` | `string` | Image hash |
-| `hits[].data.url` | `string` | Image URL |
-| `hits[].data.permalink_url` | `string` | Permalink URL |
-| `hits[].data.width` | `integer` | Image width |
-| `hits[].data.height` | `integer` | Image height |
-| `hits[].data.status` | `string` | Image status |
-| `hits[].data.created_time` | `string` | Creation time |
-| `hits[].data.updated_time` | `string` | Last update time |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Image ID |
+| `data[].name` | `string` | Image name |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].hash` | `string` | Image hash |
+| `data[].url` | `string` | Image URL |
+| `data[].permalink_url` | `string` | Permalink URL |
+| `data[].width` | `integer` | Image width |
+| `data[].height` | `integer` | Image height |
+| `data[].status` | `string` | Image status |
+| `data[].created_time` | `string` | Creation time |
+| `data[].updated_time` | `string` | Last update time |
 
 </details>
 
@@ -1758,6 +2373,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Videos List
 
 Returns a list of ad videos for the specified ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "videos",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1770,7 +2399,7 @@ await facebook_marketing.videos.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1845,14 +2474,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Videos Search
+### Videos Context Store Search
 
 Search and filter videos records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "videos",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await facebook_marketing.videos.search(
+await facebook_marketing.videos.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1860,12 +2509,12 @@ await facebook_marketing.videos.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "videos",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1880,7 +2529,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1903,22 +2552,362 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Video ID |
-| `hits[].data.title` | `string` | Video title |
-| `hits[].data.account_id` | `string` | Ad account ID |
-| `hits[].data.description` | `string` | Video description |
-| `hits[].data.length` | `number` | Video length in seconds |
-| `hits[].data.source` | `string` | Video source URL |
-| `hits[].data.permalink_url` | `string` | Permalink URL |
-| `hits[].data.views` | `integer` | Number of views |
-| `hits[].data.created_time` | `string` | Creation time |
-| `hits[].data.updated_time` | `string` | Last update time |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Video ID |
+| `data[].title` | `string` | Video title |
+| `data[].account_id` | `string` | Ad account ID |
+| `data[].description` | `string` | Video description |
+| `data[].length` | `number` | Video length in seconds |
+| `data[].source` | `string` | Video source URL |
+| `data[].permalink_url` | `string` | Permalink URL |
+| `data[].views` | `integer` | Number of views |
+| `data[].created_time` | `string` | Creation time |
+| `data[].updated_time` | `string` | Last update time |
+
+</details>
+
+## Pixels
+
+### Pixels List
+
+Returns a list of Facebook pixels for the specified ad account, including pixel configuration and event quality data
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "pixels",
+  "action": "list",
+  "params": {
+    "account_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.pixels.list(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pixels",
+    "action": "list",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+| `limit` | `integer` | No | Maximum number of results to return |
+| `after` | `string` | No | Cursor for pagination |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `creation_time` | `string \| null` |  |
+| `creator` | `object \| null` |  |
+| `data_use_setting` | `string \| null` |  |
+| `enable_automatic_matching` | `boolean \| null` |  |
+| `first_party_cookie_status` | `string \| null` |  |
+| `is_created_by_app` | `boolean \| null` |  |
+| `is_crm` | `boolean \| null` |  |
+| `is_unavailable` | `boolean \| null` |  |
+| `last_fired_time` | `string \| null` |  |
+| `owner_ad_account` | `object \| null` |  |
+| `owner_business` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `after` | `string \| null` |  |
+
+</details>
+
+### Pixels Get
+
+Returns details about a single Facebook pixel by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "pixels",
+  "action": "get",
+  "params": {
+    "pixel_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.pixels.get(
+    pixel_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pixels",
+    "action": "get",
+    "params": {
+        "pixel_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `pixel_id` | `string` | Yes | The Facebook pixel ID |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `creation_time` | `string \| null` |  |
+| `creator` | `object \| null` |  |
+| `data_use_setting` | `string \| null` |  |
+| `enable_automatic_matching` | `boolean \| null` |  |
+| `first_party_cookie_status` | `string \| null` |  |
+| `is_created_by_app` | `boolean \| null` |  |
+| `is_crm` | `boolean \| null` |  |
+| `is_unavailable` | `boolean \| null` |  |
+| `last_fired_time` | `string \| null` |  |
+| `owner_ad_account` | `object \| null` |  |
+| `owner_business` | `object \| null` |  |
+
+
+</details>
+
+## Pixel Stats
+
+### Pixel Stats List
+
+Returns event quality and stats data for a Facebook pixel, including event counts, match quality scores, and deduplication metrics
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "pixel_stats",
+  "action": "list",
+  "params": {
+    "pixel_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.pixel_stats.list(
+    pixel_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pixel_stats",
+    "action": "list",
+    "params": {
+        "pixel_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `pixel_id` | `string` | Yes | The Facebook pixel ID |
+| `start_time` | `string` | No | Start time for stats period as Unix timestamp |
+| `end_time` | `string` | No | End time for stats period as Unix timestamp |
+| `aggregation` | `"event" \| "device" \| "custom_data_field"` | No | Aggregation level for stats |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array \| null` |  |
+| `event` | `string \| null` |  |
+| `event_source` | `string \| null` |  |
+| `total_count` | `integer \| null` |  |
+| `total_matched_count` | `integer \| null` |  |
+| `total_deduped_count` | `integer \| null` |  |
+| `test_events_count` | `integer \| null` |  |
+
+
+</details>
+
+## Ad Library
+
+### Ad Library List
+
+Search the Facebook Ad Library for ads about social issues, elections or politics, and ads delivered to the UK or EU. Returns archived ads matching the specified search criteria including ad creative content, delivery dates, spend ranges, and demographic reach data.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "facebook-marketing",
+  "entity": "ad_library",
+  "action": "list",
+  "params": {
+    "ad_reached_countries": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_library.list(
+    ad_reached_countries="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_library",
+    "action": "list",
+    "params": {
+        "ad_reached_countries": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `ad_reached_countries` | `string` | Yes | Search by ISO country code to return ads that reached specific countries. Use ALL to search all countries. |
+| `search_terms` | `string` | No | The terms to search for. Blank space is treated as logical AND. Limit of 100 characters. |
+| `search_page_ids` | `string` | No | Search for ads by specific Facebook Page IDs (comma-separated, up to 10) |
+| `ad_type` | `"ALL" \| "EMPLOYMENT_ADS" \| "FINANCIAL_PRODUCTS_AND_SERVICES_ADS" \| "HOUSING_ADS" \| "POLITICAL_AND_ISSUE_ADS"` | No | Filter by ad type category |
+| `ad_active_status` | `"ACTIVE" \| "ALL" \| "INACTIVE"` | No | Filter by ad active status |
+| `ad_delivery_date_min` | `string` | No | Search for ads delivered after this date (inclusive, YYYY-MM-DD) |
+| `ad_delivery_date_max` | `string` | No | Search for ads delivered before this date (inclusive, YYYY-MM-DD) |
+| `bylines` | `string` | No | Filter by paid-for-by disclaimer byline (JSON array of strings). Available only for POLITICAL_AND_ISSUE_ADS. |
+| `languages` | `string` | No | Filter by language codes (ISO 639-1 JSON array, e.g. "['en','es']") |
+| `media_type` | `"ALL" \| "IMAGE" \| "MEME" \| "VIDEO" \| "NONE"` | No | Filter by media type in the ad |
+| `publisher_platforms` | `string` | No | Filter by Meta platform where the ad appeared (JSON array) |
+| `search_type` | `"KEYWORD_UNORDERED" \| "KEYWORD_EXACT_PHRASE"` | No | Type of search to use for search_terms |
+| `unmask_removed_content` | `boolean` | No | Whether to reveal content removed for violating standards |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+| `limit` | `integer` | No | Maximum number of results to return |
+| `after` | `string` | No | Cursor for pagination |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `ad_creation_time` | `string \| null` |  |
+| `ad_creative_bodies` | `array \| null` |  |
+| `ad_creative_link_captions` | `array \| null` |  |
+| `ad_creative_link_descriptions` | `array \| null` |  |
+| `ad_creative_link_titles` | `array \| null` |  |
+| `ad_delivery_start_time` | `string \| null` |  |
+| `ad_delivery_stop_time` | `string \| null` |  |
+| `ad_snapshot_url` | `string \| null` |  |
+| `age_country_gender_reach_breakdown` | `array \| null` |  |
+| `beneficiary_payers` | `array \| null` |  |
+| `br_total_reach` | `integer \| null` |  |
+| `bylines` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `delivery_by_region` | `array \| null` |  |
+| `demographic_distribution` | `array \| null` |  |
+| `estimated_audience_size` | `object \| null` |  |
+| `eu_total_reach` | `integer \| null` |  |
+| `impressions` | `object \| null` |  |
+| `languages` | `array \| null` |  |
+| `page_id` | `string \| null` |  |
+| `page_name` | `string \| null` |  |
+| `publisher_platforms` | `array \| null` |  |
+| `spend` | `object \| null` |  |
+| `target_ages` | `array \| null` |  |
+| `target_gender` | `string \| null` |  |
+| `target_locations` | `array \| null` |  |
+| `total_reach_by_location` | `array \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `after` | `string \| null` |  |
 
 </details>
 

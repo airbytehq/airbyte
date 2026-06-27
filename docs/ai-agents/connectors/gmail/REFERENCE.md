@@ -1,0 +1,1821 @@
+# Gmail full reference
+
+This is the full reference documentation for the Gmail agent connector.
+
+## Supported entities and actions
+
+The Gmail connector supports the following entities and actions.
+
+| Entity | Actions |
+|--------|---------|
+| Profile | [Get](#profile-get), [Context Store Search](#profile-context-store-search) |
+| Messages | [List](#messages-list), [Get](#messages-get), [Create](#messages-create), [Update](#messages-update), [Context Store Search](#messages-context-store-search) |
+| Labels | [List](#labels-list), [Create](#labels-create), [Get](#labels-get), [Update](#labels-update), [Delete](#labels-delete), [Context Store Search](#labels-context-store-search) |
+| Drafts | [List](#drafts-list), [Create](#drafts-create), [Get](#drafts-get), [Update](#drafts-update), [Delete](#drafts-delete), [Context Store Search](#drafts-context-store-search) |
+| Drafts Send | [Create](#drafts-send-create) |
+| Threads | [List](#threads-list), [Get](#threads-get), [Context Store Search](#threads-context-store-search) |
+| Messages Trash | [Create](#messages-trash-create) |
+| Messages Untrash | [Create](#messages-untrash-create) |
+
+## Profile
+
+### Profile Get
+
+Gets the current user's Gmail profile including email address and mailbox statistics
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "profile",
+  "action": "get"
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.profile.get()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "profile",
+    "action": "get"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `emailAddress` | `string \| null` |  |
+| `messagesTotal` | `integer \| null` |  |
+| `threadsTotal` | `integer \| null` |  |
+| `historyId` | `string \| null` |  |
+
+
+</details>
+
+### Profile Context Store Search
+
+Search and filter profile records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "profile",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "emailAddress": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.profile.context_store_search(
+    query={"filter": {"eq": {"emailAddress": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "profile",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"emailAddress": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `emailAddress` | `string` | Email address of the authenticated Gmail account |
+| `historyId` | `string` | Mailbox history record identifier used for incremental sync |
+| `messagesTotal` | `number` | Total number of messages currently in the mailbox |
+| `threadsTotal` | `number` | Total number of threads currently in the mailbox |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].emailAddress` | `string` | Email address of the authenticated Gmail account |
+| `data[].historyId` | `string` | Mailbox history record identifier used for incremental sync |
+| `data[].messagesTotal` | `number` | Total number of messages currently in the mailbox |
+| `data[].threadsTotal` | `number` | Total number of threads currently in the mailbox |
+
+</details>
+
+## Messages
+
+### Messages List
+
+Lists the messages in the user's mailbox. Returns message IDs and thread IDs.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `maxResults` | `integer` | No | Maximum number of messages to return (1-500) |
+| `pageToken` | `string` | No | Page token to retrieve a specific page of results |
+| `q` | `string` | No | Gmail search query (same format as Gmail search box, e.g. "from:user@example.com", "is:unread", "subject:hello") |
+| `labelIds` | `string` | No | Only return messages with labels matching all of the specified label IDs (comma-separated) |
+| `includeSpamTrash` | `boolean` | No | Include messages from SPAM and TRASH in the results |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `threadId` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `nextPageToken` | `string \| null` |  |
+| `resultSizeEstimate` | `integer \| null` |  |
+
+</details>
+
+### Messages Get
+
+Gets the full email message content including headers, body, and attachments metadata
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "get",
+  "params": {
+    "messageId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages.get(
+    message_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "get",
+    "params": {
+        "messageId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `messageId` | `string` | Yes | The ID of the message to retrieve |
+| `format` | `"full" \| "metadata" \| "minimal" \| "raw"` | No | The format to return the message in (full, metadata, minimal, raw) |
+| `metadataHeaders` | `string` | No | When format is METADATA, only include headers specified (comma-separated) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `threadId` | `string \| null` |  |
+| `labelIds` | `array \| null` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+| `internalDate` | `string \| null` |  |
+| `sizeEstimate` | `integer \| null` |  |
+| `raw` | `string \| null` |  |
+| `payload` | `object \| any` |  |
+
+
+</details>
+
+### Messages Create
+
+Sends a new email message. The message should be provided as a base64url-encoded
+RFC 2822 formatted string in the 'raw' field. Build the complete MIME message
+first, including headers such as To and Subject plus a blank line before the
+body, then base64url-encode that message before calling this operation.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "create",
+  "params": {
+    "raw": "<str>",
+    "threadId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages.create(
+    raw="<str>",
+    thread_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "create",
+    "params": {
+        "raw": "<str>",
+        "threadId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `raw` | `string` | Yes | Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before sending. |
+| `threadId` | `string` | No | The thread ID to reply to (for threading replies in a conversation) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `threadId` | `string \| null` |  |
+| `labelIds` | `array \| null` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+| `internalDate` | `string \| null` |  |
+| `sizeEstimate` | `integer \| null` |  |
+| `raw` | `string \| null` |  |
+| `payload` | `object \| any` |  |
+
+
+</details>
+
+### Messages Update
+
+Modifies the labels on a message. Use this to archive (remove INBOX label),
+mark as read (remove UNREAD label), mark as unread (add UNREAD label),
+star (add STARRED label), or apply custom labels.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "update",
+  "params": {
+    "addLabelIds": [],
+    "removeLabelIds": [],
+    "messageId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages.update(
+    add_label_ids=[],
+    remove_label_ids=[],
+    message_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "update",
+    "params": {
+        "addLabelIds": [],
+        "removeLabelIds": [],
+        "messageId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `addLabelIds` | `array<string>` | No | A list of label IDs to add to the message (e.g. STARRED, UNREAD, or custom label IDs) |
+| `removeLabelIds` | `array<string>` | No | A list of label IDs to remove from the message (e.g. INBOX to archive, UNREAD to mark as read) |
+| `messageId` | `string` | Yes | The ID of the message to modify |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `threadId` | `string \| null` |  |
+| `labelIds` | `array \| null` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+| `internalDate` | `string \| null` |  |
+| `sizeEstimate` | `integer \| null` |  |
+| `raw` | `string \| null` |  |
+| `payload` | `object \| any` |  |
+
+
+</details>
+
+### Messages Context Store Search
+
+Search and filter messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the message |
+| `threadId` | `string` | Identifier of the thread this message belongs to |
+| `labelIds` | `array` | Labels applied to the message |
+| `snippet` | `string` | Short snippet of the message text |
+| `historyId` | `string` | Mailbox history record identifier for the message |
+| `internalDate` | `string` | Internal message creation timestamp in epoch milliseconds |
+| `sizeEstimate` | `integer` | Estimated size of the message in bytes |
+| `payload` | `object` | Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the message |
+| `data[].threadId` | `string` | Identifier of the thread this message belongs to |
+| `data[].labelIds` | `array` | Labels applied to the message |
+| `data[].snippet` | `string` | Short snippet of the message text |
+| `data[].historyId` | `string` | Mailbox history record identifier for the message |
+| `data[].internalDate` | `string` | Internal message creation timestamp in epoch milliseconds |
+| `data[].sizeEstimate` | `integer` | Estimated size of the message in bytes |
+| `data[].payload` | `object` | Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers. |
+
+</details>
+
+## Labels
+
+### Labels List
+
+Lists all labels in the user's mailbox including system and user-created labels
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.labels.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "list"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `type` | `string \| null` |  |
+| `messageListVisibility` | `string \| null` |  |
+| `labelListVisibility` | `string \| null` |  |
+| `messagesTotal` | `integer \| null` |  |
+| `messagesUnread` | `integer \| null` |  |
+| `threadsTotal` | `integer \| null` |  |
+| `threadsUnread` | `integer \| null` |  |
+| `color` | `object \| any` |  |
+
+
+</details>
+
+### Labels Create
+
+Creates a new label in the user's mailbox
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "messageListVisibility": "<str>",
+    "labelListVisibility": "<str>",
+    "color": {}
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.labels.create(
+    name="<str>",
+    message_list_visibility="<str>",
+    label_list_visibility="<str>",
+    color={}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "create",
+    "params": {
+        "name": "<str>",
+        "messageListVisibility": "<str>",
+        "labelListVisibility": "<str>",
+        "color": {}
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | The display name of the label |
+| `messageListVisibility` | `"show" \| "hide"` | No | The visibility of messages with this label in the message list (show or hide) |
+| `labelListVisibility` | `"labelShow" \| "labelShowIfUnread" \| "labelHide"` | No | The visibility of the label in the label list |
+| `color` | `object` | No | The color to assign to the label |
+| `color.textColor` | `string` | No | The text color of the label as a hex string (#RRGGBB) |
+| `color.backgroundColor` | `string` | No | The background color of the label as a hex string (#RRGGBB) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `type` | `string \| null` |  |
+| `messageListVisibility` | `string \| null` |  |
+| `labelListVisibility` | `string \| null` |  |
+| `messagesTotal` | `integer \| null` |  |
+| `messagesUnread` | `integer \| null` |  |
+| `threadsTotal` | `integer \| null` |  |
+| `threadsUnread` | `integer \| null` |  |
+| `color` | `object \| any` |  |
+
+
+</details>
+
+### Labels Get
+
+Gets a specific label by ID including message and thread counts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "get",
+  "params": {
+    "labelId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.labels.get(
+    label_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "get",
+    "params": {
+        "labelId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `labelId` | `string` | Yes | The ID of the label to retrieve |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `type` | `string \| null` |  |
+| `messageListVisibility` | `string \| null` |  |
+| `labelListVisibility` | `string \| null` |  |
+| `messagesTotal` | `integer \| null` |  |
+| `messagesUnread` | `integer \| null` |  |
+| `threadsTotal` | `integer \| null` |  |
+| `threadsUnread` | `integer \| null` |  |
+| `color` | `object \| any` |  |
+
+
+</details>
+
+### Labels Update
+
+Updates the specified label
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "name": "<str>",
+    "messageListVisibility": "<str>",
+    "labelListVisibility": "<str>",
+    "color": {},
+    "labelId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.labels.update(
+    id="<str>",
+    name="<str>",
+    message_list_visibility="<str>",
+    label_list_visibility="<str>",
+    color={},
+    label_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "update",
+    "params": {
+        "id": "<str>",
+        "name": "<str>",
+        "messageListVisibility": "<str>",
+        "labelListVisibility": "<str>",
+        "color": {},
+        "labelId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | No | The ID of the label (must match the path parameter) |
+| `name` | `string` | No | The new display name of the label |
+| `messageListVisibility` | `"show" \| "hide"` | No | The visibility of messages with this label in the message list |
+| `labelListVisibility` | `"labelShow" \| "labelShowIfUnread" \| "labelHide"` | No | The visibility of the label in the label list |
+| `color` | `object` | No | The color to assign to the label |
+| `color.textColor` | `string` | No | The text color of the label as a hex string (#RRGGBB) |
+| `color.backgroundColor` | `string` | No | The background color of the label as a hex string (#RRGGBB) |
+| `labelId` | `string` | Yes | The ID of the label to update |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `type` | `string \| null` |  |
+| `messageListVisibility` | `string \| null` |  |
+| `labelListVisibility` | `string \| null` |  |
+| `messagesTotal` | `integer \| null` |  |
+| `messagesUnread` | `integer \| null` |  |
+| `threadsTotal` | `integer \| null` |  |
+| `threadsUnread` | `integer \| null` |  |
+| `color` | `object \| any` |  |
+
+
+</details>
+
+### Labels Delete
+
+Deletes the specified label and removes it from any messages and threads
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "delete",
+  "params": {
+    "labelId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.labels.delete(
+    label_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "delete",
+    "params": {
+        "labelId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `labelId` | `string` | Yes | The ID of the label to delete |
+
+
+### Labels Context Store Search
+
+Search and filter labels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "labels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.labels.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the label |
+| `name` | `string` | Display name of the label |
+| `type` | `string` | Label type: `system` or `user` |
+| `labelListVisibility` | `string` | Visibility of the label in the label list |
+| `messageListVisibility` | `string` | Visibility of the label when viewing a message list |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the label |
+| `data[].name` | `string` | Display name of the label |
+| `data[].type` | `string` | Label type: `system` or `user` |
+| `data[].labelListVisibility` | `string` | Visibility of the label in the label list |
+| `data[].messageListVisibility` | `string` | Visibility of the label when viewing a message list |
+
+</details>
+
+## Drafts
+
+### Drafts List
+
+Lists the drafts in the user's mailbox
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `maxResults` | `integer` | No | Maximum number of drafts to return (1-500) |
+| `pageToken` | `string` | No | Page token to retrieve a specific page of results |
+| `q` | `string` | No | Gmail search query to filter drafts |
+| `includeSpamTrash` | `boolean` | No | Include drafts from SPAM and TRASH in the results |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `message` | `object \| any` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `nextPageToken` | `string \| null` |  |
+| `resultSizeEstimate` | `integer \| null` |  |
+
+</details>
+
+### Drafts Create
+
+Creates a new draft with the specified message content
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "create",
+  "params": {
+    "message": {
+      "raw": "<str>"
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts.create(
+    message={
+        "raw": "<str>"
+    }
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts",
+    "action": "create",
+    "params": {
+        "message": {
+            "raw": "<str>"
+        }
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `message` | `object` | Yes | The draft message content encoded in Gmail raw message format |
+| `message.raw` | `string` | Yes | Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before creating or updating the draft. |
+| `message.threadId` | `string` | No | The thread ID for the draft (for threading in a conversation) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `message` | `object \| any` |  |
+
+
+</details>
+
+### Drafts Get
+
+Gets the specified draft including its message content
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "get",
+  "params": {
+    "draftId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts.get(
+    draft_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts",
+    "action": "get",
+    "params": {
+        "draftId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `draftId` | `string` | Yes | The ID of the draft to retrieve |
+| `format` | `"full" \| "metadata" \| "minimal" \| "raw"` | No | The format to return the draft message in (full, metadata, minimal, raw) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `message` | `object \| any` |  |
+
+
+</details>
+
+### Drafts Update
+
+Replaces a draft's content with the specified message content
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "update",
+  "params": {
+    "message": {
+      "raw": "<str>"
+    },
+    "draftId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts.update(
+    message={
+        "raw": "<str>"
+    },
+    draft_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts",
+    "action": "update",
+    "params": {
+        "message": {
+            "raw": "<str>"
+        },
+        "draftId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `message` | `object` | Yes | The draft message content encoded in Gmail raw message format |
+| `message.raw` | `string` | Yes | Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before creating or updating the draft. |
+| `message.threadId` | `string` | No | The thread ID for the draft (for threading in a conversation) |
+| `draftId` | `string` | Yes | The ID of the draft to update |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `message` | `object \| any` |  |
+
+
+</details>
+
+### Drafts Delete
+
+Immediately and permanently deletes the specified draft (does not move to trash)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "delete",
+  "params": {
+    "draftId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts.delete(
+    draft_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts",
+    "action": "delete",
+    "params": {
+        "draftId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `draftId` | `string` | Yes | The ID of the draft to delete |
+
+
+### Drafts Context Store Search
+
+Search and filter drafts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the draft |
+| `message` | `object` | Draft message payload (headers, body, and metadata) |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the draft |
+| `data[].message` | `object` | Draft message payload (headers, body, and metadata) |
+
+</details>
+
+## Drafts Send
+
+### Drafts Send Create
+
+Sends the specified existing draft to its recipients
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "drafts_send",
+  "action": "create",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.drafts_send.create(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "drafts_send",
+    "action": "create",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the draft to send |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `threadId` | `string \| null` |  |
+| `labelIds` | `array \| null` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+| `internalDate` | `string \| null` |  |
+| `sizeEstimate` | `integer \| null` |  |
+| `raw` | `string \| null` |  |
+| `payload` | `object \| any` |  |
+
+
+</details>
+
+## Threads
+
+### Threads List
+
+Lists the threads in the user's mailbox
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "threads",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.threads.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `maxResults` | `integer` | No | Maximum number of threads to return (1-500) |
+| `pageToken` | `string` | No | Page token to retrieve a specific page of results |
+| `q` | `string` | No | Gmail search query to filter threads |
+| `labelIds` | `string` | No | Only return threads with labels matching all of the specified label IDs (comma-separated) |
+| `includeSpamTrash` | `boolean` | No | Include threads from SPAM and TRASH in the results |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `nextPageToken` | `string \| null` |  |
+| `resultSizeEstimate` | `integer \| null` |  |
+
+</details>
+
+### Threads Get
+
+Gets the specified thread including all messages in the conversation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "threads",
+  "action": "get",
+  "params": {
+    "threadId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.threads.get(
+    thread_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "get",
+    "params": {
+        "threadId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `threadId` | `string` | Yes | The ID of the thread to retrieve |
+| `format` | `"full" \| "metadata" \| "minimal"` | No | The format to return the messages in (full, metadata, minimal) |
+| `metadataHeaders` | `string` | No | When format is METADATA, only include headers specified (comma-separated) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+| `messages` | `array \| null` |  |
+| `messages[].id` | `string` |  |
+| `messages[].threadId` | `string \| null` |  |
+| `messages[].labelIds` | `array \| null` |  |
+| `messages[].snippet` | `string \| null` |  |
+| `messages[].historyId` | `string \| null` |  |
+| `messages[].internalDate` | `string \| null` |  |
+| `messages[].sizeEstimate` | `integer \| null` |  |
+| `messages[].raw` | `string \| null` |  |
+| `messages[].payload` | `object \| any` |  |
+
+
+</details>
+
+### Threads Context Store Search
+
+Search and filter threads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "threads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.threads.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the thread |
+| `historyId` | `string` | Mailbox history record identifier for the thread |
+| `snippet` | `string` | Short snippet of the thread's most recent message |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the thread |
+| `data[].historyId` | `string` | Mailbox history record identifier for the thread |
+| `data[].snippet` | `string` | Short snippet of the thread's most recent message |
+
+</details>
+
+## Messages Trash
+
+### Messages Trash Create
+
+Moves the specified message to the trash
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages_trash",
+  "action": "create",
+  "params": {
+    "messageId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages_trash.create(
+    message_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages_trash",
+    "action": "create",
+    "params": {
+        "messageId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `messageId` | `string` | Yes | The ID of the message to trash |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `threadId` | `string \| null` |  |
+| `labelIds` | `array \| null` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+| `internalDate` | `string \| null` |  |
+| `sizeEstimate` | `integer \| null` |  |
+| `raw` | `string \| null` |  |
+| `payload` | `object \| any` |  |
+
+
+</details>
+
+## Messages Untrash
+
+### Messages Untrash Create
+
+Removes the specified message from the trash
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "gmail",
+  "entity": "messages_untrash",
+  "action": "create",
+  "params": {
+    "messageId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await gmail.messages_untrash.create(
+    message_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages_untrash",
+    "action": "create",
+    "params": {
+        "messageId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `messageId` | `string` | Yes | The ID of the message to untrash |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `threadId` | `string \| null` |  |
+| `labelIds` | `array \| null` |  |
+| `snippet` | `string \| null` |  |
+| `historyId` | `string \| null` |  |
+| `internalDate` | `string \| null` |  |
+| `sizeEstimate` | `integer \| null` |  |
+| `raw` | `string \| null` |  |
+| `payload` | `object \| any` |  |
+
+
+</details>
+

@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [YouTube Da
 
 </HideInUI>
 
-The YouTube Data API v3 provides access to YouTube data, such as videos, playlists, channels, comments, and simple stats. This connector is a simpler version of the YouTube connector. If you need more detailed reports from your channel, use the [YouTube Analytics Connector](https://docs.airbyte.com/integrations/sources/youtube-analytics).
+This connector uses the [YouTube Data API v3](https://developers.google.com/youtube/v3) to sync data about your YouTube channels, including video details, channel metadata, and comments. For more detailed analytics and reporting data, use the [YouTube Analytics connector](https://docs.airbyte.com/integrations/sources/youtube-analytics).
 
 ## Prerequisites
 
@@ -106,12 +106,24 @@ The YouTube Data API source connector supports the following sync modes:
 - **comments**: Comment threads on individual videos from the specified channels. For each video discovered in the channel, this stream fetches the top-level comments and their replies.
 - **channel_comments**: All comment threads related to the specified channels, including comments on the channel's videos and comments that mention the channel. This provides a broader view of channel engagement than the `comments` stream.
 
+## YouTube API Services usage disclosure
+
+This connector uses [YouTube API Services](https://developers.google.com/youtube/v3) to retrieve data from YouTube. By using this connector, you agree to be bound by the [YouTube Terms of Service](https://www.youtube.com/t/terms).
+
+YouTube API Services are provided by Google. For information about how Google handles data, review the [Google Privacy Policy](https://www.google.com/policies/privacy).
+
+When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
+
 ## Limitations and considerations
 
 - The YouTube Data API has [quota limits](https://developers.google.com/youtube/v3/getting-started#quota). Each API request costs a certain number of quota units, and the default quota is 10,000 units per day. The search endpoint used by the `videos` stream has a higher quota cost (100 units per request) compared to other endpoints.
 - API keys can only access public data. To access private data, you must use OAuth 2.0 authentication.
 - When using OAuth 2.0, the connector requests the `youtube.force-ssl` scope, which provides read and write access to YouTube resources. This scope is required even though the connector only reads data.
 - The connector does not support service account authentication because the YouTube Data API does not support this method for most operations.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -120,6 +132,20 @@ The YouTube Data API source connector supports the following sync modes:
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.58 | 2026-06-23 | [80730](https://github.com/airbytehq/airbyte/pull/80730) | Update dependencies |
+| 0.0.57 | 2026-06-16 | [80123](https://github.com/airbytehq/airbyte/pull/80123) | Update dependencies |
+| 0.0.56 | 2026-06-09 | [79580](https://github.com/airbytehq/airbyte/pull/79580) | Update dependencies |
+| 0.0.55 | 2026-06-02 | [79000](https://github.com/airbytehq/airbyte/pull/79000) | Update dependencies |
+| 0.0.54 | 2026-04-28 | [77496](https://github.com/airbytehq/airbyte/pull/77496) | Update dependencies |
+| 0.0.53 | 2026-04-21 | [76818](https://github.com/airbytehq/airbyte/pull/76818) | Update dependencies |
+| 0.0.52 | 2026-04-08 | [75185](https://github.com/airbytehq/airbyte/pull/75185) | Replace connector icon with updated YouTube logo |
+| 0.0.52 | 2026-03-19 | [75185](https://github.com/airbytehq/airbyte/pull/75185) | Replace connector icon with updated YouTube logo |
+| 0.0.51 | 2026-03-17 | [74392](https://github.com/airbytehq/airbyte/pull/74392) | Migrate to scopes object array format |
+| 0.0.50 | 2026-03-17 | [74698](https://github.com/airbytehq/airbyte/pull/74698) | Update dependencies |
+| 0.0.49 | 2026-03-03 | [73914](https://github.com/airbytehq/airbyte/pull/73914) | Update dependencies |
+| 0.0.48 | 2026-02-17 | [73507](https://github.com/airbytehq/airbyte/pull/73507) | Update dependencies |
+| 0.0.47 | 2026-02-10 | [73175](https://github.com/airbytehq/airbyte/pull/73175) | Update dependencies |
+| 0.0.46 | 2026-01-27 | [72066](https://github.com/airbytehq/airbyte/pull/72066) | Update dependencies |
 | 0.0.45 | 2026-01-14 | [70677](https://github.com/airbytehq/airbyte/pull/70677) | Update dependencies |
 | 0.0.44 | 2026-01-05 | [71016](https://github.com/airbytehq/airbyte/pull/71016) | Fixed schemas |
 | 0.0.43 | 2025-12-19 | [70971](https://github.com/airbytehq/airbyte/pull/70971) | Add acceptance tests |

@@ -50,7 +50,7 @@ class HubSpotState(
                     )
                 )
                 val properties = this.putObject("properties")
-                data.fields().forEach { (key, value) -> properties.replace(key, value) }
+                data.properties().forEach { (key, value) -> properties.replace(key, value) }
             }
         batch.add(input)
     }

@@ -40,6 +40,10 @@ Valid Spotify Ad Account ID
 | campaigns | id | DefaultPaginator | ✅ |  ❌  |
 | campaign_performance | day.campaign_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -47,6 +51,19 @@ Valid Spotify Ad Account ID
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2026-06-23 | [80619](https://github.com/airbytehq/airbyte/pull/80619) | Update dependencies |
+| 0.0.32 | 2026-06-16 | [80008](https://github.com/airbytehq/airbyte/pull/80008) | Update dependencies |
+| 0.0.31 | 2026-06-09 | [79472](https://github.com/airbytehq/airbyte/pull/79472) | Update dependencies |
+| 0.0.30 | 2026-06-02 | [78962](https://github.com/airbytehq/airbyte/pull/78962) | Update dependencies |
+| 0.0.29 | 2026-04-28 | [77452](https://github.com/airbytehq/airbyte/pull/77452) | Update dependencies |
+| 0.0.28 | 2026-04-21 | [76754](https://github.com/airbytehq/airbyte/pull/76754) | Update dependencies |
+| 0.0.27 | 2026-03-31 | [75886](https://github.com/airbytehq/airbyte/pull/75886) | Update dependencies |
+| 0.0.26 | 2026-03-17 | [75087](https://github.com/airbytehq/airbyte/pull/75087) | Update dependencies |
+| 0.0.25 | 2026-03-10 | [74571](https://github.com/airbytehq/airbyte/pull/74571) | Update dependencies |
+| 0.0.24 | 2026-02-24 | [73983](https://github.com/airbytehq/airbyte/pull/73983) | Update dependencies |
+| 0.0.23 | 2026-02-17 | [73468](https://github.com/airbytehq/airbyte/pull/73468) | Update dependencies |
+| 0.0.22 | 2026-02-10 | [73093](https://github.com/airbytehq/airbyte/pull/73093) | Update dependencies |
+| 0.0.21 | 2026-02-03 | [72745](https://github.com/airbytehq/airbyte/pull/72745) | Update dependencies |
 | 0.0.20 | 2026-01-20 | [72143](https://github.com/airbytehq/airbyte/pull/72143) | Update dependencies |
 | 0.0.19 | 2026-01-14 | [71599](https://github.com/airbytehq/airbyte/pull/71599) | Update dependencies |
 | 0.0.18 | 2025-12-18 | [70633](https://github.com/airbytehq/airbyte/pull/70633) | Update dependencies |

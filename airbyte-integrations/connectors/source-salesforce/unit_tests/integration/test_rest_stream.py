@@ -10,7 +10,7 @@ import freezegun
 from config_builder import ConfigBuilder
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
-from source_salesforce.streams import LOOKBACK_SECONDS
+from source_salesforce.streams import DEFAULT_LOOKBACK_SECONDS
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -24,7 +24,7 @@ _CLIENT_SECRET = "a_client_secret"
 _CURSOR_FIELD = "SystemModstamp"
 _INSTANCE_URL = "https://instance.salesforce.com"
 _BASE_URL = create_base_url(_INSTANCE_URL)
-_LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
+_LOOKBACK_WINDOW = timedelta(seconds=DEFAULT_LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
 _STREAM_NAME = UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS[0]

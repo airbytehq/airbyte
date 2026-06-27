@@ -29,6 +29,10 @@ This source allows you to synchronize the following data tables:
 
 Depending on the amount of team members and time logs the source provides a property to change the pagination size for the time logs query. Typically a pagination of 30 days is a correct balance between reliability and speed. But if you have a big amount of monthly entries you might want to change this value to a lower value.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -36,6 +40,7 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.3.46 | 2026-02-03 | [72570](https://github.com/airbytehq/airbyte/pull/72570) | Update dependencies |
 | 0.3.45 | 2026-01-20 | [71973](https://github.com/airbytehq/airbyte/pull/71973) | Update dependencies |
 | 0.3.44 | 2026-01-14 | [71600](https://github.com/airbytehq/airbyte/pull/71600) | Update dependencies |
 | 0.3.43 | 2025-12-18 | [70576](https://github.com/airbytehq/airbyte/pull/70576) | Update dependencies |

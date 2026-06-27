@@ -62,6 +62,14 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-databind")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     api("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
+    constraints {
+        api("org.scala-lang:scala-library:2.13.9") {
+            because("override transitive dep from mbknor-jackson-jsonschema — CVE-2022-36944 (deserialization gadget chain)")
+        }
+        api("io.github.classgraph:classgraph:4.8.112") {
+            because("override transitive dep from mbknor-jackson-jsonschema — CVE-2021-47621 (XXE)")
+        }
+    }
     api("io.airbyte.airbyte-protocol:protocol-models:0.19.0") {
         exclude(group="com.google.guava", module="guava")
         exclude(group="com.google.api-client")

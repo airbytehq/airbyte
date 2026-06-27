@@ -17,6 +17,10 @@ Grafana is an observability and analytics platform that lets teams visualize, ex
 | teams | id | No pagination | ✅ |  ❌  |
 | users | userId | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,17 @@ Grafana is an observability and analytics platform that lets teams visualize, ex
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2026-06-23 | [80504](https://github.com/airbytehq/airbyte/pull/80504) | Update dependencies |
+| 0.0.11 | 2026-06-16 | [79884](https://github.com/airbytehq/airbyte/pull/79884) | Update dependencies |
+| 0.0.10 | 2026-06-09 | [79366](https://github.com/airbytehq/airbyte/pull/79366) | Update dependencies |
+| 0.0.9 | 2026-06-02 | [78749](https://github.com/airbytehq/airbyte/pull/78749) | Update dependencies |
+| 0.0.8 | 2026-04-28 | [77282](https://github.com/airbytehq/airbyte/pull/77282) | Update dependencies |
+| 0.0.7 | 2026-04-21 | [76617](https://github.com/airbytehq/airbyte/pull/76617) | Update dependencies |
+| 0.0.6 | 2026-03-31 | [74931](https://github.com/airbytehq/airbyte/pull/74931) | Update dependencies |
+| 0.0.5 | 2026-03-10 | [74658](https://github.com/airbytehq/airbyte/pull/74658) | Update dependencies |
+| 0.0.4 | 2026-02-24 | [73967](https://github.com/airbytehq/airbyte/pull/73967) | Update dependencies |
+| 0.0.3 | 2026-02-10 | [73074](https://github.com/airbytehq/airbyte/pull/73074) | Update dependencies |
+| 0.0.2 | 2026-02-03 | [72665](https://github.com/airbytehq/airbyte/pull/72665) | Update dependencies |
 | 0.0.1 | 2026-01-29 | | Initial release by [@tgonzalezc5](https://github.com/tgonzalezc5) via Connector Builder |
 
 </details>

@@ -18,6 +18,9 @@ DBT Source Connector provides streams with your DBT projects, repositories, user
 | `users` | `id` | DefaultPaginator | ✅ |  ❌  |
 | `environments` | `id` | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -26,6 +29,15 @@ DBT Source Connector provides streams with your DBT projects, repositories, user
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.43 | 2026-06-23 | [80429](https://github.com/airbytehq/airbyte/pull/80429) | Update dependencies |
+| 0.0.42 | 2026-06-16 | [79803](https://github.com/airbytehq/airbyte/pull/79803) | Update dependencies |
+| 0.0.41 | 2026-06-09 | [79245](https://github.com/airbytehq/airbyte/pull/79245) | Update dependencies |
+| 0.0.40 | 2026-06-02 | [78667](https://github.com/airbytehq/airbyte/pull/78667) | Update dependencies |
+| 0.0.39 | 2026-04-28 | [77225](https://github.com/airbytehq/airbyte/pull/77225) | Update dependencies |
+| 0.0.38 | 2026-04-21 | [76578](https://github.com/airbytehq/airbyte/pull/76578) | Update dependencies |
+| 0.0.37 | 2026-03-17 | [75069](https://github.com/airbytehq/airbyte/pull/75069) | Update dependencies |
+| 0.0.36 | 2026-03-03 | [74159](https://github.com/airbytehq/airbyte/pull/74159) | Update dependencies |
+| 0.0.35 | 2026-02-17 | [73543](https://github.com/airbytehq/airbyte/pull/73543) | Update dependencies |
 | 0.0.34 | 2026-01-14 | [71554](https://github.com/airbytehq/airbyte/pull/71554) | Update dependencies |
 | 0.0.33 | 2025-11-25 | [69920](https://github.com/airbytehq/airbyte/pull/69920) | Update dependencies |
 | 0.0.32 | 2025-10-29 | [69009](https://github.com/airbytehq/airbyte/pull/69009) | Update dependencies |

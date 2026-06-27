@@ -8,20 +8,39 @@ The Slack connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
-| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Search](#channels-search) |
-| Channel Messages | [List](#channel-messages-list) |
-| Threads | [List](#threads-list) |
-| Messages | [Create](#messages-create), [Update](#messages-update) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Context Store Search](#channels-context-store-search) |
+| Channel Messages | [List](#channel-messages-list), [Context Store Search](#channel-messages-context-store-search) |
+| Threads | [List](#threads-list), [Context Store Search](#threads-context-store-search) |
+| Messages | [Create](#messages-create), [Update](#messages-update), [Delete](#messages-delete) |
 | Channel Topics | [Create](#channel-topics-create) |
 | Channel Purposes | [Create](#channel-purposes-create) |
-| Reactions | [Create](#reactions-create) |
+| Channel Invites | [Create](#channel-invites-create) |
+| Reactions | [Create](#reactions-create), [Delete](#reactions-delete) |
+| Ephemeral Messages | [Create](#ephemeral-messages-create) |
+| Scheduled Messages | [Create](#scheduled-messages-create) |
+| Channel Archives | [Create](#channel-archives-create) |
+| Channel Kicks | [Create](#channel-kicks-create) |
+| Channel Joins | [Create](#channel-joins-create) |
+| Pins | [Create](#pins-create) |
+| Bookmarks | [Create](#bookmarks-create) |
 
 ## Users
 
 ### Users List
 
 Returns a list of all users in the Slack workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -32,7 +51,7 @@ await slack.users.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -91,6 +110,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Get information about a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "user": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -102,7 +135,7 @@ await slack.users.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -153,14 +186,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Users Search
+### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await slack.users.search(
+await slack.users.context_store_search(
     query={"filter": {"eq": {"color": "<str>"}}}
 )
 ```
@@ -168,12 +221,12 @@ await slack.users.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"color": "<str>"}}}
     }
@@ -188,7 +241,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -224,35 +277,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.color` | `string` | The color assigned to the user for visual purposes. |
-| `hits[].data.deleted` | `boolean` | Indicates if the user is deleted or not. |
-| `hits[].data.has_2fa` | `boolean` | Flag indicating if the user has two-factor authentication enabled. |
-| `hits[].data.id` | `string` | Unique identifier for the user. |
-| `hits[].data.is_admin` | `boolean` | Flag specifying if the user is an admin or not. |
-| `hits[].data.is_app_user` | `boolean` | Specifies if the user is an app user. |
-| `hits[].data.is_bot` | `boolean` | Indicates if the user is a bot account. |
-| `hits[].data.is_email_confirmed` | `boolean` | Flag indicating if the user's email is confirmed. |
-| `hits[].data.is_forgotten` | `boolean` | Specifies if the user is marked as forgotten. |
-| `hits[].data.is_invited_user` | `boolean` | Indicates if the user is invited or not. |
-| `hits[].data.is_owner` | `boolean` | Flag indicating if the user is an owner. |
-| `hits[].data.is_primary_owner` | `boolean` | Specifies if the user is the primary owner. |
-| `hits[].data.is_restricted` | `boolean` | Flag specifying if the user is restricted. |
-| `hits[].data.is_ultra_restricted` | `boolean` | Indicates if the user has ultra-restricted access. |
-| `hits[].data.name` | `string` | The username of the user. |
-| `hits[].data.profile` | `object` | User's profile information containing detailed details. |
-| `hits[].data.real_name` | `string` | The real name of the user. |
-| `hits[].data.team_id` | `string` | Unique identifier for the team the user belongs to. |
-| `hits[].data.tz` | `string` | Timezone of the user. |
-| `hits[].data.tz_label` | `string` | Label representing the timezone of the user. |
-| `hits[].data.tz_offset` | `integer` | Offset of the user's timezone. |
-| `hits[].data.updated` | `integer` | Timestamp of when the user's information was last updated. |
-| `hits[].data.who_can_share_contact_card` | `string` | Specifies who can share the user's contact card. |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].color` | `string` | The color assigned to the user for visual purposes. |
+| `data[].deleted` | `boolean` | Indicates if the user is deleted or not. |
+| `data[].has_2fa` | `boolean` | Flag indicating if the user has two-factor authentication enabled. |
+| `data[].id` | `string` | Unique identifier for the user. |
+| `data[].is_admin` | `boolean` | Flag specifying if the user is an admin or not. |
+| `data[].is_app_user` | `boolean` | Specifies if the user is an app user. |
+| `data[].is_bot` | `boolean` | Indicates if the user is a bot account. |
+| `data[].is_email_confirmed` | `boolean` | Flag indicating if the user's email is confirmed. |
+| `data[].is_forgotten` | `boolean` | Specifies if the user is marked as forgotten. |
+| `data[].is_invited_user` | `boolean` | Indicates if the user is invited or not. |
+| `data[].is_owner` | `boolean` | Flag indicating if the user is an owner. |
+| `data[].is_primary_owner` | `boolean` | Specifies if the user is the primary owner. |
+| `data[].is_restricted` | `boolean` | Flag specifying if the user is restricted. |
+| `data[].is_ultra_restricted` | `boolean` | Indicates if the user has ultra-restricted access. |
+| `data[].name` | `string` | The username of the user. |
+| `data[].profile` | `object` | User's profile information containing detailed details. |
+| `data[].real_name` | `string` | The real name of the user. |
+| `data[].team_id` | `string` | Unique identifier for the team the user belongs to. |
+| `data[].tz` | `string` | Timezone of the user. |
+| `data[].tz_label` | `string` | Label representing the timezone of the user. |
+| `data[].tz_offset` | `integer` | Offset of the user's timezone. |
+| `data[].updated` | `integer` | Timestamp of when the user's information was last updated. |
+| `data[].who_can_share_contact_card` | `string` | Specifies who can share the user's contact card. |
 
 </details>
 
@@ -261,6 +313,17 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Channels List
 
 Returns a list of all channels in the Slack workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -271,7 +334,7 @@ await slack.channels.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -343,6 +406,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Get information about a single channel by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "get",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -354,7 +431,7 @@ await slack.channels.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -420,6 +497,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Creates a new public or private channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "is_private": true
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -432,7 +524,7 @@ await slack.channels.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -500,6 +592,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Renames an existing channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "update",
+  "params": {
+    "channel": "<str>",
+    "name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -512,7 +619,7 @@ await slack.channels.update(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -576,14 +683,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Channels Search
+### Channels Context Store Search
 
 Search and filter channels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "context_team_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await slack.channels.search(
+await slack.channels.context_store_search(
     query={"filter": {"eq": {"context_team_id": "<str>"}}}
 )
 ```
@@ -591,12 +718,12 @@ await slack.channels.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "channels",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"context_team_id": "<str>"}}}
     }
@@ -611,7 +738,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -655,43 +782,42 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.context_team_id` | `string` | The unique identifier of the team context in which the channel exists. |
-| `hits[].data.created` | `integer` | The timestamp when the channel was created. |
-| `hits[].data.creator` | `string` | The ID of the user who created the channel. |
-| `hits[].data.id` | `string` | The unique identifier of the channel. |
-| `hits[].data.is_archived` | `boolean` | Indicates if the channel is archived. |
-| `hits[].data.is_channel` | `boolean` | Indicates if the entity is a channel. |
-| `hits[].data.is_ext_shared` | `boolean` | Indicates if the channel is externally shared. |
-| `hits[].data.is_general` | `boolean` | Indicates if the channel is a general channel in the workspace. |
-| `hits[].data.is_group` | `boolean` | Indicates if the channel is a group (private channel) rather than a regular channel. |
-| `hits[].data.is_im` | `boolean` | Indicates if the entity is a direct message (IM) channel. |
-| `hits[].data.is_member` | `boolean` | Indicates if the calling user is a member of the channel. |
-| `hits[].data.is_mpim` | `boolean` | Indicates if the entity is a multiple person direct message (MPIM) channel. |
-| `hits[].data.is_org_shared` | `boolean` | Indicates if the channel is organization-wide shared. |
-| `hits[].data.is_pending_ext_shared` | `boolean` | Indicates if the channel is pending external shared. |
-| `hits[].data.is_private` | `boolean` | Indicates if the channel is a private channel. |
-| `hits[].data.is_read_only` | `boolean` | Indicates if the channel is read-only. |
-| `hits[].data.is_shared` | `boolean` | Indicates if the channel is shared. |
-| `hits[].data.last_read` | `string` | The timestamp of the user's last read message in the channel. |
-| `hits[].data.locale` | `string` | The locale of the channel. |
-| `hits[].data.name` | `string` | The name of the channel. |
-| `hits[].data.name_normalized` | `string` | The normalized name of the channel. |
-| `hits[].data.num_members` | `integer` | The number of members in the channel. |
-| `hits[].data.parent_conversation` | `string` | The parent conversation of the channel. |
-| `hits[].data.pending_connected_team_ids` | `array` | The IDs of teams that are pending to be connected to the channel. |
-| `hits[].data.pending_shared` | `array` | The list of pending shared items of the channel. |
-| `hits[].data.previous_names` | `array` | The previous names of the channel. |
-| `hits[].data.purpose` | `object` | The purpose of the channel. |
-| `hits[].data.shared_team_ids` | `array` | The IDs of teams with which the channel is shared. |
-| `hits[].data.topic` | `object` | The topic of the channel. |
-| `hits[].data.unlinked` | `integer` | Indicates if the channel is unlinked. |
-| `hits[].data.updated` | `integer` | The timestamp when the channel was last updated. |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].context_team_id` | `string` | The unique identifier of the team context in which the channel exists. |
+| `data[].created` | `integer` | The timestamp when the channel was created. |
+| `data[].creator` | `string` | The ID of the user who created the channel. |
+| `data[].id` | `string` | The unique identifier of the channel. |
+| `data[].is_archived` | `boolean` | Indicates if the channel is archived. |
+| `data[].is_channel` | `boolean` | Indicates if the entity is a channel. |
+| `data[].is_ext_shared` | `boolean` | Indicates if the channel is externally shared. |
+| `data[].is_general` | `boolean` | Indicates if the channel is a general channel in the workspace. |
+| `data[].is_group` | `boolean` | Indicates if the channel is a group (private channel) rather than a regular channel. |
+| `data[].is_im` | `boolean` | Indicates if the entity is a direct message (IM) channel. |
+| `data[].is_member` | `boolean` | Indicates if the calling user is a member of the channel. |
+| `data[].is_mpim` | `boolean` | Indicates if the entity is a multiple person direct message (MPIM) channel. |
+| `data[].is_org_shared` | `boolean` | Indicates if the channel is organization-wide shared. |
+| `data[].is_pending_ext_shared` | `boolean` | Indicates if the channel is pending external shared. |
+| `data[].is_private` | `boolean` | Indicates if the channel is a private channel. |
+| `data[].is_read_only` | `boolean` | Indicates if the channel is read-only. |
+| `data[].is_shared` | `boolean` | Indicates if the channel is shared. |
+| `data[].last_read` | `string` | The timestamp of the user's last read message in the channel. |
+| `data[].locale` | `string` | The locale of the channel. |
+| `data[].name` | `string` | The name of the channel. |
+| `data[].name_normalized` | `string` | The normalized name of the channel. |
+| `data[].num_members` | `integer` | The number of members in the channel. |
+| `data[].parent_conversation` | `string` | The parent conversation of the channel. |
+| `data[].pending_connected_team_ids` | `array` | The IDs of teams that are pending to be connected to the channel. |
+| `data[].pending_shared` | `array` | The list of pending shared items of the channel. |
+| `data[].previous_names` | `array` | The previous names of the channel. |
+| `data[].purpose` | `object` | The purpose of the channel. |
+| `data[].shared_team_ids` | `array` | The IDs of teams with which the channel is shared. |
+| `data[].topic` | `object` | The topic of the channel. |
+| `data[].unlinked` | `integer` | Indicates if the channel is unlinked. |
+| `data[].updated` | `integer` | The timestamp when the channel was last updated. |
 
 </details>
 
@@ -700,6 +826,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ### Channel Messages List
 
 Returns messages from a channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "list",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -712,7 +852,7 @@ await slack.channel_messages.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -814,11 +954,137 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Channel Messages Context Store Search
+
+Search and filter channel messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_messages.context_store_search(
+    query={"filter": {"eq": {"type": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_messages",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"type": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string` | Message type. |
+| `subtype` | `string` | Message subtype. |
+| `ts` | `string` | Message timestamp (unique identifier). |
+| `user` | `string` | User ID who sent the message. |
+| `text` | `string` | Message text content. |
+| `thread_ts` | `string` | Thread parent timestamp. |
+| `reply_count` | `integer` | Number of replies in thread. |
+| `reply_users_count` | `integer` | Number of unique users who replied. |
+| `latest_reply` | `string` | Timestamp of latest reply. |
+| `reply_users` | `array` | User IDs who replied to the thread. |
+| `is_locked` | `boolean` | Whether the thread is locked. |
+| `subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `reactions` | `array` | Reactions to the message. |
+| `attachments` | `array` | Message attachments. |
+| `blocks` | `array` | Block kit blocks. |
+| `bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `bot_profile` | `object` | Bot profile information. |
+| `team` | `string` | Team ID. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].type` | `string` | Message type. |
+| `data[].subtype` | `string` | Message subtype. |
+| `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].user` | `string` | User ID who sent the message. |
+| `data[].text` | `string` | Message text content. |
+| `data[].thread_ts` | `string` | Thread parent timestamp. |
+| `data[].reply_count` | `integer` | Number of replies in thread. |
+| `data[].reply_users_count` | `integer` | Number of unique users who replied. |
+| `data[].latest_reply` | `string` | Timestamp of latest reply. |
+| `data[].reply_users` | `array` | User IDs who replied to the thread. |
+| `data[].is_locked` | `boolean` | Whether the thread is locked. |
+| `data[].subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `data[].reactions` | `array` | Reactions to the message. |
+| `data[].attachments` | `array` | Message attachments. |
+| `data[].blocks` | `array` | Block kit blocks. |
+| `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `data[].bot_profile` | `object` | Bot profile information. |
+| `data[].team` | `string` | Team ID. |
+
+</details>
+
 ## Threads
 
 ### Threads List
 
 Returns messages in a thread (thread replies from conversations.replies endpoint)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "list",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -831,7 +1097,7 @@ await slack.threads.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -935,11 +1201,140 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Threads Context Store Search
+
+Search and filter threads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.threads.context_store_search(
+    query={"filter": {"eq": {"type": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"type": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string` | Message type. |
+| `subtype` | `string` | Message subtype. |
+| `ts` | `string` | Message timestamp (unique identifier). |
+| `user` | `string` | User ID who sent the message. |
+| `text` | `string` | Message text content. |
+| `thread_ts` | `string` | Thread parent timestamp. |
+| `parent_user_id` | `string` | User ID of the parent message author (present in thread replies). |
+| `reply_count` | `integer` | Number of replies in thread. |
+| `reply_users_count` | `integer` | Number of unique users who replied. |
+| `latest_reply` | `string` | Timestamp of latest reply. |
+| `reply_users` | `array` | User IDs who replied to the thread. |
+| `is_locked` | `boolean` | Whether the thread is locked. |
+| `subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `blocks` | `array` | Block kit blocks. |
+| `bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `team` | `string` | Team ID. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].type` | `string` | Message type. |
+| `data[].subtype` | `string` | Message subtype. |
+| `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].user` | `string` | User ID who sent the message. |
+| `data[].text` | `string` | Message text content. |
+| `data[].thread_ts` | `string` | Thread parent timestamp. |
+| `data[].parent_user_id` | `string` | User ID of the parent message author (present in thread replies). |
+| `data[].reply_count` | `integer` | Number of replies in thread. |
+| `data[].reply_users_count` | `integer` | Number of unique users who replied. |
+| `data[].latest_reply` | `string` | Timestamp of latest reply. |
+| `data[].reply_users` | `array` | User IDs who replied to the thread. |
+| `data[].is_locked` | `boolean` | Whether the thread is locked. |
+| `data[].subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `data[].blocks` | `array` | Block kit blocks. |
+| `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `data[].team` | `string` | Team ID. |
+
+</details>
+
 ## Messages
 
 ### Messages Create
 
 Posts a message to a public channel, private channel, or direct message conversation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "text": "<str>",
+    "thread_ts": "<str>",
+    "reply_broadcast": true,
+    "unfurl_links": true,
+    "unfurl_media": true,
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -950,14 +1345,16 @@ await slack.messages.create(
     thread_ts="<str>",
     reply_broadcast=True,
     unfurl_links=True,
-    unfurl_media=True
+    unfurl_media=True,
+    blocks=[],
+    mrkdwn=True
 )
 ```
 
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -969,7 +1366,9 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
         "thread_ts": "<str>",
         "reply_broadcast": True,
         "unfurl_links": True,
-        "unfurl_media": True
+        "unfurl_media": True,
+        "blocks": [],
+        "mrkdwn": True
     }
 }'
 ```
@@ -985,6 +1384,8 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `reply_broadcast` | `boolean` | No | Also post reply to channel when replying to a thread |
 | `unfurl_links` | `boolean` | No | Enable unfurling of primarily text-based content |
 | `unfurl_media` | `boolean` | No | Enable unfurling of media content |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
 
 
 <details>
@@ -1011,20 +1412,38 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Updates an existing message in a channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "update",
+  "params": {
+    "channel": "<str>",
+    "ts": "<str>",
+    "text": "<str>",
+    "blocks": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
 await slack.messages.update(
     channel="<str>",
     ts="<str>",
-    text="<str>"
+    text="<str>",
+    blocks=[]
 )
 ```
 
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1033,7 +1452,8 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
     "params": {
         "channel": "<str>",
         "ts": "<str>",
-        "text": "<str>"
+        "text": "<str>",
+        "blocks": []
     }
 }'
 ```
@@ -1046,6 +1466,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `channel` | `string` | Yes | Channel ID containing the message |
 | `ts` | `string` | Yes | Timestamp of the message to update |
 | `text` | `string` | Yes | New message text content |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
 
 
 <details>
@@ -1068,11 +1489,93 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Messages Delete
+
+Deletes a message from a channel. When used with a bot token, may only delete messages posted by that bot.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "delete",
+  "params": {
+    "channel": "<str>",
+    "ts": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.messages.delete(
+    channel="<str>",
+    ts="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "delete",
+    "params": {
+        "channel": "<str>",
+        "ts": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID containing the message to be deleted |
+| `ts` | `string` | Yes | Timestamp of the message to be deleted |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `channel` | `string \| null` |  |
+| `ts` | `string \| null` |  |
+
+
+</details>
+
 ## Channel Topics
 
 ### Channel Topics Create
 
 Sets the topic for a channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_topics",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "topic": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1086,7 +1589,7 @@ await slack.channel_topics.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1156,6 +1659,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 Sets the purpose for a channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_purposes",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "purpose": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1168,7 +1686,7 @@ await slack.channel_purposes.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1232,11 +1750,128 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+## Channel Invites
+
+### Channel Invites Create
+
+Invites one or more users to a public or private channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_invites",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "users": "<str>",
+    "force": true
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_invites.create(
+    channel="<str>",
+    users="<str>",
+    force=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_invites",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "users": "<str>",
+        "force": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | The ID of the public or private channel to invite user(s) to |
+| `users` | `string` | Yes | A comma separated list of user IDs. Up to 1000 users may be listed. |
+| `force` | `boolean` | No | When set to true and multiple user IDs are provided, continue inviting the valid ones while disregarding invalid IDs. Defaults to false. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
 ## Reactions
 
 ### Reactions Create
 
 Adds a reaction (emoji) to a message
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "reactions",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>",
+    "name": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1251,7 +1886,7 @@ await slack.reactions.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1283,6 +1918,642 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `ok` | `boolean` |  |
+
+
+</details>
+
+### Reactions Delete
+
+Removes a reaction (emoji) from a message
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "reactions",
+  "action": "delete",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>",
+    "name": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.reactions.delete(
+    channel="<str>",
+    timestamp="<str>",
+    name="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reactions",
+    "action": "delete",
+    "params": {
+        "channel": "<str>",
+        "timestamp": "<str>",
+        "name": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID containing the message |
+| `timestamp` | `string` | Yes | Timestamp of the message to remove reaction from |
+| `name` | `string` | Yes | Reaction emoji name to remove (without colons, e.g., "thumbsup") |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+
+
+</details>
+
+## Ephemeral Messages
+
+### Ephemeral Messages Create
+
+Sends an ephemeral message to a user in a channel. Ephemeral messages are visible only to the target user and do not persist across sessions.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "ephemeral_messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "user": "<str>",
+    "text": "<str>",
+    "thread_ts": "<str>",
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.ephemeral_messages.create(
+    channel="<str>",
+    user="<str>",
+    text="<str>",
+    thread_ts="<str>",
+    blocks=[],
+    mrkdwn=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ephemeral_messages",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "user": "<str>",
+        "text": "<str>",
+        "thread_ts": "<str>",
+        "blocks": [],
+        "mrkdwn": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel, private group, or IM channel to send the ephemeral message to. Can be an encoded ID or a name. |
+| `user` | `string` | Yes | ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument. |
+| `text` | `string` | Yes | Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided. |
+| `thread_ts` | `string` | No | Provide another message's ts value to post this ephemeral message in a thread. The thread must already be active. |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `message_ts` | `string \| null` |  |
+
+
+</details>
+
+## Scheduled Messages
+
+### Scheduled Messages Create
+
+Schedules a message for delivery to a channel at a specified time in the future. Messages can be scheduled up to 120 days in advance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "scheduled_messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "text": "<str>",
+    "post_at": 0,
+    "thread_ts": "<str>",
+    "reply_broadcast": true,
+    "unfurl_links": true,
+    "unfurl_media": true,
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.scheduled_messages.create(
+    channel="<str>",
+    text="<str>",
+    post_at=0,
+    thread_ts="<str>",
+    reply_broadcast=True,
+    unfurl_links=True,
+    unfurl_media=True,
+    blocks=[],
+    mrkdwn=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "scheduled_messages",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "text": "<str>",
+        "post_at": 0,
+        "thread_ts": "<str>",
+        "reply_broadcast": True,
+        "unfurl_links": True,
+        "unfurl_media": True,
+        "blocks": [],
+        "mrkdwn": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel, private group, or DM channel to send the scheduled message to. Can be an encoded ID or a name. |
+| `text` | `string` | Yes | Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided. |
+| `post_at` | `integer` | Yes | Unix timestamp representing the future time the message should post to Slack. Must be within 120 days. |
+| `thread_ts` | `string` | No | Provide another message's ts value to make this message a reply. Avoid using a reply's ts value; use its parent instead. |
+| `reply_broadcast` | `boolean` | No | Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel. Defaults to false. |
+| `unfurl_links` | `boolean` | No | Pass true to enable unfurling of primarily text-based content. |
+| `unfurl_media` | `boolean` | No | Pass false to disable unfurling of media content. |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `channel` | `string \| null` |  |
+| `scheduled_message_id` | `string \| null` |  |
+| `post_at` | `integer \| null` |  |
+| `message` | `object \| any` |  |
+
+
+</details>
+
+## Channel Archives
+
+### Channel Archives Create
+
+Archives a conversation. Not all types of conversations can be archived.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_archives",
+  "action": "create",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_archives.create(
+    channel="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_archives",
+    "action": "create",
+    "params": {
+        "channel": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | ID of the channel to archive |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+
+
+</details>
+
+## Channel Kicks
+
+### Channel Kicks Create
+
+Removes a user from a public or private channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_kicks",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "user": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_kicks.create(
+    channel="<str>",
+    user="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_kicks",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "user": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | ID of the channel to remove the user from |
+| `user` | `string` | Yes | User ID to be removed from the channel |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `errors` | `object \| null` |  |
+
+
+</details>
+
+## Channel Joins
+
+### Channel Joins Create
+
+Joins an existing public channel. The calling bot or user token will be added as a member of the channel.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_joins",
+  "action": "create",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_joins.create(
+    channel="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_joins",
+    "action": "create",
+    "params": {
+        "channel": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | ID of the channel to join |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
+## Pins
+
+### Pins Create
+
+Pins a message to a particular channel. Both channel and timestamp are required.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "pins",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.pins.create(
+    channel="<str>",
+    timestamp="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pins",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "timestamp": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID to pin the message to |
+| `timestamp` | `string` | Yes | Timestamp of the message to pin |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+
+
+</details>
+
+## Bookmarks
+
+### Bookmarks Create
+
+Adds a bookmark (link) to a channel. Bookmarks appear in the channel header for easy access.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "bookmarks",
+  "action": "create",
+  "params": {
+    "channel_id": "<str>",
+    "title": "<str>",
+    "type": "<str>",
+    "link": "<str>",
+    "emoji": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.bookmarks.create(
+    channel_id="<str>",
+    title="<str>",
+    type="<str>",
+    link="<str>",
+    emoji="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "bookmarks",
+    "action": "create",
+    "params": {
+        "channel_id": "<str>",
+        "title": "<str>",
+        "type": "<str>",
+        "link": "<str>",
+        "emoji": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel_id` | `string` | Yes | Channel ID to add the bookmark to |
+| `title` | `string` | Yes | Title for the bookmark |
+| `type` | `string` | Yes | Type of the bookmark (e.g., "link") |
+| `link` | `string` | No | URL to bookmark (required for link type). Must begin with http:// or https://. |
+| `emoji` | `string` | No | Emoji tag to apply to the bookmark (e.g., ":rocket:") |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string \| null` |  |
+| `channel_id` | `string \| null` |  |
+| `title` | `string \| null` |  |
+| `link` | `string \| null` |  |
+| `emoji` | `string \| null` |  |
+| `icon_url` | `string \| null` |  |
+| `type` | `string \| null` |  |
+| `entity_id` | `string \| null` |  |
+| `date_created` | `integer \| null` |  |
+| `date_updated` | `integer \| null` |  |
+| `rank` | `string \| null` |  |
+| `last_updated_by_user_id` | `string \| null` |  |
+| `last_updated_by_team_id` | `string \| null` |  |
+| `shortcut_id` | `string \| null` |  |
+| `app_id` | `string \| null` |  |
 
 
 </details>

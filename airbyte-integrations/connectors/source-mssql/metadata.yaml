@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 4.3.3
+  dockerImageTag: 5.0.0
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
@@ -35,6 +35,20 @@ data:
     - language:java
   releases:
     breakingChanges:
+      5.0.0:
+        message:
+          "NUMERIC and DECIMAL columns with scale 0 are now mapped to the Airbyte `integer` type
+          instead of `number`, so downstream destinations preserve integral semantics (e.g. Snowflake
+          NUMBER vs FLOAT). Customers whose streams contain at least one NUMERIC or DECIMAL column with
+          scale 0 must take action with their connections by refreshing the source schema and refreshing
+          the affected streams. To determine whether you are affected before upgrading, check the
+          connector logs while running version 4.4.12 (or any later 4.4.x) for a discovery line such as
+          'Discovered DECIMAL column with scale 0 (precision=10). A future connector version will map
+          such columns to Airbyte integer instead of number.' — one such line is logged per affected
+          column at discovery/schema-refresh time. If no such line appears in your logs, your streams
+          contain no affected columns and the upgrade requires no action."
+        upgradeDeadline: "2026-08-24"
+        deadlineAction: "auto_upgrade"
       4.0.0:
         message: "We have overhauled our MSSQL source connector and it is now supported by the Airbyte team! To benefit from new features, including terabyte-sized table support, reliability improvements, expanded datetime data types, and various bug fixes, please opt in to the 4.0.0 version."
         upgradeDeadline: "2024-04-07"

@@ -17,6 +17,10 @@ We can extract data from campaigns and contacts streams using this connector.
 | sender_details | id | No pagination | ✅ |  ❌  |
 | contact_members |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,16 @@ We can extract data from campaigns and contacts streams using this connector.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-23 | [80651](https://github.com/airbytehq/airbyte/pull/80651) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80065](https://github.com/airbytehq/airbyte/pull/80065) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79534](https://github.com/airbytehq/airbyte/pull/79534) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [79005](https://github.com/airbytehq/airbyte/pull/79005) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77474](https://github.com/airbytehq/airbyte/pull/77474) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [75752](https://github.com/airbytehq/airbyte/pull/75752) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [75046](https://github.com/airbytehq/airbyte/pull/75046) | Update dependencies |
+| 0.0.44 | 2026-03-10 | [74576](https://github.com/airbytehq/airbyte/pull/74576) | Update dependencies |
+| 0.0.43 | 2026-02-24 | [73853](https://github.com/airbytehq/airbyte/pull/73853) | Update dependencies |
+| 0.0.42 | 2026-02-03 | [72761](https://github.com/airbytehq/airbyte/pull/72761) | Update dependencies |
 | 0.0.41 | 2026-01-20 | [72032](https://github.com/airbytehq/airbyte/pull/72032) | Update dependencies |
 | 0.0.40 | 2026-01-14 | [71376](https://github.com/airbytehq/airbyte/pull/71376) | Update dependencies |
 | 0.0.39 | 2025-12-18 | [70760](https://github.com/airbytehq/airbyte/pull/70760) | Update dependencies |

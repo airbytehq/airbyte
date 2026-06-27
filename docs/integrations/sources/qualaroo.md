@@ -39,6 +39,10 @@ The connector is **not** yet restricted by normal requests limitation. As a resu
 
 Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API) or you can log in to Qualaroo and visit [Reporting API](https://app.qualaroo.com/account).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -46,6 +50,17 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| 0.4.49 | 2026-06-23 | [80615](https://github.com/airbytehq/airbyte/pull/80615) | Update dependencies |
+| 0.4.48 | 2026-06-16 | [80006](https://github.com/airbytehq/airbyte/pull/80006) | Update dependencies |
+| 0.4.47 | 2026-06-09 | [79452](https://github.com/airbytehq/airbyte/pull/79452) | Update dependencies |
+| 0.4.46 | 2026-06-02 | [78865](https://github.com/airbytehq/airbyte/pull/78865) | Update dependencies |
+| 0.4.45 | 2026-04-28 | [77397](https://github.com/airbytehq/airbyte/pull/77397) | Update dependencies |
+| 0.4.44 | 2026-04-21 | [76725](https://github.com/airbytehq/airbyte/pull/76725) | Update dependencies |
+| 0.4.43 | 2026-03-31 | [75845](https://github.com/airbytehq/airbyte/pull/75845) | Update dependencies |
+| 0.4.42 | 2026-03-17 | [74954](https://github.com/airbytehq/airbyte/pull/74954) | Update dependencies |
+| 0.4.41 | 2026-03-10 | [74645](https://github.com/airbytehq/airbyte/pull/74645) | Update dependencies |
+| 0.4.40 | 2026-02-24 | [73842](https://github.com/airbytehq/airbyte/pull/73842) | Update dependencies |
+| 0.4.39 | 2026-02-10 | [72676](https://github.com/airbytehq/airbyte/pull/72676) | Update dependencies |
 | 0.4.38 | 2026-01-20 | [72058](https://github.com/airbytehq/airbyte/pull/72058) | Update dependencies |
 | 0.4.37 | 2026-01-14 | [71481](https://github.com/airbytehq/airbyte/pull/71481) | Update dependencies |
 | 0.4.36 | 2025-12-18 | [70589](https://github.com/airbytehq/airbyte/pull/70589) | Update dependencies |

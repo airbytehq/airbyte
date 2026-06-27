@@ -117,6 +117,28 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
     assert result.message is None
 
 
+@freeze_time("2017-02-25T00:00:00Z")
+def test_check_connection_vendor_account(requests_mock, connector_vendor_config_with_report_options):
+    """Vendor accounts should pass the check using a vendor stream (not the seller Orders endpoint)."""
+    requests_mock.register_uri(
+        "POST",
+        "https://api.amazon.com/auth/o2/token",
+        status_code=200,
+        json={"access_token": "access_token", "expires_in": "3600"},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://sandbox.sellingpartnerapi-na.amazon.com/vendor/orders/v1/purchaseOrders",
+        status_code=200,
+        json={"payload": {"orders": [{"purchaseOrderDate": "2017-02-25T00:00:00Z"}]}},
+    )
+    config = dict(connector_vendor_config_with_report_options)
+    source = get_source(config, config_path=None)
+    result = source.check(logger, source._config)
+    assert result.status == Status.SUCCEEDED
+    assert result.message is None
+
+
 # TODO: Renable this test once this type of validation is supported
 # def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
 #     connector_config_with_report_options["report_options_list"].append(connector_config_with_report_options["report_options_list"][0])
@@ -139,9 +161,22 @@ def test_streams(connector_config_without_start_date):
         assert isinstance(stream, DefaultStream)
 
 
-def test_streams_count(connector_config_without_start_date, monkeypatch):
+def test_streams_count_seller(connector_config_without_start_date, monkeypatch):
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
-    assert len(streams) == 51
+    assert len(streams) == 46
+
+
+def test_streams_count_vendor(monkeypatch):
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Vendor",
+    }
+    streams = get_source(config).streams(config)
+    assert len(streams) == 49
 
 
 # TODO: Renable this test once this type of validation is supported
@@ -173,6 +208,135 @@ def test_streams_count(connector_config_without_start_date, monkeypatch):
 #             ).validate_replication_dates(config)
 #             is None
 #         )
+
+
+VENDOR_ONLY_STREAM_NAMES = [
+    "VendorDirectFulfillmentShipping",
+    "VendorOrders",
+    "VendorOrdersStatus",
+    "GET_VENDOR_FORECASTING_FRESH_REPORT",
+    "GET_VENDOR_FORECASTING_RETAIL_REPORT",
+    "GET_VENDOR_SALES_REPORT",
+    "GET_VENDOR_INVENTORY_REPORT",
+]
+
+SELLER_ONLY_STREAM_NAMES = [
+    "Orders",
+    "OrderItems",
+    "ListFinancialEventGroups",
+    "ListFinancialEvents",
+]
+
+
+def test_vendor_streams_excluded_for_seller():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Seller",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for vendor_stream in VENDOR_ONLY_STREAM_NAMES:
+        assert vendor_stream not in stream_names, f"{vendor_stream} should not appear for Seller accounts"
+
+
+def test_vendor_streams_included_for_vendor():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Vendor",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for vendor_stream in VENDOR_ONLY_STREAM_NAMES:
+        assert vendor_stream in stream_names, f"{vendor_stream} should appear for Vendor accounts"
+
+
+def test_vendor_streams_excluded_when_account_type_missing():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for vendor_stream in VENDOR_ONLY_STREAM_NAMES:
+        assert vendor_stream not in stream_names, f"{vendor_stream} should not appear when account_type is not set"
+
+
+def test_seller_streams_excluded_for_vendor():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Vendor",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for seller_stream in SELLER_ONLY_STREAM_NAMES:
+        assert seller_stream not in stream_names, f"{seller_stream} should not appear for Vendor accounts"
+
+
+def test_seller_streams_included_for_seller():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": "Seller",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for seller_stream in SELLER_ONLY_STREAM_NAMES:
+        assert seller_stream in stream_names, f"{seller_stream} should appear for Seller accounts"
+
+
+def test_seller_streams_included_when_account_type_missing():
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+    }
+    stream_names = [s.name for s in get_source(config).streams(config)]
+    for seller_stream in SELLER_ONLY_STREAM_NAMES:
+        assert seller_stream in stream_names, f"{seller_stream} should appear when account_type is not set (defaults to Seller)"
+
+
+@pytest.mark.parametrize(
+    "account_type,expected_first_stream",
+    [
+        pytest.param("Seller", "Orders", id="seller_first_stream_is_orders"),
+        pytest.param("Vendor", "VendorOrders", id="vendor_first_stream_is_vendor_orders"),
+    ],
+)
+def test_first_stream_ordering_for_check(account_type, expected_first_stream):
+    """CheckDynamicStream uses the first stream for connectivity check.
+
+    Seller accounts must resolve Orders first; Vendor accounts must resolve
+    VendorOrders first. If this test fails, the connectivity check will use
+    the wrong stream — see the IMPORTANT comment in manifest.yaml streams section.
+    """
+    config = {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+        "account_type": account_type,
+    }
+    streams = get_source(config).streams(config)
+    assert streams[0].name == expected_first_stream, (
+        f"Expected first stream for {account_type} to be {expected_first_stream}, "
+        f"got {streams[0].name}. Stream ordering matters for CheckDynamicStream."
+    )
 
 
 mock_catalog = ConfiguredAirbyteCatalog(
@@ -346,6 +510,10 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
     """
     now = datetime.strptime("2023-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
 
+    # Vendor streams require account_type=Vendor to appear in the catalog
+    if stream_name.startswith("Vendor"):
+        config = {**config, "account_type": "Vendor"}
+
     # Mock the token refresh endpoint
     requests_mock.post(
         "https://api.amazon.com/auth/o2/token", json={"access_token": "fake_access_token", "expires_in": 3600}, status_code=200
@@ -353,17 +521,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
 
     # Mock the Orders API endpoint for OrderItems stream
     if stream_name == "OrderItems":
-        start_date = config.get("replication_start_date", default_start_date(now))
-        end_date = config.get("replication_end_date", default_end_date("Orders", now))
-        # Adjust start_date to default if earlier than now - 730 days
-        default_start = default_start_date(now)
-        start_date = max(start_date, default_start)
-
-        orders_url = (
-            f"https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders?"
-            f"MarketplaceIds={config['marketplace_id']}&MaxResultsPerPage=100&"
-            f"LastUpdatedAfter={start_date}&LastUpdatedBefore={end_date}"
-        )
+        orders_url = "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders"
         requests_mock.get(orders_url, json={"payload": {"Orders": [{"AmazonOrderId": "123-4567890-1234567"}]}}, status_code=200)
 
     # Initialize the source with the mock catalog, test config, and no state
