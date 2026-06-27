@@ -48,10 +48,15 @@ class MondayActivityExtractor(RecordExtractor):
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         response_body_generator = self.decoder.decode(response)
         for response_body in response_body_generator:
-            if not response_body["data"]["boards"]:
+            data = response_body.get("data")
+            if data is None:
+                errors = response_body.get("errors", [])
+                logger.warning(f"Monday.com API returned null data; errors: {errors}")
+                continue
+            if not data.get("boards"):
                 continue
 
-            for board_data in response_body["data"]["boards"]:
+            for board_data in data["boards"]:
                 if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
                     continue
                 for record in board_data.get("activity_logs", []):
@@ -390,7 +395,10 @@ class ItemPaginationStrategy(PageIncrement):
             self._sub_page += 1
         else:
             self._sub_page = self.start_from_page
-            if response.json()["data"].get("boards"):
+            data = response.json().get("data")
+            if data is None:
+                return None
+            if data.get("boards"):
                 self._page += 1
             else:
                 return None
@@ -430,7 +438,9 @@ class ItemCursorPaginationStrategy(PageIncrement):
             response: Contains `boards` and corresponding lists of `items` for each `board`
             last_records: Parsed `items` from the response
         """
-        data = response.json()["data"]
+        data = response.json().get("data")
+        if data is None:
+            return None
         boards = data.get("boards", [])
         next_items_page = data.get("next_items_page", {})
         if boards:
