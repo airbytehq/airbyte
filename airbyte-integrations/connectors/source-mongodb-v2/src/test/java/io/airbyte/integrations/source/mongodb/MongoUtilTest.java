@@ -444,6 +444,28 @@ public class MongoUtilTest {
             .isEqualTo(100_003);
   }
 
+  @Test
+  void testIsChangeStreamUnauthorizedException() {
+    final BsonDocument unauthorizedResponse = BsonDocument.parse(
+        "{\"ok\": 0, \"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized on test-db to execute command\"}");
+    final MongoCommandException unauthorized = new MongoCommandException(unauthorizedResponse, new ServerAddress());
+    assertTrue(MongoUtil.isChangeStreamUnauthorizedException(unauthorized));
+
+    // Wrapped in another runtime exception (cause chain).
+    final RuntimeException wrapped = new RuntimeException("wrapped", unauthorized);
+    assertTrue(MongoUtil.isChangeStreamUnauthorizedException(wrapped));
+
+    // Different error code (e.g., BSONObjectTooLarge) should not match.
+    final BsonDocument bsonTooLargeResponse = BsonDocument.parse(
+        "{\"ok\": 0, \"code\": 10334, \"codeName\": \"BSONObjectTooLarge\", \"errmsg\": \"BSONObj size: ... is invalid\"}");
+    final MongoCommandException bsonTooLarge = new MongoCommandException(bsonTooLargeResponse, new ServerAddress());
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(bsonTooLarge));
+
+    // Non-Mongo exception should not match.
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(new RuntimeException("unrelated")));
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(null));
+  }
+
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
                                                 final boolean isCatalogSchemaEnforcing,
                                                 final boolean isStateSchemaEnforced) {
