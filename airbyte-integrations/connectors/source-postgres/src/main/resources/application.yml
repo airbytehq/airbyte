@@ -148,6 +148,12 @@ airbyte:
             group: Postgres Debezium Connection Error
             output: The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
 
+          - pattern: (?i).*checkout timeout.*
+            input-example: "org.postgresql.util.PSQLException: FATAL: checkout timeout"
+            error: transient
+            group: Postgres Connection Pool Error
+            output: Connection pool checkout timed out. The database connection pooler could not allocate a backend connection. Reduce max_db_connections in the connector config or increase the pool size on the database server.
+
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
         # Postgres error code [1]. The vendor error code is printed in the exception
