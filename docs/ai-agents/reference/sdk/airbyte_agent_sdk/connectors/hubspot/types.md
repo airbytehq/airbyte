@@ -223,6 +223,73 @@ Classes
     `contains: airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="CompaniesCreateParams"></a>
+
+`CompaniesCreateParams(*args, **kwargs)`
+:   Parameters for companies.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.CompaniesCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="CompaniesCreateParamsProperties"></a>
+
+`CompaniesCreateParamsProperties(*args, **kwargs)`
+:   Company properties to set
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `annualrevenue: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `domain: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `industry: str`
+    :   The type of the None singleton.
+
+    `lifecyclestage: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `numberofemployees: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `state: str`
+    :   The type of the None singleton.
+
+    `website: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
 <a id="CompaniesEqCondition"></a>
 
 `CompaniesEqCondition(*args, **kwargs)`
@@ -678,6 +745,76 @@ Classes
     `updated_at: str`
     :   Timestamp when the company record was last modified
 
+<a id="CompaniesUpdateParams"></a>
+
+`CompaniesUpdateParams(*args, **kwargs)`
+:   Parameters for companies.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `company_id: str`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.CompaniesUpdateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="CompaniesUpdateParamsProperties"></a>
+
+`CompaniesUpdateParamsProperties(*args, **kwargs)`
+:   Company properties to update
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `annualrevenue: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `domain: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `industry: str`
+    :   The type of the None singleton.
+
+    `lifecyclestage: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `numberofemployees: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `state: str`
+    :   The type of the None singleton.
+
+    `website: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
 <a id="ContactsAndCondition"></a>
 
 `ContactsAndCondition(*args, **kwargs)`
@@ -872,6 +1009,58 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ContactsCreateParams"></a>
+
+`ContactsCreateParams(*args, **kwargs)`
+:   Parameters for contacts.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.ContactsCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="ContactsCreateParamsProperties"></a>
+
+`ContactsCreateParamsProperties(*args, **kwargs)`
+:   Contact properties to set
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `company: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `firstname: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `jobtitle: str`
+    :   The type of the None singleton.
+
+    `lastname: str`
+    :   The type of the None singleton.
+
+    `lifecyclestage: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `website: str`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -1353,6 +1542,61 @@ Classes
     `updated_at: str`
     :   Timestamp indicating when the contact record was last modified
 
+<a id="ContactsUpdateParams"></a>
+
+`ContactsUpdateParams(*args, **kwargs)`
+:   Parameters for contacts.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contact_id: str`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.ContactsUpdateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="ContactsUpdateParamsProperties"></a>
+
+`ContactsUpdateParamsProperties(*args, **kwargs)`
+:   Contact properties to update
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `company: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `firstname: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `jobtitle: str`
+    :   The type of the None singleton.
+
+    `lastname: str`
+    :   The type of the None singleton.
+
+    `lifecyclestage: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `website: str`
+    :   The type of the None singleton.
+
 <a id="DealsAndCondition"></a>
 
 `DealsAndCondition(*args, **kwargs)`
@@ -1556,6 +1800,55 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.hubspot.types.DealsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DealsCreateParams"></a>
+
+`DealsCreateParams(*args, **kwargs)`
+:   Parameters for deals.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.DealsCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="DealsCreateParamsProperties"></a>
+
+`DealsCreateParamsProperties(*args, **kwargs)`
+:   Deal properties to set
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   The type of the None singleton.
+
+    `closedate: str`
+    :   The type of the None singleton.
+
+    `dealname: str`
+    :   The type of the None singleton.
+
+    `dealstage: str`
+    :   The type of the None singleton.
+
+    `dealtype: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `pipeline: str`
     :   The type of the None singleton.
 
 <a id="DealsEqCondition"></a>
@@ -2073,6 +2366,58 @@ Classes
     `updated_at: str`
     :   Timestamp when the deal record was last modified
 
+<a id="DealsUpdateParams"></a>
+
+`DealsUpdateParams(*args, **kwargs)`
+:   Parameters for deals.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `deal_id: str`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.DealsUpdateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="DealsUpdateParamsProperties"></a>
+
+`DealsUpdateParamsProperties(*args, **kwargs)`
+:   Deal properties to update
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   The type of the None singleton.
+
+    `closedate: str`
+    :   The type of the None singleton.
+
+    `dealname: str`
+    :   The type of the None singleton.
+
+    `dealstage: str`
+    :   The type of the None singleton.
+
+    `dealtype: str`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `pipeline: str`
+    :   The type of the None singleton.
+
 <a id="ObjectsGetParams"></a>
 
 `ObjectsGetParams(*args, **kwargs)`
@@ -2365,6 +2710,52 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsCreateParams"></a>
+
+`TicketsCreateParams(*args, **kwargs)`
+:   Parameters for tickets.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.TicketsCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="TicketsCreateParamsProperties"></a>
+
+`TicketsCreateParamsProperties(*args, **kwargs)`
+:   Ticket properties to set
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `hs_pipeline: str`
+    :   The type of the None singleton.
+
+    `hs_pipeline_stage: str`
+    :   The type of the None singleton.
+
+    `hs_ticket_category: str`
+    :   The type of the None singleton.
+
+    `hs_ticket_priority: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `subject: str`
     :   The type of the None singleton.
 
 <a id="TicketsEqCondition"></a>
@@ -2869,3 +3260,52 @@ Classes
 
     `updated_at: str`
     :   Timestamp when the ticket record was last modified
+
+<a id="TicketsUpdateParams"></a>
+
+`TicketsUpdateParams(*args, **kwargs)`
+:   Parameters for tickets.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.types.TicketsUpdateParamsProperties`
+    :   The type of the None singleton.
+
+    `ticket_id: str`
+    :   The type of the None singleton.
+
+<a id="TicketsUpdateParamsProperties"></a>
+
+`TicketsUpdateParamsProperties(*args, **kwargs)`
+:   Ticket properties to update
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `hs_pipeline: str`
+    :   The type of the None singleton.
+
+    `hs_pipeline_stage: str`
+    :   The type of the None singleton.
+
+    `hs_ticket_category: str`
+    :   The type of the None singleton.
+
+    `hs_ticket_priority: str`
+    :   The type of the None singleton.
+
+    `hubspot_owner_id: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
