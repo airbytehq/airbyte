@@ -1,0 +1,703 @@
+version: 6.8.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - orders
+
+definitions:
+  streams:
+    orders:
+      type: DeclarativeStream
+      name: orders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /checkout/orders/v1/organizations/{{ config['organization_id'] }}/orders
+          http_method: GET
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+            sortBy: last_modified_date
+            sortOrder: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+      primary_key:
+        - orderNo
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: lastModifiedDateFrom
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: lastModifiedDateTo
+
+    catalogs:
+      type: DeclarativeStream
+      name: catalogs
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/catalogs/v1/organizations/{{ config['organization_id'] }}/catalogs
+          http_method: GET
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/catalogs"
+
+    promotions:
+      type: DeclarativeStream
+      name: promotions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /pricing/promotions/v1/organizations/{{ config['organization_id'] }}/promotions
+          http_method: POST
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+          request_body_json:
+            query:
+              textQuery:
+                fields:
+                  - promotionId
+                searchPhrase: "*"
+            select: "(**)"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/promotions"
+
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /pricing/campaigns/v1/organizations/{{ config['organization_id'] }}/campaigns
+          http_method: POST
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+          request_body_json:
+            query:
+              textQuery:
+                fields:
+                  - campaignId
+                searchPhrase: "*"
+            select: "(**)"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/catalogs/v1/organizations/{{ config['organization_id'] }}/catalogs/{{ stream_partition.catalog_id }}/categories
+          http_method: GET
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: catalog_id
+                stream:
+                  $ref: "#/definitions/streams/catalogs"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/catalogs/v1/organizations/{{ config['organization_id'] }}/catalogs/{{ stream_partition.parent_slice.catalog_id }}/categories/{{ stream_partition.category_id }}/products
+          http_method: POST
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+          request_body_json:
+            query:
+              textQuery:
+                fields:
+                  - "productId"
+                searchPhrase: "*"
+            select: "(**)"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: category_id
+                stream:
+                  $ref: "#/definitions/streams/categories"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      https://{{ config['short_code'] }}.api.commercecloud.salesforce.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      grant_type: client_credentials
+      token_refresh_endpoint: https://account.demandware.com/dwsso/oauth2/access_token
+      refresh_request_body:
+        scope: >-
+          SALESFORCE_COMMERCE_API:{{ config['organization_id'] | replace('f_ecom_', '') }}
+          sfcc.orders sfcc.products sfcc.catalogs
+          sfcc.pricing.promotions sfcc.pricing.coupons sfcc.pricing.campaigns
+
+streams:
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/catalogs"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/promotions"
+  - $ref: "#/definitions/streams/campaigns"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/salesforce-commerce-cloud
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - organization_id
+      - short_code
+      - site_id
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        description: >-
+          The client ID from your Salesforce Commerce Cloud Account Manager API client.
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client Secret
+        description: >-
+          The client secret from your Salesforce Commerce Cloud Account Manager API client.
+        airbyte_secret: true
+      organization_id:
+        type: string
+        order: 2
+        title: Organization ID
+        description: >-
+          The organization ID for your Commerce Cloud instance (e.g., f_ecom_zzxy_prd).
+        examples:
+          - f_ecom_zzxy_prd
+      short_code:
+        type: string
+        order: 3
+        title: Short Code
+        description: >-
+          The short code for your Commerce Cloud instance, used in the API base URL.
+        examples:
+          - kv7kzm78
+      site_id:
+        type: string
+        order: 4
+        title: Site ID
+        description: >-
+          The site ID for your Commerce Cloud storefront (e.g., SiteGenesis, RefArch).
+        examples:
+          - SiteGenesis
+          - RefArch
+      start_date:
+        type: string
+        order: 5
+        title: Start Date
+        description: >-
+          The date from which to start syncing data for incremental streams, in ISO 8601 format.
+          If not provided, defaults to 2020-01-01T00:00:00Z.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2024-01-01T00:00:00Z"
+        format: date-time
+    additionalProperties: true
+
+schemas:
+  orders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      orderNo:
+        type:
+          - "null"
+          - string
+      orderToken:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      confirmationStatus:
+        type:
+          - "null"
+          - string
+      exportStatus:
+        type:
+          - "null"
+          - string
+      paymentStatus:
+        type:
+          - "null"
+          - string
+      shippingStatus:
+        type:
+          - "null"
+          - string
+      siteId:
+        type:
+          - "null"
+          - string
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      orderTotal:
+        type:
+          - "null"
+          - number
+      taxTotal:
+        type:
+          - "null"
+          - number
+      shippingTotal:
+        type:
+          - "null"
+          - number
+      productSubTotal:
+        type:
+          - "null"
+          - number
+      productTotal:
+        type:
+          - "null"
+          - number
+      customerInfo:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      billingAddress:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      shipments:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      productItems:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      paymentInstruments:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      notes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+
+  catalogs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      description:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      online:
+        type:
+          - "null"
+          - boolean
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  promotions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      enabled:
+        type:
+          - "null"
+          - boolean
+      promotionClass:
+        type:
+          - "null"
+          - string
+      startDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      endDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      exclusive:
+        type:
+          - "null"
+          - boolean
+
+  categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      parentCategoryId:
+        type:
+          - "null"
+          - string
+      position:
+        type:
+          - "null"
+          - number
+      online:
+        type:
+          - "null"
+          - boolean
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      brand:
+        type:
+          - "null"
+          - string
+      online:
+        type:
+          - "null"
+          - boolean
+      searchable:
+        type:
+          - "null"
+          - boolean
+      primaryCategoryId:
+        type:
+          - "null"
+          - string
+      price:
+        type:
+          - "null"
+          - number
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      description:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      enabled:
+        type:
+          - "null"
+          - boolean
+      startDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      endDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
