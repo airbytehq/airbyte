@@ -1,0 +1,8 @@
+{
+  "subdomain": "your-subdomain",
+  "api_key": "your-api-key",
+  "api_secret": "your-api-secret",
+  "workspace_id": "",
+  "sync_from_date": "",
+  "custom_filter_json": "[]"
+}
