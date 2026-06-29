@@ -444,6 +444,23 @@ public class MongoUtilTest {
             .isEqualTo(100_003);
   }
 
+  @Test
+  void testIsUnauthorizedException() {
+    final MongoCommandException exception = mock(MongoCommandException.class);
+    when(exception.getErrorCode()).thenReturn(UNAUTHORIZED_ERROR_CODE);
+
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException(exception)));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionForOtherMongoCommandException() {
+    final MongoCommandException exception = mock(MongoCommandException.class);
+    when(exception.getErrorCode()).thenReturn(BSON_OBJECT_TOO_LARGE_ERROR_CODE);
+
+    assertFalse(MongoUtil.isUnauthorizedException(exception));
+  }
+
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
                                                 final boolean isCatalogSchemaEnforcing,
                                                 final boolean isStateSchemaEnforced) {

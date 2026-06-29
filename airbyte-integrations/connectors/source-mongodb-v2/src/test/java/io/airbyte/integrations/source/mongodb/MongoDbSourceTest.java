@@ -13,20 +13,24 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -269,6 +273,31 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  @Test
+  void testReadMapsUnauthorizedCdcIteratorFailureToConfigError() {
+    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+    final ConfiguredAirbyteStream stream = mock(ConfiguredAirbyteStream.class);
+    final AirbyteStream airbyteStream = mock(AirbyteStream.class);
+    final AutoCloseableIterator<?> iterator = mock(AutoCloseableIterator.class);
+    final MongoCommandException mongoException = mock(MongoCommandException.class);
+
+    when(mongoException.getErrorCode()).thenReturn(MongoConstants.UNAUTHORIZED_ERROR_CODE);
+    when(iterator.hasNext()).thenThrow(mongoException);
+    when(catalog.getStreams()).thenReturn(List.of(stream));
+    when(stream.getSyncMode()).thenReturn(io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL);
+    when(stream.getStream()).thenReturn(airbyteStream);
+    when(airbyteStream.getJsonSchema()).thenReturn(Jsons.jsonNode(Map.of(MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES, Map.of("field", "string"))));
+    when(airbyteStream.getNamespace()).thenReturn(DB_NAME);
+    when(airbyteStream.getName()).thenReturn("testCollection");
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any()))
+        .thenReturn(List.of((AutoCloseableIterator) iterator));
+
+    final AutoCloseableIterator<?> readIterator = source.read(airbyteSourceConfig, catalog, null);
+    final ConfigErrorException exception = assertThrows(ConfigErrorException.class, readIterator::hasNext);
+
+    assertEquals(MongoConstants.CDC_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, exception.getMessage());
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
