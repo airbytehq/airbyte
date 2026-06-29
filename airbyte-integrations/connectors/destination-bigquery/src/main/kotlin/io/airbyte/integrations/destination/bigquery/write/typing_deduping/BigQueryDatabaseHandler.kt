@@ -99,7 +99,11 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
         while (JobStatus.State.DONE != job.status.state) {
             Thread.sleep(1000L)
-            job = job.reload()
+            try {
+                job = job.reload()
+            } catch (e: BigQueryException) {
+                throw wrapWithConfigExceptionIfNeeded(e)
+            }
         }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
@@ -176,6 +180,12 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
             is BigQueryException -> {
                 if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
                     return ConfigErrorException(e.reason, e)
+                }
+                if (
+                    ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.code) &&
+                        e.error?.reason != "rateLimitExceeded"
+                ) {
+                    return ConfigErrorException(e.message!!, e)
                 }
             }
         }
