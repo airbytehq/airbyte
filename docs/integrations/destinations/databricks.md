@@ -40,7 +40,6 @@ You will need the following information from your Databricks workspace:
 
 5. Finally, you'll need to note the **Databricks Unity Catalog Path**, which is the path to the database you wish to use within the Unity Catalog. This is often the same as the workspace name.
 
-
 ### Authentication
 
 :::info
