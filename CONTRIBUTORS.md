@@ -106,6 +106,7 @@
 - [camro](https://github.com/camro)
 - [carlkibler](https://github.com/carlkibler)
 - [carlonuccio](https://github.com/carlonuccio)
+- [carloseguevara](https://github.com/carloseguevara)
 - [catpineapple](https://github.com/catpineapple)
 - [cgardens](https://github.com/cgardens)
 - [chadthman](https://github.com/chadthman)

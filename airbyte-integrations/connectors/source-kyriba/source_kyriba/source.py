@@ -267,12 +267,15 @@ class CashFlows(IncrementalKyribaStream):
 
 # Source
 class SourceKyriba(AbstractSource):
-    def gateway_url(self, config: Mapping[str, Any]) -> str:
-        return f"https://{config['domain']}/gateway"
+    def get_api_url(self, config: Mapping[str, Any]) -> str:
+        return f"https://api.{config['domain']}"
+
+    def get_auth_url(self, config: Mapping[str, Any]) -> str:
+        return f"https://auth.{config['domain']}"
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            client = KyribaClient(config["username"], config["password"], self.gateway_url(config))
+            client = KyribaClient(config["username"], config["password"], self.get_auth_url(config))
             client.login()
             return True, None
         except Exception as e:
@@ -282,10 +285,9 @@ class SourceKyriba(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        gateway_url = self.gateway_url(config)
-        client = KyribaClient(config["username"], config["password"], gateway_url)
+        client = KyribaClient(config["username"], config["password"], self.get_auth_url(config))
         kwargs = {
-            "gateway_url": gateway_url,
+            "gateway_url": self.get_api_url(config),
             "client": client,
             "start_date": config.get("start_date"),
             "end_date": config.get("end_date"),
