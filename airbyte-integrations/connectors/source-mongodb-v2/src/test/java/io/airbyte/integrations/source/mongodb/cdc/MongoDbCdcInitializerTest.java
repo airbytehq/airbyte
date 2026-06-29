@@ -23,6 +23,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -41,6 +43,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatus
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -69,6 +72,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -551,6 +556,22 @@ class MongoDbCdcInitializerTest {
   }
 
   @Test
+  void testUnauthorizedChangeStreamThrowsConfigErrorSingleDB() {
+    setupSingleDatabase();
+    final MongoCommandException mongoCommandException = unauthorizedChangeStreamException();
+    when(changeStreamIterable.cursor()).thenThrow(mongoCommandException);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+
+    assertEquals(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, thrown.getMessage());
+    assertTrue(thrown.getInternalMessage().contains("not authorized"));
+    assertTrue(thrown.getCause() instanceof MongoCommandException);
+  }
+
+  @Test
   void testUnsupportedIdTypeThrowsExceptionSingleDB() {
     setupSingleDatabase();
     final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"exotic\"}, \"count\": 1}");
@@ -599,6 +620,15 @@ class MongoDbCdcInitializerTest {
     final AirbyteStateMessage airbyteStateMessage =
         new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withGlobal(airbyteGlobalState);
     return Jsons.jsonNode(List.of(airbyteStateMessage));
+  }
+
+  private static MongoCommandException unauthorizedChangeStreamException() {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonDouble(0.0))
+        .append("code", new BsonInt32(MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized on test-database to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }"));
+    return new MongoCommandException(response, new ServerAddress());
   }
 
   private static JsonNode createInitialDebeziumStateMultipleDB(final InitialSnapshotStatus initialSnapshotStatus) {
