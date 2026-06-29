@@ -12,6 +12,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 
 from .conftest import _YAML_FILE_PATH
 
+
 LANDING_PAGE_METRICS = [
     "total_landing_page_view",
     "cost_per_landing_page_view",
@@ -104,6 +105,4 @@ def test_landing_page_metrics_in_api_request(stream_name):
             params = parse_qs(urlparse(req.url).query)
             metrics_str = params.get("metrics", [""])[0]
             for metric in LANDING_PAGE_METRICS:
-                assert metric in metrics_str, (
-                    f"{metric} not found in {stream_name} API request metrics parameter"
-                )
+                assert metric in metrics_str, f"{metric} not found in {stream_name} API request metrics parameter"
