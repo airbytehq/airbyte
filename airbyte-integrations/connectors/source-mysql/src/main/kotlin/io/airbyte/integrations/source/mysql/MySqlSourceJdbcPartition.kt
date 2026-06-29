@@ -218,7 +218,6 @@ class MySqlSourceJdbcRfrSnapshotPartition(
             }
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
-//    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
@@ -244,14 +243,12 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
             )
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
-//    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
-// typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcSnapshotPartition
 class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -272,7 +269,6 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
             }
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
-//    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
@@ -294,7 +290,6 @@ class MySqlSourceJdbcCdcSnapshotPartition(
         get() = MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
-//    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
@@ -354,7 +349,6 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
             )
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
-//    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
@@ -381,7 +375,6 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
         cursorUpperBound
     ) {
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
-//    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             checkpointColumns,
             checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
@@ -441,7 +434,6 @@ class MySqlSourceJdbcCursorIncrementalPartition(
             )
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
-//    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
             cursorCheckpoint = lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode(),
