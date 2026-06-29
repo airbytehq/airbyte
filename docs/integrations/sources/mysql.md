@@ -36,8 +36,12 @@ CREATE USER <user_name> IDENTIFIED BY 'your_password_here';
 Now, provide this user with read-only access to relevant schemas and tables:
 
 ```roomsql
-GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO <user_name>;
+GRANT SELECT, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO <user_name>;
 ```
+
+:::note
+The `RELOAD` privilege is **not required**. The connector uses `snapshot.locking.mode=none` in its Debezium configuration, which avoids the `FLUSH TABLES WITH READ LOCK` command that would otherwise need `RELOAD`. This makes the connector compatible with managed MySQL services (OCI HeatWave, Amazon Aurora, Google Cloud SQL, DigitalOcean Managed MySQL, etc.) that restrict granting `RELOAD` to non-admin users.
+:::
 
 If choosing to run using the `STANDARD` replication method (not recommended), only the `SELECT` permission is required.
 
@@ -59,6 +63,7 @@ server-id                  = 223344
 log_bin                    = mysql-bin
 binlog_format              = ROW
 binlog_row_image           = FULL
+binlog_row_value_options   =
 binlog_expire_logs_seconds  = 864000
 ```
 
@@ -70,7 +75,18 @@ RDS does not use `binlog_expire_logs_seconds`. Instead, it uses a parameter call
 - log_bin : The value of log_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
 - binlog_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
 - binlog_row_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
+- binlog_row_value_options : The `binlog_row_value_options` must be set to an **empty string** (the standard MySQL default). When set to `PARTIAL_JSON`, MySQL writes only modified parts of JSON columns to the after-image of UPDATE events, and the Debezium MySQL connector silently drops those UPDATE events because it cannot reconstruct the full before/after row state. **INSERT and DELETE events are unaffected**, so the failure looks like "creates and deletes flow, updates never arrive" — and the connector logs no error. This is the OCI HeatWave MySQL default; see the callout below.
 - binlog_expire_logs_seconds : This is the number of seconds for automatic binlog file removal. We recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
+
+:::warning OCI HeatWave MySQL — PARTIAL_JSON default
+OCI HeatWave MySQL ships with `binlog_row_value_options = PARTIAL_JSON` by default (standard MySQL defaults to empty). This optimization writes only the modified parts of JSON columns to the binlog UPDATE after-image. The Debezium MySQL connector cannot reconstruct full row state from these partial images and **silently drops the affected UPDATE events** — the connector reports success, INSERT and DELETE events flow normally, only UPDATEs go missing.
+
+**Fix:** in the OCI Console, create a custom MySQL configuration based on your current template, add the `binlog_row_value_options` parameter, and set its value to an empty string. Apply the new configuration to the DB System. The parameter is dynamic — you can also apply it without a restart via `SET GLOBAL binlog_row_value_options = '';` if your user has `SYSTEM_VARIABLES_ADMIN`, but the parameter-group change is required for persistence across restarts.
+
+After the fix, **reset the Airbyte connection** so a fresh snapshot + CDC stream backfills any UPDATEs that were dropped while PARTIAL_JSON was active.
+
+Reference: [HeatWave MySQL: Solving Missing UPDATES for Debezium CDC](https://blogs.oracle.com/mysql/heatwave-mysql-solving-missing-updates-for-debezium-cdc) (Oracle MySQL blog) and upstream Debezium tracking issue [DBZ-9123](https://issues.redhat.com/browse/DBZ-9123).
+:::
 
 </details>
 
@@ -230,6 +246,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                          | Subject                                                                                                                                          |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.52.4      | 2026-05-29 | [76345](https://github.com/airbytehq/airbyte/pull/76345)                                              | Drop `RELOAD` privilege requirement for CDC; document OCI HeatWave `binlog_row_value_options=PARTIAL_JSON` UPDATE-drop regression.              |
 | 3.52.3      | 2026-05-21 | [78318](https://github.com/airbytehq/airbyte/pull/78318)                                                  | Fix the CDC docs link on the MySQL config page.                                                                                             |
 | 3.52.2      | 2026-05-11 | [77973](https://github.com/airbytehq/airbyte/pull/77973)                                                  | Improve concurrent initial snapshot partitioning for large MySQL tables with `BIGINT UNSIGNED` primary keys.                                     |
 | 3.52.1      | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787)                                              | Make the hidden additional properties fields in spec optional. No functional change.                                                             |
