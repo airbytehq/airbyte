@@ -120,9 +120,8 @@ class MySqlSourceCdcIntegrationTest {
             val discoveredStream =
                 DiscoveredStream(
                     id = StreamIdentifier.Companion.from(desc),
-                    columns = listOf(EmittedField("k", IntFieldType),
-                        EmittedField("v", StringFieldType)
-                    ),
+                    columns =
+                        listOf(EmittedField("k", IntFieldType), EmittedField("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream =

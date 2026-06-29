@@ -175,7 +175,8 @@ sealed class MySqlSourceJdbcResumablePartition(
             val zippedUpperBound: List<Pair<EmittedField, JsonNode>> =
                 upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val upperBoundDisj: List<WhereClauseNode> =
-                zippedUpperBound.mapIndexed { idx: Int, (leqCol: EmittedField, leqValue: JsonNode) ->
+                zippedUpperBound.mapIndexed { idx: Int, (leqCol: EmittedField, leqValue: JsonNode)
+                    ->
                     val lastLeaf: WhereClauseLeafNode =
                         if (idx < zippedUpperBound.size - 1) {
                             Lesser(leqCol, leqValue)
@@ -220,7 +221,8 @@ class MySqlSourceJdbcRfrSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -245,7 +247,8 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -271,7 +274,8 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -292,7 +296,8 @@ class MySqlSourceJdbcCdcSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -351,7 +356,8 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             stream,
         )
@@ -484,12 +490,14 @@ class MySqlJdbcConcurrentPartitionsCreator<
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
         // Sample the table for partition split boundaries and for record byte sizes.
-        val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: SelectQuerier.ResultRow ->
-            val boundary: OpaqueStateValue? =
-                (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
-            val rowByteSize: Long = sharedState.rowByteSizeEstimator().apply(record.data.toJson())
-            boundary to rowByteSize
-        }
+        val sample: Sample<Pair<OpaqueStateValue?, Long>> =
+            collectSample { record: SelectQuerier.ResultRow ->
+                val boundary: OpaqueStateValue? =
+                    (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
+                val rowByteSize: Long =
+                    sharedState.rowByteSizeEstimator().apply(record.data.toJson())
+                boundary to rowByteSize
+            }
         if (sample.kind == Sample.Kind.EMPTY) {
             log.info { "Sampling query found that the table was empty." }
             return listOf(CheckpointOnlyPartitionReader())
