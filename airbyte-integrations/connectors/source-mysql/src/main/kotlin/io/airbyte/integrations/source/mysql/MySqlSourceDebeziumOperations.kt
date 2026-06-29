@@ -226,7 +226,25 @@ class MySqlSourceDebeziumOperations(
 
         val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
         val availableGtidSet = MySqlGtidSet(gtidSet)
-        if (!savedGtidSet.isContainedWithin(availableGtidSet)) {
+        // Debezium 3.1.x MySqlGtidSet operations (isContainedWithin, subtract) throw
+        // NullPointerException when one GTID set contains server UUIDs absent from the other.
+        // This happens after MySQL failover, topology changes, or replica reconfiguration.
+        // Catch NPE from these calls and route through abortCdcSync() so the user's configured
+        // invalidCdcCursorPositionBehavior (FAIL_SYNC or RESET_SYNC) is respected.
+        val isContained =
+            try {
+                savedGtidSet.isContainedWithin(availableGtidSet)
+            } catch (e: NullPointerException) {
+                log.warn(e) {
+                    "GTID containment check failed due to mismatched server UUIDs. " +
+                        "Saved: $savedGtidSet, Available: $availableGtidSet"
+                }
+                return abortCdcSync(
+                    "GTID set comparison failed due to mismatched server UUIDs between saved " +
+                        "CDC state and MySQL server, typically after a failover or topology change"
+                )
+            }
+        if (!isContained) {
             return abortCdcSync(
                 "Connector last known GTIDs are $savedGtidSet, but MySQL server only has $availableGtidSet"
             )
@@ -234,13 +252,41 @@ class MySqlSourceDebeziumOperations(
 
         // newGtidSet is gtids from server that hasn't been seen by this connector yet. If the set
         // exists, check that they are not purged, or we may lose those data.
-        val newGtidSet = availableGtidSet.subtract(savedGtidSet)
+        val newGtidSet =
+            try {
+                availableGtidSet.subtract(savedGtidSet)
+            } catch (e: NullPointerException) {
+                log.warn(e) {
+                    "GTID set subtraction failed due to mismatched server UUIDs. " +
+                        "Available: $availableGtidSet, Saved: $savedGtidSet"
+                }
+                return abortCdcSync(
+                    "GTID set comparison failed due to mismatched server UUIDs between saved " +
+                        "CDC state and MySQL server, typically after a failover or topology change"
+                )
+            }
         if (!newGtidSet.isEmpty) {
             val purgedGtidSet = queryPurgedIds()
-            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
-                return abortCdcSync(
-                    "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
-                )
+            if (!purgedGtidSet.isEmpty) {
+                val remainingAfterPurge =
+                    try {
+                        newGtidSet.subtract(purgedGtidSet)
+                    } catch (e: NullPointerException) {
+                        log.warn(e) {
+                            "GTID set subtraction failed during purge check. " +
+                                "New: $newGtidSet, Purged: $purgedGtidSet"
+                        }
+                        return abortCdcSync(
+                            "GTID set comparison failed due to mismatched server UUIDs between " +
+                                "saved CDC state and MySQL server, typically after a failover " +
+                                "or topology change"
+                        )
+                    }
+                if (!remainingAfterPurge.equals(newGtidSet)) {
+                    return abortCdcSync(
+                        "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
+                    )
+                }
             }
         }
         // If the connector has saved GTID set, we will use that to validate and skip
