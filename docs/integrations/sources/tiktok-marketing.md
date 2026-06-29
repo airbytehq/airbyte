@@ -167,6 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0 | 2026-06-29 | [80942](https://github.com/airbytehq/airbyte/pull/80942) | Add landing page event metrics (`total_landing_page_view`, `cost_per_landing_page_view`, `landing_page_view_rate`) to all basic report streams |
 | 5.1.1 | 2026-06-23 | [80705](https://github.com/airbytehq/airbyte/pull/80705) | Update dependencies |
 | 5.1.0 | 2026-06-18 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |
 | 5.0.11 | 2026-06-16 | [80094](https://github.com/airbytehq/airbyte/pull/80094) | Update dependencies |

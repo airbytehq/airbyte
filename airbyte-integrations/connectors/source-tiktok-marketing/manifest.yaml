@@ -434,7 +434,7 @@ definitions:
         report_type: "BASIC"
         data_level: '{{ parameters["data_level"] }}'
         dimensions: '{{ parameters["dimensions"] | string }}'
-        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
+        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install", "total_landing_page_view", "cost_per_landing_page_view", "landing_page_view_rate"]) | string }}'
         start_date: "{{ stream_interval['start_time'] }}"
         end_date: "{{ stream_interval['end_time'] }}"
         filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
@@ -524,7 +524,7 @@ definitions:
         report_type: "BASIC"
         data_level: '{{ parameters["data_level"] }}'
         dimensions: '{{ parameters["dimensions"] | string }}'
-        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
+        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install", "total_landing_page_view", "cost_per_landing_page_view", "landing_page_view_rate"]) | string }}'
         start_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
         end_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
         filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
@@ -580,7 +580,7 @@ definitions:
           report_type: "BASIC"
           data_level: '{{ parameters["data_level"] }}'
           dimensions: '{{ parameters["dimensions"] | string }}'
-          metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
+          metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install", "total_landing_page_view", "cost_per_landing_page_view", "landing_page_view_rate"]) | string }}'
           query_lifetime: "true"
           filtering: '{{ [{
               "filter_value": "[\\\"STATUS_ALL\\\"]",
@@ -4289,6 +4289,21 @@ definitions:
               type:
                 - "null"
                 - string
+            total_landing_page_view:
+              description: The number of landing page view events from ads.
+              type:
+                - "null"
+                - string
+            cost_per_landing_page_view:
+              description: The average cost of each landing page view event.
+              type:
+                - "null"
+                - string
+            landing_page_view_rate:
+              description: The percentage of click events that are landing page view events.
+              type:
+                - "null"
+                - string
             complete_payment:
               description: The number of completed payments.
               type:
@@ -4831,6 +4846,21 @@ definitions:
                 - string
             total_pageview:
               description: Total number of page views.
+              type:
+                - "null"
+                - string
+            total_landing_page_view:
+              description: The number of landing page view events from ads.
+              type:
+                - "null"
+                - string
+            cost_per_landing_page_view:
+              description: The average cost of each landing page view event.
+              type:
+                - "null"
+                - string
+            landing_page_view_rate:
+              description: The percentage of click events that are landing page view events.
               type:
                 - "null"
                 - string

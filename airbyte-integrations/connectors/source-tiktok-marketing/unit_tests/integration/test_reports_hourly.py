@@ -112,6 +112,9 @@ class TestAdsReportHourly(TestCase):
         "real_time_app_install",
         "real_time_app_install_cost",
         "app_install",
+        "total_landing_page_view",
+        "cost_per_landing_page_view",
+        "landing_page_view_rate",
     ]
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
@@ -284,6 +287,9 @@ class TestAdGroupsReportsHourly(TestCase):
         "real_time_app_install",
         "real_time_app_install_cost",
         "app_install",
+        "total_landing_page_view",
+        "cost_per_landing_page_view",
+        "landing_page_view_rate",
     ]
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
@@ -471,6 +477,9 @@ class TestAdvertisersReportsHourly(TestCase):
         "real_time_app_install",
         "real_time_app_install_cost",
         "app_install",
+        "total_landing_page_view",
+        "cost_per_landing_page_view",
+        "landing_page_view_rate",
     ]
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
@@ -592,6 +601,9 @@ class TestCampaignsReportsHourly(TestCase):
         "real_time_app_install",
         "real_time_app_install_cost",
         "app_install",
+        "total_landing_page_view",
+        "cost_per_landing_page_view",
+        "landing_page_view_rate",
     ]
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
