@@ -4,9 +4,11 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CHANGE_STREAM_PERMISSION_ERROR_MESSAGE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UNAUTHORIZED_ERROR_CODE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +25,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -69,6 +73,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -303,6 +308,22 @@ class MongoDbCdcInitializerTest {
     assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
+  }
+
+  @Test
+  void testCreateCdcIteratorsThrowsConfigErrorForUnauthorizedChangeStream() {
+    setupSingleDatabase();
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(
+        new BsonDocument()
+            .append("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE))
+            .append("errmsg", new BsonString("not authorized to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }")),
+        new ServerAddress()));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+    assertEquals(CHANGE_STREAM_PERMISSION_ERROR_MESSAGE, thrown.getMessage());
   }
 
   @Test
