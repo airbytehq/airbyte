@@ -41,9 +41,9 @@ open class DatabricksSpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription("Databricks Cluster Port.")
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
-        json = """{"group": "advanced", "order": 4, "default": "443", "examples": ["443"]}"""
+        json = """{"group": "advanced", "order": 4, "default": "443", "examples": ["443"]}""",
     )
-    val port: String = "443"
+    val port: String? = "443"
 
     @get:JsonSchemaTitle("Databricks Unity Catalog Name")
     @get:JsonPropertyDescription("The name of the unity catalog for the database")
@@ -58,9 +58,9 @@ open class DatabricksSpecification : ConfigurationSpecification() {
     @get:JsonProperty("schema")
     @get:JsonSchemaInject(
         json =
-            """{"group": "advanced", "order": 6, "default": "default", "examples": ["default"]}"""
+            """{"group": "advanced", "order": 6, "default": "default", "examples": ["default"]}""",
     )
-    val schema: String = "default"
+    val schema: String? = "default"
 
     @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
@@ -74,7 +74,7 @@ open class DatabricksSpecification : ConfigurationSpecification() {
     @get:JsonSchemaDescription("Authentication mechanism for Staging files and running queries")
     @get:JsonProperty("authentication")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 8}""")
-    val authentication: DatabricksAuthSpecification? = null
+    val authentication: DatabricksAuthSpecification = OAuthSpecification()
 
     @get:JsonSchemaTitle("Purge Staging Files and Tables")
     @get:JsonPropertyDescription("Default to 'true'. Switch it to 'false' for debugging purpose.")
@@ -149,6 +149,6 @@ class DatabricksSpecificationExtension : DestinationSpecificationExtension {
     override val groups =
         listOf(
             DestinationSpecificationExtension.Group("connection", "Connection"),
-            DestinationSpecificationExtension.Group("advanced", "Advanced"),
+            DestinationSpecificationExtension.Group("advanced", "Optional Fields"),
         )
 }

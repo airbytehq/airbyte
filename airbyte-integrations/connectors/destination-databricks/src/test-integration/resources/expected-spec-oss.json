@@ -125,13 +125,13 @@
         "default" : false
       }
     },
-    "required" : [ "hostname", "http_path", "port", "database", "schema", "accept_terms" ],
+    "required" : [ "hostname", "http_path", "database", "authentication", "accept_terms" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
     }, {
       "id" : "advanced",
-      "title" : "Advanced"
+      "title" : "Optional Fields"
     } ]
   },
   "supportsIncremental" : true,
