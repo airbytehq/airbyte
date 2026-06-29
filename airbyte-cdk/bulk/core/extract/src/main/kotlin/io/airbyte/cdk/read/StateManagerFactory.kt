@@ -93,11 +93,14 @@ class StateManagerFactory(
             )
         }
         return if (config.global) {
-            when (inputState) {
-                is StreamInputState ->
-                    throw ConfigErrorException("input state unexpectedly of type STREAM")
-                is GlobalInputState -> forGlobal(allStreams, inputState)
-                is EmptyInputState -> forGlobal(allStreams)
+            metadataQuerierFactory.session(config).use { mq ->
+                when (inputState) {
+                    is StreamInputState ->
+                        throw ConfigErrorException("input state unexpectedly of type STREAM")
+
+                    is GlobalInputState -> forGlobal(mq, allStreams, inputState)
+                    is EmptyInputState -> forGlobal(mq, allStreams)
+                }
             }
         } else {
             when (inputState) {
@@ -110,6 +113,7 @@ class StateManagerFactory(
     }
 
     private fun forGlobal(
+        metadataQuerier: MetadataQuerier,
         undecoratedStreams: List<Stream>,
         inputState: GlobalInputState? = null,
     ): StateManager {
@@ -129,7 +133,7 @@ class StateManagerFactory(
                             // sorting.
                             // Output here needs to match Discover's JdbcAirbyteStreamFactory
                             SOCKET to PROTOBUF ->
-                                if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
+                                if (metadataQuerier.primaryKey(stream.id).isNotEmpty() && stream.configuredPrimaryKey?.isNotEmpty() == true) {
                                     stream.copy(
                                         schema =
                                             stream.schema + metaFieldDecorator.globalMetaFields,
@@ -294,6 +298,7 @@ class StateManagerFactory(
             streamFields.toSet(),
             configuredSyncMode,
             configuredPrimaryKey,
+//            metadataQuerier.primaryKey(streamID).isNotEmpty(), // TEMP
             configuredCursor,
         )
     }
