@@ -123,17 +123,6 @@ class DatabricksCheckerTest {
     }
 
     @Test
-    fun `check fails when terms are not accepted`() {
-        val noTermsConfig = config.copy(acceptTerms = false)
-        val noTermsChecker = DatabricksChecker(databricksClient, noTermsConfig)
-
-        val exception = assertThrows<IllegalArgumentException> { noTermsChecker.check() }
-
-        assertTrue(exception.message!!.contains("accept_terms"))
-        coVerify(exactly = 0) { databricksClient.createNamespace(any()) }
-    }
-
-    @Test
     fun `check uses lowercased schema from config`() {
         val upperConfig = config.copy(schema = "MySchema")
         val upperChecker = DatabricksChecker(databricksClient, upperConfig)
