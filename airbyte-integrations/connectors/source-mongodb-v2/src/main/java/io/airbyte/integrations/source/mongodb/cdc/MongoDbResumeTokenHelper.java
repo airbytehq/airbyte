@@ -5,14 +5,16 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,8 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+  private static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
+  private static final String CHANGE_STREAM_PRIVILEGES_ERROR_MESSAGE = "MongoDB user lacks required change stream privileges.";
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -82,6 +86,11 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(CHANGE_STREAM_PRIVILEGES_ERROR_MESSAGE, e, e.getMessage());
+      }
+      throw e;
     }
   }
 
