@@ -449,10 +449,11 @@ class TestRealErrors:
         [
             (
                 REDUCE_FIELDS_ERROR_TEST_NAME,
-                "Please reduce the number of fields requested. Go to the schema tab, "
-                "select your source, and unselect the fields you do not need.",
+                "The Facebook API temporarily enforced stricter data limits. This issue should resolve itself with automatic retries. "
+                "If the issue persists, you can reduce the number of fields requested by going to the schema tab, selecting your source, "
+                "and unselecting fields you do not need.",
                 REDUCE_FIELDS_ERROR_RESPONSE,
-                FailureType.config_error,
+                FailureType.transient_error,
             ),
             (
                 SERVICE_TEMPORARILY_UNAVAILABLE_TEST_NAME,

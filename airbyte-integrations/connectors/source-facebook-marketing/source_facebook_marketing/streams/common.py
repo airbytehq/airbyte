@@ -198,10 +198,11 @@ def traced_exception(fb_exception: FacebookRequestError):
                 "access token with all required permissions."
             )
     elif "reduce the amount of data" in msg:
-        failure_type = FailureType.config_error
+        failure_type = FailureType.transient_error
         friendly_msg = (
-            "Please reduce the number of fields requested. Go to the schema tab, select your source, "
-            "and unselect the fields you do not need."
+            "The Facebook API temporarily enforced stricter data limits. This issue should resolve itself with automatic retries. "
+            "If the issue persists, you can reduce the number of fields requested by going to the schema tab, selecting your source, "
+            "and unselecting fields you do not need."
         )
     elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
         failure_type = FailureType.config_error
