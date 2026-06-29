@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.client.ChangeStreamIterable;
+import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
@@ -29,6 +32,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.bson.BsonDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +107,13 @@ public class MongoDbSource extends BaseConnector implements Source {
               .withMessage("Target MongoDB instance is not a replica set cluster.")
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
+
+        validateChangeStreamPrivilege(mongoClient, databaseNames);
+      } catch (final ConfigErrorException e) {
+        LOGGER.error("Unable to perform source check operation.", e);
+        return new AirbyteConnectionStatus()
+            .withMessage(e.getMessage())
+            .withStatus(AirbyteConnectionStatus.Status.FAILED);
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
         return new AirbyteConnectionStatus()
@@ -247,6 +258,28 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
     return MongoConnectionUtils.createMongoClient(config);
+  }
+
+  /**
+   * Verifies that the configured user has permission to open a change stream on each database. This
+   * surfaces a clean {@link ConfigErrorException} at CHECK time rather than failing during a sync
+   * with the MongoDB driver's verbose "Command failed with error 13 (Unauthorized)" output.
+   *
+   * @param mongoClient The MongoDB client.
+   * @param databaseNames The configured database names.
+   */
+  private void validateChangeStreamPrivilege(final MongoClient mongoClient, final List<String> databaseNames) {
+    for (final String databaseName : databaseNames) {
+      final ChangeStreamIterable<BsonDocument> stream = mongoClient.getDatabase(databaseName).watch(BsonDocument.class);
+      try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor = stream.cursor()) {
+        cursor.tryNext();
+      } catch (final MongoCommandException e) {
+        if (e.getErrorCode() == MongoConstants.MONGO_UNAUTHORIZED_ERROR_CODE) {
+          throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e);
+        }
+        throw e;
+      }
+    }
   }
 
   List<AutoCloseableIterator<AirbyteMessage>> createFullRefreshIterators(final MongoDbSourceConfig sourceConfig,
