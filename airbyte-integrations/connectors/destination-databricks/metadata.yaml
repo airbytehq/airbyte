@@ -48,6 +48,7 @@ data:
           If you do not interact with the raw tables, you can safely upgrade. If you do, update any downstream
           dbt models or SQL queries to reference the final tables instead, then drop old raw tables after verifying.
         upgradeDeadline: "2026-10-01"
+        deadlineAction: "auto_upgrade"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   resourceRequirements:
     jobSpecific:
