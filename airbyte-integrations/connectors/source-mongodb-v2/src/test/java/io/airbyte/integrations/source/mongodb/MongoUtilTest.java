@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -442,6 +443,28 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testIsUnauthorizedException() {
+    final MongoCommandException exception = new MongoCommandException(new BsonDocument("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE)),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionFromNestedMessage() {
+    final RuntimeException exception = new RuntimeException(new RuntimeException("Command failed with error 13 (Unauthorized): not authorized"));
+
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionReturnsFalseForOtherErrors() {
+    final RuntimeException exception = new RuntimeException("Command failed with error 12345");
+
+    assertFalse(MongoUtil.isUnauthorizedException(exception));
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
