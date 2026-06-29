@@ -13,6 +13,7 @@ import static io.airbyte.integrations.source.mongodb.MongoUtil.MAX_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.MIN_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.QUERY_TARGET_SIZE_GB;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.checkSchemaModeMismatch;
+import static io.airbyte.integrations.source.mongodb.MongoUtil.isUnauthorizedException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,6 +54,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -304,6 +306,14 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
     assertThrows(MongoSecurityException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+  }
+
+  @Test
+  void testIsUnauthorizedException() {
+    final BsonDocument errorResponse = new BsonDocument("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE));
+    final MongoCommandException mongoCommandException = new MongoCommandException(errorResponse, new ServerAddress());
+
+    assertTrue(isUnauthorizedException(new RuntimeException(mongoCommandException)));
   }
 
   @Test
