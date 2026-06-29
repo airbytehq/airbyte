@@ -1045,4 +1045,35 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         """.trimIndent()
         assertEquals(expected, sql)
     }
+
+    @Test
+    fun testAddMetaColumnsIfNotExist() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val columns =
+            mapOf(
+                SNOWFLAKE_AB_META to ColumnType("VARIANT", false),
+                SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true),
+            )
+        val statements =
+            snowflakeDirectLoadSqlGenerator.addMetaColumnsIfNotExist(tableName, columns)
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+
+        assertEquals(2, statements.size)
+        assertEquals(
+            """ALTER TABLE $expectedTableName ADD COLUMN IF NOT EXISTS "$SNOWFLAKE_AB_META" VARIANT;""",
+            statements[0]
+        )
+        assertEquals(
+            """ALTER TABLE $expectedTableName ADD COLUMN IF NOT EXISTS "$SNOWFLAKE_AB_GENERATION_ID" NUMBER;""",
+            statements[1]
+        )
+    }
+
+    @Test
+    fun testAddMetaColumnsIfNotExistEmptyMap() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val statements =
+            snowflakeDirectLoadSqlGenerator.addMetaColumnsIfNotExist(tableName, emptyMap())
+        assertTrue(statements.isEmpty())
+    }
 }
