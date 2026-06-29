@@ -42,6 +42,9 @@ public class MongoConstants {
   public static final String INVALID_CDC_CURSOR_POSITION_PROPERTY = "invalid_cdc_cursor_position_behavior";
   public static final String FAIL_SYNC_OPTION = "Fail sync";
   public static final String RESYNC_DATA_OPTION = "Re-sync data";
+  public static final int UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE =
+      "MongoDB user is not authorized to open change streams.";
 
   public static final String UPDATE_CAPTURE_MODE = "update_capture_mode";
 
