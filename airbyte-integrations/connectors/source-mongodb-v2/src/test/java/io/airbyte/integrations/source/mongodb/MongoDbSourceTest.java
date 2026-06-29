@@ -13,20 +13,28 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -254,6 +262,48 @@ class MongoDbSourceTest {
   }
 
   @Test
+  void testReadKeepsBsonTooLargeWrapping() {
+    final MongoCommandException mongoCommandException = bsonObjectTooLargeException();
+    final AutoCloseableIterator<AirbyteMessage> cdcIterator = new AutoCloseableIterator<>() {
+
+      @Override
+      public boolean hasNext() {
+        throw mongoCommandException;
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        return null;
+      }
+
+      @Override
+      public void close() {}
+
+    };
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(List.of(cdcIterator));
+
+    final AutoCloseableIterator<AirbyteMessage> iterator = source.read(airbyteSourceConfig, incrementalCatalog(), null);
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, iterator::hasNext);
+    assertEquals(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, thrown.getMessage());
+    assertSame(mongoCommandException, thrown.getCause());
+  }
+
+  @Test
+  void testReadWrapsUnauthorizedChangeStreamException() {
+    final MongoClient mongoClient = mock(MongoClient.class);
+    doReturn(mongoClient).when(source).createMongoClient(any(MongoDbSourceConfig.class));
+    final MongoCommandException mongoCommandException = unauthorizedChangeStreamException();
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(mongoCommandException);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+        () -> source.read(airbyteSourceConfig, incrementalCatalog(), null));
+    assertEquals("MongoDB user is not authorized to open change streams.", thrown.getMessage());
+    assertSame(mongoCommandException, thrown.getCause());
+    assertEquals(mongoCommandException.getMessage(), thrown.getInternalMessage());
+    verify(mongoClient, times(1)).close();
+  }
+
+  @Test
   void testReadWithMissingConfiguration() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode state = mock(JsonNode.class);
@@ -283,6 +333,44 @@ class MongoDbSourceTest {
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config)));
+  }
+
+  private static ConfiguredAirbyteCatalog incrementalCatalog() {
+    final AirbyteStream stream = new AirbyteStream()
+        .withName("testCollection")
+        .withNamespace(DB_NAME)
+        .withJsonSchema(Jsons.jsonNode(Map.of("properties", Map.of("_id", Map.of("type", "string")))))
+        .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL));
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
+        .withStream(stream)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withDestinationSyncMode(DestinationSyncMode.APPEND);
+    return new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream));
+  }
+
+  private static MongoCommandException unauthorizedChangeStreamException() {
+    final BsonDocument response =
+        BsonDocument.parse("""
+                           {
+                             "ok": 0.0,
+                             "errmsg": "not authorized to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }",
+                             "code": 13,
+                             "codeName": "Unauthorized"
+                           }
+                           """);
+    return new MongoCommandException(response, new ServerAddress("localhost", 27017));
+  }
+
+  private static MongoCommandException bsonObjectTooLargeException() {
+    final BsonDocument response = BsonDocument.parse("""
+                                                     {
+                                                       "ok": 0.0,
+                                                       "errmsg": "BSONObjectTooLarge",
+                                                       "code": 10334,
+                                                       "codeName": "BSONObjectTooLarge"
+                                                     }
+                                                     """);
+    return new MongoCommandException(response, new ServerAddress("localhost", 27017));
   }
 
 }
