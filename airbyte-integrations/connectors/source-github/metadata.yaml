@@ -92,7 +92,7 @@ data:
       url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
       type: api_release_history
     - title: GitHub API changelog
-      url: https://github.blog/changelog/label/api/
+      url: https://github.blog/changelog/
       type: api_release_history
     - title: GitHub authentication
       url: https://docs.github.com/en/rest/overview/authenticating-to-the-rest-api
