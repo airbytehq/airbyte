@@ -47,6 +47,8 @@ public class MongoConstants {
 
   public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
+  public static final String CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE =
+      "MongoDB credentials do not grant change stream access for configured databases.";
 
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
