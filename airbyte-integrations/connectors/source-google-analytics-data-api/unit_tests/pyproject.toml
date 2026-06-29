@@ -11,7 +11,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
 airbyte-cdk = "^7"
-pytest = "^8"
+pytest = "^9"
 responses = "^0.25.7"
 requests-mock = "^1.11.0"
 
