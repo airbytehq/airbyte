@@ -30,6 +30,10 @@ The Timely source connector supports the following [sync modes](https://docs.air
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -37,6 +41,10 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 1.0.44 | 2026-06-23 | [80679](https://github.com/airbytehq/airbyte/pull/80679) | Update dependencies |
+| 1.0.43 | 2026-06-16 | [80055](https://github.com/airbytehq/airbyte/pull/80055) | Update dependencies |
+| 1.0.42 | 2026-06-09 | [79522](https://github.com/airbytehq/airbyte/pull/79522) | Update dependencies |
+| 1.0.41 | 2026-06-02 | [79052](https://github.com/airbytehq/airbyte/pull/79052) | Update dependencies |
 | 1.0.40 | 2026-04-28 | [77464](https://github.com/airbytehq/airbyte/pull/77464) | Update dependencies |
 | 1.0.39 | 2026-04-21 | [76756](https://github.com/airbytehq/airbyte/pull/76756) | Update dependencies |
 | 1.0.38 | 2026-03-17 | [75043](https://github.com/airbytehq/airbyte/pull/75043) | Update dependencies |

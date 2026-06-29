@@ -23,6 +23,10 @@ Please follow the instructions in the following [referralhero](https://support.r
 | bonuses |  | DefaultPaginator | ✅ |  ❌  |
 | subscribers | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,10 @@ Please follow the instructions in the following [referralhero](https://support.r
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-06-23 | [80641](https://github.com/airbytehq/airbyte/pull/80641) | Update dependencies |
+| 0.0.44 | 2026-06-16 | [80034](https://github.com/airbytehq/airbyte/pull/80034) | Update dependencies |
+| 0.0.43 | 2026-06-09 | [79513](https://github.com/airbytehq/airbyte/pull/79513) | Update dependencies |
+| 0.0.42 | 2026-06-02 | [78965](https://github.com/airbytehq/airbyte/pull/78965) | Update dependencies |
 | 0.0.41 | 2026-04-28 | [77441](https://github.com/airbytehq/airbyte/pull/77441) | Update dependencies |
 | 0.0.40 | 2026-04-21 | [76723](https://github.com/airbytehq/airbyte/pull/76723) | Update dependencies |
 | 0.0.39 | 2026-03-31 | [75851](https://github.com/airbytehq/airbyte/pull/75851) | Update dependencies |

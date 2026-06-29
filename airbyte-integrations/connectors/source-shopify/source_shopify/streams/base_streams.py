@@ -210,6 +210,24 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         current_state_value = current_stream_state.get(self.cursor_field) or self.default_state_comparison_value
         return {self.cursor_field: max(last_record_value, current_state_value)}
 
+    def _apply_lookback_window(self, state_value: str) -> str:
+        """
+        Apply the lookback window to the state value by subtracting the configured number of days.
+        This helps capture records that may have been missed due to race conditions or late-arriving data.
+        """
+        lookback_days = self.config.get("lookback_window_in_days", 0)
+        if lookback_days > 0:
+            state_datetime = pdm.parse(state_value)
+            adjusted_datetime = state_datetime.subtract(days=lookback_days)
+            # Ensure we don't go before the configured start_date
+            start_date = self.config.get("start_date")
+            if start_date:
+                start_datetime = pdm.parse(start_date)
+                if adjusted_datetime < start_datetime:
+                    adjusted_datetime = start_datetime
+            return adjusted_datetime.to_iso8601_string()
+        return state_value
+
     @stream_state_cache.cache_stream_state
     def request_params(
         self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs
@@ -219,7 +237,11 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         if not next_page_token:
             params["order"] = f"{self.order_field} asc"
             if stream_state:
-                params[self.filter_field] = stream_state.get(self.cursor_field)
+                state_value = stream_state.get(self.cursor_field)
+                # Apply lookback window only for datetime-based filter fields (not since_id)
+                if self.filter_field != "since_id" and isinstance(state_value, str):
+                    state_value = self._apply_lookback_window(state_value)
+                params[self.filter_field] = state_value
         return params
 
     def track_checkpoint_cursor(self, record_value: Union[str, int], filter_record_value: Optional[str] = None) -> None:
@@ -844,6 +866,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
             state = self._get_state_value(stream_state)
+            # Apply lookback window to the start of the sync window for GraphQL BULK streams
+            if stream_state:
+                state = self._apply_lookback_window(state)
             start = pdm.parse(state)
             end = pdm.now()
             while start < end:

@@ -13,6 +13,10 @@
 | events | api_id | DefaultPaginator | ✅ |  ❌  |
 | event-guests | api_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -20,6 +24,10 @@
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.61 | 2026-06-23 | [80550](https://github.com/airbytehq/airbyte/pull/80550) | Update dependencies |
+| 0.0.60 | 2026-06-16 | [79934](https://github.com/airbytehq/airbyte/pull/79934) | Update dependencies |
+| 0.0.59 | 2026-06-09 | [79407](https://github.com/airbytehq/airbyte/pull/79407) | Update dependencies |
+| 0.0.58 | 2026-06-02 | [78831](https://github.com/airbytehq/airbyte/pull/78831) | Update dependencies |
 | 0.0.57 | 2026-04-28 | [77323](https://github.com/airbytehq/airbyte/pull/77323) | Update dependencies |
 | 0.0.56 | 2026-04-21 | [76683](https://github.com/airbytehq/airbyte/pull/76683) | Update dependencies |
 | 0.0.55 | 2026-03-31 | [75801](https://github.com/airbytehq/airbyte/pull/75801) | Update dependencies |

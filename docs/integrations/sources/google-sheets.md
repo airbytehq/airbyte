@@ -298,6 +298,10 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 </HideInUI>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -305,6 +309,13 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.31 | 2026-06-23 | [80490](https://github.com/airbytehq/airbyte/pull/80490) | Update dependencies |
+| 0.12.30 | 2026-06-16 | [79895](https://github.com/airbytehq/airbyte/pull/79895) | Update dependencies |
+| 0.12.29 | 2026-06-09 | [78741](https://github.com/airbytehq/airbyte/pull/78741) | Update dependencies |
+| 0.12.28 | 2026-06-03 | [79121](https://github.com/airbytehq/airbyte/pull/79121) | Promoted release candidate to GA |
+| 0.12.28-rc.1 | 2026-05-29 | [78519](https://github.com/airbytehq/airbyte/pull/78519) | Set default_concurrency to 2, add num_workers spec field, add HTTP API budget |
+| 0.12.27-rc.1 | 2026-05-26 | [78437](https://github.com/airbytehq/airbyte/pull/78437) | Set default_concurrency to 4 for concurrency tuning |
+| 0.12.26 | 2026-05-26 | [78443](https://github.com/airbytehq/airbyte/pull/78443) | Update dependencies |
 | 0.12.25 | 2026-04-28 | [77273](https://github.com/airbytehq/airbyte/pull/77273) | Update dependencies |
 | 0.12.24 | 2026-04-21 | [76629](https://github.com/airbytehq/airbyte/pull/76629) | Update dependencies |
 | 0.12.23 | 2026-04-02 | [75578](https://github.com/airbytehq/airbyte/pull/75578) | Add `oauth_connector_input_specification` with granular scopes |

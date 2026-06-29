@@ -15,6 +15,10 @@ The Airbyte connector for [Papersign](https://paperform.co/products/papersign/) 
 | spaces | id | No pagination | ✅ |  ❌  |
 | webhooks | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -22,6 +26,10 @@ The Airbyte connector for [Papersign](https://paperform.co/products/papersign/) 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-23 | [80600](https://github.com/airbytehq/airbyte/pull/80600) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [79970](https://github.com/airbytehq/airbyte/pull/79970) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79428](https://github.com/airbytehq/airbyte/pull/79428) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78875](https://github.com/airbytehq/airbyte/pull/78875) | Update dependencies |
 | 0.0.47 | 2026-04-28 | [77371](https://github.com/airbytehq/airbyte/pull/77371) | Update dependencies |
 | 0.0.46 | 2026-04-21 | [76686](https://github.com/airbytehq/airbyte/pull/76686) | Update dependencies |
 | 0.0.45 | 2026-03-24 | [74992](https://github.com/airbytehq/airbyte/pull/74992) | Update dependencies |

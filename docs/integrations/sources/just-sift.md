@@ -18,6 +18,10 @@ Wonderi
 | peoples | id | DefaultPaginator | ✅ |  ❌  |
 | fields | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,10 @@ Wonderi
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-06-23 | [80529](https://github.com/airbytehq/airbyte/pull/80529) | Update dependencies |
+| 0.0.49 | 2026-06-16 | [79909](https://github.com/airbytehq/airbyte/pull/79909) | Update dependencies |
+| 0.0.48 | 2026-06-09 | [79355](https://github.com/airbytehq/airbyte/pull/79355) | Update dependencies |
+| 0.0.47 | 2026-06-02 | [78763](https://github.com/airbytehq/airbyte/pull/78763) | Update dependencies |
 | 0.0.46 | 2026-04-28 | [77325](https://github.com/airbytehq/airbyte/pull/77325) | Update dependencies |
 | 0.0.45 | 2026-04-21 | [76625](https://github.com/airbytehq/airbyte/pull/76625) | Update dependencies |
 | 0.0.44 | 2026-03-24 | [75345](https://github.com/airbytehq/airbyte/pull/75345) | Update dependencies |

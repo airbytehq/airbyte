@@ -38,6 +38,10 @@ Make sure to have the add-ons installed in your account for using the `nps-respo
 | notes | id | DefaultPaginator | ✅ |  ❌  |
 | nps_responses | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -45,6 +49,10 @@ Make sure to have the add-ons installed in your account for using the `nps-respo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-23 | [80693](https://github.com/airbytehq/airbyte/pull/80693) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80066](https://github.com/airbytehq/airbyte/pull/80066) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79551](https://github.com/airbytehq/airbyte/pull/79551) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [79036](https://github.com/airbytehq/airbyte/pull/79036) | Update dependencies |
 | 0.0.47 | 2026-04-28 | [77461](https://github.com/airbytehq/airbyte/pull/77461) | Update dependencies |
 | 0.0.46 | 2026-04-21 | [76755](https://github.com/airbytehq/airbyte/pull/76755) | Update dependencies |
 | 0.0.45 | 2026-03-17 | [75039](https://github.com/airbytehq/airbyte/pull/75039) | Update dependencies |

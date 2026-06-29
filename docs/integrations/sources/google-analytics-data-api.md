@@ -273,6 +273,10 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -280,6 +284,14 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.41 | 2026-06-23 | [80482](https://github.com/airbytehq/airbyte/pull/80482) | Update dependencies |
+| 2.9.40 | 2026-06-16 | [79881](https://github.com/airbytehq/airbyte/pull/79881) | Update dependencies |
+| 2.9.39 | 2026-06-09 | [79340](https://github.com/airbytehq/airbyte/pull/79340) | Update dependencies |
+| 2.9.38 | 2026-06-02 | [77618](https://github.com/airbytehq/airbyte/pull/77618) | Infer `auth_type` from credentials when missing to fix OAuth connection failures |
+| 2.9.37 | 2026-06-02 | [77243](https://github.com/airbytehq/airbyte/pull/77243) | Update dependencies |
+| 2.9.36 | 2026-05-27 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
+| 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
+| 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
 | 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
 | 2.9.34-rc.1 | 2026-04-29 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
 | 2.9.33-rc.1 | 2026-04-23 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |

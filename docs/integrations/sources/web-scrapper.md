@@ -16,6 +16,10 @@
 | scraping_jobs | id | DefaultPaginator | ✅ |  ❌  |
 | scraping_job_data_quality |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,10 @@
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.55 | 2026-06-23 | [80663](https://github.com/airbytehq/airbyte/pull/80663) | Update dependencies |
+| 0.0.54 | 2026-06-16 | [80069](https://github.com/airbytehq/airbyte/pull/80069) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79541](https://github.com/airbytehq/airbyte/pull/79541) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [79047](https://github.com/airbytehq/airbyte/pull/79047) | Update dependencies |
 | 0.0.51 | 2026-04-28 | [77476](https://github.com/airbytehq/airbyte/pull/77476) | Update dependencies |
 | 0.0.50 | 2026-04-21 | [76787](https://github.com/airbytehq/airbyte/pull/76787) | Update dependencies |
 | 0.0.49 | 2026-03-31 | [75733](https://github.com/airbytehq/airbyte/pull/75733) | Update dependencies |

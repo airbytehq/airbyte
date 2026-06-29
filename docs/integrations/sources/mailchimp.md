@@ -111,7 +111,7 @@ Expand to see details about Mailchimp connector limitations and troubleshooting
 
 The [Mailchimp Marketing API](https://mailchimp.com/developer/marketing/docs/fundamentals/#api-limits) enforces a limit of 10 simultaneous connections per account. Exceeding this limit returns an HTTP 429 error. This limit applies across all API consumers sharing the same account, including Airbyte syncs, other integrations, and the Mailchimp web application. The API also has a 120-second timeout on individual requests.
 
-The connector includes a **Number of Concurrent Workers** configuration parameter (default: 2, min: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but keep the total number of simultaneous connections across all consumers within Mailchimp's 10-connection limit.
+The connector includes a **Number of concurrent threads** configuration parameter (default: 2, min: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but keep the total number of simultaneous connections across all consumers within Mailchimp's 10-connection limit.
 
 </details>
 
@@ -121,6 +121,10 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 - [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -128,6 +132,10 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.29 | 2026-06-23 | [80520](https://github.com/airbytehq/airbyte/pull/80520) | Update dependencies |
+| 2.1.28 | 2026-06-16 | [79931](https://github.com/airbytehq/airbyte/pull/79931) | Update dependencies |
+| 2.1.27 | 2026-06-09 | [79396](https://github.com/airbytehq/airbyte/pull/79396) | Update dependencies |
+| 2.1.26 | 2026-06-02 | [78809](https://github.com/airbytehq/airbyte/pull/78809) | Update dependencies |
 | 2.1.25 | 2026-04-28 | [77289](https://github.com/airbytehq/airbyte/pull/77289) | Update dependencies |
 | 2.1.24 | 2026-04-21 | [76663](https://github.com/airbytehq/airbyte/pull/76663) | Update dependencies |
 | 2.1.23 | 2026-04-17 | [76453](https://github.com/airbytehq/airbyte/pull/76453) | Promoted release candidate to GA |

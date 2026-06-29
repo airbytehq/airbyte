@@ -130,21 +130,6 @@ def test_issues_fields_stream(config, mock_fields_response):
 
 
 @responses.activate
-def test_issues_field_configurations_stream(config, issues_field_configurations_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/fieldconfiguration?maxResults=50",
-        json=issues_field_configurations_response,
-    )
-
-    stream = find_stream("issue_field_configurations", config)
-    records = list(read_full_refresh(stream))
-
-    assert len(records) == 1
-    assert len(responses.calls) == 1
-
-
-@responses.activate
 def test_issues_link_types_stream(config, issues_link_types_response):
     responses.add(
         responses.GET,
@@ -480,7 +465,7 @@ def test_users_groups_detailed_stream(config, mock_users_response, users_groups_
 def test_workflows_stream(config, workflows_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/workflow/search?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/workflows/search?maxResults=50",
         json=workflows_response,
     )
 

@@ -38,6 +38,10 @@ Documentation: https://apidoc.samanage.com/#section/General-Concepts
 | catalog_items | id | DefaultPaginator | ✅ |  ✅  |
 | problems | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -45,6 +49,10 @@ Documentation: https://apidoc.samanage.com/#section/General-Concepts
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-06-23 | [80662](https://github.com/airbytehq/airbyte/pull/80662) | Update dependencies |
+| 0.0.56 | 2026-06-16 | [80033](https://github.com/airbytehq/airbyte/pull/80033) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79484](https://github.com/airbytehq/airbyte/pull/79484) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [78933](https://github.com/airbytehq/airbyte/pull/78933) | Update dependencies |
 | 0.0.53 | 2026-04-28 | [77456](https://github.com/airbytehq/airbyte/pull/77456) | Update dependencies |
 | 0.0.52 | 2026-04-21 | [76774](https://github.com/airbytehq/airbyte/pull/76774) | Update dependencies |
 | 0.0.51 | 2026-03-31 | [75868](https://github.com/airbytehq/airbyte/pull/75868) | Update dependencies |

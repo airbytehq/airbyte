@@ -18,6 +18,10 @@ Docs : https://developer.systeme.io/reference/api
 | contact_fields |  | DefaultPaginator | ✅ |  ❌  |
 | course_resources | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,10 @@ Docs : https://developer.systeme.io/reference/api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-06-23 | [80684](https://github.com/airbytehq/airbyte/pull/80684) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80091](https://github.com/airbytehq/airbyte/pull/80091) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79536](https://github.com/airbytehq/airbyte/pull/79536) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [79007](https://github.com/airbytehq/airbyte/pull/79007) | Update dependencies |
 | 0.0.47 | 2026-04-28 | [77433](https://github.com/airbytehq/airbyte/pull/77433) | Update dependencies |
 | 0.0.46 | 2026-04-21 | [76784](https://github.com/airbytehq/airbyte/pull/76784) | Update dependencies |
 | 0.0.45 | 2026-03-17 | [75096](https://github.com/airbytehq/airbyte/pull/75096) | Update dependencies |

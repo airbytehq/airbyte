@@ -57,6 +57,10 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 - [Report](https://engageapi.pendo.io/#2ac0699a-b653-4082-be11-563e5c0c9410)
 - [Guide](https://engageapi.pendo.io/#4f1e3ca1-fc41-4469-bf4b-da90ee8caf3d)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -64,6 +68,10 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.53 | 2026-06-23 | [80587](https://github.com/airbytehq/airbyte/pull/80587) | Update dependencies |
+| 0.2.52 | 2026-06-16 | [79984](https://github.com/airbytehq/airbyte/pull/79984) | Update dependencies |
+| 0.2.51 | 2026-06-09 | [79400](https://github.com/airbytehq/airbyte/pull/79400) | Update dependencies |
+| 0.2.50 | 2026-06-02 | [78901](https://github.com/airbytehq/airbyte/pull/78901) | Update dependencies |
 | 0.2.49 | 2026-04-28 | [77337](https://github.com/airbytehq/airbyte/pull/77337) | Update dependencies |
 | 0.2.48 | 2026-04-21 | [76713](https://github.com/airbytehq/airbyte/pull/76713) | Update dependencies |
 | 0.2.47 | 2026-03-31 | [75826](https://github.com/airbytehq/airbyte/pull/75826) | Update dependencies |

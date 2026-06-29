@@ -16,6 +16,10 @@ Google Forms is a free online tool from Google that allows users to create custo
 | forms | `formId` | No pagination | ✅ |  ❌  |
 | form_responses | `responseId` | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,10 @@ Google Forms is a free online tool from Google that allows users to create custo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-06-23 | [80521](https://github.com/airbytehq/airbyte/pull/80521) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79916](https://github.com/airbytehq/airbyte/pull/79916) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79376](https://github.com/airbytehq/airbyte/pull/79376) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78793](https://github.com/airbytehq/airbyte/pull/78793) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77293](https://github.com/airbytehq/airbyte/pull/77293) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [76615](https://github.com/airbytehq/airbyte/pull/76615) | Update dependencies |
 | 0.0.46 | 2026-03-24 | [74933](https://github.com/airbytehq/airbyte/pull/74933) | Update dependencies |

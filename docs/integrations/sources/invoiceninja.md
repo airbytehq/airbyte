@@ -27,6 +27,10 @@ Docs : https://api-docs.invoicing.co/#overview--introduction
 | recurring expenses | id | DefaultPaginator | ✅ |  ❌  |
 | bank transactions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -34,6 +38,10 @@ Docs : https://api-docs.invoicing.co/#overview--introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-06-23 | [80518](https://github.com/airbytehq/airbyte/pull/80518) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79896](https://github.com/airbytehq/airbyte/pull/79896) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79367](https://github.com/airbytehq/airbyte/pull/79367) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78788](https://github.com/airbytehq/airbyte/pull/78788) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77303](https://github.com/airbytehq/airbyte/pull/77303) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [76656](https://github.com/airbytehq/airbyte/pull/76656) | Update dependencies |
 | 0.0.46 | 2026-03-17 | [74525](https://github.com/airbytehq/airbyte/pull/74525) | Update dependencies |

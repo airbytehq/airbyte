@@ -27,6 +27,10 @@ Visit `https://developers.vwo.com/reference/introduction-1` for API documentatio
 | integrations | uid | DefaultPaginator | ✅ |  ❌  |
 | labels | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -34,6 +38,10 @@ Visit `https://developers.vwo.com/reference/introduction-1` for API documentatio
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.54 | 2026-06-23 | [80704](https://github.com/airbytehq/airbyte/pull/80704) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [80084](https://github.com/airbytehq/airbyte/pull/80084) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79556](https://github.com/airbytehq/airbyte/pull/79556) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [79003](https://github.com/airbytehq/airbyte/pull/79003) | Update dependencies |
 | 0.0.50 | 2026-04-28 | [77481](https://github.com/airbytehq/airbyte/pull/77481) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76788](https://github.com/airbytehq/airbyte/pull/76788) | Update dependencies |
 | 0.0.48 | 2026-03-31 | [75708](https://github.com/airbytehq/airbyte/pull/75708) | Update dependencies |

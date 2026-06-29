@@ -21,6 +21,10 @@ The Navan connector supports travel booking data such as hotels and flights.
 |-------------|-------------|------------|---------------------|----------------------|
 | bookings | uuid | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,10 @@ The Navan connector supports travel booking data such as hotels and flights.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.48 | 2026-06-23 | [80556](https://github.com/airbytehq/airbyte/pull/80556) | Update dependencies |
+| 0.0.47 | 2026-06-16 | [79940](https://github.com/airbytehq/airbyte/pull/79940) | Update dependencies |
+| 0.0.46 | 2026-06-09 | [79415](https://github.com/airbytehq/airbyte/pull/79415) | Update dependencies |
+| 0.0.45 | 2026-06-02 | [78808](https://github.com/airbytehq/airbyte/pull/78808) | Update dependencies |
 | 0.0.44 | 2026-04-28 | [77329](https://github.com/airbytehq/airbyte/pull/77329) | Update dependencies |
 | 0.0.43 | 2026-04-21 | [75363](https://github.com/airbytehq/airbyte/pull/75363) | Update dependencies |
 | 0.0.42 | 2026-02-24 | [73579](https://github.com/airbytehq/airbyte/pull/73579) | Update dependencies |

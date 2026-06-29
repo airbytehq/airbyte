@@ -18,6 +18,10 @@ API Reference: https://www.assemblyai.com/docs/api-reference/overview
 | paragraphs | uuid | DefaultPaginator | ✅ |  ❌  |
 | transcript_subtitle | uuid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,10 @@ API Reference: https://www.assemblyai.com/docs/api-reference/overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.32 | 2026-06-23 | [80353](https://github.com/airbytehq/airbyte/pull/80353) | Update dependencies |
+| 0.0.31 | 2026-06-16 | [79782](https://github.com/airbytehq/airbyte/pull/79782) | Update dependencies |
+| 0.0.30 | 2026-06-09 | [79216](https://github.com/airbytehq/airbyte/pull/79216) | Update dependencies |
+| 0.0.29 | 2026-06-02 | [78590](https://github.com/airbytehq/airbyte/pull/78590) | Update dependencies |
 | 0.0.28 | 2026-04-28 | [77136](https://github.com/airbytehq/airbyte/pull/77136) | Update dependencies |
 | 0.0.27 | 2026-04-21 | [76512](https://github.com/airbytehq/airbyte/pull/76512) | Update dependencies |
 | 0.0.26 | 2026-03-31 | [75896](https://github.com/airbytehq/airbyte/pull/75896) | Update dependencies |

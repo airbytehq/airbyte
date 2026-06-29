@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
-  dockerImageTag: 2.1.23
+  dockerImageTag: 2.1.24
   dockerRepository: airbyte/destination-clickhouse
   githubIssueLabel: destination-clickhouse
   icon: clickhouse.svg
@@ -43,12 +43,6 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
-      testSecrets:
-        - name: destination_clickhouse_component_test_instance
-          fileName: test-instance.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
   supportsRefreshes: true
   externalDocumentationUrls:
     - title: ClickHouse documentation

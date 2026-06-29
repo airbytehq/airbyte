@@ -21,6 +21,17 @@ The Linear connector supports the following entities and actions.
 
 Returns a paginated list of issues via GraphQL with pagination support
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -80,6 +91,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single issue by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -135,6 +160,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Create
 
 Create a new issue via GraphQL mutation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "create",
+  "params": {
+    "teamId": "<str>",
+    "title": "<str>",
+    "description": "<str>",
+    "stateId": "<str>",
+    "priority": 0,
+    "projectId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -211,6 +255,26 @@ To assign a user, provide assigneeId with the user's ID (get user IDs from the u
 Omit assigneeId to leave the current assignee unchanged.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "title": "<str>",
+    "description": "<str>",
+    "stateId": "<str>",
+    "priority": 0,
+    "assigneeId": "<str>",
+    "projectId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -285,6 +349,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Context Store Search
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "addedToCycleAt": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -450,6 +534,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of projects via GraphQL with pagination support
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -508,6 +603,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single project by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -562,6 +671,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Create
 
 Create a new project via GraphQL mutation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "teamIds": [],
+    "description": "<str>",
+    "state": "<str>",
+    "startDate": "<str>",
+    "targetDate": "<str>",
+    "leadId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -640,6 +769,26 @@ Update an existing project via GraphQL mutation. All fields except id are option
 Use this to rename projects, change descriptions, update dates, or change the project state.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "name": "<str>",
+    "description": "<str>",
+    "state": "<str>",
+    "startDate": "<str>",
+    "targetDate": "<str>",
+    "leadId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -714,6 +863,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Context Store Search
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "canceledAt": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -853,6 +1022,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of teams via GraphQL with pagination support
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "teams",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -909,6 +1089,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single team by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -961,6 +1155,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "activeCycle": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1100,6 +1314,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns workflow states for a team via GraphQL, including name and UUID for status transitions
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "workflow_states",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1156,6 +1381,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Workflow States Context Store Search
 
 Search and filter workflow states records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "workflow_states",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1237,6 +1482,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of users in the organization via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1294,6 +1550,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1347,6 +1617,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1446,6 +1736,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of comments for an issue via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "list",
+  "params": {
+    "issueId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1507,6 +1811,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single comment by ID via GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1558,6 +1876,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Create
 
 Create a new comment on an issue via GraphQL mutation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "create",
+  "params": {
+    "issueId": "<str>",
+    "body": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1616,6 +1949,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Update an existing comment via GraphQL mutation
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "update",
+  "params": {
+    "id": "<str>",
+    "body": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1672,6 +2020,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Context Store Search
 
 Search and filter comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linear",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "body": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

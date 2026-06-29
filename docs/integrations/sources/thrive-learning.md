@@ -16,6 +16,10 @@ A Connector for Thrive Learning
 | Users | id | DefaultPaginator | ✅ |  ❌  |
 | Activities | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,10 @@ A Connector for Thrive Learning
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2026-06-23 | [80674](https://github.com/airbytehq/airbyte/pull/80674) | Update dependencies |
+| 0.0.32 | 2026-06-16 | [80072](https://github.com/airbytehq/airbyte/pull/80072) | Update dependencies |
+| 0.0.31 | 2026-06-09 | [79519](https://github.com/airbytehq/airbyte/pull/79519) | Update dependencies |
+| 0.0.30 | 2026-06-02 | [79019](https://github.com/airbytehq/airbyte/pull/79019) | Update dependencies |
 | 0.0.29 | 2026-04-28 | [77493](https://github.com/airbytehq/airbyte/pull/77493) | Update dependencies |
 | 0.0.28 | 2026-04-21 | [76811](https://github.com/airbytehq/airbyte/pull/76811) | Update dependencies |
 | 0.0.27 | 2026-03-17 | [75062](https://github.com/airbytehq/airbyte/pull/75062) | Update dependencies |

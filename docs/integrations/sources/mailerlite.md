@@ -32,6 +32,10 @@ MailerLite API has a global rate limit of 120 requests per minute.
 
 - MailerLite API Key
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -39,6 +43,10 @@ MailerLite API has a global rate limit of 120 requests per minute.
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 1.1.31 | 2026-06-23 | [80543](https://github.com/airbytehq/airbyte/pull/80543) | Update dependencies |
+| 1.1.30 | 2026-06-16 | [79930](https://github.com/airbytehq/airbyte/pull/79930) | Update dependencies |
+| 1.1.29 | 2026-06-09 | [79383](https://github.com/airbytehq/airbyte/pull/79383) | Update dependencies |
+| 1.1.28 | 2026-06-02 | [78823](https://github.com/airbytehq/airbyte/pull/78823) | Update dependencies |
 | 1.1.27 | 2026-04-28 | [77311](https://github.com/airbytehq/airbyte/pull/77311) | Update dependencies |
 | 1.1.26 | 2026-04-21 | [76646](https://github.com/airbytehq/airbyte/pull/76646) | Update dependencies |
 | 1.1.25 | 2026-03-17 | [74976](https://github.com/airbytehq/airbyte/pull/74976) | Update dependencies |

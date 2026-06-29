@@ -21,6 +21,10 @@
 
 No documented strict rate limit.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,10 @@ No documented strict rate limit.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.54 | 2026-06-23 | [80472](https://github.com/airbytehq/airbyte/pull/80472) | Update dependencies |
+| 0.2.53 | 2026-06-16 | [79847](https://github.com/airbytehq/airbyte/pull/79847) | Update dependencies |
+| 0.2.52 | 2026-06-09 | [79300](https://github.com/airbytehq/airbyte/pull/79300) | Update dependencies |
+| 0.2.51 | 2026-06-02 | [78707](https://github.com/airbytehq/airbyte/pull/78707) | Update dependencies |
 | 0.2.50 | 2026-04-28 | [77223](https://github.com/airbytehq/airbyte/pull/77223) | Update dependencies |
 | 0.2.49 | 2026-04-21 | [76565](https://github.com/airbytehq/airbyte/pull/76565) | Update dependencies |
 | 0.2.48 | 2026-03-17 | [74998](https://github.com/airbytehq/airbyte/pull/74998) | Update dependencies |

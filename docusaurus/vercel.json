@@ -217,6 +217,26 @@
       "statusCode": 301
     },
     {
+      "source": "/developers/mcp-servers",
+      "destination": "/community/mcp-servers",
+      "statusCode": 301
+    },
+    {
+      "source": "/developers/mcp-servers/airbyte-knowledge-mcp",
+      "destination": "/community/mcp-servers/airbyte-knowledge-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/developers/mcp-servers/pyairbyte-mcp",
+      "destination": "/community/mcp-servers/replication-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/mcp-servers/pyairbyte-mcp",
+      "destination": "/community/mcp-servers/replication-mcp",
+      "statusCode": 301
+    },
+    {
       "source": "/operator-guides/configuring-airbyte-db",
       "destination": "/platform/deploying-airbyte/integrations/database",
       "statusCode": 301

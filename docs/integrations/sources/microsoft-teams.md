@@ -157,6 +157,10 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-app-configuration?tabs=python#instantiate-the-msal-application) the confidential client application with a client secret and [calling](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-acquire-token?tabs=python) AcquireTokenForClient from [Microsoft Authentication Library \(MSAL\) for Python](https://github.com/AzureAD/microsoft-authentication-library-for-python)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -164,6 +168,10 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.2.21 | 2026-06-23 | [80545](https://github.com/airbytehq/airbyte/pull/80545) | Update dependencies |
+| 1.2.20 | 2026-06-16 | [79958](https://github.com/airbytehq/airbyte/pull/79958) | Update dependencies |
+| 1.2.19 | 2026-06-09 | [79386](https://github.com/airbytehq/airbyte/pull/79386) | Update dependencies |
+| 1.2.18 | 2026-06-02 | [78850](https://github.com/airbytehq/airbyte/pull/78850) | Update dependencies |
 | 1.2.17 | 2026-04-28 | [77352](https://github.com/airbytehq/airbyte/pull/77352) | Update dependencies |
 | 1.2.16 | 2026-04-21 | [76682](https://github.com/airbytehq/airbyte/pull/76682) | Update dependencies |
 | 1.2.15 | 2026-03-31 | [75805](https://github.com/airbytehq/airbyte/pull/75805) | Update dependencies |

@@ -42,6 +42,10 @@ There are no performance consideration in the current version.
 
 Generate a API access key ID and token using the [Babelforce documentation](https://help.babelforce.com/hc/en-us/articles/360044753932-API-documentation-and-endpoints-an-introduction-)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -49,6 +53,10 @@ Generate a API access key ID and token using the [Babelforce documentation](http
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.3.30 | 2026-06-23 | [80377](https://github.com/airbytehq/airbyte/pull/80377) | Update dependencies |
+| 0.3.29 | 2026-06-16 | [79766](https://github.com/airbytehq/airbyte/pull/79766) | Update dependencies |
+| 0.3.28 | 2026-06-09 | [79222](https://github.com/airbytehq/airbyte/pull/79222) | Update dependencies |
+| 0.3.27 | 2026-06-02 | [78561](https://github.com/airbytehq/airbyte/pull/78561) | Update dependencies |
 | 0.3.26 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.3.25 | 2025-05-17 | [60625](https://github.com/airbytehq/airbyte/pull/60625) | Update dependencies |
 | 0.3.24 | 2025-05-10 | [59821](https://github.com/airbytehq/airbyte/pull/59821) | Update dependencies |

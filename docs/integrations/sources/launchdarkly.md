@@ -30,6 +30,10 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 - Access Token
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -37,6 +41,10 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.2.55 | 2026-06-23 | [80531](https://github.com/airbytehq/airbyte/pull/80531) | Update dependencies |
+| 0.2.54 | 2026-06-16 | [79917](https://github.com/airbytehq/airbyte/pull/79917) | Update dependencies |
+| 0.2.53 | 2026-06-09 | [79381](https://github.com/airbytehq/airbyte/pull/79381) | Update dependencies |
+| 0.2.52 | 2026-06-02 | [78772](https://github.com/airbytehq/airbyte/pull/78772) | Update dependencies |
 | 0.2.51 | 2026-04-28 | [77341](https://github.com/airbytehq/airbyte/pull/77341) | Update dependencies |
 | 0.2.50 | 2026-04-21 | [76645](https://github.com/airbytehq/airbyte/pull/76645) | Update dependencies |
 | 0.2.49 | 2026-03-31 | [75710](https://github.com/airbytehq/airbyte/pull/75710) | Update dependencies |

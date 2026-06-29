@@ -30,6 +30,10 @@ Refer `https://docs.split.io/reference/authentication` for more details.
 | groups | id | DefaultPaginator | ✅ |  ❌  |
 | feature_flags | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -37,6 +41,10 @@ Refer `https://docs.split.io/reference/authentication` for more details.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.52 | 2026-06-23 | [80656](https://github.com/airbytehq/airbyte/pull/80656) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [80011](https://github.com/airbytehq/airbyte/pull/80011) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79500](https://github.com/airbytehq/airbyte/pull/79500) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78935](https://github.com/airbytehq/airbyte/pull/78935) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77415](https://github.com/airbytehq/airbyte/pull/77415) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [75888](https://github.com/airbytehq/airbyte/pull/75888) | Update dependencies |
 | 0.0.46 | 2026-03-24 | [74612](https://github.com/airbytehq/airbyte/pull/74612) | Update dependencies |

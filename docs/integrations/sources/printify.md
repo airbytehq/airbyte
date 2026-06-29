@@ -18,6 +18,10 @@ API Reference: https://developers.printify.com/#catalog
 | shop_products | id | DefaultPaginator | ✅ |  ❌  |
 | catalog_blueprint_print_providers | uuid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,10 @@ API Reference: https://developers.printify.com/#catalog
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.40 | 2026-06-23 | [80602](https://github.com/airbytehq/airbyte/pull/80602) | Update dependencies |
+| 0.0.39 | 2026-06-16 | [79993](https://github.com/airbytehq/airbyte/pull/79993) | Update dependencies |
+| 0.0.38 | 2026-06-09 | [79445](https://github.com/airbytehq/airbyte/pull/79445) | Update dependencies |
+| 0.0.37 | 2026-06-02 | [78908](https://github.com/airbytehq/airbyte/pull/78908) | Update dependencies |
 | 0.0.36 | 2026-04-28 | [77369](https://github.com/airbytehq/airbyte/pull/77369) | Update dependencies |
 | 0.0.35 | 2026-04-21 | [76722](https://github.com/airbytehq/airbyte/pull/76722) | Update dependencies |
 | 0.0.34 | 2026-03-17 | [74922](https://github.com/airbytehq/airbyte/pull/74922) | Update dependencies |

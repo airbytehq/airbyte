@@ -43,6 +43,10 @@ Currencies are number and the date is a string.
 
 The Wrike connector should not run into Wrike API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -50,6 +54,10 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.58 | 2026-06-23 | [80719](https://github.com/airbytehq/airbyte/pull/80719) | Update dependencies |
+| 0.3.57 | 2026-06-16 | [80110](https://github.com/airbytehq/airbyte/pull/80110) | Update dependencies |
+| 0.3.56 | 2026-06-09 | [79568](https://github.com/airbytehq/airbyte/pull/79568) | Update dependencies |
+| 0.3.55 | 2026-06-02 | [79056](https://github.com/airbytehq/airbyte/pull/79056) | Update dependencies |
 | 0.3.54 | 2026-04-28 | [77488](https://github.com/airbytehq/airbyte/pull/77488) | Update dependencies |
 | 0.3.53 | 2026-04-21 | [76828](https://github.com/airbytehq/airbyte/pull/76828) | Update dependencies |
 | 0.3.52 | 2026-03-31 | [75876](https://github.com/airbytehq/airbyte/pull/75876) | Update dependencies |

@@ -35,6 +35,10 @@ Integrate Adobe Commerce store data to your destination
 | tax_classes | class_id | DefaultPaginator | ✅ |  ❌  |
 | transactions | transaction_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -42,6 +46,10 @@ Integrate Adobe Commerce store data to your destination
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2026-06-23 | [80352](https://github.com/airbytehq/airbyte/pull/80352) | Update dependencies |
+| 0.0.16 | 2026-06-16 | [79762](https://github.com/airbytehq/airbyte/pull/79762) | Update dependencies |
+| 0.0.15 | 2026-06-09 | [79198](https://github.com/airbytehq/airbyte/pull/79198) | Update dependencies |
+| 0.0.14 | 2026-06-02 | [78553](https://github.com/airbytehq/airbyte/pull/78553) | Update dependencies |
 | 0.0.13 | 2026-04-28 | [77168](https://github.com/airbytehq/airbyte/pull/77168) | Update dependencies |
 | 0.0.12 | 2026-04-21 | [76511](https://github.com/airbytehq/airbyte/pull/76511) | Update dependencies |
 | 0.0.11 | 2026-03-17 | [74982](https://github.com/airbytehq/airbyte/pull/74982) | Update dependencies |

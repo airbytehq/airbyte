@@ -3053,6 +3053,18 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     transformations:
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["credentials", "auth_type"]
+            value: "Client"
+        condition: "{{ config.get('credentials', {}).get('client_id') is not none and config.get('credentials', {}).get('auth_type') is none }}"
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["credentials", "auth_type"]
+            value: "Service"
+        condition: "{{ config.get('credentials', {}).get('credentials_json') is not none and config.get('credentials', {}).get('auth_type') is none }}"
       - type: CustomConfigTransformation
         class_name: source_declarative_manifest.components.DimensionFilterConfigTransformation
 
@@ -3062,7 +3074,7 @@ spec:
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 6
+  default_concurrency: 4
   max_concurrency: 16
 
 # Original single-policy api_budget (pre-tuning). Superseded by the tier-aware

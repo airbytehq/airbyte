@@ -79,6 +79,10 @@ If there are additional endpoints you'd like Airbyte to support, [create an issu
 
 The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -86,6 +90,11 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.11 | 2026-06-23 | [80562](https://github.com/airbytehq/airbyte/pull/80562) | Update dependencies |
+| 2.5.10 | 2026-06-16 | [78817](https://github.com/airbytehq/airbyte/pull/78817) | Update dependencies |
+| 2.5.9 | 2026-06-09 | [79605](https://github.com/airbytehq/airbyte/pull/79605) | Clean up cancelled RC; revert source to previous stable |
+| 2.5.9-rc.2 | 2026-05-28 | [78489](https://github.com/airbytehq/airbyte/pull/78489) | Reduce default concurrency to 4 and enable tier-aware HTTPAPIBudget rate limiting |
+| 2.5.9-rc.1 | 2026-05-26 | [78442](https://github.com/airbytehq/airbyte/pull/78442) | Add subscription_tier spec field and tier-aware HTTPAPIBudget for concurrency tuning (Path B) |
 | 2.5.8 | 2026-04-28 | [77302](https://github.com/airbytehq/airbyte/pull/77302) | Update dependencies |
 | 2.5.7 | 2026-04-21 | [76675](https://github.com/airbytehq/airbyte/pull/76675) | Update dependencies |
 | 2.5.6 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |

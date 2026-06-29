@@ -77,6 +77,10 @@ The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -84,6 +88,10 @@ The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.15 | 2026-06-23 | [80709](https://github.com/airbytehq/airbyte/pull/80709) | Update dependencies |
+| 1.3.14 | 2026-06-16 | [80102](https://github.com/airbytehq/airbyte/pull/80102) | Update dependencies |
+| 1.3.13 | 2026-06-09 | [79569](https://github.com/airbytehq/airbyte/pull/79569) | Update dependencies |
+| 1.3.12 | 2026-06-02 | [79069](https://github.com/airbytehq/airbyte/pull/79069) | Update dependencies |
 | 1.3.11 | 2026-04-28 | [77490](https://github.com/airbytehq/airbyte/pull/77490) | Update dependencies |
 | 1.3.10 | 2026-04-21 | [76846](https://github.com/airbytehq/airbyte/pull/76846) | Bump SDM base image to stable 7.17.2 |
 | 1.3.9 | 2026-03-31 | [75942](https://github.com/airbytehq/airbyte/pull/75942) | Bump SDM base image for memory monitor (CDK PR #962) |

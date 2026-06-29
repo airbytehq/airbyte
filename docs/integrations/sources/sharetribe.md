@@ -45,6 +45,10 @@ For more details about the API, check out https://www.sharetribe.com/api-referen
 | messages | id | Default pagination | ✅ |  ✅  |
 | reviews | id | Default pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -52,6 +56,10 @@ For more details about the API, check out https://www.sharetribe.com/api-referen
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-06-23 | [80655](https://github.com/airbytehq/airbyte/pull/80655) | Update dependencies |
+| 0.0.45 | 2026-06-16 | [80041](https://github.com/airbytehq/airbyte/pull/80041) | Update dependencies |
+| 0.0.44 | 2026-06-09 | [79490](https://github.com/airbytehq/airbyte/pull/79490) | Update dependencies |
+| 0.0.43 | 2026-06-02 | [78940](https://github.com/airbytehq/airbyte/pull/78940) | Update dependencies |
 | 0.0.42 | 2026-04-28 | [77418](https://github.com/airbytehq/airbyte/pull/77418) | Update dependencies |
 | 0.0.41 | 2026-04-21 | [76770](https://github.com/airbytehq/airbyte/pull/76770) | Update dependencies |
 | 0.0.40 | 2026-03-17 | [75114](https://github.com/airbytehq/airbyte/pull/75114) | Update dependencies |
