@@ -36,6 +36,8 @@ Organizations admins and editors, and workspace admins, can delete a workspace. 
 
 :::danger
 Deleting a workspace deletes all its sources, destinations, and connections. This is irreversible. Think carefully before doing this.
+
+If you're on the Standard plan and you delete your last workspace, Airbyte also cancels your plan and stop billing you.
 :::
 
 1. [Switch](#switch-workspaces) to the workspace you want to delete.
