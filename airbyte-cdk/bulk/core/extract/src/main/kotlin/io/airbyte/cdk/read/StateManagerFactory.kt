@@ -298,7 +298,6 @@ class StateManagerFactory(
             streamFields.toSet(),
             configuredSyncMode,
             configuredPrimaryKey,
-//            metadataQuerier.primaryKey(streamID).isNotEmpty(), // TEMP
             configuredCursor,
         )
     }
