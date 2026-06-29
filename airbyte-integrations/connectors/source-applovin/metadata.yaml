@@ -1,0 +1,46 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fabb2024-85c9-40e5-a3ab-5b3b8f92f59a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-applovin
+  githubIssueLabel: source-applovin
+  icon: icon.svg
+  license: ELv2
+  name: AppLovin
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-applovin
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/applovin
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  ab_internal:
+    sl: 100
+    ql: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.2@sha256:19eb795baa82bad71c097a7388313c1fd9f36978f543a8c7a245bbedb0c9a153
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-APPLOVIN__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Reporting API reference
+      url: https://support.applovin.com/en/growth/promoting-your-websites/api/reporting-api
+      type: api_reference
+    - title: Asset Reporting API reference
+      url: https://support.applovin.com/en/growth/promoting-your-websites/api/asset-reporting-api
+      type: api_reference
+metadataSpecVersion: "1.0"
