@@ -23,8 +23,6 @@ Core users don't have access to paid support but can use the [Community Slack](#
 
 Connector support depends on the connector's support level. See [Connector Support Levels](/integrations/connector-support-levels) for details.
 
-If you don't see a connector you need, submit a [connector request](https://airbyte.com/connector-requests).
-
 ### GitHub discussions
 
 [GitHub discussions](https://github.com/airbytehq/airbyte/discussions) are a great way to propose, vote on, and discuss data replication improvements.
