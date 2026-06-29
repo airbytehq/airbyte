@@ -80,6 +80,26 @@ class TestAccountsStream(TestCase):
         assert record["currency"] == "USD"
 
     @HttpMocker()
+    def test_uses_current_linkedin_api_version(self, http_mocker: HttpMocker):
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.accounts_endpoint()
+            .with_q("search")
+            .with_page_size(500)
+            .with_header("Linkedin-Version", "202605")
+            .build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(123456789, "Acme Corporation")]),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == 123456789
+
+    @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
         """
         Test that connector fetches all pages when pagination is present.
