@@ -1,5 +1,18 @@
 # Databricks Lakehouse Migration Guide
 
+## Upgrading to 4.0.0
+
+This version upgrades Destination Databricks to the [Direct-Load](/platform/using-airbyte/core-concepts/direct-load-tables) paradigm, which improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that document for more information about how Direct-Load differs from Typing and Deduping.
+
+If you do not interact with the raw tables, you can safely upgrade. There is no breakage for this use case. But if you interact with the raw tables, follow the migration steps below.
+
+### Migration steps
+
+1. Raw tables (`_airbyte_raw_*`) are no longer produced. Update any downstream dbt models or SQL queries to reference the final tables instead.
+2. Upgrade the destination to version 4.0.0
+3. Verify data in the final tables
+4. Optional: Drop old raw tables (`_airbyte_raw_*`) after verifying the new tables
+
 ## Upgrading to 3.0.0
 
 This version adds an `_airbyte_generation_id` column to the raw and final tables and a `sync_id` entry in `_airbyte_meta`.

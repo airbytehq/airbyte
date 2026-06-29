@@ -20,45 +20,55 @@ import jakarta.inject.Singleton
 @Singleton
 open class DatabricksSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Server Hostname")
-    @get:JsonPropertyDescription("Databricks Cluster Server Hostname.")
+    @get:JsonPropertyDescription(
+        "Enter your Databricks workspace <a href=\"https://docs.databricks.com/en/integrations/compute-details.html\">server hostname</a> (e.g., abc-12345678-wxyz.cloud.databricks.com). You can find this in your cluster or SQL warehouse connection details."
+    )
     @get:JsonProperty("hostname")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 2, "examples": ["abc-12345678-wxyz.cloud.databricks.com"]}"""
+            """{"group": "connection", "order": 1, "examples": ["abc-12345678-wxyz.cloud.databricks.com"]}"""
     )
     val hostname: String = ""
 
     @get:JsonSchemaTitle("HTTP Path")
-    @get:JsonPropertyDescription("Databricks Cluster HTTP Path.")
+    @get:JsonPropertyDescription(
+        "Enter the <a href=\"https://docs.databricks.com/en/integrations/compute-details.html\">HTTP path</a> for your Databricks SQL warehouse or cluster. You can find this in the connection details of your compute resource."
+    )
     @get:JsonProperty("http_path")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 3, "examples": ["sql/1.0/warehouses/0000-1111111-abcd90"]}"""
+            """{"group": "connection", "order": 2, "examples": ["sql/1.0/warehouses/0000-1111111-abcd90"]}"""
     )
     val httpPath: String = ""
 
     @get:JsonSchemaTitle("Port")
-    @get:JsonPropertyDescription("Databricks Cluster Port.")
+    @get:JsonPropertyDescription(
+        "Enter the port number for the Databricks cluster connection. The default port is 443 (HTTPS)."
+    )
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
-        json = """{"group": "advanced", "order": 4, "default": "443", "examples": ["443"]}""",
+        json = """{"group": "advanced", "order": 9, "default": "443", "examples": ["443"]}""",
     )
     val port: String? = "443"
 
     @get:JsonSchemaTitle("Databricks Unity Catalog Name")
-    @get:JsonPropertyDescription("The name of the unity catalog for the database")
+    @get:JsonPropertyDescription(
+        "Enter the name of the <a href=\"https://docs.databricks.com/en/data-governance/unity-catalog/index.html\">Unity Catalog</a> that you want to sync data into."
+    )
     @get:JsonProperty("database")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 5}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 3, "examples": ["AIRBYTE_DATABASE"]}"""
+    )
     val database: String = ""
 
     @get:JsonSchemaTitle("Default Schema")
     @get:JsonPropertyDescription(
-        """The default schema tables are written. If not specified otherwise, the "default" will be used."""
+        """Enter the name of the default <a href="https://docs.databricks.com/en/sql/language-manual/sql-ref-schema.html">schema</a> where tables will be written. If not specified, "default" will be used."""
     )
     @get:JsonProperty("schema")
     @get:JsonSchemaInject(
         json =
-            """{"group": "advanced", "order": 6, "default": "default", "examples": ["default"]}""",
+            """{"group": "connection", "order": 4, "default": "default", "examples": ["AIRBYTE_SCHEMA"]}""",
     )
     val schema: String? = "default"
 
@@ -67,19 +77,23 @@ open class DatabricksSpecification : ConfigurationSpecification() {
         """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
     )
     @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7, "always_show": true}""")
+    @get:JsonSchemaInject(json = """{"group": "sync_behavior", "order": 7, "always_show": true}""")
     val cdcDeletionMode: CdcDeletionMode? = null
 
     @get:JsonSchemaTitle("Authentication")
-    @get:JsonSchemaDescription("Authentication mechanism for Staging files and running queries")
+    @get:JsonSchemaDescription(
+        "Determines the type of authentication used to connect to Databricks. OAuth2 is recommended for production use."
+    )
     @get:JsonProperty("authentication")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 8}""")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 5}""")
     val authentication: DatabricksAuthSpecification = OAuthSpecification()
 
     @get:JsonSchemaTitle("Purge Staging Files and Tables")
-    @get:JsonPropertyDescription("Default to 'true'. Switch it to 'false' for debugging purpose.")
+    @get:JsonPropertyDescription(
+        "Whether to delete staging files and tables after data has been loaded. Disable this option for debugging purposes."
+    )
     @get:JsonProperty("purge_staging_data")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9, "default": true}""")
+    @get:JsonSchemaInject(json = """{"group": "sync_behavior", "order": 8, "default": true}""")
     @Suppress("RedundantNullableReturnType")
     val purgeStagingData: Boolean? = true
 
@@ -88,7 +102,9 @@ open class DatabricksSpecification : ConfigurationSpecification() {
         """You must agree to the Databricks JDBC Driver <a href="https://databricks.com/jdbc-odbc-driver-license">Terms & Conditions</a> to use this connector.""",
     )
     @get:JsonProperty("accept_terms")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 10, "default": false}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 6, "default": false, "const": true}"""
+    )
     val acceptTerms: Boolean = false
 }
 
@@ -104,6 +120,7 @@ open class DatabricksSpecification : ConfigurationSpecification() {
 sealed class DatabricksAuthSpecification(
     @Suppress("PropertyName") @param:JsonProperty("auth_type") val auth_type: Type
 ) {
+    /** Enumeration of possible authentication types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
         OAUTH("OAUTH"),
         BASIC("BASIC"),
@@ -114,10 +131,14 @@ sealed class DatabricksAuthSpecification(
 @JsonSchemaDescription("Authentication using OAuth2 client credentials.")
 class OAuthSpecification(
     @get:JsonSchemaTitle("Client ID")
+    @get:JsonPropertyDescription(
+        "Enter the OAuth2 client ID for your Databricks <a href=\"https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html\">service principal</a>."
+    )
     @get:JsonProperty("client_id")
     @get:JsonSchemaInject(json = """{"order": 1}""")
     val clientId: String = "",
     @get:JsonSchemaTitle("Secret")
+    @get:JsonPropertyDescription("Enter the OAuth2 secret associated with the client ID.")
     @get:JsonProperty("secret")
     @get:JsonSchemaInject(json = """{"order": 2, "airbyte_secret": true}""")
     val secret: String = "",
@@ -127,11 +148,15 @@ class OAuthSpecification(
 @JsonSchemaDescription("Authentication using a personal access token.")
 class PersonalAccessTokenSpecification(
     @get:JsonSchemaTitle("Personal Access Token")
+    @get:JsonPropertyDescription(
+        "Enter your Databricks <a href=\"https://docs.databricks.com/en/dev-tools/auth/pat.html\">personal access token</a>."
+    )
     @get:JsonProperty("personal_access_token")
     @get:JsonSchemaInject(json = """{"order": 1, "airbyte_secret": true}""")
     val personalAccessToken: String = "",
 ) : DatabricksAuthSpecification(Type.BASIC)
 
+/** Determines how CDC deletions are handled at the destination. */
 enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
     SOFT_DELETE("Soft delete"),
@@ -149,6 +174,7 @@ class DatabricksSpecificationExtension : DestinationSpecificationExtension {
     override val groups =
         listOf(
             DestinationSpecificationExtension.Group("connection", "Connection"),
-            DestinationSpecificationExtension.Group("advanced", "Optional Fields"),
+            DestinationSpecificationExtension.Group("sync_behavior", "Sync Behavior"),
+            DestinationSpecificationExtension.Group("advanced", "Advanced"),
         )
 }

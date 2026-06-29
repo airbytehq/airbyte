@@ -40,6 +40,14 @@ data:
           This version adds an `_airbyte_generation_id` column to the raw and final tables. If you ran a sync using 2.0.0, you MUST manually drop the
           raw and final tables and then clear (reset) your connection; this release will not automatically upgrade your tables.
         upgradeDeadline: "2025-01-31"
+      4.0.0:
+        message: >
+          This version upgrades Destination Databricks to the
+          [Direct-Load](https://docs.airbyte.com/platform/using-airbyte/core-concepts/direct-load-tables) paradigm,
+          which improves performance and reduces warehouse spend. Raw tables (`_airbyte_raw_*`) are no longer produced.
+          If you do not interact with the raw tables, you can safely upgrade. If you do, update any downstream
+          dbt models or SQL queries to reference the final tables instead, then drop old raw tables after verifying.
+        upgradeDeadline: "2026-10-01"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   resourceRequirements:
     jobSpecific:
