@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## June 29, 2026
+
+SDK
+
+- Fixed an issue where responses from connectors using record transforms returned only the transformed fields instead of the complete record. All original fields are now preserved alongside transformed values.
+
+Connectors
+
+- You can now create, update, and delete Shopify data through your agent, including customers, products, draft orders, discount codes, blog posts, pages, inventory levels, collections, and metafields.
+- Search results from Freshdesk, Gong, Linear, Slack, and Zendesk Support now automatically include related names and context. For example, Freshdesk ticket results show the requester's name and email, and Slack messages include the author's display name.
+
 ## June 26, 2026
 
 Web app
