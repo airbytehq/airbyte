@@ -10,6 +10,7 @@ import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.AIRBYTE_
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_PRIMARY_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_MODE_DATA_FIELD;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UNAUTHORIZED_ERROR_CODE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -413,14 +414,30 @@ public class MongoUtil {
    * @return true if the exception is caused by a BSONObjectTooLarge error, false otherwise.
    */
   public static boolean isBsonObjectTooLargeException(final Throwable exception) {
+    return isMongoCommandExceptionWithCode(exception, MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) ||
+        isExceptionMessageBsonObjectTooLarge(exception);
+  }
+
+  public static boolean isMongoUnauthorizedException(final Throwable exception) {
+    return isMongoCommandExceptionWithCode(exception, UNAUTHORIZED_ERROR_CODE);
+  }
+
+  private static boolean isMongoCommandExceptionWithCode(final Throwable exception, final int errorCode) {
     Throwable current = exception;
     while (current != null) {
       if (current instanceof MongoCommandException mongoException) {
-        if (mongoException.getErrorCode() == MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) {
+        if (mongoException.getErrorCode() == errorCode) {
           return true;
         }
       }
-      // Also check the error message for cases where the error code might not be directly accessible
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  private static boolean isExceptionMessageBsonObjectTooLarge(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
       if (current.getMessage() != null &&
           (current.getMessage().contains("BSONObjectTooLarge") ||
               current.getMessage().contains("BSONObj size") ||
