@@ -5,8 +5,6 @@ connectionSpecification:
   type: object
   required:
     - client_id
-    - client_secret
-    - refresh_token
   additionalProperties: true
   properties:
     is_sandbox:
@@ -18,21 +16,28 @@ connectionSpecification:
       default: false
       order: 1
     auth_type:
+      title: Authentication Method
+      description: Choose the authentication method to use for connecting to Salesforce.
       type: string
-      const: Client
+      enum:
+        - Client
+        - JWT
+      default: Client
+      order: 2
     client_id:
       title: Client ID
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+        (also known as Consumer Key)
       type: string
-      order: 2
+      order: 3
     client_secret:
       title: Client Secret
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
       type: string
       airbyte_secret: true
-      order: 3
+      order: 4
     refresh_token:
       title: Refresh Token
       description: >-
@@ -40,7 +45,24 @@ connectionSpecification:
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
       type: string
       airbyte_secret: true
-      order: 4
+      order: 5
+    private_key:
+      title: Private Key (PEM)
+      description: >-
+        The RSA private key in PEM format used to sign the JWT assertion for the
+        <a href="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5">JWT Bearer Token flow</a>.
+        This key must correspond to the X.509 certificate uploaded to your Salesforce Connected App.
+      type: string
+      airbyte_secret: true
+      multiline: true
+      order: 6
+    username:
+      title: Username
+      description: >-
+        The Salesforce username (email) for the JWT Bearer Token flow.
+        This is the user on whose behalf the connector will authenticate.
+      type: string
+      order: 7
     start_date:
       title: Start Date
       description: >-
@@ -53,19 +75,19 @@ connectionSpecification:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
       format: date-time
-      order: 5
+      order: 8
     force_use_bulk_api:
       title: Force to use BULK API
       type: boolean
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
-      order: 6
+      order: 9
     stream_slice_step:
       title: Stream Slice Step for Incremental sync
       type: string
       description: The size of the time window (ISO8601 duration) to slice requests.
       default: P30D
-      order: 7
+      order: 10
       examples:
         - PT12H
         - P7D
@@ -83,14 +105,14 @@ connectionSpecification:
         Increase this value if you observe missing records in your destination.
         See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
-      order: 8
+      order: 11
       examples:
         - PT10M
         - PT30M
         - PT1H
     streams_criteria:
       type: array
-      order: 9
+      order: 12
       items:
         type: object
         required:
@@ -117,6 +139,25 @@ connectionSpecification:
             order: 2
       title: Filter Salesforce Objects
       description: Add filters to select only required stream based on `SObject` name. Use this field to filter which tables are displayed by this connector. This is useful if your Salesforce account has a large number of tables (>1000), in which case you may find it easier to navigate the UI and speed up the connector's performance if you restrict the tables displayed by this connector.
+  if:
+    properties:
+      auth_type:
+        const: Client
+  then:
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+  else:
+    if:
+      properties:
+        auth_type:
+          const: JWT
+    then:
+      required:
+        - client_id
+        - private_key
+        - username
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
