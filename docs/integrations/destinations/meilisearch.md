@@ -9,19 +9,35 @@ engine that makes it easy for a non-developer to search through data. It does no
 
 #### Output schema
 
-Each stream will be output into its own index in MeiliSearch. Each table will be named after the
-stream with all non-alpha numeric characters removed. Each table will contain one column per
-top-levelfield in a stream. In addition, it will contain a table called `_ab_pk`. This column is
-used internally by Airbyte to prevent records from getting overwritten and can be ignored.
+Each stream is synced to its own index in MeiliSearch. The index is named after the stream, with
+any character outside `[a-zA-Z0-9_-]` replaced by an underscore.
+
+When the stream has a single top-level primary key (for example `id`), that field is used directly
+as the MeiliSearch index primary key, so records upsert natively on their real key and documents
+stay clean. **MeiliSearch requires the primary-key value to be an integer or a string containing
+only `[a-zA-Z0-9_-]`**; non-conforming values cause the indexing task to fail.
+
+When the stream has a composite or nested primary key, or no primary key at all, the connector adds
+a synthetic `_ab_pk` field used as the index primary key — a deterministic hash of the key values,
+or a random value when there is no key. This field is internal to Airbyte and can be ignored.
 
 #### Features
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
+| Feature                        | Supported?\(Yes/No\) | Notes                                                          |
+| :----------------------------- | :------------------- | :------------------------------------------------------------- |
+| Full Refresh Sync              | Yes                  |                                                                |
+| Incremental - Append Sync      | Yes                  |                                                                |
+| Incremental - Append + Deduped | Yes                  | Upserts on the stream primary key. Supports partial (merge) updates via `update_method`. |
+| Namespaces                     | No                   |                                                                |
+
+#### Configuration
+
+| Field           | Required | Default   | Notes                                                                                         |
+| :-------------- | :------- | :-------- | :-------------------------------------------------------------------------------------------- |
+| `host`          | Yes      | —         | MeiliSearch URL including protocol, e.g. `http://localhost:7700`.                             |
+| `api_key`       | No       | —         | API key with read and write access. Leave blank if the instance has no key.                   |
+| `batch_size`    | No       | `1000`    | Records buffered before each indexing task is sent.                                           |
+| `update_method` | No       | `replace` | `replace` overwrites matching documents; `merge` performs a partial update of present fields. |
 
 ## Getting started
 
@@ -48,6 +64,7 @@ the MeiliSearch docs.
 
 | Version | Date       | Pull Request                                              | Subject                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
+| 2.0.0 | 2026-06-28 | [#TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Rebuild: primary-key upsert and dedup, partial (merge) updates, configurable batch size, modern CDK. Un-archive. |
 | 1.0.25 | 2025-05-10 | [59837](https://github.com/airbytehq/airbyte/pull/59837) | Update dependencies |
 | 1.0.24 | 2025-05-03 | [59302](https://github.com/airbytehq/airbyte/pull/59302) | Update dependencies |
 | 1.0.23 | 2025-04-26 | [58742](https://github.com/airbytehq/airbyte/pull/58742) | Update dependencies |
