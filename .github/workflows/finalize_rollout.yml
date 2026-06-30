@@ -29,11 +29,11 @@ permissions:
   pull-requests: write
 
 # ---------------------------------------------------------------------------
-# Job 1: Registry compile (runs for both promote and rollback)
+# Job 1: Registry updates (runs for both promote and rollback)
 # ---------------------------------------------------------------------------
 jobs:
   rc-registry-compile:
-    name: "Registry compile (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
+    name: "Registry Updates (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
     runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
@@ -208,7 +208,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 Registry compile failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🚨 Registry update failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
     outputs:
