@@ -56,6 +56,9 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: "{{ response.details }}"
+      - predicate: "{{ 'must be equal to or after report type data retention start date' in response.details }}"
+        action: IGNORE
+        error_message: "Skipping report slice because the requested date range falls outside Amazon's data retention window for this report type. {{ response.details }}"
       - type: HttpResponseFilter
         http_codes: [ 425 ]
         action: FAIL
@@ -3404,10 +3407,10 @@ definitions:
     start_datetime:
       type: MinMaxDatetime
       datetime: >-
-        {%- set today = today_utc() - duration('P1D') -%}
+        {%- set today = today_utc() -%}
         {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
-        {%- set sixty_days_ago = today - duration('P60D') -%}
-        "{{ max(user_start_date, sixty_days_ago.strftime('%Y-%m-%d')) }}"
+        {%- set fifty_nine_days_ago = today - duration('P59D') -%}
+        "{{ max(user_start_date, fifty_nine_days_ago.strftime('%Y-%m-%d')) }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"

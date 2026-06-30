@@ -185,6 +185,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.0.3 | 2026-06-30 | []() | Fix off-by-one in 60-day report date retention cap (requested 61 days back) and skip slices outside Amazon's per-report-type data retention window instead of failing the stream |
 | 9.0.2 | 2026-06-30 | [80957](https://github.com/airbytehq/airbyte/pull/80957) | Update dependencies |
 | 9.0.1 | 2026-06-23 | [80363](https://github.com/airbytehq/airbyte/pull/80363) | Update dependencies |
 | 9.0.0 | 2026-06-18 | [80201](https://github.com/airbytehq/airbyte/pull/80201) | Migrate `sponsored_product_ad_group_suggested_keywords` stream from deprecated V2 Suggested Keywords API to Keyword Recommendations API (`/sp/targets/keywords/recommendations`). |
