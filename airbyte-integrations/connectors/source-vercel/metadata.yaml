@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7de74599-7bbe-4610-8635-00c76885e51d
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-vercel
   githubIssueLabel: source-vercel
   icon: icon.svg
