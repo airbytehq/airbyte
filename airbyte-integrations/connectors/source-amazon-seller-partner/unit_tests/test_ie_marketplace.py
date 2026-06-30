@@ -40,7 +40,8 @@ def test_ie_maps_to_eu_endpoint(manifest):
     transformations = manifest["spec"]["config_normalization_rules"]["transformations"]
     endpoint_remap = next(t for t in transformations if t["type"] == "ConfigRemapField" and t["field_path"] == ["endpoint"])
     assert "IE" in endpoint_remap["map"]
-    assert "-eu.amazon.com" in endpoint_remap["map"]["IE"]
+    ie_endpoint_template = endpoint_remap["map"]["IE"]
+    assert ie_endpoint_template.endswith("-eu.amazon.com")
 
 
 def test_ie_maps_to_correct_marketplace_id(manifest):
@@ -87,4 +88,4 @@ def test_ie_config_resolves_eu_endpoint(ie_config):
     source = get_source(ie_config)
     with tempfile.TemporaryDirectory() as tmp_dir:
         resolved_config = source.configure(config=ie_config, temp_dir=tmp_dir)
-    assert "sellingpartnerapi-eu.amazon.com" in resolved_config.get("endpoint", "")
+    assert resolved_config.get("endpoint") == "https://sellingpartnerapi-eu.amazon.com"
