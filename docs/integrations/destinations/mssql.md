@@ -2,6 +2,8 @@
 
 This page describes how to set up the MS SQL Server destination connector. This connector writes data to a Microsoft SQL Server or Azure SQL Database instance.
 
+The connector supports two data loading strategies: row-by-row `INSERT` statements and bulk loading through Azure Blob Storage using the `BULK INSERT` command.
+
 ## Supported sync modes
 
 | Sync mode | Supported? |
@@ -27,7 +29,7 @@ See [here](../../platform/understanding-airbyte/airbyte-metadata-fields) for mor
 
 ### Setup guide
 
-- MS SQL Server: `Azure SQL Database`, `SQL Server 2016` or greater
+- MS SQL Server: Azure SQL Database, or SQL Server 2016 and later
 
 #### Network Access
 
@@ -35,10 +37,12 @@ Make sure your SQL Server database can be accessed by Airbyte. If your database 
 may need to allow access from the IP you're using to expose Airbyte. If you're using Airbyte Cloud,
 add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
-#### **Permissions**
+#### Permissions
 
 You need a user configured in SQL Server that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose.
 Grant the user `ALTER` permissions on the target schema so Airbyte can create and modify tables as needed.
+
+If you plan to use bulk loading, the user also needs permission to execute `BULK INSERT`.
 
 #### Target Database
 
@@ -63,20 +67,25 @@ You'll need the following information to configure the MSSQL destination:
 - **JDBC URL Parameters**
   - Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).
 - **SSL Method**
-  - The SSL configuration supports three modes: Unencrypted, Encrypted \(trust server certificate\), and Encrypted \(verify certificate\).
-    - **Unencrypted**: Do not use SSL encryption on the database connection
-    - **Encrypted \(trust server certificate\)**: Use SSL encryption without verifying the server's certificate. This is useful for self-signed certificates in testing scenarios, but should not be used in production.
-    - **Encrypted \(verify certificate\)**: Use the server's SSL certificate, after standard certificate verification.
-      - **Host Name In Certificate** \(optional\): When using certificate verification, this property can be set to specify an expected name for added security. If this value is present, and the server's certificate's host name does not match it, certificate verification will fail.
+  - The SSL configuration supports three modes: Unencrypted, Encrypted (trust server certificate), and Encrypted (verify certificate).
+    - **Unencrypted**: Data transfer is not encrypted.
+    - **Encrypted (trust server certificate)**: Use SSL encryption without verifying the server's certificate. Suitable for self-signed certificates in testing scenarios, but not recommended for production.
+    - **Encrypted (verify certificate)**: Verify and use the certificate provided by the server.
+      - **Trust Store Name** (optional): The name of the trust store to use for certificate verification.
+      - **Trust Store Password** (optional): The password for the trust store.
+      - **Host Name In Certificate** (optional): When set, the connector verifies that the server certificate's host name matches this value. If it does not match, certificate verification fails.
 - **Load Type**
   - The data load type supports two modes:  Insert or Bulk
     - **Insert**: Utilizes SQL `INSERT` statements to load data to the destination table.
-    - **Bulk**: Utilizes Azure Blob Storage and the `BULK INSERT` command to load data to the destination table.  If selected, additional configuration is required:
-      - **Azure Blob Storage Account Name** - The name of the [Azure Blob Storage account]( https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts).
+    - **Bulk**: Utilizes Azure Blob Storage and the `BULK INSERT` command to load data to the destination table. If selected, additional configuration is required:
+      - **Azure Blob Storage Account Name** - The name of the [Azure Blob Storage account](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts).
       - **Azure Blob Storage Container Name** - The name of the [Azure Blob Storage container](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#containers).
-      - **Shared Access Signature** - A [shared access signature (SAS)](https://learn.microsoft.com/azure/storage/common/storage-sas-overview) provides secure delegated access to resources.\
+      - **Shared Access Signature** - A [shared access signature (SAS)](https://learn.microsoft.com/azure/storage/common/storage-sas-overview) provides secure delegated access to resources. Mutually exclusive with **Azure Blob Storage Account Key**.
+      - **Azure Blob Storage Account Key** - The storage account key for authenticating to Azure Blob Storage. Mutually exclusive with **Shared Access Signature**.
       - **BULK Load Data Source** - Specifies the [external data source name configured in MSSQL](https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql), which references the Azure Blob container.
-      - **Pre-Load Value Validation** - When enabled, Airbyte will validate all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.
+      - **Pre-Load Value Validation** - When enabled, Airbyte validates all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.
+- **SSH Tunnel Method** (optional)
+  - You can connect to the database through an SSH tunnel. Supported methods are **SSH Key Authentication** and **Password Authentication**. See the [SSH tunnel documentation](https://docs.airbyte.com/platform/using-airbyte/core-concepts/connecting-external-services-via-ssh-tunnel) for details.
 
 #### MSSQL with Azure Blob Storage (Bulk Upload) Setup Guide
 
@@ -108,7 +117,7 @@ Follow these steps to configure MSSQL with Azure Blob Storage for bulk uploads.
     - In the Azure Portal, create (or reuse) a Storage Account.
     - Within that account, create a container (e.g., `bulk-staging`) for staging your data files.
 2. **Establish Access Credentials**
-    - Use a **Shared Access Signature (SAS)** scoped to your container.
+    - Use a **Shared Access Signature (SAS)** scoped to your container, or a **Storage Account Key**.
     - Ensure the SAS token or role assignments include permissions such as **Read**, **Write**, **Delete**, and **List**.
 
 ###### 2. Configure MSSQL
@@ -151,14 +160,16 @@ You’ll need to supply:
     - The name of the external data source you created (e.g., `<data_source_name>`).
 3. **Azure Storage Account & Container**
     - The name of the storage account and container.
-4. **SAS Token**
-    - The token that grants Blob Storage access.
+4. **SAS Token or Account Key**
+    - A SAS token or storage account key that grants Blob Storage access.
 
 See the [Getting Started: Configuration section](#configuration) of this guide for more details on `BULK INSERT` connector configuration.
 
 ## Data type limitations
 
 SQL Server imposes limits on certain data types. When a value falls outside a supported range, the connector nullifies it and records a `DESTINATION_FIELD_SIZE_LIMITATION` change in `_airbyte_meta`.
+
+Complex types (`array`, `object`, and `union`) are serialized to JSON strings before being stored in SQL Server.
 
 | Airbyte type | SQL Server type | Supported range | Notes |
 | :--- | :--- | :--- | :--- |
@@ -179,7 +190,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                   |
 |:-----------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
 | 2.2.19     | 2026-06-30 | [80269](https://github.com/airbytehq/airbyte/pull/80269)   | Extract shared value coercion into MSSQLValueCoercer; enable acceptance tests                                             |
-| 2.2.18     | 2026-06-09 | [79602](https://github.com/airbytehq/airbyte/pull/79602)   | Fix bulk load — schema-qualified staging tables, always serialize booleans as 0/1                                         |
+| 2.2.18     | 2026-06-30 | [79602](https://github.com/airbytehq/airbyte/pull/79602)   | Fix bulk load — schema-qualified staging tables, always serialize booleans as 0/1                                         |
 | 2.2.17     | 2026-06-08 | [79154](https://github.com/airbytehq/airbyte/pull/79154)   | Nullify timestamp-without-timezone values before 1753-01-01 instead of failing the sync                                   |
 | 2.2.16     | 2026-04-23 | [76946](https://github.com/airbytehq/airbyte/pull/76946)   | Upgrade Bulk CDK to 1.0.11 and fix `_ab_cdc_deleted_at` column type so the secondary index on CDC streams can be created. |
 | 2.2.15     | 2026-01-26 | [72297](https://github.com/airbytehq/airbyte/pull/72297)   | Upgrade CDK to 0.2.0                                                                                                      |
