@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c448df04-e5ce-43e0-85cb-a4cfff936c3d
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-bigmailer
   githubIssueLabel: source-bigmailer
   icon: icon.svg
