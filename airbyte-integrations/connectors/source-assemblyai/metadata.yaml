@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dcb2f998-6493-4078-8390-e320487157a0
-  dockerImageTag: 0.0.32
+  dockerImageTag: 0.0.33
   dockerRepository: airbyte/source-assemblyai
   githubIssueLabel: source-assemblyai
   icon: icon.svg
