@@ -33,7 +33,8 @@ The connector also supports [Project Secret](https://developer.mixpanel.com/refe
 14. For **Page Size**, enter the number of records to fetch per request for the Engage stream. The default is 1000.
 15. For **Export Lookback Window**, enter the number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This helps avoid missed data due to delays in event recording. The default is 0 seconds.
 16. For **Number of concurrent threads**, enter the number of worker threads for the sync. The default is 3. Higher values may improve performance but are constrained by your Mixpanel plan's [rate limits](https://developer.mixpanel.com/reference/rate-limits).
-17. Click **Set up source**.
+17. (Optional) For **Streams to Discover**, select the specific streams you want to discover and sync. If left empty, all streams are available. Use this to speed up schema discovery when your account has access to many endpoints and discovery is timing out. Available streams: `cohorts`, `engage`, `annotations`, `cohort_members`, `funnels`, `export`.
+18. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -87,6 +88,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.1.0 | 2026-06-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add optional `streams` config parameter to filter which streams are discovered and synced, improving schema discovery performance for accounts with broad access |
 | 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
