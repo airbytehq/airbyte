@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a8b458a3-024f-430e-8f62-a200c3eb79fd
-  dockerImageTag: 0.0.43
+  dockerImageTag: 0.0.44
   dockerRepository: airbyte/source-7shifts
   githubIssueLabel: source-7shifts
   icon: icon.svg
