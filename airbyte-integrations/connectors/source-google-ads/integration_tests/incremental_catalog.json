@@ -402,42 +402,6 @@
         ["segments.device"]
       ],
       "cursor_field": ["segments.date"]
-    },
-    {
-      "stream": {
-        "name": "geo_performance",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "source_defined_primary_key": [
-          ["customer.id"],
-          ["geographic_view.country_criterion_id"],
-          ["geographic_view.location_type"],
-          ["segments.date"],
-          ["segments.ad_network_type"],
-          ["segments.device"],
-          ["segments.geo_target_region"],
-          ["segments.geo_target_metro"],
-          ["segments.geo_target_city"],
-          ["segments.geo_target_most_specific_location"]
-        ],
-        "default_cursor_field": ["segments.date"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [
-        ["customer.id"],
-        ["geographic_view.country_criterion_id"],
-        ["geographic_view.location_type"],
-        ["segments.date"],
-        ["segments.ad_network_type"],
-        ["segments.device"],
-        ["segments.geo_target_region"],
-        ["segments.geo_target_metro"],
-        ["segments.geo_target_city"],
-        ["segments.geo_target_most_specific_location"]
-      ],
-      "cursor_field": ["segments.date"]
     }
   ]
 }
