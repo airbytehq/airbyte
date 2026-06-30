@@ -20,17 +20,20 @@ on:
         required: true
         type: choice
         options: ["promote", "rollback"]
+      version:
+        description: "Explicit version to finalize (optional; auto-resolved if omitted)"
+        required: false
 
 permissions:
   contents: write
   pull-requests: write
 
 # ---------------------------------------------------------------------------
-# Job 1: Registry compile (runs for both promote and rollback)
+# Job 1: Registry updates (runs for both promote and rollback)
 # ---------------------------------------------------------------------------
 jobs:
   rc-registry-compile:
-    name: "Registry compile (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
+    name: "Registry Updates (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
     runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
@@ -55,17 +58,107 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
+      # Resolve which version to operate on. If an explicit version is
+      # provided (via workflow_dispatch input or client_payload), use it.
+      # Otherwise, pick the lowest active RC marker version that is newer
+      # than the current registry default — this handles the case where
+      # multiple RCs exist simultaneously.
+      - name: Resolve version to finalize
+        id: resolve-version
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          VERSION_INPUT: ${{ github.event.inputs.version || github.event.client_payload.version || '' }}
+        run: |
+          if [[ -n "$VERSION_INPUT" ]]; then
+            echo "version=${VERSION_INPUT}" >> "$GITHUB_OUTPUT"
+            echo "::notice::Using explicit version: ${VERSION_INPUT}"
+            exit 0
+          fi
+
+          RESOLVED=$(uv run --with google-cloud-storage --with packaging --with pyyaml python3 - <<'PYTHON'
+          import json, os, sys
+          import yaml
+          from packaging.version import Version
+          from google.cloud import storage
+
+          creds_json = os.environ["GCS_CREDENTIALS"]
+          connector = os.environ["CONNECTOR_NAME"]
+          bucket_name = "prod-airbyte-cloud-connector-metadata-service"
+
+          client = storage.Client.from_service_account_info(json.loads(creds_json))
+          bucket = client.bucket(bucket_name)
+
+          # Find active progressive-rollout markers
+          prefix = f"metadata/airbyte/{connector}/"
+          marker_versions = []
+          for blob in bucket.list_blobs(prefix=prefix):
+              if blob.name.endswith("/progressive-rollout.yml"):
+                  parts = blob.name.split("/")
+                  try:
+                      idx = parts.index(connector)
+                      ver = parts[idx + 1]
+                  except (ValueError, IndexError):
+                      continue
+                  if ver not in ("latest", "release_candidate"):
+                      marker_versions.append(ver)
+
+          if not marker_versions:
+              print("ERROR: No active progressive rollout markers found", file=sys.stderr)
+              sys.exit(1)
+
+          # Single marker — use it directly
+          if len(marker_versions) == 1:
+              print(marker_versions[0])
+              sys.exit(0)
+
+          # Multiple markers — pick the lowest version above the current default
+          latest_blob = bucket.blob(f"metadata/airbyte/{connector}/latest/metadata.yaml")
+          if latest_blob.exists():
+              content = latest_blob.download_as_text()
+              meta = yaml.safe_load(content)
+              latest_ver_str = meta.get("data", {}).get("dockerImageTag", "0.0.0")
+          else:
+              latest_ver_str = "0.0.0"
+
+          latest = Version(latest_ver_str)
+          print(f"Current default version: {latest_ver_str}", file=sys.stderr)
+          print(f"Active RC markers: {', '.join(sorted(marker_versions))}", file=sys.stderr)
+
+          candidates = []
+          for v_str in marker_versions:
+              try:
+                  v = Version(v_str)
+                  if v > latest:
+                      candidates.append((v, v_str))
+              except Exception:
+                  continue
+
+          if not candidates:
+              print("ERROR: No marker versions found above current default", file=sys.stderr)
+              sys.exit(1)
+
+          candidates.sort()
+          print(candidates[0][1])
+          PYTHON
+          )
+
+          echo "version=${RESOLVED}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Resolved version to finalize: ${RESOLVED}"
+
       - name: Mark progressive rollout promoted
         if: env.ACTION == 'promote'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
+          VERSION: ${{ steps.resolve-version.outputs.version }}
         run: >
           airbyte-ops registry progressive-rollout finalize-marker
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
           --outcome promoted
+          --version "${VERSION}"
 
       - name: Mark progressive rollout aborted
         if: env.ACTION == 'rollback'
@@ -73,13 +166,15 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
+          VERSION: ${{ steps.resolve-version.outputs.version }}
         run: >
           airbyte-ops registry progressive-rollout finalize-marker
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
           --outcome aborted
+          --version "${VERSION}"
 
-      - name: "Recompile registry for connector"
+      - name: "Recompile registry for ${{ env.CONNECTOR_NAME }} v${{ steps.resolve-version.outputs.version }}"
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -100,7 +195,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "↩️ Successfully rolled back RC for `${{ env.CONNECTOR_NAME }}` — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "↩️ Successfully rolled back RC for `${{ env.CONNECTOR_NAME }}` v${{ steps.resolve-version.outputs.version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
       - name: Notify Slack on failure
@@ -113,8 +208,11 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 Registry compile failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🚨 Registry update failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
+
+    outputs:
+      resolved_version: ${{ steps.resolve-version.outputs.version }}
 
   # ---------------------------------------------------------------------------
   # Job 2: Create and merge finalize PR (RC promote only)
@@ -144,12 +242,24 @@ jobs:
       - name: Resolve vars
         id: resolve-vars
         shell: bash
+        env:
+          RESOLVED_VERSION: ${{ needs.rc-registry-compile.outputs.resolved_version }}
         run: |
           CURRENT_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${{ github.workspace }}")"
           echo "current_version=${CURRENT_VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
           if [[ "${CURRENT_VERSION}" == *-rc.* ]]; then
-            echo "is_rc=true" | tee -a "${GITHUB_OUTPUT}"
+            # Only create a PR if the repo's RC version matches what was promoted.
+            # If they differ (e.g., a newer RC was published while promoting an
+            # older one), skip the PR — registry compile already made the promoted
+            # version the default.
+            RC_BASE="${CURRENT_VERSION%%-rc.*}"
+            if [[ "${RC_BASE}" == "${RESOLVED_VERSION}" ]]; then
+              echo "is_rc=true" | tee -a "${GITHUB_OUTPUT}"
+            else
+              echo "is_rc=false" | tee -a "${GITHUB_OUTPUT}"
+              echo "::notice::Promoted version ${RESOLVED_VERSION} differs from repo RC ${CURRENT_VERSION}; skipping metadata PR."
+            fi
           else
             echo "is_rc=false" | tee -a "${GITHUB_OUTPUT}"
             echo "::notice::${CONNECTOR_NAME} is already GA (${CURRENT_VERSION}); registry marker finalization completed in rc-registry-compile."
@@ -283,7 +393,7 @@ jobs:
             {
               "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
-              "text": "↗️ Successfully finalized GA rollout for `${{ env.CONNECTOR_NAME }}` — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "↗️ Successfully finalized GA rollout for `${{ env.CONNECTOR_NAME }}` v${{ needs.rc-registry-compile.outputs.resolved_version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
       - name: Notify Slack on RC promote success
