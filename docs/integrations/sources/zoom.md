@@ -4,8 +4,6 @@
 
 The following connector allows airbyte users to fetch various meetings & webinar data points from the [Zoom](https://zoom.us) source. This connector is built entirely using the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/).
 
-Please note that currently, it only supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
-
 ### Output schema
 
 Currently this source supports the following output streams/endpoints from Zoom:
@@ -29,6 +27,11 @@ Currently this source supports the following output streams/endpoints from Zoom:
 - [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
 - [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
 - [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
+- [Recordings](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Cloud recordings including video, audio, and transcript files (supports incremental sync)
+  - [Recording Transcript Content](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Parsed transcript content from VTT files with timestamps and speaker identification (supports incremental sync)
+- [Phone Call History](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/accountCallHistory) - Zoom Phone call logs (supports incremental sync on `start_time`)
+- [Phone Recordings](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/getPhoneRecordings) - Zoom Phone call recordings (supports incremental sync on `date_time`)
+  - [Phone Recording Transcripts](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/phoneDownloadRecordingTranscript) - Parsed Zoom Phone recording transcripts, flattened to one row per utterance (supports incremental sync on `call_date_time`)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -37,10 +40,14 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Feature                       | Supported?  |
 | :---------------------------- | :---------- |
 | Full Refresh Sync             | Yes         |
-| Incremental Sync              | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
+| Incremental Sync              | Yes         |
+| Replicate Incremental Deletes | No          |
 | SSL connection                | Yes         |
 | Namespaces                    | No          |
+
+:::note Incremental Sync
+Incremental sync is supported for the `recordings`, `recording_transcript_content`, `phone_call_history`, `phone_recordings`, and `phone_recording_transcripts` streams. Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
+:::
 
 ### Performance considerations
 
@@ -53,6 +60,25 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 ### Requirements
 
 - Zoom Server-to-Server Oauth App
+
+### Prerequisites for Recordings and Transcripts
+
+To sync cloud recordings and transcripts, the following requirements must be met:
+
+- **Zoom Plan**: Pro, Business, or Enterprise plan (not available on Basic/Free plans)
+- **Cloud Recording**: Meetings must be cloud-recorded (local recordings are not accessible via API)
+- **Audio Transcript**: The "Audio transcript" feature must be enabled in your Zoom account settings
+
+Without these prerequisites, the `recordings` and `recording_transcript_content` streams will return empty results.
+
+### Prerequisites for Phone Streams
+
+To sync Zoom Phone data, the following requirements must be met:
+
+- **Zoom Phone License**: A Zoom Phone license must be enabled on the account
+- **API Scopes**: The Server-to-Server OAuth app must have the `phone:read:admin` scope
+
+Without these prerequisites, the `phone_call_history`, `phone_recordings`, and `phone_recording_transcripts` streams will return empty results.
 
 ### Setup guide
 
@@ -75,6 +101,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.3.0 | 2026-05-26 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and phone recording transcripts streams |
 | 1.2.54 | 2026-06-30 | [81304](https://github.com/airbytehq/airbyte/pull/81304) | Update dependencies |
 | 1.2.53 | 2026-06-23 | [80722](https://github.com/airbytehq/airbyte/pull/80722) | Update dependencies |
 | 1.2.52 | 2026-06-16 | [80114](https://github.com/airbytehq/airbyte/pull/80114) | Update dependencies |
