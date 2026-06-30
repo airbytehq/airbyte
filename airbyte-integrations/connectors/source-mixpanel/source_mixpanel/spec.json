@@ -145,6 +145,24 @@
         "default": 3,
         "examples": [1, 2, 3],
         "description": "The number of worker threads to use for the sync. The performance upper boundary is based on the limit of your Mixpanel pricing plan. More info about the rate limit tiers can be found on Mixpanel's API <a href=\"https://developer.mixpanel.com/reference/raw-event-e xport#api-export-endpoint-rate-limits\">docs</a>."
+      },
+      "streams": {
+        "order": 12,
+        "title": "Streams to Discover",
+        "description": "Select specific streams to discover and sync. If left empty, all streams will be available. Use this to speed up schema discovery when you only need specific data and discovery is timing out.",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "cohorts",
+            "engage",
+            "annotations",
+            "cohort_members",
+            "funnels",
+            "export"
+          ]
+        },
+        "uniqueItems": true
       }
     }
   }
