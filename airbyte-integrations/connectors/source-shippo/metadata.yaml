@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e809021f-7258-42c0-8aa6-4bc563b27837
-  dockerImageTag: 0.0.49
+  dockerImageTag: 0.0.50
   dockerRepository: airbyte/source-shippo
   githubIssueLabel: source-shippo
   icon: icon.svg
