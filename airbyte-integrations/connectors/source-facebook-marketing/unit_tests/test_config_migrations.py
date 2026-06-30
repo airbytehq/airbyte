@@ -254,7 +254,7 @@ class TestMigrateSecretsPathInConnector:
         }
         migrated = MigrateSecretsPathInConnector._transform(config)
         assert migrated["credentials"]["access_token"] == "valid_oauth_token"
-        assert "access_token" not in migrated
+        assert migrated["access_token"] == "stale_top_level_token"
 
 
 

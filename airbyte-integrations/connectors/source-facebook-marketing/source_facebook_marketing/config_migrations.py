@@ -158,11 +158,8 @@ class MigrateSecretsPathInConnector:
             config["credentials"] = {
                 "auth_type": "Service",
             }
-        if "access_token" in config:
-            if "access_token" not in config.get("credentials", {}):
-                config["credentials"]["access_token"] = config.pop("access_token")
-            else:
-                config.pop("access_token")
+        if "access_token" in config and "access_token" not in config.get("credentials", {}):
+            config["credentials"]["access_token"] = config.pop("access_token")
         if "client_id" in config:
             config["credentials"]["auth_type"] = "Client"
             config["credentials"]["client_id"] = config.pop("client_id")
