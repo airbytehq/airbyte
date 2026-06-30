@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 02e5177c-84cf-424c-91e4-9f7ce344b813
-  dockerImageTag: 0.0.37
+  dockerImageTag: 0.0.38
   dockerRepository: airbyte/source-gologin
   githubIssueLabel: source-gologin
   icon: icon.svg
