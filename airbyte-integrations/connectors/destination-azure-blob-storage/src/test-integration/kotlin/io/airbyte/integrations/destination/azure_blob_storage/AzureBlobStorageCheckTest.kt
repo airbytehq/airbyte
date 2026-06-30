@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification
+import io.airbyte.cdk.load.command.object_storage.ParquetFormatSpecification
 
 class AzureBlobStorageCheckTest :
     CheckIntegrationTest<AzureBlobStorageSpecification>(
@@ -20,6 +21,9 @@ class AzureBlobStorageCheckTest :
                     AzureBlobStorageTestUtil.getAccountKeyConfig(CSVFormatSpecification())
                 ),
                 CheckTestConfig(AzureBlobStorageTestUtil.getSasConfig(CSVFormatSpecification())),
+                CheckTestConfig(
+                    AzureBlobStorageTestUtil.getAccountKeyConfig(ParquetFormatSpecification())
+                ),
             ),
         failConfigFilenamesAndFailureReasons =
             mapOf(
