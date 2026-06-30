@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 81ee3b58-ae1e-4727-be23-30248fa27a0a
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-when-i-work
   githubIssueLabel: source-when-i-work
   icon: icon.svg
