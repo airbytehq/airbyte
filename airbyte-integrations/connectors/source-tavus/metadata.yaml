@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f2889d35-753f-4106-bce5-8a865bc339a6
-  dockerImageTag: 0.0.37
+  dockerImageTag: 0.0.38
   dockerRepository: airbyte/source-tavus
   githubIssueLabel: source-tavus
   icon: icon.svg
