@@ -39,7 +39,9 @@ This page contains the setup guide and reference information for the [Facebook M
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
 4. Enter a name for the Facebook Marketing connector.
+<FieldAnchor field="credentials">
 5. For **Authentication**, select **Service Account Key Authentication** and enter the Marketing API access token you generated. See the steps below for how to generate a token.
+</FieldAnchor>
 
 ### Airbyte Open Source
 
@@ -82,7 +84,6 @@ After creating your app, you’ll need to enable the Marketing API to begin maki
 - Find and select **Marketing API** from the list of available products.
 
 For an overview of the Marketing API, see the [Facebook Developer Marketing API Docs](https://developers.facebook.com/docs/marketing-apis).
-
 
 ### 4. Generate an Access Token
 
@@ -134,7 +135,6 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 	- Once you’ve been granted advanced access, you must consistently make at least 1,500 Marketing API calls within any rolling 15-day window to [maintain your status](https://developers.facebook.com/docs/marketing-api/get-started/authorization/#permissions-and-features).
 	- Facebook continuously evaluates your API activity based on the past 15 days, not just immediately after approval.
 	- Falling below the 1,500 call threshold during any 15-day period may result in your advanced access being revoked.
-
 
 Refer to Facebook's official documentation on [Access Levels and Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization/) for detailed instructions on requesting Advanced Access.
 
@@ -220,11 +220,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.action_report_time">
-   6. **Action Report Time** is deprecated and hidden from the UI since v3.5.0. It defaults to `mixed` and cannot be changed through the Airbyte UI. If you set it programmatically (via API, Terraform, or PyAirbyte), the available values are:
-
-      - `impression`: Actions are attributed to the time the ad was viewed.
-      - `conversion`: Actions are attributed to the time the action was taken.
-      - `mixed` (default): Click-through actions are attributed to view time, view-through actions to conversion time.
+   6. **Action Report Time** is deprecated and hidden from the UI since v3.5.0. It defaults to `mixed` and cannot be changed through the Airbyte UI. If you set it programmatically (via API, Terraform, or PyAirbyte), the available values are `impression` (attributed to view time), `conversion` (attributed to action time), or `mixed` (click-through to view time, view-through to action time).
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment">
