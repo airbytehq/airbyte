@@ -224,21 +224,33 @@ This is a good solution if:
 ### SSL Modes
 
 <FieldAnchor field="ssl_mode">
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+Airbyte Cloud requires encrypted communication between Airbyte and your Postgres database. The connector enforces this requirement by rejecting configurations that both:
+
+- Use an SSL mode of `disable`, `allow`, or `prefer`, and
+- Do not use an SSH tunnel.
+
+You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. If you need to use a weaker SSL mode (for example, to connect to a database that doesn't support TLS directly), you must also configure an SSH tunnel.
 
 Here is a breakdown of available SSL connection modes:
 
 - `disable` to disable encrypted communication between Airbyte and the source
 - `allow` to enable encrypted communication only when required by the source
 - `prefer` to allow unencrypted communication only when the source doesn't support encryption
-- `require` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+- `require` to always require encryption. The connection fails if the source doesn't support encryption.
 - `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
 - `verify-full` to always require encryption and verify the identity of the source
+
+On Airbyte Cloud, if you select `disable`, `allow`, or `prefer` without also configuring an SSH tunnel, setup fails with an error similar to:
+
+```text
+Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. Current SSL mode: prefer
+```
+
 </FieldAnchor>
 
 ### SSH Tunneling
 
-If you are using SSH tunneling, as Airbyte Cloud requires encrypted communication, select `SSH Key Authentication` or `Password Authentication` if you selected `disable`, `allow`, or `prefer` as the SSL Mode; otherwise, the connection will fail.
+If you use an SSL mode of `disable`, `allow`, or `prefer` on Airbyte Cloud, you must also configure an SSH tunnel. Select `SSH Key Authentication` or `Password Authentication` in the SSH Tunnel Method field to satisfy the encryption requirement.
 
 For SSH Tunnel Method, select:
 
