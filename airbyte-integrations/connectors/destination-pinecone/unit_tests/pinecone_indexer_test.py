@@ -13,7 +13,7 @@ from pinecone import IndexDescription, exceptions
 from pinecone.grpc import PineconeGRPC
 from pinecone.models import IndexList
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
@@ -253,37 +253,35 @@ def test_pinecone_index_upsert_batching():
 
 
 def generate_catalog():
-    return ConfiguredAirbyteCatalog.parse_obj(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "example_stream",
-                        "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                        "source_defined_cursor": False,
-                        "default_cursor_field": ["column_name"],
-                        "namespace": "ns1",
-                    },
-                    "primary_key": [["id"]],
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "append_dedup",
-                },
-                {
-                    "stream": {
-                        "name": "example_stream2",
-                        "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                        "source_defined_cursor": False,
-                        "default_cursor_field": ["column_name"],
-                        "namespace": "ns2",
-                    },
-                    "primary_key": [["id"]],
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                },
-            ]
-        }
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="example_stream",
+                    json_schema={"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
+                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                    source_defined_cursor=False,
+                    default_cursor_field=["column_name"],
+                    namespace="ns1",
+                ),
+                primary_key=[["id"]],
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="example_stream2",
+                    json_schema={"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
+                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                    source_defined_cursor=False,
+                    default_cursor_field=["column_name"],
+                    namespace="ns2",
+                ),
+                primary_key=[["id"]],
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
+        ]
     )
 
 
