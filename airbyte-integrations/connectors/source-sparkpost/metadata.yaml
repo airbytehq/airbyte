@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5f3256c6-4247-4b6d-a8e4-1df61dc9322c
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-sparkpost
   githubIssueLabel: source-sparkpost
   icon: icon.svg
