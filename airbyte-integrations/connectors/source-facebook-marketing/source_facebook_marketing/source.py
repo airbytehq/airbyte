@@ -125,18 +125,17 @@ class SourceFacebookMarketing(AbstractSource):
                     stream.check_breakdowns(account_id=account_id)
 
         except facebook_business.exceptions.FacebookRequestError as e:
-            msg = e._api_error_message or ""
-            if "Invalid OAuth access token" in msg or "Error validating access token" in msg:
+            return False, e._api_error_message
+
+        except AirbyteTracedException as e:
+            if e.internal_message and "Invalid OAuth access token - Cannot parse access token" in e.internal_message:
                 return False, (
-                    f"{msg}. "
+                    f"{e.message}. "
                     "The access token may have been corrupted by browser autofill. "
                     "Please re-authenticate your Facebook connection by clicking 'Authenticate your account' and saving the configuration. "
                     "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating "
                     "for details. If the issue persists after re-authenticating, contact Airbyte Support."
                 )
-            return False, msg
-
-        except AirbyteTracedException as e:
             return False, f"{e.message}. Full error: {e.internal_message}"
 
         except Exception as e:
