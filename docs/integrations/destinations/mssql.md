@@ -178,6 +178,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.2.18 | 2026-06-09 | [79602](https://github.com/airbytehq/airbyte/pull/79602) | fix(destination-mssql): make Azure SQL DB bulk load work — schema-qualified staging tables, always serialize booleans as 0/1, and emit numbers in plain (non-scientific) notation |
 | 2.2.17 | 2026-06-08 | [79154](https://github.com/airbytehq/airbyte/pull/79154) | Nullify timestamp-without-timezone values before 1753-01-01 instead of failing the sync |
 | 2.2.16 | 2026-04-23 | [76946](https://github.com/airbytehq/airbyte/pull/76946) | Upgrade Bulk CDK to 1.0.11 and fix `_ab_cdc_deleted_at` column type so the secondary index on CDC streams can be created. |
 | 2.2.15 | 2026-01-26 | [72297](https://github.com/airbytehq/airbyte/pull/72297) | Upgrade CDK to 0.2.0 |
