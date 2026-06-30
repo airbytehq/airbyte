@@ -24,7 +24,7 @@ Before you begin, make sure you have the following:
 - **Credentials for the connectors you want to use.** Each service requires its own authentication. For example, you need a Linear API key to connect Linear, or Salesforce OAuth credentials to connect Salesforce.
 
 :::note Multiple organizations not supported
-The Agent MCP does not support accounts that belong to more than one organization. If your account is associated with multiple organizations, use the [SDK](../sdk), [CLI](../cli), or [API](../api) instead.
+The Agent MCP doesn't support accounts that belong to more than one organization. If your account is associated with multiple organizations, use the [SDK](../sdk), [CLI](../cli), or [API](../api) instead.
 :::
 
 ## Add the Agent MCP to your agent
