@@ -1,5 +1,29 @@
 # Airbyte Agents release notes
 
+## June 26, 2026
+
+Web app
+
+- Fixed an issue where adding or removing workspace members could fail or behave incorrectly when editing multiple members at once.
+
+Connectors
+
+- Your agents can now create and update contacts, deals, companies, and tickets in HubSpot.
+- The Google Ads connector has been upgraded from API version 20 to version 23 for continued compatibility with Google's platform.
+- Fixed an issue where connector health checks could fail when your configuration included multiple values for fields like property IDs or account IDs.
+
+## June 25, 2026
+
+Web app
+
+- Your recent chats in the sidebar now show only conversations from your current workspace.
+- When you create or edit a workspace, the member picker now scrolls properly with long lists and options are sorted alphabetically. The workspace picker is also centered correctly on mobile devices.
+- New workspaces you create now default to private visibility. Minting API tokens for a workspace now requires workspace admin access.
+
+Connectors
+
+- The Facebook Marketing connector now uses Facebook Graph API v25.0 for improved compatibility.
+
 ## June 23, 2026
 
 Web app

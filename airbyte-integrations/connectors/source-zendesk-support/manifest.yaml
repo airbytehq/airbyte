@@ -1006,6 +1006,32 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  side_conversations_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/side_conversations"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "ticket_id"
+            stream:
+              $ref: "#/definitions/tickets_stream"
+            incremental_dependency: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/side_conversations"
+    $parameters:
+      name: "side_conversations"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
   ticket_fields_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -1366,6 +1392,7 @@ streams:
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
   - $ref: "#/definitions/ticket_comments_stream"
+  - $ref: "#/definitions/side_conversations_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/tickets_stream"
@@ -1922,6 +1949,94 @@ schemas:
           - "null"
           - string
         format: date-time
+  side_conversations:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: The unique identifier for the side conversation.
+        type:
+          - "null"
+          - string
+      ticket_id:
+        description: The ID of the parent ticket.
+        type:
+          - "null"
+          - integer
+      subject:
+        description: The subject of the side conversation.
+        type:
+          - "null"
+          - string
+      state:
+        description: The state of the side conversation (open, closed).
+        type:
+          - "null"
+          - string
+      participants:
+        description: The list of participants in the side conversation.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            user_id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+      created_at:
+        description: The time the side conversation was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        description: The time the side conversation was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      message_added_at:
+        description: The time the last message was added.
+        type:
+          - "null"
+          - string
+        format: date-time
+      state_updated_at:
+        description: The time the state was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      external_ids:
+        description: External IDs associated with the side conversation.
+        type:
+          - "null"
+          - object
+      preview_text:
+        description: A preview of the side conversation content.
+        type:
+          - "null"
+          - string
+      url:
+        description: The API URL of the side conversation.
+        type:
+          - "null"
+          - string
+
   satisfaction_ratings:
     $schema: https://json-schema.org/draft-07/schema#
     type:
