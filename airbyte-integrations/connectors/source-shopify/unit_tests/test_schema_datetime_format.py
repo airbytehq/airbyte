@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+
 SCHEMAS_DIR = Path(__file__).parent.parent / "source_shopify" / "schemas"
 
 
@@ -44,6 +45,4 @@ def test_datetime_fields_have_format_annotation(schema_file, field_path):
     fields = dict(_collect_fields_at_path(schema))
     assert field_path in fields, f"Field {field_path} not found in {schema_file}"
     field_def = fields[field_path]
-    assert field_def.get("format") == "date-time", (
-        f"{schema_file}: {field_path} is missing '\"format\": \"date-time\"'. Got: {field_def}"
-    )
+    assert field_def.get("format") == "date-time", f'{schema_file}: {field_path} is missing \'"format": "date-time"\'. Got: {field_def}'
