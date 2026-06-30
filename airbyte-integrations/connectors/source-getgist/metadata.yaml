@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bc670226-bee1-470c-a013-df05e5ac8f1a
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-getgist
   githubIssueLabel: source-getgist
   icon: icon.svg
