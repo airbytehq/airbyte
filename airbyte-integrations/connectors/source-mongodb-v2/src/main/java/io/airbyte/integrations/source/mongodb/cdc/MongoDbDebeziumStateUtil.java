@@ -14,7 +14,9 @@ import com.mongodb.client.MongoClient;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
@@ -119,7 +121,15 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
           + "Incremental sync will be performed for up-to-date streams.",
           ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return true;
-    } catch (final MongoCommandException | MongoChangeStreamException e) {
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(MongoConstants.MONGODB_CHANGESTREAM_UNAUTHORIZED_ERROR_MESSAGE, e);
+      }
+      LOGGER.info("Exception : {}", e.getMessage());
+      LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
+      return false;
+    } catch (final MongoChangeStreamException e) {
       LOGGER.info("Exception : {}", e.getMessage());
       LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
           ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
