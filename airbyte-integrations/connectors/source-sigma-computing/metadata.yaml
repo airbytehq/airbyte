@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 40fed53b-3a55-4ce3-a25f-93af5b5379b0
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-sigma-computing
   githubIssueLabel: source-sigma-computing
   icon: icon.svg
