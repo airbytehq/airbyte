@@ -443,6 +443,24 @@ Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_
 - The `1d_view` attribution window remains supported and continues returning data where applicable.
 - Click-through attribution windows (`1d_click`, `7d_click`, `28d_click`) are not affected by this change.
 
+### Connection check fails with "Invalid access token" after re-authenticating
+
+If your connection check fails with an "Invalid access token" or "Error validating access token" error shortly after you re-authenticated through the OAuth flow, your saved token may have been corrupted by Chrome's autofill feature.
+
+#### What happened
+
+Chrome can detect two adjacent form fields — the Ad Account ID (text) followed by the Access Token (password) — as a login form and silently inject saved browser credentials into them. When the connector configuration is saved with this autofilled value, an internal migration overwrites the valid OAuth token with the autofilled value, causing all subsequent syncs and connection checks to fail.
+
+This issue was fixed in connector version 6.0.2 ([airbytehq/airbyte#81331](https://github.com/airbytehq/airbyte/pull/81331)). If you are on an older version, upgrade to 6.0.2 or later to prevent recurrence.
+
+#### How to fix it
+
+1. Open your Facebook Marketing source configuration in Airbyte.
+2. Click **Authenticate your account** (or **Re-authenticate**) to go through the OAuth flow again. This generates a fresh, valid access token.
+3. Click **Save** and then run **Test Connection** to confirm the new token works.
+
+If the connection check still fails after re-authenticating, [contact Airbyte Support](https://docs.airbyte.com/community/getting-support) for further assistance.
+
 ### Missing purchases or purchase value metrics
 
 You may notice that Purchases or purchase value fields in the Ads Insights stream appear incomplete or under-reported for certain date ranges. This issue has been observed across multiple platforms, including direct Facebook API calls. It's not specific to Airbyte, but linked to intermittent upstream API behavior.
