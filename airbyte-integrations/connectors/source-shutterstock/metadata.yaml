@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 998c12c8-09f9-4f57-9411-4efc498b7858
-  dockerImageTag: 0.0.38
+  dockerImageTag: 0.0.39
   dockerRepository: airbyte/source-shutterstock
   githubIssueLabel: source-shutterstock
   icon: icon.svg
