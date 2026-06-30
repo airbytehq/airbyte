@@ -74,6 +74,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.46 | 2026-06-30 | [78737](https://github.com/airbytehq/airbyte/pull/78737) | Update dependencies |
 | 0.2.45 | 2025-07-07 | [62526](https://github.com/airbytehq/airbyte/pull/62526) | Add `group` and `email` fields to `group_members` stream |
 | 0.2.44 | 2025-05-17 | [60641](https://github.com/airbytehq/airbyte/pull/60641) | Update dependencies |
 | 0.2.43 | 2025-05-10 | [59799](https://github.com/airbytehq/airbyte/pull/59799) | Update dependencies |
