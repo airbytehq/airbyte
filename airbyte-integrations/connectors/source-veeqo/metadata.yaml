@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ae647c65-da81-4ae5-958a-86490ce53a5e
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-veeqo
   githubIssueLabel: source-veeqo
   icon: icon.svg
