@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -41,6 +42,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatus
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -303,6 +305,24 @@ class MongoDbCdcInitializerTest {
     assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
+  }
+
+  @Test
+  void testCreateCdcIteratorsChangeStreamUnauthorizedFailure() {
+    setupSingleDatabase();
+    final MongoCommandException exception = mock(MongoCommandException.class);
+    when(exception.getErrorCode()).thenReturn(MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE);
+    when(exception.getMessage()).thenReturn("Command failed with error 13 (Unauthorized)");
+    when(changeStreamIterable.cursor()).thenThrow(exception);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+    final ConfigErrorException configErrorException = assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager,
+            EMITTED_AT,
+            SINGLE_DB_CONFIG));
+
+    assertEquals(MongoConstants.CHANGE_STREAM_PERMISSION_ERROR_MESSAGE, configErrorException.getDisplayMessage());
+    assertEquals(exception.toString(), configErrorException.getInternalMessage());
   }
 
   @Test
