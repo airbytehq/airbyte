@@ -10,7 +10,7 @@ dependencies {
 
     testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
     testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
-    testFixturesImplementation platform('org.testcontainers:testcontainers-bom:1.20.2')
+    testFixturesImplementation platform('org.testcontainers:testcontainers-bom:1.21.4')
     testFixturesImplementation 'com.alibaba:dns-cache-manipulator:1.8.3' // required for testing with mongo
     testImplementation 'io.debezium:debezium-connector-mysql'
     testImplementation 'io.debezium:debezium-connector-postgres'
