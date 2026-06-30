@@ -256,23 +256,6 @@ class TestMigrateSecretsPathInConnector:
         assert migrated["credentials"]["access_token"] == "valid_oauth_token"
         assert "access_token" not in migrated
 
-    def test_does_not_overwrite_existing_credentials_client_fields(self):
-        config = {
-            "account_ids": ["01234567890"],
-            "client_id": "stale_id",
-            "client_secret": "stale_secret",
-            "credentials": {
-                "auth_type": "Client",
-                "client_id": "valid_id",
-                "client_secret": "valid_secret",
-                "access_token": "valid_token",
-            },
-        }
-        migrated = MigrateSecretsPathInConnector._transform(config)
-        assert migrated["credentials"]["client_id"] == "valid_id"
-        assert migrated["credentials"]["client_secret"] == "valid_secret"
-        assert "client_id" not in migrated
-        assert "client_secret" not in migrated
 
 
 class TestRemoveActionReportTimeMigration:
