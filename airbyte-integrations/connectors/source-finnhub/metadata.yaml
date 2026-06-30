@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ec96d68b-e32c-4f0a-ba28-0b01f176a3bb
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-finnhub
   githubIssueLabel: source-finnhub
   icon: icon.svg
