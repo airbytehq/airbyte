@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f3a62a08-635e-4e54-93c8-fc6c7b13ff68
-  dockerImageTag: 0.0.39
+  dockerImageTag: 0.0.40
   dockerRepository: airbyte/source-partnerize
   githubIssueLabel: source-partnerize
   icon: icon.svg
