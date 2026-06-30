@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: daa0fe89-6e72-479e-a314-5e65cfc7103c
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-leadfeeder
   githubIssueLabel: source-leadfeeder
   icon: icon.svg
