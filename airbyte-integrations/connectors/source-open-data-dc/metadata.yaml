@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1178ad64-72bb-4326-86fb-b623663842b6
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-open-data-dc
   githubIssueLabel: source-open-data-dc
   icon: icon.svg
