@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3f1aa18a-a111-4e3b-8cac-9b79a091cc13
-  dockerImageTag: 0.0.10
+  dockerImageTag: 0.0.11
   dockerRepository: airbyte/source-feishu
   githubIssueLabel: source-feishu
   icon: icon.svg
