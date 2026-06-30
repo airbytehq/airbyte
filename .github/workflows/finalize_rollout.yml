@@ -174,7 +174,7 @@ jobs:
           --outcome aborted
           --version "${VERSION}"
 
-      - name: "Recompile registry for connector"
+      - name: "Recompile registry for ${{ env.CONNECTOR_NAME }} v${{ steps.resolve-version.outputs.version }}"
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
