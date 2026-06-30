@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
+import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
@@ -50,11 +51,10 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-abstract class MSSQLWriterTest(
+abstract class MSSQLAcceptanceTest(
     configPath: Path,
     configUpdater: ConfigurationUpdater,
     dataDumper: DestinationDataDumper,
@@ -320,38 +320,44 @@ object MSSQLDataCleaner : DestinationCleaner {
     }
 }
 
-// Re-enable once we fix our Azure account
-@Disabled("Our Azure creds are not functioning right now")
-internal class StandardInsert :
-    MSSQLWriterTest(
-        configPath = MSSQLTestConfigUtil.getConfigPath("check/valid.json"),
-        configUpdater = MSSQLConfigUpdater(),
+internal class StandardInsertMSSQLAcceptanceTest :
+    MSSQLAcceptanceTest(
+        configPath = Path.of(CONFIG_FILE),
+        configUpdater = InsertConfigUpdater,
         dataDumper =
             MSSQLDataDumper { spec ->
-                val configOverrides = buildOverridesForTestContainer()
-                MSSQLConfigurationFactory().makeWithOverrides(spec, configOverrides)
+                MSSQLConfigurationFactory().makeWithOverrides(spec, emptyMap())
             },
         dataCleaner = MSSQLDataCleaner,
     ) {
 
     companion object {
-        @JvmStatic
-        @BeforeAll
-        fun beforeAll() {
-            MSSQLContainerHelper.start()
-        }
-
-        /** Builds a map of overrides for the test container environment. */
-        private fun buildOverridesForTestContainer(): MutableMap<String, String> {
-            return mutableMapOf("host" to MSSQLContainerHelper.getHost()).apply {
-                MSSQLContainerHelper.getPort()?.let { port -> put("port", port.toString()) }
-            }
-        }
+        const val CONFIG_FILE = "secrets/azure_bulk_config.json"
     }
 }
 
-internal class BulkInsert :
-    MSSQLWriterTest(
+/**
+ * Rewrites the config JSON so that `load_type` is set to INSERT instead of BULK, allowing the same
+ * Azure SQL DB credentials to be reused for the standard INSERT code-path tests.
+ */
+object InsertConfigUpdater : ConfigurationUpdater {
+    override fun update(config: String): String {
+        val node = Jsons.deserialize(config) as com.fasterxml.jackson.databind.node.ObjectNode
+        node.set<com.fasterxml.jackson.databind.node.ObjectNode>(
+            "load_type",
+            Jsons.jsonNode(mapOf("load_type" to "INSERT")),
+        )
+        return Jsons.serialize(node)
+    }
+
+    override fun setDefaultNamespace(
+        config: String,
+        defaultNamespace: String
+    ): DefaultNamespaceResult = DefaultNamespaceResult(config, null)
+}
+
+internal class BulkInsertMSSQLAcceptanceTest :
+    MSSQLAcceptanceTest(
         configPath = Path.of(CONFIG_FILE),
         configUpdater = FakeConfigurationUpdater,
         dataDumper =
