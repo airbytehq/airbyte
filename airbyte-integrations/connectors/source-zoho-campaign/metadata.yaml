@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1d0d5605-604b-401a-8a69-92f841a95a90
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-zoho-campaign
   githubIssueLabel: source-zoho-campaign
   icon: icon.svg
