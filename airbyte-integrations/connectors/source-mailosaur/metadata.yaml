@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 251ed5c8-a927-4fb4-ad45-75393d564f3c
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-mailosaur
   githubIssueLabel: source-mailosaur
   icon: icon.svg
