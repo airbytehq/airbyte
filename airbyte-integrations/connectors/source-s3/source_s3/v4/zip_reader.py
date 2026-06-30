@@ -16,6 +16,10 @@ BUFFER_SIZE_DEFAULT = 1024 * 1024
 MAX_BUFFER_SIZE_DEFAULT: int = 16 * BUFFER_SIZE_DEFAULT
 
 
+class InvalidZipFileError(Exception):
+    """Raised when a file with a .zip extension is not a valid ZIP archive."""
+
+
 class RemoteFileInsideArchive(RemoteFile):
     """
     A file inside archive in a file-based stream.
@@ -116,6 +120,8 @@ class ZipFileHandler:
         :return: The starting position of the central directory.
         """
         eocd_data = self._find_signature(filename, self.EOCD_SIGNATURE)
+        if eocd_data is None:
+            raise InvalidZipFileError(f"File '{filename}' is not a valid ZIP archive: End of Central Directory signature not found.")
         central_dir_start = struct.unpack_from("<L", eocd_data, self.EOCD_CENTRAL_DIR_START_OFFSET)[0]
 
         # Check for ZIP64 format and adjust offsets if necessary

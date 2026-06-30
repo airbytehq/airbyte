@@ -7,7 +7,7 @@ import zipfile
 from unittest.mock import MagicMock, patch
 
 import pytest
-from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+from source_s3.v4.zip_reader import DecompressedStream, InvalidZipFileError, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
 # Mocking the S3 client and config for testing
@@ -45,6 +45,12 @@ def test_get_central_directory_start(zip_file_handler):
     zip_file_handler._find_signature = MagicMock(return_value=b"\x00" * 16 + struct.pack("<L", 12345))
     zip_file_handler._find_signature.return_value = b"\x00" * 16 + struct.pack("<L", 12345)
     assert zip_file_handler._get_central_directory_start("test_file") == 12345
+
+
+def test_get_central_directory_start_raises_on_invalid_zip(zip_file_handler):
+    zip_file_handler._find_signature = MagicMock(return_value=None)
+    with pytest.raises(InvalidZipFileError, match="not a valid ZIP archive"):
+        zip_file_handler._get_central_directory_start("not_a_zip.zip")
 
 
 def test_get_zip_files(zip_file_handler):

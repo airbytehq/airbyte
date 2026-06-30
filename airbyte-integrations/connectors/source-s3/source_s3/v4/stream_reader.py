@@ -29,7 +29,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
-from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+from source_s3.v4.zip_reader import DecompressedStream, InvalidZipFileError, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
@@ -321,7 +321,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                     if self._is_folder(file):
                         continue
 
-                    for remote_file in self._handle_file(file):
+                    for remote_file in self._handle_file(file, logger):
                         if (
                             self.file_matches_globs(remote_file, globs)
                             and self.is_modified_after_start_date(remote_file.last_modified)
@@ -344,15 +344,19 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             return True
         return last_modified_date >= pendulum.parse(self.config.start_date).naive()
 
-    def _handle_file(self, file):
+    def _handle_file(self, file, logger: logging.Logger):
         if file["Key"].endswith(".zip"):
-            yield from self._handle_zip_file(file)
+            yield from self._handle_zip_file(file, logger)
         else:
             yield self._handle_regular_file(file)
 
-    def _handle_zip_file(self, file):
+    def _handle_zip_file(self, file, logger: logging.Logger):
         zip_handler = ZipFileHandler(self.s3_client, self.config)
-        zip_members, cd_start = zip_handler.get_zip_files(file["Key"])
+        try:
+            zip_members, cd_start = zip_handler.get_zip_files(file["Key"])
+        except InvalidZipFileError:
+            logger.warning(f"Skipping file '{file['Key']}': not a valid ZIP archive despite having a .zip extension.")
+            return
 
         for zip_member in zip_members:
             remote_file = RemoteFileInsideArchive(
