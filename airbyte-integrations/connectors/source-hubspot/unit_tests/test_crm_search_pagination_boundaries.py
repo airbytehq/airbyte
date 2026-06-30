@@ -552,12 +552,14 @@ def test_pr79666_fix_simulation_gt_string_preserves_order():
 def test_pr79666_fix_no_duplicate_at_boundary():
     """GT operator ensures the boundary record is not re-fetched (no duplicate)."""
     last_id = "25000"
+    candidate_id = "25000"
 
     # GT "25000" excludes "25000" itself
-    assert not ("25000" > "25000")
+    assert not (candidate_id > last_id)
 
     # GTE int("25000")+1 = GTE "25001" also excludes "25000"
-    assert not ("25000" >= "25001")
+    next_boundary = str(int(last_id) + 1)
+    assert not (candidate_id >= next_boundary)
 
     # Both approaches avoid duplicating the boundary record for simple numeric IDs
 
