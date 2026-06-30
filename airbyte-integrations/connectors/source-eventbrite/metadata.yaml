@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6748b22d-3d27-4907-b8c0-04f6c8ef71b8
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-eventbrite
   githubIssueLabel: source-eventbrite
   icon: icon.svg
