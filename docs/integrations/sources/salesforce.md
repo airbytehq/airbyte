@@ -189,6 +189,10 @@ To sync security-related data from Salesforce, the authenticated Salesforce user
 
 For more information about Salesforce security and permissions, refer to the official Salesforce documentation on [User Permissions](https://help.salesforce.com/s/articleView?id=sf.admin_userperms.htm&type=5) and [Permission Sets](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -273,10 +277,6 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 
 </details>
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
@@ -284,6 +284,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.24 | 2026-06-23 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Upgrade CDK to fix silent conversion of 'NA'-like string values to None in Bulk API CSV parsing |
 | 2.7.23 | 2026-05-20 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
 | 2.7.22 | 2026-04-28 | [76978](https://github.com/airbytehq/airbyte/pull/76978) | Bump airbyte-cdk to ^7.17.4 |
 | 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |
