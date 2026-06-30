@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class ValueCoercerTest {
+class MSSQLValueCoercerTest {
 
     // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,7 +75,7 @@ class ValueCoercerTest {
         @Test
         fun `passes through value within DATETIME range`() {
             val value = makeTimestampValue(LocalDateTime.of(2023, 6, 15, 12, 34, 56))
-            val result = ValueCohercer.validateTimestamp(value)
+            val result = MSSQLValueCoercer.validateTimestamp(value)
             assertNotNull(result)
             assertEquals(LocalDateTime.of(2023, 6, 15, 12, 34, 56), result)
             assertTrue(value.abValue is TimestampWithoutTimezoneValue)
@@ -84,7 +84,7 @@ class ValueCoercerTest {
         @Test
         fun `passes through value at exact lower boundary`() {
             val value = makeTimestampValue(LocalDateTime.of(1753, 1, 1, 0, 0, 0))
-            val result = ValueCohercer.validateTimestamp(value)
+            val result = MSSQLValueCoercer.validateTimestamp(value)
             assertNotNull(result)
             assertEquals(LocalDateTime.of(1753, 1, 1, 0, 0, 0), result)
             assertTrue(value.abValue is TimestampWithoutTimezoneValue)
@@ -93,7 +93,7 @@ class ValueCoercerTest {
         @Test
         fun `nullifies value below DATETIME lower boundary`() {
             val value = makeTimestampValue(LocalDateTime.of(1752, 12, 31, 23, 59, 59))
-            val result = ValueCohercer.validateTimestamp(value)
+            val result = MSSQLValueCoercer.validateTimestamp(value)
             assertNull(result)
             assertTrue(value.abValue is NullValue)
             assertEquals(1, value.changes.size)
@@ -102,7 +102,7 @@ class ValueCoercerTest {
         @Test
         fun `nullifies pre-1753 date`() {
             val value = makeTimestampValue(LocalDateTime.of(1, 1, 1, 0, 0, 0))
-            val result = ValueCohercer.validateTimestamp(value)
+            val result = MSSQLValueCoercer.validateTimestamp(value)
             assertNull(result)
             assertTrue(value.abValue is NullValue)
             assertEquals(1, value.changes.size)
@@ -117,7 +117,7 @@ class ValueCoercerTest {
         @Test
         fun `passes through value within BIGINT range`() {
             val value = makeIntegerValue(BigInteger("42"))
-            val result = ValueCohercer.validateInteger(value)
+            val result = MSSQLValueCoercer.validateInteger(value)
             assertNotNull(result)
             assertEquals(BigInteger("42"), result)
             assertTrue(value.abValue is IntegerValue)
@@ -125,24 +125,24 @@ class ValueCoercerTest {
 
         @Test
         fun `passes through MAX_BIGINT`() {
-            val value = makeIntegerValue(ValueCohercer.MAX_BIGINT)
-            val result = ValueCohercer.validateInteger(value)
+            val value = makeIntegerValue(MSSQLValueCoercer.MAX_BIGINT)
+            val result = MSSQLValueCoercer.validateInteger(value)
             assertNotNull(result)
-            assertEquals(ValueCohercer.MAX_BIGINT, result)
+            assertEquals(MSSQLValueCoercer.MAX_BIGINT, result)
         }
 
         @Test
         fun `passes through MIN_BIGINT`() {
-            val value = makeIntegerValue(ValueCohercer.MIN_BIGINT)
-            val result = ValueCohercer.validateInteger(value)
+            val value = makeIntegerValue(MSSQLValueCoercer.MIN_BIGINT)
+            val result = MSSQLValueCoercer.validateInteger(value)
             assertNotNull(result)
-            assertEquals(ValueCohercer.MIN_BIGINT, result)
+            assertEquals(MSSQLValueCoercer.MIN_BIGINT, result)
         }
 
         @Test
         fun `nullifies value above MAX_BIGINT`() {
-            val value = makeIntegerValue(ValueCohercer.MAX_BIGINT + BigInteger.ONE)
-            val result = ValueCohercer.validateInteger(value)
+            val value = makeIntegerValue(MSSQLValueCoercer.MAX_BIGINT + BigInteger.ONE)
+            val result = MSSQLValueCoercer.validateInteger(value)
             assertNull(result)
             assertTrue(value.abValue is NullValue)
             assertEquals(1, value.changes.size)
@@ -150,8 +150,8 @@ class ValueCoercerTest {
 
         @Test
         fun `nullifies value below MIN_BIGINT`() {
-            val value = makeIntegerValue(ValueCohercer.MIN_BIGINT - BigInteger.ONE)
-            val result = ValueCohercer.validateInteger(value)
+            val value = makeIntegerValue(MSSQLValueCoercer.MIN_BIGINT - BigInteger.ONE)
+            val result = MSSQLValueCoercer.validateInteger(value)
             assertNull(result)
             assertTrue(value.abValue is NullValue)
             assertEquals(1, value.changes.size)
@@ -166,15 +166,15 @@ class ValueCoercerTest {
         @Test
         fun `passes through value within DECIMAL range`() {
             val value = makeNumberValue(BigDecimal("123.456"))
-            val result = ValueCohercer.validateNumber(value)
+            val result = MSSQLValueCoercer.validateNumber(value)
             assertNotNull(result)
             assertEquals(BigDecimal("123.456"), result)
         }
 
         @Test
         fun `nullifies value above MAX_NUMERIC`() {
-            val value = makeNumberValue(ValueCohercer.MAX_NUMERIC + BigDecimal.ONE)
-            val result = ValueCohercer.validateNumber(value)
+            val value = makeNumberValue(MSSQLValueCoercer.MAX_NUMERIC + BigDecimal.ONE)
+            val result = MSSQLValueCoercer.validateNumber(value)
             assertNull(result)
             assertTrue(value.abValue is NullValue)
             assertEquals(1, value.changes.size)
@@ -182,8 +182,8 @@ class ValueCoercerTest {
 
         @Test
         fun `nullifies value below MIN_NUMERIC`() {
-            val value = makeNumberValue(ValueCohercer.MIN_NUMERIC - BigDecimal.ONE)
-            val result = ValueCohercer.validateNumber(value)
+            val value = makeNumberValue(MSSQLValueCoercer.MIN_NUMERIC - BigDecimal.ONE)
+            val result = MSSQLValueCoercer.validateNumber(value)
             assertNull(result)
             assertTrue(value.abValue is NullValue)
             assertEquals(1, value.changes.size)
@@ -204,35 +204,35 @@ class ValueCoercerTest {
                     name = "n",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertTrue(value.abValue is NullValue)
         }
 
         @Test
         fun `does not modify valid integers`() {
             val value = makeIntegerValue(BigInteger("100"))
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertEquals(IntegerValue(BigInteger("100")), value.abValue)
         }
 
         @Test
         fun `nullifies out-of-range integers`() {
-            val value = makeIntegerValue(ValueCohercer.MAX_BIGINT + BigInteger.ONE)
-            ValueCohercer.coerce(value)
+            val value = makeIntegerValue(MSSQLValueCoercer.MAX_BIGINT + BigInteger.ONE)
+            MSSQLValueCoercer.coerce(value)
             assertTrue(value.abValue is NullValue)
         }
 
         @Test
         fun `does not modify valid numbers`() {
             val value = makeNumberValue(BigDecimal("3.14"))
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertEquals(NumberValue(BigDecimal("3.14")), value.abValue)
         }
 
         @Test
         fun `nullifies out-of-range numbers`() {
-            val value = makeNumberValue(ValueCohercer.MAX_NUMERIC + BigDecimal.ONE)
-            ValueCohercer.coerce(value)
+            val value = makeNumberValue(MSSQLValueCoercer.MAX_NUMERIC + BigDecimal.ONE)
+            MSSQLValueCoercer.coerce(value)
             assertTrue(value.abValue is NullValue)
         }
 
@@ -240,14 +240,14 @@ class ValueCoercerTest {
         fun `validates but does not modify valid timestamps without timezone`() {
             val ts = LocalDateTime.of(2023, 6, 15, 12, 0, 0)
             val value = makeTimestampValue(ts)
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertEquals(TimestampWithoutTimezoneValue(ts), value.abValue)
         }
 
         @Test
         fun `nullifies pre-1753 timestamps without timezone`() {
             val value = makeTimestampValue(LocalDateTime.of(1, 1, 1, 0, 0, 0))
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertTrue(value.abValue is NullValue)
         }
 
@@ -261,7 +261,7 @@ class ValueCoercerTest {
                     name = "obj_field",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertTrue(value.abValue is StringValue)
         }
 
@@ -275,7 +275,7 @@ class ValueCoercerTest {
                     name = "arr_field",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertTrue(value.abValue is StringValue)
         }
 
@@ -288,7 +288,7 @@ class ValueCoercerTest {
                     name = "unk_field",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertTrue(value.abValue is StringValue)
         }
 
@@ -301,7 +301,7 @@ class ValueCoercerTest {
                     name = "flag",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertEquals(BooleanValue(true), value.abValue)
         }
 
@@ -314,7 +314,7 @@ class ValueCoercerTest {
                     name = "dt",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertEquals(DateValue("2023-06-15"), value.abValue)
         }
 
@@ -327,7 +327,7 @@ class ValueCoercerTest {
                     name = "s",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertEquals(StringValue("hello"), value.abValue)
         }
 
@@ -341,7 +341,7 @@ class ValueCoercerTest {
                     name = "ts_tz",
                     airbyteMetaField = null,
                 )
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             assertEquals(TimestampWithTimezoneValue(ts), value.abValue)
         }
     }

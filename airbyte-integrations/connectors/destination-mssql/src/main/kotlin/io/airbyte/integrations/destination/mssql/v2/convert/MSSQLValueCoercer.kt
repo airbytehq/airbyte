@@ -30,7 +30,7 @@ import java.time.LocalDateTime
  * Centralises MSSQL-specific value coercion and validation that is shared across both the INSERT
  * (PreparedStatement) and BULK LOAD (CSV) data paths.
  */
-object ValueCohercer {
+object MSSQLValueCoercer {
 
     // Maximum value for BIGINT in SQL Server
     val MAX_BIGINT: BigInteger = BigInteger("9223372036854775807")

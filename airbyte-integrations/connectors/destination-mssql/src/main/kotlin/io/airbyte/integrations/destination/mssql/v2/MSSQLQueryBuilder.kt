@@ -50,9 +50,9 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
+import io.airbyte.integrations.destination.mssql.v2.convert.MSSQLValueCoercer
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.integrations.destination.mssql.v2.convert.ValueCohercer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Date
@@ -372,7 +372,7 @@ class MSSQLQueryBuilder(
             }
 
             // Apply shared MSSQL coercion: range validation + complex-type serialisation
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             if (value.abValue is NullValue) {
                 statement.setAsNullValue(statementIndex, field.type.type)
                 return@forEachIndexed
@@ -417,7 +417,7 @@ class MSSQLQueryBuilder(
                         (value.abValue as TimestampWithoutTimezoneValue).value
                     )
 
-                // Complex types already serialised to StringValue by ValueCohercer.coerce()
+                // Complex types already serialised to StringValue by MSSQLValueCoercer.coerce()
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is ObjectType,

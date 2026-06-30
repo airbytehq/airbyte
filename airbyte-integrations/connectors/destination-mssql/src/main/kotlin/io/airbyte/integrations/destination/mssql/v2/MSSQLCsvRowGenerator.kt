@@ -16,7 +16,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.integrations.destination.mssql.v2.convert.ValueCohercer
+import io.airbyte.integrations.destination.mssql.v2.convert.MSSQLValueCoercer
 import java.time.format.DateTimeFormatter
 
 /** Convenience constants for CSV boolean representation (MSSQL BIT expects 0 / 1). */
@@ -30,7 +30,7 @@ class MSSQLCsvRowGenerator {
         val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
 
         enrichedRecord.declaredFields.values.forEach { value ->
-            ValueCohercer.coerce(value)
+            MSSQLValueCoercer.coerce(value)
             if (value.abValue is NullValue) return@forEach
 
             // CSV-specific coercions
