@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fa6c7629-0556-4b29-9f2c-7f6f4e54e997
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-bugsnag
   githubIssueLabel: source-bugsnag
   icon: icon.svg
