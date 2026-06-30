@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b74b0cfc-dd2c-4fdd-9bb0-ffc9efe04c36
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-easypost
   githubIssueLabel: source-easypost
   icon: icon.svg
