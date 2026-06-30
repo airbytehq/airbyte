@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cd8313fe-05cb-4439-aed5-26a2adc4856c
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-codefresh
   githubIssueLabel: source-codefresh
   icon: icon.svg
