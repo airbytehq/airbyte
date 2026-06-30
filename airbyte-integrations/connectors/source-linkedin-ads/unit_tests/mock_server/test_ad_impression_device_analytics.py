@@ -67,13 +67,13 @@ def _create_analytics_record(
             "start": {"year": 2024, "month": 6, "day": 1},
             "end": {"year": 2024, "month": 6, "day": 1},
         },
-        "pivotValues": [f"urn:li:sponsoredCampaign:{campaign_id}"],
+        "pivotValues": [f"urn:li:sponsoredCampaign:{campaign_id}", "CONNECTED_TV"],
         "impressions": impressions,
         "clicks": clicks,
         "costInLocalCurrency": "10.00",
         "costInUsd": "10.00",
         "end_date": end_date,
-        "string_of_pivot_values": f"urn:li:sponsoredCampaign:{campaign_id}",
+        "string_of_pivot_values": "CONNECTED_TV",
     }
 
 
@@ -123,7 +123,7 @@ class TestAdImpressionDeviceAnalyticsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 1
-        assert output.records[0].record.data["string_of_pivot_values"] == "urn:li:sponsoredCampaign:1001"
+        assert output.records[0].record.data["string_of_pivot_values"] == "CONNECTED_TV"
         assert output.records[0].record.stream == _STREAM_NAME
 
     @HttpMocker()

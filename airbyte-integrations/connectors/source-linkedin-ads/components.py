@@ -4,15 +4,22 @@
 
 
 import json
-from dataclasses import dataclass
+import logging
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlencode
 
+import dpath
 import requests
 from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import (
+    ParentStreamConfig,
+    SubstreamPartitionRouter,
+    iterate_with_last_flag,
+)
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -23,6 +30,7 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
+from airbyte_cdk.sources.types import Config, StreamSlice
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 
@@ -160,6 +168,87 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
                 error_message="source-linkedin-ads has faced a temporary DNS resolution issue. Retrying...",
             )
         return super().interpret_response(response_or_exception)
+
+
+@dataclass
+class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
+    """Partition router that batches parent campaign records for efficient LinkedIn adAnalytics API calls."""
+
+    parent_stream_configs: List[ParentStreamConfig] = field(default_factory=list)
+    config: Config = field(default_factory=dict)
+    parameters: InitVar[Mapping[str, Any]] = None
+    batch_size: Union[int, str] = 20
+    urn_prefix: str = "urn%3Ali%3AsponsoredCampaign%3A"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        if isinstance(self.batch_size, str):
+            self.batch_size = int(self.batch_size)
+        super().__post_init__(parameters)
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        """Yield stream slices with batched campaign URNs instead of one slice per campaign."""
+        if not self.parent_stream_configs:
+            yield from []
+            return
+
+        for parent_stream_config in self.parent_stream_configs:
+            parent_stream = parent_stream_config.stream
+            parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore[union-attr]
+            partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore[union-attr]
+
+            batch: List[str] = []
+            last_parent_partition: dict = {}
+
+            for partition, is_last_slice in iterate_with_last_flag(parent_stream.generate_partitions()):
+                if partition is None:
+                    break
+
+                for parent_record, is_last_record_in_slice in iterate_with_last_flag(partition.read()):
+                    should_add = parent_record is not None
+                    if parent_record is not None:
+                        parent_stream.cursor.observe(parent_record)
+                        last_parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
+                        record_data = parent_record.data
+
+                        try:
+                            partition_value = dpath.get(record_data, parent_field)
+                            batch.append(str(partition_value))
+                        except KeyError:
+                            should_add = False
+
+                    if is_last_record_in_slice:
+                        parent_stream.cursor.close_partition(partition)
+                        if is_last_slice:
+                            parent_stream.cursor.ensure_at_least_one_state_emitted()
+
+                    if should_add and len(batch) >= self.batch_size:
+                        yield self._create_batch_slice(batch, partition_field, last_parent_partition)
+                        batch = []
+
+            if batch:
+                yield self._create_batch_slice(batch, partition_field, last_parent_partition)
+
+            yield from []
+
+    def _create_batch_slice(
+        self,
+        batch: List[str],
+        partition_field: str,
+        parent_partition: Mapping[str, Any],
+    ) -> StreamSlice:
+        """Create a `StreamSlice` containing batched URL-encoded campaign URNs."""
+        urns = ",".join(f"{self.urn_prefix}{campaign_id}" for campaign_id in batch)
+        return StreamSlice(
+            partition={
+                partition_field: urns,
+                "parent_slice": parent_partition or {},
+            },
+            cursor_slice={},
+        )
+
+    @property
+    def logger(self) -> logging.Logger:
+        return logging.getLogger("airbyte.LinkedInAdsBatchedPartitionRouter")
 
 
 def transform_change_audit_stamps(
@@ -437,6 +526,14 @@ def transform_pivot_values(record: Dict) -> Mapping[str, Any]:
     return record
 
 
+def transform_campaign_statistics_pivot_values(record: Dict) -> Mapping[str, Any]:
+    pivot_values = record.get("pivotValues", [])
+    if len(pivot_values) > 1 and pivot_values[0].startswith("urn:li:sponsoredCampaign:"):
+        record["sponsoredCampaign"] = pivot_values[0].split(":")[-1]
+        record["pivotValues"] = pivot_values[1:]
+    return record
+
+
 def transform_data(records: List) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
@@ -456,6 +553,7 @@ def transform_data(records: List) -> Iterable[Mapping]:
             record = transform_variables(record)
 
         if "pivotValues" in record:
+            record = transform_campaign_statistics_pivot_values(record)
             record = transform_pivot_values(record)
 
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
