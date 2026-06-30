@@ -1651,6 +1651,17 @@ streams:
   - $ref: "#/definitions/streams/call_data_records"
   - $ref: "#/definitions/streams/searches"
 
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: "x-ratelimit-remaining-minute"
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1M
+      call_limit: 600
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_base: "https://api.salesloft.com"
+
 spec:
   type: Spec
   connection_specification:
