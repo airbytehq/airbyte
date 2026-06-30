@@ -130,12 +130,11 @@ class SourceFacebookMarketing(AbstractSource):
         except AirbyteTracedException as e:
             if e.internal_message and "Invalid OAuth access token - Cannot parse access token" in e.internal_message:
                 return False, (
-                    f"{e.message}. "
                     "The access token may have been corrupted by browser autofill. "
                     "Please re-authenticate your Facebook connection by clicking 'Authenticate your account' and saving the configuration. "
                     "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating "
                     "for details. If the issue persists after re-authenticating, contact Airbyte Support. "
-                    f"Full error: {e.internal_message}"
+                    f"Full error: {e.message}"
                 )
             return False, f"{e.message}. Full error: {e.internal_message}"
 
