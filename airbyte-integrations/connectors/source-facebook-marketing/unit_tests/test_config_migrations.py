@@ -241,6 +241,39 @@ class TestMigrateSecretsPathInConnector:
         migration_instance = MigrateSecretsPathInConnector()
         assert not migration_instance._should_migrate(new_config)
 
+    def test_does_not_overwrite_existing_credentials_access_token(self):
+        config = {
+            "account_ids": ["01234567890"],
+            "access_token": "stale_top_level_token",
+            "credentials": {
+                "auth_type": "Client",
+                "client_id": "id",
+                "client_secret": "secret",
+                "access_token": "valid_oauth_token",
+            },
+        }
+        migrated = MigrateSecretsPathInConnector._transform(config)
+        assert migrated["credentials"]["access_token"] == "valid_oauth_token"
+        assert "access_token" not in migrated
+
+    def test_does_not_overwrite_existing_credentials_client_fields(self):
+        config = {
+            "account_ids": ["01234567890"],
+            "client_id": "stale_id",
+            "client_secret": "stale_secret",
+            "credentials": {
+                "auth_type": "Client",
+                "client_id": "valid_id",
+                "client_secret": "valid_secret",
+                "access_token": "valid_token",
+            },
+        }
+        migrated = MigrateSecretsPathInConnector._transform(config)
+        assert migrated["credentials"]["client_id"] == "valid_id"
+        assert migrated["credentials"]["client_secret"] == "valid_secret"
+        assert "client_id" not in migrated
+        assert "client_secret" not in migrated
+
 
 class TestRemoveActionReportTimeMigration:
     OLD_TEST_CONFIG = _config_path(f"{_REMOVE_ACTION_REPORT_TIME_CONFIGS_PATH}/test_old_config.json")
