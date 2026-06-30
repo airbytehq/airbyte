@@ -1,61 +1,140 @@
-# Workloads & Jobs
+# Workloads & jobs
 
-In Airbyte, all connector operations are run as 'workloads' — a pod encapsulating the discrete invocation of one or more connectors' interface method(s) (READ, WRITE, CHECK, DISCOVER, SPEC). 
+In Airbyte, all connector operations run as 'workloads', a pod encapsulating the discrete invocation of one or more connectors' interface methods: `READ`, `WRITE`, `CHECK`, `DISCOVER`, and `SPEC`.
 
 Generally, there are 2 types of workload pods:
 
-- Replication (SYNC) pods
-  - Calls READ on the source and WRITE on the destination docker images
-- Connector Job (CHECK, DISCOVER, SPEC) pods
-  - Calls the specified interface method on the connector image
+- Replication (`SYNC`) pods: call `READ` on the source and `WRITE` on the destination docker images
 
-|    ![](/.gitbook/assets/replication_mono_pod.png)     |                              ![](/.gitbook/assets/connector_pod.png)                               |
-|:-------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
-| <em>The source, destination and orchestrator all run in a single pod</em> | <em>The sidecar processes the output of the connector and forwards it back to the core platform</em> |
+- Connector Job (`CHECK`, `DISCOVER`, `SPEC`) pods: call the specified interface method on the connector image
 
-## Airbyte Middleware and Bookkeeping Containers
+## Airbyte middleware and bookkeeping containers
 
-Inside any connector operation pod, a special airbyte controlled container will run alongside the connector container(s) to process and interpret the results as well as perform necessary side effects.
+Inside any connector operation pod, a special Airbyte-controlled container runs alongside the connector container to process and interpret results and perform necessary side effects. Two types of middleware containers exist.
 
-There are two types of middleware containers:
-* The Container Orchestrator
-* The Connector Sidecar
+- The container orchestrator (legacy mode) **or** the bookkeeper (socket mode)
 
-#### Container Orchestrator
+- The connector sidecar (for CHECK, DISCOVER, SPEC operations)
 
-An airbyte controlled container that sits between the source and destination connector containers inside a Replication Pod.
+### Replication architecture modes
 
-Responsibilities:
-* Hosts middleware capabilities such as scrubbing PPI, aggregating stats, transforming data, and checkpointing progress.
-* Interprets and records connector operation results
-* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
+Airbyte supports two architecture modes for replication (sync) jobs, with the platform automatically selecting the optimal mode based on connector capabilities and connection configuration.
 
-#### Connector Sidecar
+#### Socket mode with Bookkeeper
 
-An airbyte controlled container that reads the output of a connector container inside a Connector Pod (CHECK, DISCOVER, SPEC).
+Socket mode is Airbyte's high-performance architecture that enables 4-10x faster data movement compared to legacy mode. In this mode, data flows directly from source to destination via Unix domain sockets, while control messages like logs, state, and statistics flow through the Bookkeeper via standard I/O.
 
-Responsibilities:
-* Interprets and records connector operation results
-* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
+```mermaid
+---
+title: Socket Mode
+---
+flowchart LR
+    direction LR
+    SRC2[Source] -.->|control| BK[Bookkeeper]
+    SRC2 ==>|records via sockets| DEST2[Destination]
+    DEST2 -.->|state| BK[Bookkeeper]
+```
 
+Bookkeeper has the following responsibilities:
+
+- Processes control messages from source and destination via STDIO
+- Persists state messages and statistics
+- Handles heartbeating and job lifecycle management
+- Lightweight resource footprint (1 CPU, 1024Mi memory)
+
+Socket mode introduces the following performance benefits.
+
+- **Parallel Processing**: Multiple Unix domain sockets enable concurrent data streams
+- **Binary Serialization**: Protocol Buffers provide efficient data encoding and strong type safety
+- **Lower Latency**: Eliminates STDIO buffering delays
+- **Higher Throughput**: Direct socket communication reduces overhead
+
+Airbyte determines the number of sockets by `min(source_cpu_limit, destination_cpu_limit) * 2`, allowing parallel data transfer. For example, connectors with 4 CPU limits use 8 sockets.
+
+Socket mode offers enhanced state management to support parallel processing and ensure data consistency:
+
+**Partition identifiers**: each record and state message includes a `partition_id`, a random alphanumeric string, which links records to their corresponding checkpoint state. This enables the destination to verify that all records from a partition have been received before committing the state and ensures both the destination and platform maintain consistent state information throughout the sync.
+
+**State ordering**: state messages include an incrementing `id` field to maintain proper ordering. Since states can arrive on any socket in any order due to parallel processing, the destination uses these IDs to commit states in the correct sequence, ensuring resumability if a sync fails.
+
+**Dual state emission**: in socket mode, Airbyte sends state messages to both:
+
+- The destination via socket (for record count verification and ordering)
+
+- The Bookkeeper via STDIO (for persistence and platform tracking)
+
+#### Legacy mode with container orchestrator
+
+Legacy mode uses the traditional STDIO-based architecture where all data flows through the container orchestrator.
+
+```mermaid
+---
+title: Legacy Mode
+---
+flowchart LR
+    direction LR
+    SRC1[Source] --> ORCH[Orchestrator] --> DEST1[Destination]
+```
+
+Container orchestrator has the following responsibilities.
+
+- Sits between source and destination connector containers
+- Hosts middleware capabilities such as scrubbing PII, aggregating stats, transforming data, and checkpointing progress
+- Interprets and records connector operation results
+- Handles miscellaneous side effects (logging, auth token refresh flows, etc.)
+
+#### How Airbyte selects architecture
+
+Airbyte automatically determines which mode to use based on these factors:
+
+It chooses socket mode when all of these conditions are met.
+
+- Not a file transfer operation
+- Not a reset operation
+- Both source and destination declare IPC capabilities in their metadata
+- No hashed fields or mappers configured in the connection
+- Matching data channel versions between source and destination
+- Both connectors support socket transport
+- Compatible serialization format exists (PROTOBUF preferred, JSONL fallback)
+
+It chooses legacy mode in the following conditions.
+
+- Any of the above conditions aren't met
+- The `ForceRunStdioMode` feature flag is enabled
+- IPC options are missing or incompatible
+
+### Connector sidecar
+
+An Airbyte-controlled container that reads the output of a connector container inside a Connector Pod for non-replication operations (`CHECK`, `DISCOVER`, `SPEC`).
+
+```mermaid
+---
+title: Connector sidecar
+---
+flowchart LR
+    direction LR
+    Connector --> Sidecar
+```
+
+The connector sidecar has the following responsibilities.
+
+- Interpret and records connector operation results
+- Handle miscellaneous side effects like logging and auth token refresh flows
 
 ## Workload launching architecture
 
-Workloads is Airbyte's next generation architecture. It is designed to be more scalable, reliable and maintainable than the previous Worker architecture. It performs particularly
-well in low-resource environments.
+Workloads are designed to be more scalable, reliable and maintainable than the previous Worker architecture. It performs particularly well in low-resource environments.
 
-One big flaw of pre-Workloads architecture was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for
-resource-constrained environments with spiky job scheduling.
+One big flaw of pre-Workloads architecture was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for resource-constrained environments with spiky job scheduling.
 
-Workloads is an Airbyte-internal job abstraction decoupling the number of running jobs (including those in queue), from the number of jobs that can be started. Jobs stay queued
-until more resources are available or canceled. This allows for better back pressure and self-healing in resource constrained environments.
+Workloads is an Airbyte-internal job abstraction decoupling the number of running jobs (including those in queue), from the number of jobs that can be started. Jobs stay queued until more resources are available or canceled. This allows for better back pressure and self-healing in resource constrained environments.
 
 Dumb workers now communicate with the Workload API Server to create a Workload instead of directly starting jobs.
 
-The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles
-job creation based on available resources, minimising deadlock situations.
+The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles job creation based on available resources, minimising deadlock situations.
 
 With this set up, Airbyte now supports:
+
 - configuring the maximum number of concurrent jobs via `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.`
 - configuring the maximum number of jobs that can be started at once via ``
 - differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.
