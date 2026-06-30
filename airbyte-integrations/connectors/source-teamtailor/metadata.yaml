@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6d811b1b-5b94-4d5a-a74a-c2e46e5cb87c
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-teamtailor
   githubIssueLabel: source-teamtailor
   icon: icon.svg
