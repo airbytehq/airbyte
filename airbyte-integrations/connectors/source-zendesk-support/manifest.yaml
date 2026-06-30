@@ -1008,12 +1008,28 @@ definitions:
 
   side_conversations_stream:
     $ref: "#/definitions/semi_incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/semi_incremental_stream/incremental_sync"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: "#/definitions/retriever/requester"
         path: "tickets/{{ stream_partition.ticket_id }}/side_conversations"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - http_codes: [422]
+              action: IGNORE
+              error_message: "Skipping side conversations for this ticket because the Zendesk API returned an unprocessable entity error. This typically means the ticket type does not support side conversations. Other tickets will continue to sync normally."
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
