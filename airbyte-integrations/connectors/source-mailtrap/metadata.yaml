@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9ba00df2-313c-46f2-b102-a5063a1ee18a
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-mailtrap
   githubIssueLabel: source-mailtrap
   icon: icon.svg
