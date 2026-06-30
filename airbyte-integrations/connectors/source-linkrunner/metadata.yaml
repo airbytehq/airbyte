@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ec739bc6-f8a5-4cb3-9e7b-7e0f8f53ce74
-  dockerImageTag: 0.0.10
+  dockerImageTag: 0.0.11
   dockerRepository: airbyte/source-linkrunner
   githubIssueLabel: source-linkrunner
   icon: icon.svg
