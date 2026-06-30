@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9cddb136-acda-4755-9200-9014944650fc
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-clockodo
   githubIssueLabel: source-clockodo
   icon: icon.svg
