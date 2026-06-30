@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5b7216ca-1d6d-4a50-89c3-067746806586
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-openaq
   githubIssueLabel: source-openaq
   icon: icon.svg
