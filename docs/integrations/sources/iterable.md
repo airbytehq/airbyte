@@ -116,6 +116,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.3 | 2026-06-30 | [78762](https://github.com/airbytehq/airbyte/pull/78762) | Update dependencies |
 | 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
 | 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
 | 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
