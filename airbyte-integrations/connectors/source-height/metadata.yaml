@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8f4b2d64-970a-4a6f-b316-3d1144c67be8
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-height
   githubIssueLabel: source-height
   icon: icon.svg
