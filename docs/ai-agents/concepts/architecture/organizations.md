@@ -19,7 +19,21 @@ Each organization has:
 
 ## One organization per account
 
-When you sign up at [app.airbyte.ai](https://app.airbyte.ai), Airbyte creates an organization for you automatically. Your account belongs to that organization. If you need to work across multiple organizations, your Airbyte account can be associated with more than one. Pass the `organization_id` to the SDK or API to target a specific organization. See [Multiple organizations](../../interfaces/sdk/authenticate#multiple-organizations).
+When you sign up at [app.airbyte.ai](https://app.airbyte.ai), Airbyte creates an organization for you automatically. Your account belongs to that organization. If you need to work across multiple organizations, your Airbyte account can be associated with more than one.
+
+### Interface support for multiple organizations
+
+Not all interfaces support accounts that belong to more than one organization:
+
+| Interface | Multiple organizations |
+| --------- | --------------------- |
+| [Web app](../../interfaces/ui) | ✓ Supported |
+| [SDK](../../interfaces/sdk) | ✓ Supported — pass `organization_id`. See [Multiple organizations](../../interfaces/sdk/authenticate#multiple-organizations). |
+| [CLI](../../interfaces/cli) | ✓ Supported — use `organizations use` or `--org-id`. See [Authenticate](../../interfaces/cli/authenticate). |
+| [API](../../interfaces/api) | ✓ Supported — each set of client credentials is scoped to one organization. |
+| [MCP server](../../interfaces/mcp) | ✗ Not supported |
+
+If your account belongs to a single organization, all interfaces work without additional configuration.
 
 ## Related topics
 
