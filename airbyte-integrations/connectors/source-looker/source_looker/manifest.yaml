@@ -1283,7 +1283,59 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      allow_direct_roles:
+        type:
+          - "null"
+          - boolean
+      allow_normal_group_membership:
+        type:
+          - "null"
+          - boolean
+      allow_roles_from_normal_groups:
+        type:
+          - "null"
+          - boolean
+      avatar_url:
+        type:
+          - "null"
+          - string
+      avatar_url_without_sizing:
+        type:
+          - "null"
+          - string
+      can:
+        type:
+          - "null"
+          - object
+      display_name:
+        type:
+          - "null"
+          - string
       email:
+        type:
+          - "null"
+          - string
+      embed_group_folder_id:
+        type:
+          - "null"
+          - string
+      embed_group_space_id:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      group_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      home_folder_id:
         type:
           - "null"
           - string
@@ -1291,10 +1343,58 @@ schemas:
         type:
           - "null"
           - string
+      is_disabled:
+        type:
+          - "null"
+          - boolean
+      last_name:
+        type:
+          - "null"
+          - string
+      locale:
+        type:
+          - "null"
+          - string
+      looker_versions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      models_dir_validated:
+        type:
+          - "null"
+          - boolean
+      personal_folder_id:
+        type:
+          - "null"
+          - string
+      presumed_looker_employee:
+        type:
+          - "null"
+          - boolean
+      role_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      roles_externally_managed:
+        type:
+          - "null"
+          - boolean
       url:
         type:
           - "null"
           - string
+      verified_looker_employee:
+        type:
+          - "null"
+          - boolean
   versions:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
