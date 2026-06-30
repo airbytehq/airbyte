@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 from unittest import TestCase
+from urllib.parse import parse_qs, urlparse
 
 import freezegun
 
@@ -108,6 +109,17 @@ def _get_custom_analytics_report_config() -> list:
     ]
 
 
+def _get_custom_statistics_report_config() -> list:
+    return [
+        {
+            "name": "statistics_report",
+            "pivot_by": "CAMPAIGN",
+            "pivots": ["CAMPAIGN", "CREATIVE"],
+            "time_granularity": "DAILY",
+        }
+    ]
+
+
 @freezegun.freeze_time("2024-06-15T00:00:00Z")
 class TestCustomAnalyticsReportStream(TestCase):
     """
@@ -159,6 +171,46 @@ class TestCustomAnalyticsReportStream(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["string_of_pivot_values"] == "urn:li:sponsoredCampaign:1001"
         assert output.records[0].record.stream == _STREAM_NAME
+
+    @HttpMocker()
+    def test_statistics_finder_request_uses_pivots(self, http_mocker: HttpMocker):
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_statistics_report_config()).build()
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
+        )
+
+        statistics_request = LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build()
+        http_mocker.get(
+            statistics_request,
+            LinkedInAdsAnalyticsResponseBuilder().with_records([_create_analytics_record(1001, "2024-06-01", 1000, 50)]).build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream("custom_statistics_report", SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.stream == "custom_statistics_report"
+
+        analytics_requests = [
+            request for request in http_mocker._mocker.request_history if urlparse(request.url).path == "/rest/adAnalytics"
+        ]
+        statistics_requests = []
+        for request in analytics_requests:
+            query_params = parse_qs(urlparse(request.url).query)
+            if query_params.get("q") == ["statistics"]:
+                statistics_requests.append(query_params)
+
+        assert statistics_requests
+        assert all(query_params["pivots"] == ["List(CAMPAIGN,CREATIVE)"] for query_params in statistics_requests)
+        assert all("pivot" not in query_params for query_params in statistics_requests)
 
     @HttpMocker()
     def test_transformations_applied(self, http_mocker: HttpMocker):

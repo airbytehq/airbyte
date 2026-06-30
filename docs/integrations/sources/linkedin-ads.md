@@ -123,8 +123,9 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
    2. Enter a **Report Name**. This will be used as the stream name during replication.
-   3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
-   4. Select a **Time Granularity** to group the data in your report by time. The options are:
+   3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which Analytics Finder report data will be grouped or segmented.
+   4. To create a Statistics Finder report instead, select **Pivot Categories** and choose up to three categories. When Pivot Categories is set, Airbyte uses LinkedIn's Statistics Finder request format for that custom report.
+   5. Select a **Time Granularity** to group the data in your report by time. The options are:
       - `ALL`: Data is not grouped by time, providing a cumulative view.
       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
@@ -222,12 +223,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
-| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.7.0 | 2026-05-29 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Added support for custom LinkedIn Ads Statistics Finder reports with up to three pivot categories. |
 | 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
 | 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
-| 5.6.7 | 2026-04-02 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
-| 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
 | 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for proper indefinite backoff on rate-limited requests |
 | 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
 | 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |

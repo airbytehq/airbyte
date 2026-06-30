@@ -1402,8 +1402,9 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "DYNAMIC_FIELD"
+            q: "DYNAMIC_FIELD"
+            pivot:
+            pivots:
             timeGranularity: "DYNAMIC_FIELD"
             campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
@@ -1637,8 +1638,17 @@ dynamic_streams:
           field_path: ["name"]
           value: "custom_{{components_values['name']}}"
         - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_parameters", "q"]
+          value: "{{ 'statistics' if components_values.get('pivots') else 'analytics' }}"
+          value_type: string
+        - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "request_parameters", "pivot"]
-          value: "(value:{{components_values['pivot_by']}})"
+          value: "{{ '(value:' ~ components_values['pivot_by'] ~ ')' if not components_values.get('pivots') else none }}"
+          condition: "{{ true }}"
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_parameters", "pivots"]
+          value: "{{ 'List(' ~ ','.join(components_values['pivots']) ~ ')' if components_values.get('pivots') else none }}"
+          condition: "{{ true }}"
         - type: ComponentMappingDefinition
           field_path:
             ["retriever", "requester", "request_parameters", "timeGranularity"]
@@ -1784,7 +1794,7 @@ spec:
               type: string
             pivot_by:
               title: Pivot Category
-              description: "Choose a category to pivot your analytics report around. This selection will organize your data based on the chosen attribute, allowing you to analyze trends and performance from different perspectives."
+              description: "Choose one category for Analytics Finder reports. Use Pivots instead to configure a Statistics Finder report with up to three pivot categories."
               type: string
               enum:
                 - COMPANY
@@ -1808,6 +1818,37 @@ spec:
                 - MEMBER_COMPANY
                 - PLACEMENT_NAME
                 - IMPRESSION_DEVICE_TYPE
+            pivots:
+              title: Pivot Categories
+              description: "Choose up to three categories for Statistics Finder reports. If set, the connector sends q=statistics with the selected pivots instead of q=analytics with Pivot Category."
+              type: array
+              minItems: 1
+              maxItems: 3
+              uniqueItems: true
+              items:
+                type: string
+                enum:
+                  - COMPANY
+                  - ACCOUNT
+                  - SHARE
+                  - CAMPAIGN
+                  - CREATIVE
+                  - CAMPAIGN_GROUP
+                  - CONVERSION
+                  - CONVERSATION_NODE
+                  - CONVERSATION_NODE_OPTION_INDEX
+                  - SERVING_LOCATION
+                  - CARD_INDEX
+                  - MEMBER_COMPANY_SIZE
+                  - MEMBER_INDUSTRY
+                  - MEMBER_SENIORITY
+                  - MEMBER_JOB_TITLE
+                  - MEMBER_JOB_FUNCTION
+                  - MEMBER_COUNTRY_V2
+                  - MEMBER_REGION_V2
+                  - MEMBER_COMPANY
+                  - PLACEMENT_NAME
+                  - IMPRESSION_DEVICE_TYPE
             time_granularity:
               title: Time Granularity
               description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
