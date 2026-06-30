@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 751184ec-3b11-4084-b1b7-8064dde1e76e
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-circa
   githubIssueLabel: source-circa
   icon: icon.svg
