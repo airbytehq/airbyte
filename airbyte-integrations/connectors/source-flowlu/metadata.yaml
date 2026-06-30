@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c9db3f2d-054a-43bc-96cc-0d2843bce018
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-flowlu
   githubIssueLabel: source-flowlu
   icon: icon.svg
