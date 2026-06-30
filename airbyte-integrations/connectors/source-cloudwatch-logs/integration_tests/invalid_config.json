@@ -1,0 +1,13 @@
+{
+  "region_name": "eu-central-1",
+  "custom_log_reports": [
+    {
+      "name": "my_custom_report",
+      "log_group_name": "my_log_group1"
+    },
+    {
+      "name": "my_custom_report",
+      "log_group_name": "my_log_group2"
+    }
+  ]
+}
