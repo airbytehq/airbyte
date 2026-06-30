@@ -25,11 +25,17 @@ Administrators can add connectors from the web app.
 - [**Add a connector**](./add-connector): Authenticate data sources so agents in Chats, Automations, and every other interface can use them.
 - [**Context Store**](../../concepts/context-store): The searchable replica of select entities from your connected data sources that powers grounded answers and large-scale analytics. The Context Store is always on and requires no configuration.
 
+## Workspaces
+
+On the [Team and Custom plans](../../admin/billing.md#team), a workspace picker appears in the sidebar. Use it to switch between workspaces, create new ones, and see which workspace is currently active. Chats and connectors are scoped to the active workspace. See [Workspaces](../../concepts/architecture/workspaces) for details.
+
 ## Related administration
 
 Other parts of the web app are covered in [Account and administration](../../admin):
 
 - [Profile](../../admin/profile) for account settings.
+- [Users](../../admin/users) for inviting members, assigning roles, and managing workspace access (Team and Custom plans).
+- [SSO](../../admin/sso) for single sign-on configuration (Team and Custom plans).
 - [Sessions](../../admin/sessions) for the run history of every Chat and Automation in your organization.
 - [Review tool calls](../../admin/tool-calls) for inspecting and approving deferred tool calls.
 - [Billing](../../admin/billing) for plans, usage, and invoices.
