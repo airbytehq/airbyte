@@ -26,7 +26,7 @@
         "type" : "string",
         "description" : "Enter the port number for the Databricks cluster connection. The default port is 443 (HTTPS).",
         "title" : "Port",
-        "group" : "advanced",
+        "group" : "connection",
         "order" : 9,
         "default" : "443",
         "examples" : [ "443" ]
@@ -127,7 +127,8 @@
         "group" : "connection",
         "order" : 6,
         "default" : false,
-        "const" : true
+        "const" : true,
+        "always_show" : true
       }
     },
     "required" : [ "hostname", "http_path", "database", "authentication", "accept_terms" ],
@@ -137,9 +138,6 @@
     }, {
       "id" : "sync_behavior",
       "title" : "Sync Behavior"
-    }, {
-      "id" : "advanced",
-      "title" : "Advanced"
     } ]
   },
   "supportsIncremental" : true,

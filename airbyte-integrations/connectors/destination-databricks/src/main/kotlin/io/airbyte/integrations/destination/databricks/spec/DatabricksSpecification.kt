@@ -47,7 +47,7 @@ open class DatabricksSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("port")
     @get:JsonSchemaInject(
-        json = """{"group": "advanced", "order": 9, "default": "443", "examples": ["443"]}""",
+        json = """{"group": "connection", "order": 9, "default": "443", "examples": ["443"]}""",
     )
     val port: String? = "443"
 
@@ -103,7 +103,8 @@ open class DatabricksSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("accept_terms")
     @get:JsonSchemaInject(
-        json = """{"group": "connection", "order": 6, "default": false, "const": true}"""
+        json =
+            """{"group": "connection", "order": 6, "default": false, "const": true, "always_show": true}""",
     )
     val acceptTerms: Boolean = false
 }
@@ -175,6 +176,5 @@ class DatabricksSpecificationExtension : DestinationSpecificationExtension {
         listOf(
             DestinationSpecificationExtension.Group("connection", "Connection"),
             DestinationSpecificationExtension.Group("sync_behavior", "Sync Behavior"),
-            DestinationSpecificationExtension.Group("advanced", "Advanced"),
         )
 }
