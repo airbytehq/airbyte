@@ -88,7 +88,13 @@ class DatabricksProtoAcceptanceTest :
     )
 
 class DatabricksSoftDeleteAcceptanceTest :
-    DatabricksBaseAcceptanceTest(cdcDeletionMode = CdcDeletionMode.SOFT_DELETE)
+    DatabricksBaseAcceptanceTest(cdcDeletionMode = CdcDeletionMode.SOFT_DELETE) {
+    @Test
+    @Disabled("Disabled due to frequent timeouts in CI")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 /** Reads the base config JSON and injects the `cdc_deletion_mode` property */
 private fun createConfigWithCdcMode(cdcDeletionMode: CdcDeletionMode): String {

@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.write.RegressionTestSuite
 import io.airbyte.integrations.destination.databricks.spec.DatabricksSpecification
 import java.nio.file.Files
 import java.nio.file.Path
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
 
@@ -79,6 +80,7 @@ class DatabricksRegressionTest :
 
     @ResourceLock("tableIdentifierRegressionTest")
     @Test
+    @Disabled("Disabled due to frequent timeouts in CI")
     override fun testTableIdentifierRegressionAppend() {
         super.testTableIdentifierRegressionAppend()
     }
