@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bdf17de3-a522-4929-ab63-0205f794f7b4
-  dockerImageTag: 0.0.12
+  dockerImageTag: 0.0.13
   dockerRepository: airbyte/source-grafana
   githubIssueLabel: source-grafana
   icon: icon.svg
