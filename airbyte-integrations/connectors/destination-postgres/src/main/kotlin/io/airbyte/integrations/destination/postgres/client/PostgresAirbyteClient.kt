@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.postgres.client
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
@@ -25,6 +26,7 @@ import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGen
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import java.sql.SQLTransientConnectionException
 import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
@@ -430,13 +432,20 @@ class PostgresAirbyteClient(
         }
 
     fun copyFromCsv(tableName: TableName, filePath: String) {
-        dataSource.connection.use { connection ->
-            val copyManager =
-                connection.unwrap(org.postgresql.core.BaseConnection::class.java).getCopyAPI()
-            val sql = sqlGenerator.copyFromCsv(tableName)
-            java.io.FileInputStream(filePath).use { fileInputStream ->
-                copyManager.copyIn(sql, fileInputStream)
+        try {
+            dataSource.connection.use { connection ->
+                val copyManager =
+                    connection.unwrap(org.postgresql.core.BaseConnection::class.java).getCopyAPI()
+                val sql = sqlGenerator.copyFromCsv(tableName)
+                java.io.FileInputStream(filePath).use { fileInputStream ->
+                    copyManager.copyIn(sql, fileInputStream)
+                }
             }
+        } catch (e: SQLTransientConnectionException) {
+            throw TransientErrorException(
+                "Destination database connection timed out after 30 seconds.",
+                e
+            )
         }
     }
 
@@ -446,6 +455,11 @@ class PostgresAirbyteClient(
             dataSource.connection.use { connection ->
                 connection.createStatement().use { it.execute(query) }
             }
+        } catch (e: SQLTransientConnectionException) {
+            throw TransientErrorException(
+                "Destination database connection timed out after 30 seconds.",
+                e
+            )
         } catch (e: org.postgresql.util.PSQLException) {
             // Handle dependent objects error (e.g., views depending on tables/columns)
             // PostgreSQL error code 2BP01 = DEPENDENT_OBJECTS_STILL_EXIST
@@ -478,10 +492,17 @@ class PostgresAirbyteClient(
 
     private fun <T> executeQuery(query: String, resultProcessor: (ResultSet) -> T): T {
         log.info { query.trimIndent() }
-        return dataSource.connection.use { connection ->
-            connection.createStatement().use {
-                it.executeQuery(query).use { resultSet -> resultProcessor(resultSet) }
+        try {
+            return dataSource.connection.use { connection ->
+                connection.createStatement().use {
+                    it.executeQuery(query).use { resultSet -> resultProcessor(resultSet) }
+                }
             }
+        } catch (e: SQLTransientConnectionException) {
+            throw TransientErrorException(
+                "Destination database connection timed out after 30 seconds.",
+                e
+            )
         }
     }
 }
