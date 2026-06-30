@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7fcd456d-2c13-4437-a05b-cf436699a519
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-teamwork
   githubIssueLabel: source-teamwork
   icon: icon.svg
