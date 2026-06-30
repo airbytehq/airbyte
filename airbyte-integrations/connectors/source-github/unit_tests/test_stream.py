@@ -21,6 +21,7 @@ from source_github.streams import (
     Comments,
     CommitCommentReactions,
     CommitComments,
+    CommitDetails,
     Commits,
     ContributorActivity,
     Deployments,
@@ -861,6 +862,228 @@ def test_stream_pull_request_commits(requests_mock):
         {"sha": 3, "repository": "organization/repository", "pull_number": 3},
         {"sha": 4, "repository": "organization/repository", "pull_number": 3},
     ]
+
+
+def test_stream_commit_details(requests_mock):
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+    }
+    repository_args_with_start_date = {**repository_args, "start_date": "2022-02-01T00:00:00Z"}
+
+    commits_stream = Commits(**repository_args_with_start_date, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **repository_args)
+
+    # Branches + repo stats needed by Commits._validate_branches_to_pull
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository",
+        json={"full_name": "organization/repository", "default_branch": "main"},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/branches",
+        json=[{"name": "main", "repository": "organization/repository"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits",
+        json=[
+            {
+                "sha": "abc123",
+                "commit": {"author": {"date": "2022-02-02T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/abc123",
+                "url": "https://api.github.com/repos/organization/repository/commits/abc123",
+                "node_id": "node1",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/abc123/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            }
+        ],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/abc123",
+        json={
+            "sha": "abc123",
+            "node_id": "node1",
+            "url": "https://api.github.com/repos/organization/repository/commits/abc123",
+            "html_url": "https://github.com/organization/repository/commit/abc123",
+            "comments_url": "https://api.github.com/repos/organization/repository/commits/abc123/comments",
+            "commit": {"author": {"date": "2022-02-02T10:00:00Z"}, "message": "init"},
+            "author": None,
+            "committer": None,
+            "parents": [],
+            "stats": {"additions": 10, "deletions": 2, "total": 12},
+            "files": [
+                {
+                    "sha": "filesha1",
+                    "filename": "README.md",
+                    "status": "modified",
+                    "additions": 10,
+                    "deletions": 2,
+                    "changes": 12,
+                    "patch": "@@ -1 +1 @@\n-old\n+new",
+                }
+            ],
+        },
+    )
+
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    record = records[0]
+    assert record["sha"] == "abc123"
+    assert record["repository"] == "organization/repository"
+    assert record["branch"] == "main"
+    assert record["stats"] == {"additions": 10, "deletions": 2, "total": 12}
+    assert len(record["files"]) == 1
+    assert record["files"][0]["filename"] == "README.md"
+
+
+def test_stream_commit_details_path():
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+    commits_stream = Commits(**repository_args, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **{k: v for k, v in repository_args.items() if k != "start_date"})
+    assert stream.path(stream_slice={"repository": "org/repo", "sha": "deadbeef", "branch": "main"}) == (
+        "repos/org/repo/commits/deadbeef"
+    )
+
+
+def test_stream_commit_details_incremental(requests_mock):
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+    commits_stream = Commits(**repository_args_with_start_date, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **repository_args_with_start_date)
+
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository",
+        json={"full_name": "organization/repository", "default_branch": "main"},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/branches",
+        json=[{"name": "main", "repository": "organization/repository"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits",
+        json=[
+            {
+                "sha": "abc1",
+                "commit": {"author": {"date": "2022-02-02T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/abc1",
+                "url": "https://api.github.com/repos/organization/repository/commits/abc1",
+                "node_id": "node1",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/abc1/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            },
+            {
+                "sha": "abc2",
+                "commit": {"author": {"date": "2022-02-03T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/abc2",
+                "url": "https://api.github.com/repos/organization/repository/commits/abc2",
+                "node_id": "node2",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/abc2/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            },
+        ],
+    )
+
+    def make_detail(sha, date):
+        return {
+            "sha": sha,
+            "node_id": f"node_{sha}",
+            "url": f"https://api.github.com/repos/organization/repository/commits/{sha}",
+            "html_url": f"https://github.com/organization/repository/commit/{sha}",
+            "comments_url": f"https://api.github.com/repos/organization/repository/commits/{sha}/comments",
+            "commit": {"author": {"date": date}, "message": "msg"},
+            "author": None,
+            "committer": None,
+            "parents": [],
+            "stats": {"additions": 1, "deletions": 0, "total": 1},
+            "files": [],
+        }
+
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/abc1",
+        json=make_detail("abc1", "2022-02-02T10:00:00Z"),
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/abc2",
+        json=make_detail("abc2", "2022-02-03T10:00:00Z"),
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert [r["sha"] for r in records] == ["abc1", "abc2"]
+    assert stream_state == {"organization/repository": {"main": {"created_at": "2022-02-03T10:00:00Z"}}}
+
+    # Second incremental read with existing state should only fetch SHAs after the cursor
+    records = read_incremental(stream, stream_state)
+    # commits API returns no new commits (since= filters them server-side); no detail calls made
+    assert records == []
+    assert stream_state == {"organization/repository": {"main": {"created_at": "2022-02-03T10:00:00Z"}}}
+
+
+def test_stream_commit_details_created_at_in_record(requests_mock):
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+    commits_stream = Commits(**repository_args_with_start_date, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **repository_args_with_start_date)
+
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository",
+        json={"full_name": "organization/repository", "default_branch": "main"},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/branches",
+        json=[{"name": "main", "repository": "organization/repository"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits",
+        json=[
+            {
+                "sha": "sha1",
+                "commit": {"author": {"date": "2022-02-02T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/sha1",
+                "url": "https://api.github.com/repos/organization/repository/commits/sha1",
+                "node_id": "n1",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/sha1/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            }
+        ],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/sha1",
+        json={
+            "sha": "sha1",
+            "node_id": "n1",
+            "url": "https://api.github.com/repos/organization/repository/commits/sha1",
+            "html_url": "https://github.com/organization/repository/commit/sha1",
+            "comments_url": "https://api.github.com/repos/organization/repository/commits/sha1/comments",
+            "commit": {"author": {"date": "2022-02-02T10:00:00Z"}, "message": "init"},
+            "author": None,
+            "committer": None,
+            "parents": [],
+            "stats": {"additions": 5, "deletions": 1, "total": 6},
+            "files": [],
+        },
+    )
+
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    assert records[0]["created_at"] == "2022-02-02T10:00:00Z"
 
 
 def test_stream_project_columns(requests_mock):

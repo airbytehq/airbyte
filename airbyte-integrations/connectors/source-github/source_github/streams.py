@@ -1953,3 +1953,56 @@ class IssueTimelineEvents(GithubStream):
         for event in events_list:
             record[event["event"]] = event
         yield record
+
+
+class CommitDetails(SemiIncrementalMixin, GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit
+
+    Fetches full per-commit detail (stats and per-file changes) for each commit produced by the
+    Commits stream. One API call is made per commit SHA, so sync cost scales with commit volume.
+    """
+
+    primary_key = "sha"
+    cursor_field = "created_at"
+    slice_keys = ["repository", "branch"]
+
+    def __init__(self, parent: Commits, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/commits/{stream_slice['sha']}"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._starting_point_cache.clear()
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"], "sha": record["sha"], "branch": record["branch"]}
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        yield self.transform(record=response.json(), stream_slice=stream_slice)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["branch"] = stream_slice["branch"]
+        record["created_at"] = record["commit"]["author"]["date"]
+        return record
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        repository = latest_record["repository"]
+        branch = latest_record["branch"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
+        return current_stream_state
