@@ -1,14 +1,6 @@
 # Pinecone
 
-## Overview
-
-This page guides you through the process of setting up the [Pinecone](https://pinecone.io/) destination connector.
-
-There are three parts to this:
-
-- Processing - Split individual records into chunks so they fit the context window, and decide which fields to use as context and which are supplementary metadata.
-- Embedding - Convert the text into a vector representation using a pre-trained model.
-- Indexing - Store the vectors in a Pinecone index for similarity search.
+This page guides you through setting up the [Pinecone](https://pinecone.io/) destination connector. This connector processes individual records by splitting them into chunks, embedding the text into vectors, and storing those vectors in a Pinecone index for similarity search.
 
 ## Prerequisites
 
@@ -21,7 +13,7 @@ You need the following information to configure the destination:
 
 - **Embedding service API Key** - The API key for your embedding provider account.
 - **Pinecone API Key** - The API key for your Pinecone project. You can find this in the [Pinecone console](https://docs.pinecone.io/guides/get-started/authentication).
-- **Pinecone Environment** - The environment for your Pinecone project (for example, `us-east-1-aws`).
+- **Pinecone Environment** - The cloud environment for your Pinecone project, such as `us-west1-gcp` or `gcp-starter`.
 - **Pinecone Index name** - The name of the Pinecone index to load data into.
 
 ## Supported sync modes
@@ -36,7 +28,7 @@ You need the following information to configure the destination:
 
 ## Data type mapping
 
-All fields specified as metadata fields will be stored in the metadata object of the document and can be used for filtering. The following data types are allowed for metadata fields:
+All fields specified as metadata fields are stored in the metadata object of the document and can be used for filtering. The following data types are allowed for metadata fields:
 
 - String
 - Number (integer or floating point, gets converted to a 64 bit floating point)
@@ -49,13 +41,15 @@ All other fields are ignored.
 
 ### Processing
 
-Each record is split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of the configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Metadata fields can only be used for filtering, not for retrieval, and must be of type string, number, boolean, or list of strings. All other values are ignored. Pinecone limits total metadata to 40 KB per record. The connector reserves approximately 10 KB for internal fields, leaving about 30 KB for user-defined metadata per entry. The chunking process uses the [LangChain Python library](https://python.langchain.com/docs/get_started/introduction).
+Each record is split into text fields and metadata fields as configured in the **Processing** section. All text fields are concatenated into a single string and then split into chunks of the configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Metadata fields can only be used for filtering, not for retrieval, and must be of type string, number, boolean, or list of strings. All other values are ignored. The chunking process uses the [LangChain Python library](https://python.langchain.com/docs/get_started/introduction).
 
-When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
+When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` accesses the `name` field in the `user` object. You can also use wildcards to access all fields in an object, e.g. `users.*.name` accesses all `name` fields in all entries of the `users` array.
 
 The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
 
 The stream name gets added as a metadata field `_ab_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_ab_record_id` metadata field.
+
+You can enable the **Omit raw text** option to skip storing the original text content in the vector metadata. This reduces metadata size when you only need the vector embeddings and structured metadata for your use case.
 
 ### Embedding
 
@@ -83,11 +77,26 @@ Before running the destination, use the [Pinecone console or API](https://docs.p
 | OpenAI-compatible | Depends on the model |
 | Fake | 1536 |
 
-All streams are indexed into the same index. The `_ab_stream` metadata field distinguishes between streams. The connector supports both serverless and pod-based indexes.
+All streams are indexed into the same index. The `_ab_stream` metadata field distinguishes between streams. The connector supports both serverless and pod-based indexes. Deletion behavior during Full Refresh - Overwrite syncs differs by index type:
+
+- **Serverless indexes** delete vectors by stream prefix.
+- **Pod-based indexes** delete vectors by metadata filter.
+- **Starter indexes** query and batch-delete vectors in groups of up to 1,000.
+
+## Limitations
+
+- **Metadata size**: Pinecone limits total metadata to 40 KB per record. The connector reserves approximately 10 KB for internal fields, leaving about 30 KB for user-defined metadata per entry. Metadata values that exceed this limit are silently dropped.
+- **Rate limits**: Pinecone enforces [rate limits](https://docs.pinecone.io/reference/api/database-limits) on data plane operations at the namespace level. If your source produces large volumes of data, syncs may be throttled by Pinecone's upsert rate limits.
 
 ## Namespace support
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
+## Troubleshooting
+
+- **Index not found**: The connection check verifies that the configured index exists in your Pinecone project. If the check fails with an index-not-found error, confirm the index name in the [Pinecone console](https://app.pinecone.io/).
+- **Dimension mismatch**: The connection check also verifies that your index dimensions match the embedding configuration. If they don't match, either reconfigure your embedding method or recreate the index with the correct dimensions.
+- **Environment resolution failure**: If the check fails to resolve your environment, verify that the **Pinecone Environment** value is correct.
 
 ## Changelog
 
@@ -150,8 +159,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.0.22  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                                                                        |
 | 0.0.21  | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                                                                                      |
 | 0.0.20  | 2023-11-13 | [#32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                                                          |
-| 0.0.19  | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Improve error messages                                                                                                       |
-| 0.0.18  | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Add support for namespaces and fix index cleaning when namespace is defined                                                  |
+| 0.0.19  | 2023-10-20 | [#31373](https://github.com/airbytehq/airbyte/pull/31373) | Improve error messages                                                                                                       |
+| 0.0.18  | 2023-10-20 | [#31373](https://github.com/airbytehq/airbyte/pull/31373) | Add support for namespaces and fix index cleaning when namespace is defined                                                  |
 | 0.0.17  | 2023-10-19 | [#31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                              |
 | 0.0.16  | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option                                                                                        |
 | 0.0.15  | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size                                                                                               |
