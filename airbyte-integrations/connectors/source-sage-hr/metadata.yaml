@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8384215-9de6-4268-bbea-40c636ee14c7
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-sage-hr
   githubIssueLabel: source-sage-hr
   icon: icon.svg
