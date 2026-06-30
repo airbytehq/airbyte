@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8be64312-22e6-4c6d-8738-2294bd565139
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-eventee
   githubIssueLabel: source-eventee
   icon: icon.svg
