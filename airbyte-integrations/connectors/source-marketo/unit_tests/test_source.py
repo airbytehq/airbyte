@@ -198,7 +198,7 @@ def test_memory_usage(send_email_stream, file_generator):
 
 
 def test_export_request_kwargs_streams_response(send_email_stream):
-    assert send_email_stream.request_kwargs(stream_state={}) == {"stream": True}
+    assert send_email_stream.request_kwargs(stream_state={}) == {"stream": True, "timeout": (30, 300)}
 
 
 @pytest.mark.parametrize("job_statuses", ((("Created",), ("Completed",)), (("Created",), ("Cancelled",))))

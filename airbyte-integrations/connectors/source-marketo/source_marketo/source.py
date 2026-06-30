@@ -213,7 +213,7 @@ class MarketoExportBase(IncrementalMarketoStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        return {"stream": True}
+        return {"stream": True, "timeout": (30, 300)}
 
     def stream_slices(
         self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs
