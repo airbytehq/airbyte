@@ -32,6 +32,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 - [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/)
 - [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
 - [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
+- [Project Keys](https://docs.sentry.io/api/projects/list-a-projects-client-keys/)
 - [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
 
 ## Limitations & Troubleshooting
@@ -70,6 +71,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.27 | 2026-06-26 | [80900](https://github.com/airbytehq/airbyte/pull/80900) | Add `project_keys` stream |
 | 0.9.26 | 2026-06-23 | [80622](https://github.com/airbytehq/airbyte/pull/80622) | Update dependencies |
 | 0.9.25 | 2026-06-16 | [80036](https://github.com/airbytehq/airbyte/pull/80036) | Update dependencies |
 | 0.9.24 | 2026-06-09 | [79482](https://github.com/airbytehq/airbyte/pull/79482) | Update dependencies |

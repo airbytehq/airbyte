@@ -35,6 +35,10 @@ class SentryRequestBuilder:
     def releases_endpoint(cls, organization: str, project: str, auth_token: str):
         return cls("releases", organization, project, auth_token)
 
+    @classmethod
+    def project_keys_endpoint(cls, organization: str, project: str, auth_token: str):
+        return cls("project_keys", organization, project, auth_token)
+
     def with_query_params(self, query_params: dict):
         """Set specific query parameters for the request"""
         self._query_params = query_params
@@ -51,6 +55,9 @@ class SentryRequestBuilder:
         elif self._resource == "project_detail":
             # Project detail endpoint: /api/0/projects/{org}/{project}/
             url = f"https://{self._hostname}/api/0/projects/{self._organization}/{self._project}/"
+        elif self._resource == "project_keys":
+            # Project keys endpoint: /api/0/projects/{org}/{project}/keys/
+            url = f"https://{self._hostname}/api/0/projects/{self._organization}/{self._project}/keys/"
         else:
             # Events and issues endpoints: /api/0/projects/{org}/{project}/{resource}/
             url = f"https://{self._hostname}/api/0/projects/{self._organization}/{self._project}/{self._resource}/"

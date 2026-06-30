@@ -245,6 +245,36 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/project_detail"
+    project_keys:
+      type: DeclarativeStream
+      name: project_keys
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/{{ config['organization'] }}/{{ config['project'] }}/keys/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_keys"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['hostname'] }}/api/0/
@@ -258,6 +288,7 @@ streams:
   - $ref: "#/definitions/streams/projects"
   - $ref: "#/definitions/streams/project_detail"
   - $ref: "#/definitions/streams/releases"
+  - $ref: "#/definitions/streams/project_keys"
 
 spec:
   type: Spec
@@ -360,12 +391,20 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    project_keys:
+      hasRecords: true
+      streamHash: null
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   autoImportSchema:
     events: false
     issues: false
     projects: false
     releases: false
     project_detail: false
+    project_keys: false
 
 schemas:
   events:
@@ -2068,4 +2107,146 @@ schemas:
         type:
           - "null"
           - string
+    additionalProperties: true
+  project_keys:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      public:
+        type:
+          - "null"
+          - string
+      secret:
+        type:
+          - "null"
+          - string
+      projectId:
+        type:
+          - integer
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      rateLimit:
+        type:
+          - object
+          - "null"
+        properties:
+          window:
+            type:
+              - integer
+              - "null"
+          count:
+            type:
+              - integer
+              - "null"
+      dsn:
+        type:
+          - object
+          - "null"
+        properties:
+          secret:
+            type:
+              - string
+              - "null"
+          public:
+            type:
+              - string
+              - "null"
+          csp:
+            type:
+              - string
+              - "null"
+          security:
+            type:
+              - string
+              - "null"
+          minidump:
+            type:
+              - string
+              - "null"
+          nel:
+            type:
+              - string
+              - "null"
+          unreal:
+            type:
+              - string
+              - "null"
+          crons:
+            type:
+              - string
+              - "null"
+          cdn:
+            type:
+              - string
+              - "null"
+      browserSdkVersion:
+        type:
+          - string
+          - "null"
+      browserSdk:
+        type:
+          - object
+          - "null"
+        properties:
+          choices:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+      dateCreated:
+        type:
+          - string
+          - "null"
+        format: date-time
+      dynamicSdkLoaderOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          hasReplay:
+            type:
+              - boolean
+              - "null"
+          hasPerformance:
+            type:
+              - boolean
+              - "null"
+          hasDebug:
+            type:
+              - boolean
+              - "null"
+          hasFeedback:
+            type:
+              - boolean
+              - "null"
+          hasLogsAndMetrics:
+            type:
+              - boolean
+              - "null"
+      useCase:
+        type:
+          - string
+          - "null"
     additionalProperties: true
