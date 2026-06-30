@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: efe368ce-cd19-4be4-a2b1-11c69dc6bffb
-  dockerImageTag: 0.0.46
+  dockerImageTag: 0.0.47
   dockerRepository: airbyte/source-sharetribe
   githubIssueLabel: source-sharetribe
   icon: icon.svg
