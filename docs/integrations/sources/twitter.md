@@ -46,6 +46,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.12 | 2026-06-30 | [79018](https://github.com/airbytehq/airbyte/pull/79018) | Update dependencies |
 | 0.3.11 | 2025-05-10 | [60003](https://github.com/airbytehq/airbyte/pull/60003) | Update dependencies |
 | 0.3.10 | 2025-05-04 | [59620](https://github.com/airbytehq/airbyte/pull/59620) | Update dependencies |
 | 0.3.9 | 2025-04-27 | [58398](https://github.com/airbytehq/airbyte/pull/58398) | Update dependencies |
@@ -82,6 +83,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.3 | 2024-05-21 | [38525](https://github.com/airbytehq/airbyte/pull/38525) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2023-03-06 | [23749](https://github.com/airbytehq/airbyte/pull/23749) | Spec and docs are improved for beta certification |
 | 0.1.1 | 2023-03-03 | [23661](https://github.com/airbytehq/airbyte/pull/23661) | Incremental added for the "tweets" stream |
-| 0.1.0   | 2022-11-01 | [18858](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter                            |
+| 0.1.0 | 2022-11-01 | [18858](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter |
 
 </details>
