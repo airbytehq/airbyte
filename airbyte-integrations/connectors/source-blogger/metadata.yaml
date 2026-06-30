@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c6c4d8ae-60e9-49b4-9b48-e3a5857455fe
-  dockerImageTag: 0.0.47
+  dockerImageTag: 0.0.48
   dockerRepository: airbyte/source-blogger
   githubIssueLabel: source-blogger
   icon: icon.svg
