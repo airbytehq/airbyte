@@ -39,9 +39,11 @@ def test_ie_maps_to_eu_endpoint(manifest):
     """IE should map to the EU selling partner API endpoint."""
     transformations = manifest["spec"]["config_normalization_rules"]["transformations"]
     endpoint_remap = next(t for t in transformations if t["type"] == "ConfigRemapField" and t["field_path"] == ["endpoint"])
-    assert "IE" in endpoint_remap["map"]
-    ie_endpoint_template = endpoint_remap["map"]["IE"]
-    assert ie_endpoint_template.endswith("-eu.amazon.com")
+    eu_endpoint_template = (
+        "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' "
+        "else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+    )
+    assert endpoint_remap["map"].get("IE") == eu_endpoint_template
 
 
 def test_ie_maps_to_correct_marketplace_id(manifest):
