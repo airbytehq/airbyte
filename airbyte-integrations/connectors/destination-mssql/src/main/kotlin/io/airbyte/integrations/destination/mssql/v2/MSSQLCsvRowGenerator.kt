@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
@@ -142,11 +143,18 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
 
         val values = enrichedRecord.allTypedFields
         return schema.properties.map { (columnName, _) ->
-            val value = values[columnName]
-            if (value == null || value.abValue is NullValue || !validateValuesPreLoad) {
-                return@map value?.abValue.toCsvValue()
-            }
-            value.abValue.toCsvValue()
+            values[columnName]?.abValue.toMssqlCsvValue()
         }
     }
 }
+
+/**
+ * Serializes a value for the MSSQL bulk-load CSV. These conversions are always applied, independent
+ * of validateValuesPreLoad, because BULK INSERT is strict about the textual form of each value:
+ * - Booleans are emitted as 0/1 because SQL Server BIT columns reject true/false.
+ */
+internal fun AirbyteValue?.toMssqlCsvValue(): Any =
+    when (this) {
+        is BooleanValue -> (if (value) LIMITS.TRUE else LIMITS.FALSE).toCsvValue()
+        else -> toCsvValue()
+    }
