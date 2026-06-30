@@ -106,7 +106,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ### Change Data Capture \(CDC\)
 
-Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
+Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more about how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configuring your MySQL source with CDC whenever possible, as it provides:
 
 - A record of deletions, if needed.
 - Scalable replication to large tables (1 TB and more).
@@ -147,7 +147,7 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 To connect to a MySQL server via an SSH tunnel:
 
 1. While setting up the MySQL source connector, from the SSH tunnel dropdown, select:
-   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
+   - SSH Key Authentication to use a private key as your secret for establishing the SSH tunnel
    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
 2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
 3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
@@ -185,7 +185,7 @@ Any database or table encoding combination of charset and collation is supported
 | `bit(1)`                                  | boolean                |                                                                                                                                  |
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                                  |
 | `boolean`                                 | boolean                |                                                                                                                                  |
-| `tinyint(1)`                              | boolean                |                                                                                                                                  |
+| `tinyint(1)`                              | boolean                | Default behavior. Set the `Treat TINYINT(1) Columns as Integers` option to emit as integer instead.                              |
 | `tinyint(>1)`                             | integer                |                                                                                                                                  |
 | `tinyint(>=1) unsigned`                   | integer                |                                                                                                                                  |
 | `smallint`                                | integer                |                                                                                                                                  |
@@ -195,8 +195,6 @@ Any database or table encoding combination of charset and collation is supported
 | `float`                                   | number                 |                                                                                                                                  |
 | `double`                                  | number                 |                                                                                                                                  |
 | `decimal`                                 | number                 |                                                                                                                                  |
-| `binary`                                  | string                 |                                                                                                                                  |
-| `blob`                                    | string                 |                                                                                                                                  |
 | `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to Unix Epoch (1970-01-01).     |
 | `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to Unix Epoch (1970-01-01). |
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                                         |
@@ -230,7 +228,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                          | Subject                                                                                                                                          |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.53.0      | 2026-06-29 | [80950](https://github.com/airbytehq/airbyte/pull/80950)                                                  | Promote mysql to the latest CDK                                                                                                                  |
+| 3.53.0      | 2026-06-30 | [80950](https://github.com/airbytehq/airbyte/pull/80950)                                                  | Promote mysql to the latest CDK                                                                                                                  |
 | 3.52.3      | 2026-05-21 | [78318](https://github.com/airbytehq/airbyte/pull/78318)                                                  | Fix the CDC docs link on the MySQL config page.                                                                                                  |
 | 3.52.2      | 2026-05-11 | [77973](https://github.com/airbytehq/airbyte/pull/77973)                                                  | Improve concurrent initial snapshot partitioning for large MySQL tables with `BIGINT UNSIGNED` primary keys.                                     |
 | 3.52.1      | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787)                                              | Make the hidden additional properties fields in spec optional. No functional change.                                                             |
