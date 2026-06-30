@@ -210,9 +210,8 @@ class SalesforceErrorHandler(ErrorHandler):
                 message = f"Unable to sync '{self._stream_name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
                 return ErrorResolution(ResponseAction.FAIL, FailureType.config_error, message)
             elif error_code == "LIMIT_EXCEEDED":
-                message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
-                logger.error(message)
-                raise BulkNotSupportedException()
+                message = f"Salesforce API daily rate limit exceeded for stream '{self._stream_name}'."
+                return ErrorResolution(ResponseAction.FAIL, FailureType.transient_error, message)
         elif response.status_code == codes.FORBIDDEN:
             if error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.error(

@@ -956,7 +956,42 @@ class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
             ),
             has_bulk_parent=True,
         )
-        yield from self._bulk_job_stream.retriever.stream_slicer.stream_slices()
+        try:
+            yield from self._bulk_job_stream.retriever.stream_slicer.stream_slices()
+        except BulkNotSupportedException:
+            self.logger.warning(
+                "attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status"
+            )
+            self._switch_from_bulk_to_rest = True
+            self._rest_stream = self.get_standard_instance()
+            (
+                stream_is_available,
+                error,
+            ) = SalesforceAvailabilityStrategy().check_availability(self._rest_stream, self.logger, None)
+            if not stream_is_available:
+                self.logger.warning(f"Skipped syncing stream '{self._rest_stream.name}' because it was unavailable. Error: {error}")
+                yield from []
+            else:
+                yield from self._rest_stream.stream_slices(
+                    sync_mode=sync_mode,
+                    cursor_field=cursor_field,
+                    stream_state=stream_state,
+                )
+
+    def get_standard_instance(self) -> SalesforceStream:
+        """Returns a REST sub-stream instance with the same settings and parent."""
+        stream_kwargs = dict(
+            sf_api=self.sf_api,
+            pk=self.pk,
+            stream_name=self.stream_name,
+            schema=self.schema,
+            sobject_options=self.sobject_options,
+            authenticator=self._http_client._session.auth,
+            job_tracker=self._job_tracker,
+            message_repository=self._message_repository,
+            parent=self.parent,
+        )
+        return RestSalesforceSubStream(**stream_kwargs)
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform
