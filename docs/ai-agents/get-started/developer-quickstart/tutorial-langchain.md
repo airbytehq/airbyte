@@ -8,7 +8,7 @@ sidebar_position: 2
 
 In this tutorial, you'll create a new Python project with uv, add a LangChain agent, equip it with one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
 
-Your agent executes through Airbyte. Airbyte Agents owns the OAuth apps, stores your third-party tokens, and refreshes them for you. Your Python code only ever sees your Airbyte client ID and client secret.
+Your agent executes through Airbyte. Airbyte Agents owns the OAuth apps, stores your third-party tokens, and refreshes them for you. You provide third-party credentials like your GitHub personal access token once during connector setup through Airbyte's web app or API. After that, your Python code only ever sees your Airbyte client ID and client secret.
 
 ## Overview
 
@@ -223,6 +223,10 @@ Now that your agent is configured with tools, update `main.py` and run your proj
    ```bash
    uv run main.py
    ```
+
+    :::tip
+    `connect("github")` validates your Airbyte credentials at import time. If you still have placeholder values in `.env`, you'll see a 401 error before the chat loop starts. Make sure `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` contain your real credentials from [app.airbyte.ai](https://app.airbyte.ai).
+    :::
 
 ### Chat with your agent
 
