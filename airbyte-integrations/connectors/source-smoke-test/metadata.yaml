@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4eb59af1-e69b-4849-84f0-5d81cc5ce490
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-smoke-test
   documentationUrl: https://docs.airbyte.com/integrations/sources/smoke-test
   githubIssueLabel: source-smoke-test
