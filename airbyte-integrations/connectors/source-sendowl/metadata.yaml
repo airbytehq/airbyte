@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8333cbf3-03bd-4b90-a698-1b33c14d9e00
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-sendowl
   githubIssueLabel: source-sendowl
   icon: icon.svg
