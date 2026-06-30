@@ -28,29 +28,13 @@ permissions:
   contents: write
   pull-requests: write
 
-# ---------------------------------------------------------------------------
-# Job 1: Registry updates (runs for both promote and rollback)
-# ---------------------------------------------------------------------------
 jobs:
-  rc-registry-compile:
-    name: "Registry Updates (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
+  finalize-rollout:
+    name: "Finalize Rollout (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
     runs-on: ubuntu-24.04
-    env:
-      ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
-      CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     steps:
-      - name: Validate action
-        run: |
-          if [[ "${ACTION}" != "promote" && "${ACTION}" != "rollback" ]]; then
-            echo "::error::Invalid action: '${ACTION}'. Must be 'promote' or 'rollback'."
-            exit 1
-          fi
-        shell: bash
-
       - name: Checkout Airbyte repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 1
 
       - name: Install uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
@@ -58,17 +42,17 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      # Resolve which version to operate on. If an explicit version is
+      # Determine the RC version to operate on. If an explicit version is
       # provided (via workflow_dispatch input or client_payload), use it.
-      # Otherwise, pick the lowest active RC marker version that is newer
-      # than the current registry default — this handles the case where
-      # multiple RCs exist simultaneously.
-      - name: Resolve version to finalize
-        id: resolve-version
+      # Otherwise, query GCS for active progressive-rollout markers and
+      # pick the lowest version above the current registry default.
+      - name: Determine version
+        id: determine-version
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           VERSION_INPUT: ${{ github.event.inputs.version || github.event.client_payload.version || '' }}
+          CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
         run: |
           if [[ -n "$VERSION_INPUT" ]]; then
             echo "version=${VERSION_INPUT}" >> "$GITHUB_OUTPUT"
@@ -146,128 +130,80 @@ jobs:
           echo "version=${RESOLVED}" >> "$GITHUB_OUTPUT"
           echo "::notice::Resolved version to finalize: ${RESOLVED}"
 
-      - name: Mark progressive rollout promoted
-        if: env.ACTION == 'promote'
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          REGISTRY_STORE: "coral:prod"
-          VERSION: ${{ steps.resolve-version.outputs.version }}
-        run: >
-          airbyte-ops registry progressive-rollout finalize-marker
-          --name "${CONNECTOR_NAME}"
-          --store "${REGISTRY_STORE}"
-          --outcome promoted
-          --version "${VERSION}"
-
-      - name: Mark progressive rollout aborted
-        if: env.ACTION == 'rollback'
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          REGISTRY_STORE: "coral:prod"
-          VERSION: ${{ steps.resolve-version.outputs.version }}
-        run: >
-          airbyte-ops registry progressive-rollout finalize-marker
-          --name "${CONNECTOR_NAME}"
-          --store "${REGISTRY_STORE}"
-          --outcome aborted
-          --version "${VERSION}"
-
-      - name: "Recompile registry for ${{ env.CONNECTOR_NAME }} v${{ steps.resolve-version.outputs.version }}"
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          REGISTRY_STORE: "coral:prod"
-        run: >
-          airbyte-ops registry store compile
-          --store "${REGISTRY_STORE}"
-          --connector-name "${CONNECTOR_NAME}"
-
-      # --- Notifications ---
-      - name: Notify Slack on rollback success
-        if: success() && env.ACTION == 'rollback'
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-        with:
-          payload: |
-            {
-              "channel": "#connector-publish-failures",
-              "username": "Connectors CI/CD Bot",
-              "text": "↩️ Successfully rolled back RC for `${{ env.CONNECTOR_NAME }}` v${{ steps.resolve-version.outputs.version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }
-
-      - name: Notify Slack on failure
-        if: failure()
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-        with:
-          payload: |
-            {
-              "channel": "#connector-publish-failures",
-              "username": "Connectors CI/CD Bot",
-              "text": "🚨 Registry update failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }
-
-    outputs:
-      resolved_version: ${{ steps.resolve-version.outputs.version }}
-
-  # ---------------------------------------------------------------------------
-  # Job 2: Create and merge finalize PR (RC promote only)
-  # ---------------------------------------------------------------------------
-  create-promotion-pr:
-    name: "Create and Merge Finalize PR"
-    needs: rc-registry-compile
-    if: >-
-      github.event.inputs.action == 'promote'
-      || github.event.client_payload.action == 'promote'
-    runs-on: ubuntu-24.04
-    env:
-      CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
-    steps:
-      - name: Checkout Airbyte repo
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
-
-      - name: Install Ops CLI
-        run: uv tool install airbyte-internal-ops
-
-      # GA rollout promotion is purely logical: the registry compile job above
-      # removes the rollout marker and recompiles the registry. Only RC rollouts
-      # need a metadata PR to strip the -rc.N suffix.
+      # Single resolve-vars step: all downstream steps read from here.
       - name: Resolve vars
         id: resolve-vars
         shell: bash
         env:
-          RESOLVED_VERSION: ${{ needs.rc-registry-compile.outputs.resolved_version }}
+          ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
+          CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
+          VERSION: ${{ steps.determine-version.outputs.version }}
         run: |
-          CURRENT_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${{ github.workspace }}")"
-          echo "current_version=${CURRENT_VERSION}" | tee -a "${GITHUB_OUTPUT}"
-
-          if [[ "${CURRENT_VERSION}" == *-rc.* ]]; then
-            # Only create a PR if the repo's RC version matches what was promoted.
-            # If they differ (e.g., a newer RC was published while promoting an
-            # older one), skip the PR — registry compile already made the promoted
-            # version the default.
-            RC_BASE="${CURRENT_VERSION%%-rc.*}"
-            if [[ "${RC_BASE}" == "${RESOLVED_VERSION}" ]]; then
-              echo "is_rc=true" | tee -a "${GITHUB_OUTPUT}"
-            else
-              echo "is_rc=false" | tee -a "${GITHUB_OUTPUT}"
-              echo "::notice::Promoted version ${RESOLVED_VERSION} differs from repo RC ${CURRENT_VERSION}; skipping metadata PR."
-            fi
-          else
-            echo "is_rc=false" | tee -a "${GITHUB_OUTPUT}"
-            echo "::notice::${CONNECTOR_NAME} is already GA (${CURRENT_VERSION}); registry marker finalization completed in rc-registry-compile."
+          # Validate action
+          if [[ "${ACTION}" != "promote" && "${ACTION}" != "rollback" ]]; then
+            echo "::error::Invalid action: '${ACTION}'. Must be 'promote' or 'rollback'."
+            exit 1
           fi
 
-      # Authenticate as OCTAVIA_BOT so PRs trigger downstream CI.
+          # Get repo version to decide if a PR is needed
+          CURRENT_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${{ github.workspace }}")"
+
+          # Determine if we need a finalize PR (only when repo version is RC
+          # AND matches the version being promoted)
+          NEEDS_PR="false"
+          if [[ "${ACTION}" == "promote" && "${CURRENT_VERSION}" == *-rc.* ]]; then
+            RC_BASE="${CURRENT_VERSION%%-rc.*}"
+            if [[ "${RC_BASE}" == "${VERSION}" ]]; then
+              NEEDS_PR="true"
+            fi
+          fi
+
+          # Emit all outputs with tee so they appear in logs
+          echo "action=${ACTION}" | tee -a "${GITHUB_OUTPUT}"
+          echo "connector_name=${CONNECTOR_NAME}" | tee -a "${GITHUB_OUTPUT}"
+          echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
+          echo "current_version=${CURRENT_VERSION}" | tee -a "${GITHUB_OUTPUT}"
+          echo "needs_pr=${NEEDS_PR}" | tee -a "${GITHUB_OUTPUT}"
+
+      # --- Registry Updates ---
+
+      - name: Mark progressive rollout promoted
+        if: steps.resolve-vars.outputs.action == 'promote'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: >
+          airbyte-ops registry progressive-rollout finalize-marker
+          --name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --store "coral:prod"
+          --outcome promoted
+          --version "${{ steps.resolve-vars.outputs.version }}"
+
+      - name: Mark progressive rollout aborted
+        if: steps.resolve-vars.outputs.action == 'rollback'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: >
+          airbyte-ops registry progressive-rollout finalize-marker
+          --name "${{ steps.resolve-vars.outputs.connector_name }}"
+          --store "coral:prod"
+          --outcome aborted
+          --version "${{ steps.resolve-vars.outputs.version }}"
+
+      - name: "Recompile registry for ${{ steps.resolve-vars.outputs.connector_name }} v${{ steps.resolve-vars.outputs.version }}"
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: >
+          airbyte-ops registry store compile
+          --store "coral:prod"
+          --connector-name "${{ steps.resolve-vars.outputs.connector_name }}"
+
+      # --- PR Creation (promote + repo version contains -rc only) ---
+
       - name: Authenticate as GitHub App
-        if: steps.resolve-vars.outputs.is_rc == 'true'
+        if: steps.resolve-vars.outputs.needs_pr == 'true'
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
@@ -277,15 +213,16 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Configure git identity
-        if: steps.resolve-vars.outputs.is_rc == 'true'
+        if: steps.resolve-vars.outputs.needs_pr == 'true'
         run: |
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
 
-      # --no-changelog because RC promotion adds the PR-numbered entry later.
       - name: "Version bump and rollout finalization"
-        if: steps.resolve-vars.outputs.is_rc == 'true'
+        if: steps.resolve-vars.outputs.needs_pr == 'true'
         shell: bash
+        env:
+          CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         run: |
           airbyte-ops local connector bump-version \
             --name "${CONNECTOR_NAME}" \
@@ -293,39 +230,38 @@ jobs:
             --bump-type promote \
             --no-changelog
 
-      # Commits finalize changes and opens a draft PR. For RC rollouts this
-      # also gives us a PR number for the changelog entry.
       - name: Create finalize PR
-        if: steps.resolve-vars.outputs.is_rc == 'true'
+        if: steps.resolve-vars.outputs.needs_pr == 'true'
         id: create-pr
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        env:
+          CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          commit-message: "chore: finalize rollout for ${{ env.CONNECTOR_NAME }}"
-          branch: "finalize-rollout/promote/${{ env.CONNECTOR_NAME }}"
+          commit-message: "chore: finalize rollout for ${{ steps.resolve-vars.outputs.connector_name }}"
+          branch: "finalize-rollout/promote/${{ steps.resolve-vars.outputs.connector_name }}"
           base: ${{ github.event.repository.default_branch }}
           delete-branch: true
-          title: "chore: finalize rollout for ${{ env.CONNECTOR_NAME }}"
+          title: "chore: finalize rollout for ${{ steps.resolve-vars.outputs.connector_name }}"
           body: |
-            Automated metadata finalization after connector rollout **promote** for `${{ env.CONNECTOR_NAME }}`.
+            Automated metadata finalization after connector rollout **promote** for `${{ steps.resolve-vars.outputs.connector_name }}`.
 
             Generated by [`finalize_rollout` workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
           labels: |
             area/connectors
           draft: true
 
-      # Switch to the PR branch so changelog add reads the bumped
-      # GA version from metadata.yaml (not the RC version on master).
       - name: "Checkout PR branch"
         if: steps.create-pr.outputs.pull-request-number
+        env:
+          CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         run: git fetch origin "finalize-rollout/promote/${CONNECTOR_NAME}" && git checkout "finalize-rollout/promote/${CONNECTOR_NAME}"
 
-      # changelog add reads the current version from metadata.yaml
-      # (already bumped to GA by the promote step above) and writes
-      # a changelog entry — no version files are modified.
       - name: "Add changelog entry"
         if: steps.create-pr.outputs.pull-request-number
         shell: bash
+        env:
+          CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         run: >
           airbyte-ops local connector changelog add
           --connector-name "${CONNECTOR_NAME}"
@@ -333,25 +269,21 @@ jobs:
           --message "Promoted release candidate to GA"
           --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
 
-      # Commit and push the changelog entry to the existing PR branch.
       - name: "Push changelog to PR"
         if: steps.create-pr.outputs.pull-request-number
+        env:
+          CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         run: |
           git add docs/
           git commit -m "chore: add changelog for ${CONNECTOR_NAME}"
           git push origin "finalize-rollout/promote/${CONNECTOR_NAME}"
 
-      # The merge triggers the publish pipeline that
-      # verifyDefaultVersionActivity is waiting for.
       - name: Mark PR ready for review
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
 
-      # Use a different bot identity (admin) to approve and merge,
-      # because the bot that created the PR cannot approve its own PRs
-      # and needs admin privileges to bypass branch protection.
       - name: Authenticate as GitHub App (Admin)
         if: steps.create-pr.outputs.pull-request-number
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
@@ -383,21 +315,9 @@ jobs:
             --admin
 
       # --- Notifications ---
-      - name: Notify Slack on GA promote success
-        if: success() && steps.resolve-vars.outputs.is_rc == 'false'
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-        with:
-          payload: |
-            {
-              "channel": "#connector-publish-updates",
-              "username": "Connectors CI/CD Bot",
-              "text": "↗️ Successfully finalized GA rollout for `${{ env.CONNECTOR_NAME }}` v${{ needs.rc-registry-compile.outputs.resolved_version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }
 
-      - name: Notify Slack on RC promote success
-        if: success() && steps.create-pr.outputs.pull-request-number
+      - name: Notify Slack on rollback success
+        if: success() && steps.resolve-vars.outputs.action == 'rollback'
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
@@ -406,7 +326,33 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "↗️ Successfully promoted `${{ env.CONNECTOR_NAME }}` — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "↩️ Successfully rolled back RC for `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+      - name: Notify Slack on promote success (no PR needed)
+        if: success() && steps.resolve-vars.outputs.action == 'promote' && steps.resolve-vars.outputs.needs_pr == 'false'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "↗️ Promoted `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — registry recompiled (no PR needed):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+      - name: Notify Slack on promote success (PR merged)
+        if: success() && steps.create-pr.outputs.pull-request-number
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "↗️ Promoted `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
       - name: Notify Slack on failure
@@ -419,5 +365,5 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 Promote PR failed for `${{ env.CONNECTOR_NAME }}`:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🚨 Finalize rollout failed for `${{ steps.resolve-vars.outputs.connector_name }}` (${{ steps.resolve-vars.outputs.action }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
