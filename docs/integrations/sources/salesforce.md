@@ -89,6 +89,29 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. When running a curl command, run it with the `-L` option to follow any redirects.
 3. If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
 
+#### Authenticate using the OAuth 2.0 JWT Bearer flow (Airbyte Open Source only)
+
+As an alternative to the refresh-token flow, the connector supports Salesforce's [OAuth 2.0 JWT Bearer
+flow](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5). This is a
+server-to-server flow that requires no refresh token and no client secret — the connector signs a
+short-lived JWT with your connected app's private key and exchanges it for an access token. It is well
+suited to automated/headless setups.
+
+To use it:
+
+1. In your connected app, enable **Use digital signatures** and upload the X.509 certificate whose
+   matching RSA private key you will provide to Airbyte.
+2. Pre-authorize the user: set the connected app's OAuth policy to **Admin approved users are
+   pre-authorized** and assign the user (via a permission set or profile), or otherwise ensure the user
+   has approved the app.
+3. In Airbyte, set **Authentication Type** to `JWT` and provide:
+   - **Client ID** — the connected app's Consumer Key (used as the JWT `iss`).
+   - **Username** — the Salesforce username the token is issued for (the JWT `sub`); this user must be
+     pre-authorized for the app.
+   - **Private Key** — the RSA private key (PEM) matching the uploaded certificate.
+4. Toggle **Sandbox** if connecting to a sandbox (this targets `test.salesforce.com` instead of
+   `login.salesforce.com` for both the audience and token endpoint).
+
 <!-- /env:oss -->
 
 ### Set up the Salesforce connector in Airbyte
@@ -284,6 +307,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.0 | 2026-06-23 | [80788](https://github.com/airbytehq/airbyte/pull/80788) | Add OAuth 2.0 JWT Bearer authentication option |
 | 2.7.23 | 2026-05-20 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
 | 2.7.22 | 2026-04-28 | [76978](https://github.com/airbytehq/airbyte/pull/76978) | Bump airbyte-cdk to ^7.17.4 |
 | 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |
