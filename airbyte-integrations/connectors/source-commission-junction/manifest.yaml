@@ -1,0 +1,389 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  CJ Affiliate (formerly known as Commission Junction) is one of the world's
+  largest and most established affiliate marketing networks.
+
+check:
+  type: CheckStream
+  stream_names:
+    - AdvertiserCommissions
+
+streams:
+  - type: DeclarativeStream
+    name: AdvertiserCommissions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response.get('data', {}).get('advertiserCommissions',
+            {}).get('maxCommissionId') }}
+          stop_condition: >-
+            {{ response.get('data', {}).get('advertiserCommissions',
+            {}).get('payloadComplete') == True }}
+      requester:
+        type: HttpRequester
+        url: https://commissions.api.cj.com/query
+        http_method: POST
+        request_body:
+          type: RequestBodyGraphQL
+          value:
+            query: |
+              query {
+                advertiserCommissions(
+                  forAdvertisers: ["{{ config['cid'] }}"],
+                  sincePostingDate: "{{ stream_interval.start_time }}",
+                  beforePostingDate: "{{ stream_interval.end_time }}"{% if next_page_token and next_page_token['next_page_token'] %},
+                  sinceCommissionId: "{{ next_page_token['next_page_token'] }}"{% endif %}
+                ) {
+                  count
+                  payloadComplete
+                  maxCommissionId
+                  records {
+                    actionStatus
+                    actionTrackerId
+                    actionTrackerName
+                    actionType
+                    adOwner
+                    advCommissionAmountAdvCurrency
+                    advCommissionAmountUsd
+                    advertiserId
+                    advertiserName
+                    aid
+                    cjFeeAdvCurrency
+                    cjFeeUsd
+                    clickDate
+                    clickReferringURL
+                    commissionId
+                    concludingBrowser
+                    concludingDeviceName
+                    concludingDeviceType
+                    correctionReason
+                    country
+                    coupon
+                    eventDate
+                    initiatingBrowser
+                    initiatingDeviceName
+                    initiatingDeviceType
+                    isCrossDevice
+                    lockingDate
+                    lockingMethod
+                    newToFile
+                    orderDiscountAdvCurrency
+                    orderDiscountOrigCurrency
+                    orderDiscountPubCurrency
+                    orderDiscountUsd
+                    orderId
+                    original
+                    originalActionId
+                    postingDate
+                    pubCommissionAmountPubCurrency
+                    pubCommissionAmountUsd
+                    publisherId
+                    publisherName
+                    reviewedStatus
+                    saleAmountAdvCurrency
+                    saleAmountPubCurrency
+                    saleAmountUsd
+                    siteToStoreOffer
+                    source
+                    websiteId
+                    websiteName
+                  }
+                }
+              }
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config[\"personal_access_token\"] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - advertiserCommissions
+            - records
+    primary_key:
+      - commissionId
+      - originalActionId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - commissionId
+          - eventDate
+        properties:
+          aid:
+            type:
+              - string
+              - "null"
+          coupon:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          adOwner:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          orderId:
+            type:
+              - string
+              - "null"
+          cjFeeUsd:
+            type:
+              - string
+              - "null"
+          original:
+            type:
+              - boolean
+              - "null"
+          clickDate:
+            type:
+              - string
+              - "null"
+          eventDate:
+            type: string
+          newToFile:
+            type:
+              - boolean
+              - "null"
+          websiteId:
+            type:
+              - string
+              - "null"
+          actionType:
+            type:
+              - string
+              - "null"
+          lockingDate:
+            type:
+              - string
+              - "null"
+          postingDate:
+            type:
+              - string
+              - "null"
+          publisherId:
+            type:
+              - string
+              - "null"
+          websiteName:
+            type:
+              - string
+              - "null"
+          actionStatus:
+            type:
+              - string
+              - "null"
+          advertiserId:
+            type:
+              - string
+              - "null"
+          commissionId:
+            type: string
+          isCrossDevice:
+            type:
+              - boolean
+              - "null"
+          lockingMethod:
+            type:
+              - string
+              - "null"
+          publisherName:
+            type:
+              - string
+              - "null"
+          saleAmountUsd:
+            type:
+              - string
+              - "null"
+          advertiserName:
+            type:
+              - string
+              - "null"
+          reviewedStatus:
+            type:
+              - string
+              - "null"
+          actionTrackerId:
+            type:
+              - string
+              - "null"
+          cjFeeAdvCurrency:
+            type:
+              - string
+              - "null"
+          correctionReason:
+            type:
+              - string
+              - "null"
+          orderDiscountUsd:
+            type:
+              - string
+              - "null"
+          originalActionId:
+            type:
+              - string
+              - "null"
+          siteToStoreOffer:
+            type:
+              - string
+              - "null"
+          actionTrackerName:
+            type:
+              - string
+              - "null"
+          clickReferringURL:
+            type:
+              - string
+              - "null"
+          concludingBrowser:
+            type:
+              - string
+              - "null"
+          initiatingBrowser:
+            type:
+              - string
+              - "null"
+          concludingDeviceName:
+            type:
+              - string
+              - "null"
+          concludingDeviceType:
+            type:
+              - string
+              - "null"
+          initiatingDeviceName:
+            type:
+              - string
+              - "null"
+          initiatingDeviceType:
+            type:
+              - string
+              - "null"
+          saleAmountAdvCurrency:
+            type:
+              - string
+              - "null"
+          saleAmountPubCurrency:
+            type:
+              - string
+              - "null"
+          advCommissionAmountUsd:
+            type:
+              - string
+              - "null"
+          pubCommissionAmountUsd:
+            type:
+              - string
+              - "null"
+          orderDiscountAdvCurrency:
+            type:
+              - string
+              - "null"
+          orderDiscountPubCurrency:
+            type:
+              - string
+              - "null"
+          orderDiscountOrigCurrency:
+            type:
+              - string
+              - "null"
+          advCommissionAmountAdvCurrency:
+            type:
+              - string
+              - "null"
+          pubCommissionAmountPubCurrency:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P30D
+      cursor_field: postingDate
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      lookback_window: P60D
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+
+spec:
+  type: Spec
+  documentation_url: https://developers.cj.com/graphql/reference/Commission%20Detail
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - personal_access_token
+      - cid
+      - start_date
+    properties:
+      cid:
+        type: string
+        order: 1
+        title: CID
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: start_date
+        default: "2025-02-01T00:00:00Z"
+      personal_access_token:
+        type: string
+        description: >-
+          Your CJ API personal access token. You can create and manage tokens at
+          https://developers.cj.com/account/personal-access-tokens. Make sure to
+          keep this token secure and do not share it publicly.
+        name: personal_access_token
+        order: 0
+        title: Personal Access Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developers.cj.com/graphql/reference/Commission%20Detail
+  testedStreams:
+    AdvertiserCommissions:
+      isStale: false
+      hasRecords: true
+      streamHash: d4306188b2fe68e64c6288e46d7f96f59722a338
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    AdvertiserCommissions: false
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
