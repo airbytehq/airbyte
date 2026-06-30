@@ -89,7 +89,7 @@ When using CDC with Azure PG Flex, if a failover to a new leader happens, your C
 
 ### Sync data from Postgres hot standby server
 
-When the connector is reading from a Postgres replica that is configured as a Hot Standby, any update from the primary server will terminate queries on the replica after a certain amount of time, default to 30 seconds. This default waiting time is not enough to sync any meaning amount of data. See the `Handling Query Conflicts` section in the Postgres [documentation](https://www.postgresql.org/docs/14/hot-standby.html#HOT-STANDBY-CONFLICT) for detailed explanation.
+When the connector is reading from a Postgres replica that is configured as a Hot Standby, any update from the primary server will terminate queries on the replica after a certain amount of time, default to 30 seconds. This default waiting time is not enough to sync any meaning amount of data. See the `Handling Query Conflicts` section in the Postgres [documentation](https://www.postgresql.org/docs/current/hot-standby.html#HOT-STANDBY-CONFLICT) for detailed explanation.
 
 Here is the typical exception:
 
@@ -101,9 +101,9 @@ Caused by: org.postgresql.util.PSQLException: FATAL: terminating connection due 
 
 Possible solutions include:
 
-- Recommended: Set [`hot_standby_feedback`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
+- Recommended: Set [`hot_standby_feedback`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
 - Recommended: Sync data when there is no update running in the primary server, or sync data from the primary server.
-- Not Recommended: Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
+- Not Recommended: Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
 
 ### Under CDC incremental mode, there are still full refresh syncs
 
@@ -245,8 +245,8 @@ PostgreSQL now preloads the `pg_cron` extension when the instance starts.
 
 2. Modify the parameter group associated with your PostgreSQL database instance to enable pg_cron. For help modifying parameter groups, see the [AWS docs](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.Modifying.html).
 
-	1. If your RDS for PostgreSQL database instance uses the `rds.allowed_extensions` parameter to spcify which extensions can be installed, add `pg_cron` to that list.
-	
+	1. If your RDS for PostgreSQL database instance uses the `rds.allowed_extensions` parameter to specify which extensions can be installed, add `pg_cron` to that list.
+
 	2. Edit the custom parameter group associated with your PostgreSQL DB instance. Modify the `shared_preload_libraries` parameter to include the value `pg_cron`.
 
 	3. Reboot your PostgreSQL database instance. For help, see the [AWS docs](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_RebootInstance.html#USER_RebootInstance.steps).
