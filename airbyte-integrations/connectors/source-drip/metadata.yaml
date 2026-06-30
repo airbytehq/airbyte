@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4221175d-1bb9-436d-8cc7-ca0d8605b2b6
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-drip
   githubIssueLabel: source-drip
   icon: icon.svg
