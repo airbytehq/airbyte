@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54664ae8-39aa-467f-9703-9b343ee23b9b
-  dockerImageTag: 0.0.44
+  dockerImageTag: 0.0.45
   dockerRepository: airbyte/source-keka
   githubIssueLabel: source-keka
   icon: icon.svg
