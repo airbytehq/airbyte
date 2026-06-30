@@ -14,6 +14,9 @@ from airbyte_cdk.utils import AirbyteTracedException
 logger = logging.getLogger("airbyte")
 
 
+logger = logging.getLogger("airbyte")
+
+
 class CursorPatch(Cursor):
     """
     This is a hack to override FB SDK Cursor's default behaviour. By default, api calls are made using signature
@@ -91,3 +94,25 @@ class CursorPatch(Cursor):
 
         self._queue = self.build_objects_from_response(response)
         return len(self._queue) > 0
+
+    def build_objects_from_response(self, response):
+        """Override to filter out non-dict items from response data.
+
+        The Facebook API occasionally returns string items (e.g. bare IDs)
+        instead of full object dicts in the data array.  The SDK's _set_data
+        method expects dict-like data and raises TypeError when it encounters
+        a string.  Filtering these items prevents the crash while preserving
+        all valid records.
+        """
+        if "data" in response and isinstance(response["data"], list):
+            original_count = len(response["data"])
+            response["data"] = [item for item in response["data"] if isinstance(item, dict)]
+            filtered_count = original_count - len(response["data"])
+            if filtered_count > 0:
+                logger.warning(
+                    "Filtered %d non-dict item(s) from Facebook API response data (kept %d of %d)",
+                    filtered_count,
+                    len(response["data"]),
+                    original_count,
+                )
+        return super().build_objects_from_response(response)
