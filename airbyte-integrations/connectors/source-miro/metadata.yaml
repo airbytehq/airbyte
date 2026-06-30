@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f8276ae8-4ada-4ae5-819c-b1836aa78135
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-miro
   githubIssueLabel: source-miro
   icon: icon.svg
