@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 699d7359-204a-4650-81d2-ca03d607cacc
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-nexiopay
   githubIssueLabel: source-nexiopay
   icon: icon.svg
