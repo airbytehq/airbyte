@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8b418a25-7042-430f-96d8-72853a337a26
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-easypromos
   githubIssueLabel: source-easypromos
   icon: icon.svg
