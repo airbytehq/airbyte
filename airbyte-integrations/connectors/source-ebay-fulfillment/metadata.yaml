@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 38153e4d-34e4-4142-88d0-5d6d25795e7e
-  dockerImageTag: 0.0.28
+  dockerImageTag: 0.0.29
   dockerRepository: airbyte/source-ebay-fulfillment
   githubIssueLabel: source-ebay-fulfillment
   icon: icon.svg
