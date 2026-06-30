@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4100f944-1bef-4a73-a1c6-6042e3137749
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-google-forms
   githubIssueLabel: source-google-forms
   icon: icon.svg
