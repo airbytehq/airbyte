@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a9184721-17d5-40c0-894d-f49b86749465
-  dockerImageTag: 0.0.30
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-judge-me-reviews
   githubIssueLabel: source-judge-me-reviews
   icon: icon.svg
