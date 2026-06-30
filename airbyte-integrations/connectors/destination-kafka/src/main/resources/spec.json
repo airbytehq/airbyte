@@ -50,6 +50,12 @@
         "type": "string",
         "examples": ["test.topic"]
       },
+      "partition_key_field": {
+        "title": "Partition Key Field",
+        "description": "Use this field to specify which record field(s) should be used as the Kafka message key. When set, the value of the specified field from each record will be used as the message key, ensuring records with the same key are routed to the same partition (preserving ordering). Supports single fields (e.g. 'user_id'), nested fields (e.g. 'user.id'), and composite keys (e.g. 'user_id,order_id'). If not set, a random UUID is used as the message key (existing behavior).",
+        "type": "string",
+        "examples": ["user_id", "user.id", "user_id,order_id"]
+      },
       "sync_producer": {
         "title": "Sync Producer",
         "description": "Wait synchronously until the record has been sent to Kafka.",
