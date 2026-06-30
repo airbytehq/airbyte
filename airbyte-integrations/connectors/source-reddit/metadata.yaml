@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3ed344ac-4099-402c-bf83-1cfdc53295d9
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-reddit
   githubIssueLabel: source-reddit
   icon: icon.svg
