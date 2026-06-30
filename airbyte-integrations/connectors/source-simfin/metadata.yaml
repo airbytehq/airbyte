@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f00b4899-1154-477e-8508-3d7f33ffb28c
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-simfin
   githubIssueLabel: source-simfin
   icon: icon.svg
