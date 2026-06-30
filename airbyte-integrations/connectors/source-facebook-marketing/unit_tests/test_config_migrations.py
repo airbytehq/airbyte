@@ -257,7 +257,6 @@ class TestMigrateSecretsPathInConnector:
         assert migrated["access_token"] == "stale_top_level_token"
 
 
-
 class TestRemoveActionReportTimeMigration:
     OLD_TEST_CONFIG = _config_path(f"{_REMOVE_ACTION_REPORT_TIME_CONFIGS_PATH}/test_old_config.json")
     NEW_TEST_CONFIG = _config_path(f"{_REMOVE_ACTION_REPORT_TIME_CONFIGS_PATH}/test_new_config.json")
