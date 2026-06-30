@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: da9cccd2-7319-44ea-b6cf-ddc08f13e959
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-dropbox-sign
   githubIssueLabel: source-dropbox-sign
   icon: icon.svg
