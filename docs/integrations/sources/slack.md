@@ -41,16 +41,14 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  channels:history
  channels:join
  channels:read
- files:read
+ groups:history
  groups:read
- links:read
- reactions:read
- remote_files:read
- team:read
- usergroups:read
  users:read
- users.profile:read
 ```
+
+:::note
+`groups:history` and `groups:read` are only required if you enable the **Include private channels** option. If you only sync public channels, you can omit them.
+:::
 
 6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using bot token authentication.
 7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**.
@@ -89,7 +87,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
 </FieldAnchor>
 <FieldAnchor field="threads_ignore_no_replies">
-11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
+11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to filter the Threads stream to only include messages that are actual thread parents with replies. When enabled, the connector skips messages that lack a `thread_ts` field (such as system messages and bot notifications) and messages with no replies (`reply_count=0`). This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
 </FieldAnchor>
 12. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:cloud -->
@@ -108,7 +106,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
 9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is toggled on.
 10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
-11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
+11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to filter the Threads stream to only include messages that are actual thread parents with replies. When enabled, the connector skips messages that lack a `thread_ts` field (such as system messages and bot notifications) and messages with no replies (`reply_count=0`). This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
 12. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:oss -->
 
@@ -184,8 +182,13 @@ Because this throttle can slow down a sync that includes other streams, consider
 
 If your Threads stream syncs are slow, consider enabling the **Ignore messages with no replies in threads stream** (`threads_ignore_no_replies`) option. By default, the Threads stream calls the `conversations.replies` API for every message, including those with no replies. In many workspaces, the majority of messages have no replies, so these API calls are wasted and consume rate-limit budget.
 
-- **Set to `true`** when you want to optimize sync performance and only need thread replies for messages that actually have threaded conversations. This can reduce API calls by up to 89% depending on your workspace.
-- **Keep as `false` (default)** when you need the Threads stream to include records for all messages, including unthreaded ones. This preserves the current behavior where every message appears in the Threads stream output.
+When enabled, the filter skips two categories of messages:
+
+1. Messages without a `thread_ts` field, such as system messages, channel join/leave notifications, and bot notifications. These messages cannot be thread parents.
+2. Messages where `reply_count` is 0, null, or absent. These are regular messages that have no threaded replies.
+
+- **Set to `true`** when you want to optimize sync performance and only need thread replies for messages that actually have threaded conversations. This can reduce API calls significantly depending on your workspace.
+- **Keep as `false` (default)** when you need the Threads stream to include records for all messages, including unthreaded ones.
 
 </details>
 
@@ -265,7 +268,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.10 | 2024-07-06 | [40839](https://github.com/airbytehq/airbyte/pull/40839) | Update dependencies |
 | 1.1.9 | 2024-06-25 | [40347](https://github.com/airbytehq/airbyte/pull/40347) | Update dependencies |
 | 1.1.8 | 2024-06-22 | [40166](https://github.com/airbytehq/airbyte/pull/40166) | Update dependencies |
-| 1.1.7 | 2025-06-14 | [39343](https://github.com/airbytehq/airbyte/pull/39343) | Update state handling for `threads` Python stream |
+| 1.1.7 | 2024-06-14 | [39343](https://github.com/airbytehq/airbyte/pull/39343) | Update state handling for `threads` Python stream |
 | 1.1.6 | 2024-06-12 | [39416](https://github.com/airbytehq/airbyte/pull/39416) | Respect `include_private_channels` option in `threads` stream |
 | 1.1.5 | 2024-06-10 | [39132](https://github.com/airbytehq/airbyte/pull/39132) | Convert string state to float for `threads` stream |
 | 1.1.4 | 2024-06-06 | [39271](https://github.com/airbytehq/airbyte/pull/39271) | [autopull] Upgrade base image to v1.2.2 |
@@ -278,7 +281,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.4.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.3.9 | 2024-02-12 | [35157](https://github.com/airbytehq/airbyte/pull/35157) | Manage dependencies with Poetry |
 | 0.3.8 | 2024-02-09 | [35131](https://github.com/airbytehq/airbyte/pull/35131) | Fixed the issue when `schema discovery` fails with `502` due to the platform timeout |
-| 0.3.7 | 2024-01-10 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | Prepare for airbyte-lib |
+| 0.3.7 | 2024-01-12 | [34098](https://github.com/airbytehq/airbyte/pull/34098) | Prepare for airbyte-lib |
 | 0.3.6 | 2023-11-21 | [32707](https://github.com/airbytehq/airbyte/pull/32707) | Threads: do not use client-side record filtering |
 | 0.3.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.4 | 2023-10-06 | [31134](https://github.com/airbytehq/airbyte/pull/31134) | Update CDK and remove non iterable return from records |
