@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4a1d519c-4703-4450-87db-d95816ba4f68
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-zapsign
   githubIssueLabel: source-zapsign
   icon: icon.svg
