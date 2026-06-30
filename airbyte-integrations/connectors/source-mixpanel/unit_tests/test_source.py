@@ -68,6 +68,47 @@ def test_streams(requests_mock, config_raw):
     assert "revenue" not in [stream.name for stream in streams]
 
 
+@pytest.mark.parametrize(
+    "selected_streams,expected_count,expected_names",
+    [
+        pytest.param(None, 6, None, id="no_filter_returns_all"),
+        pytest.param([], 6, None, id="empty_list_returns_all"),
+        pytest.param(["cohorts", "annotations"], 2, {"cohorts", "annotations"}, id="subset_filter"),
+        pytest.param(["export"], 1, {"export"}, id="single_stream_filter"),
+        pytest.param(
+            ["cohorts", "engage", "annotations", "cohort_members", "funnels", "export"],
+            6,
+            {"cohorts", "engage", "annotations", "cohort_members", "funnels", "export"},
+            id="all_streams_explicit",
+        ),
+    ],
+)
+def test_streams_filtering(requests_mock, config_raw, selected_streams, expected_count, expected_names):
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage?page_size=1000", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
+    requests_mock.register_uri(
+        "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://data.mixpanel.com/api/2.0/export",
+        setup_response(200, {"event": "some event", "properties": {"event": 124, "time": 124124}}),
+    )
+
+    config = copy.deepcopy(config_raw)
+    if selected_streams is not None:
+        config["streams"] = selected_streams
+
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
+    assert len(streams) == expected_count
+    if expected_names:
+        assert {s.name for s in streams} == expected_names
+
+
 def test_streams_string_date(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
