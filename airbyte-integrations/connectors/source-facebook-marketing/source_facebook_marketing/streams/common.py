@@ -167,9 +167,9 @@ def traced_exception(fb_exception: FacebookRequestError):
             "The access token for this connection is invalid or corrupted. "
             "This may be caused by browser autofill overwriting the OAuth token with saved credentials. "
             "Please re-authenticate your Facebook connection by clicking 'Authenticate your account' and saving the configuration. "
-            "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating for details."
+            "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating for details. "
             "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
-            "remove the Airbyte app, and then re-authenticate again. "
+            "remove the Airbyte app, and then re-authenticate again."
         )
 
     elif "Error validating access token" in msg:
