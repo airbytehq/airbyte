@@ -35,8 +35,6 @@ jobs:
   rc-registry-compile:
     name: "Registry compile (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
     runs-on: ubuntu-24.04
-    outputs:
-      resolved_version: ${{ steps.resolve-version.outputs.version }}
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
       CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
@@ -212,6 +210,9 @@ jobs:
               "username": "Connectors CI/CD Bot",
               "text": "🚨 Registry compile failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
+
+    outputs:
+      resolved_version: ${{ steps.resolve-version.outputs.version }}
 
   # ---------------------------------------------------------------------------
   # Job 2: Create and merge finalize PR (RC promote only)
