@@ -163,6 +163,7 @@ class SourceFacebookMarketing(AbstractSource):
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
             include_incrementality=config.include_incrementality,
+            include_engaged_view=config.include_engaged_view,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
@@ -354,6 +355,7 @@ class SourceFacebookMarketing(AbstractSource):
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
                 include_incrementality=insight.include_incrementality,
+                include_engaged_view=insight.include_engaged_view,
             )
             streams.append(stream)
         return streams
