@@ -34,6 +34,7 @@ pytest = "^8.0.0"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 coverage = "^7.5.3"
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.scripts]
 destination-pgvector = "destination_pgvector.run:run"

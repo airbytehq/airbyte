@@ -26,6 +26,7 @@ fastembed = "< 0.3"
 pytest = "^8"
 ruff = "^0.4"
 mypy = "^1.9"
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.scripts]
 destination-qdrant = "destination_qdrant.run:run"
