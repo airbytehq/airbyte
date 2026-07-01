@@ -19,7 +19,7 @@ class AltertableContainer(DockerContainer):
 
     def __init__(
         self,
-        image: str = "ghcr.io/altertable-ai/altertable-mock:sha-a0875ff",
+        image: str = "ghcr.io/altertable-ai/altertable-mock:sha-c6b625c",
         port: int = 15002,
     ):
         super().__init__(image)
