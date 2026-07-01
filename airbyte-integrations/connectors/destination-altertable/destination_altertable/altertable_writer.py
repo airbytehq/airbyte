@@ -17,9 +17,10 @@ from airbyte_cdk.models import (
 from .type_conversion import convert_to_arrow
 
 
-# Maximum GRPC message size is 512MB. We use 400MB as a safety margin because
-# we only have a message size average.
-MAX_BATCH_SIZE = 400 * 1024 * 1024
+# Maximum GRPC message size is 512MB. We use 256MB as a conservative safety margin
+# because get_total_buffer_size() returns uncompressed in-memory size which can be
+# significantly smaller than the serialized IPC/gRPC wire size.
+MAX_BATCH_SIZE = 256 * 1024 * 1024
 
 
 @dataclass(frozen=True)
