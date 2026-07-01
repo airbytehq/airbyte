@@ -8,9 +8,17 @@ Understanding the following limitations will help you more effectively manage Ai
 
 ## Standard plan limitations
 
-These limitations only apply to those using the Standard plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
+These limitations only apply to those using the Standard plan. If you upgrade to Plus, Pro, or Enterprise Flex, Airbyte removes these limitations.
 
 - Max number of workspaces per user: 1. If you were a Cloud Standard customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
+
+- Scheduled or cron syncs can run at most every 60 minutes.
+
+## Plus plan limitations
+
+These limitations only apply to those using the Plus plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
+
+- Scheduled or cron syncs can run at most every 15 minutes.
 
 ## Cloud limitations for all plans
 
