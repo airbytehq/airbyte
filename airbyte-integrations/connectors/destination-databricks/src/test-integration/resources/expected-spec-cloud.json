@@ -1,0 +1,147 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/databricks",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Databricks Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "hostname" : {
+        "type" : "string",
+        "description" : "Enter your Databricks workspace <a href=\"https://docs.databricks.com/en/integrations/compute-details.html\">server hostname</a> (e.g., abc-12345678-wxyz.cloud.databricks.com). You can find this in your cluster or SQL warehouse connection details.",
+        "title" : "Server Hostname",
+        "group" : "connection",
+        "order" : 1,
+        "examples" : [ "abc-12345678-wxyz.cloud.databricks.com" ]
+      },
+      "http_path" : {
+        "type" : "string",
+        "description" : "Enter the <a href=\"https://docs.databricks.com/en/integrations/compute-details.html\">HTTP path</a> for your Databricks SQL warehouse or cluster. You can find this in the connection details of your compute resource.",
+        "title" : "HTTP Path",
+        "group" : "connection",
+        "order" : 2,
+        "examples" : [ "sql/1.0/warehouses/0000-1111111-abcd90" ]
+      },
+      "port" : {
+        "type" : "string",
+        "description" : "Enter the port number for the Databricks cluster connection. The default port is 443 (HTTPS).",
+        "title" : "Port",
+        "group" : "connection",
+        "order" : 9,
+        "default" : "443",
+        "examples" : [ "443" ]
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "Enter the name of the <a href=\"https://docs.databricks.com/en/data-governance/unity-catalog/index.html\">Unity Catalog</a> that you want to sync data into.",
+        "title" : "Databricks Unity Catalog Name",
+        "group" : "connection",
+        "order" : 3,
+        "examples" : [ "AIRBYTE_DATABASE" ]
+      },
+      "schema" : {
+        "type" : "string",
+        "description" : "Enter the name of the default <a href=\"https://docs.databricks.com/en/sql/language-manual/sql-ref-schema.html\">schema</a> where tables will be written. If not specified, \"default\" will be used.",
+        "title" : "Default Schema",
+        "group" : "connection",
+        "order" : 4,
+        "default" : "default",
+        "examples" : [ "AIRBYTE_SCHEMA" ]
+      },
+      "cdc_deletion_mode" : {
+        "type" : "string",
+        "default" : "Hard delete",
+        "enum" : [ "Hard delete", "Soft delete" ],
+        "description" : "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
+        "title" : "CDC deletion mode",
+        "group" : "sync_behavior",
+        "order" : 7,
+        "always_show" : true
+      },
+      "authentication" : {
+        "oneOf" : [ {
+          "title" : "OAuth2 (Recommended)",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Authentication using OAuth2 client credentials.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "OAUTH" ],
+              "default" : "OAUTH"
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "Enter the OAuth2 client ID for your Databricks <a href=\"https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html\">service principal</a>.",
+              "title" : "Client ID",
+              "order" : 1
+            },
+            "secret" : {
+              "type" : "string",
+              "description" : "Enter the OAuth2 secret associated with the client ID.",
+              "title" : "Secret",
+              "order" : 2,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "client_id", "secret" ]
+        }, {
+          "title" : "Personal Access Token",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Authentication using a personal access token.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "BASIC" ],
+              "default" : "BASIC"
+            },
+            "personal_access_token" : {
+              "type" : "string",
+              "description" : "Enter your Databricks <a href=\"https://docs.databricks.com/en/dev-tools/auth/pat.html\">personal access token</a>.",
+              "title" : "Personal Access Token",
+              "order" : 1,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "personal_access_token" ]
+        } ],
+        "description" : "Determines the type of authentication used to connect to Databricks. OAuth2 is recommended for production use.",
+        "title" : "Authentication",
+        "group" : "connection",
+        "order" : 5,
+        "type" : "object"
+      },
+      "purge_staging_data" : {
+        "type" : "boolean",
+        "description" : "Whether to delete staging files and tables after data has been loaded. Disable this option for debugging purposes.",
+        "title" : "Purge Staging Files and Tables",
+        "group" : "sync_behavior",
+        "order" : 8,
+        "default" : true
+      },
+      "accept_terms" : {
+        "type" : "boolean",
+        "description" : "You must agree to the Databricks JDBC Driver <a href=\"https://databricks.com/jdbc-odbc-driver-license\">Terms & Conditions</a> to use this connector.",
+        "title" : "Agree to the Databricks JDBC Driver Terms & Conditions",
+        "group" : "connection",
+        "order" : 6,
+        "default" : false,
+        "const" : true,
+        "always_show" : true
+      }
+    },
+    "required" : [ "hostname", "http_path", "database", "authentication", "accept_terms" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "sync_behavior",
+      "title" : "Sync Behavior"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}
