@@ -17,7 +17,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_astra"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
 
 [tool.poetry.group.dev.dependencies]
