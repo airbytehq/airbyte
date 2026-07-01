@@ -49,6 +49,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                             | Subject                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 0.1.53 | 2025-12-06 | [70420](https://github.com/airbytehq/airbyte/pull/70420) | Upgrade CDK to fix state message handling for CDC sources and Airbyte 1.7+ |
 | 0.1.52 | 2025-05-17 | [60709](https://github.com/airbytehq/airbyte/pull/60709) | Update dependencies |
 | 0.1.51 | 2025-05-10 | [59776](https://github.com/airbytehq/airbyte/pull/59776) | Update dependencies |
 | 0.1.50 | 2025-05-03 | [59331](https://github.com/airbytehq/airbyte/pull/59331) | Update dependencies |
