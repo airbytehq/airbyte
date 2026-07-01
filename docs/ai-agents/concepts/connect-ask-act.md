@@ -47,10 +47,7 @@ execute(entity, action, params)
 
 This pattern is the same across every connector and every interface. Agents call the same entities and actions with the same parameters from any interface.
 
-Airbyte Agents act through two modes:
-
-- **[Chats](../interfaces/ui/chats).** Interactive, conversational sessions where an agent responds to prompts in real time.
-- **[Automations](../interfaces/ui/automations).** Manual or scheduled flows that run without human intervention.
+Airbyte Agents act through [**Chats**](../interfaces/ui/chats) — interactive, conversational sessions where an agent responds to prompts in real time.
 
 Airbyte logs every action an agent takes. You can review what happened, when, and why in the [Sessions](../admin/sessions) and [Tool calls](../admin/tool-calls) views.
 

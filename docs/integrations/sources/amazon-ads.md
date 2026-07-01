@@ -42,7 +42,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 5. Click **Authenticate your Amazon Ads account**.
 6. Log in and Authorize to the Amazon account.
 7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, yesterday's date (UTC) is used. The date is treated in the timezone of the processed profile.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). Dates older than 60 days are automatically adjusted to 60 days ago, because Amazon Ads does not retain report data beyond that window. The date is treated in the timezone of the processed profile.
 9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 11. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
@@ -59,7 +59,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, yesterday's date (UTC) is used. The date is treated in the timezone of the processed profile.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). Dates older than 60 days are automatically adjusted to 60 days ago, because Amazon Ads does not retain report data beyond that window. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 10. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
@@ -122,7 +122,7 @@ All the reports are generated relative to the target profile's timezone.
 
 Campaign reports may sometimes have no data or may not appear in records. This can occur when there are no clicks or views associated with the campaigns on the requested day. For details, see [Why is my report empty?](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#why-is-my-report-empty)
 
-Report data synchronization only covers the last 60 days. For details, see [Get started with v3 reporting](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started).
+Amazon Ads retains report data for 60 days. The connector automatically caps the start date to 60 days ago, so any configured or saved start date older than that is adjusted at sync time. For details, see [Get started with v3 reporting](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started).
 
 ### Report stream variants
 
@@ -185,6 +185,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.0.3 | 2026-07-01 | [81333](https://github.com/airbytehq/airbyte/pull/81333) | Use `min_datetime` to cap report start date to Amazon's 60-day data retention limit, fixing off-by-one that requested 61 days back |
 | 9.0.2 | 2026-06-30 | [80957](https://github.com/airbytehq/airbyte/pull/80957) | Update dependencies |
 | 9.0.1 | 2026-06-23 | [80363](https://github.com/airbytehq/airbyte/pull/80363) | Update dependencies |
 | 9.0.0 | 2026-06-18 | [80201](https://github.com/airbytehq/airbyte/pull/80201) | Migrate `sponsored_product_ad_group_suggested_keywords` stream from deprecated V2 Suggested Keywords API to Keyword Recommendations API (`/sp/targets/keywords/recommendations`). |
