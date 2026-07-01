@@ -5,8 +5,8 @@ This page guides you through the process of setting up the [Altertable](https://
 ## Prerequisites
 
 1. An [Altertable](https://altertable.ai) account.
-2. Your lakehouse credentials (username and password) — see the [Altertable documentation](https://altertable.ai/docs/analytical-database/authentication) to retrieve them.
-3. An existing catalog — see the [Altertable documentation](https://altertable.ai/docs/analytical-database/altertable-catalogs) to create one.
+2. Your lakehouse credentials (username and password) — see the [Altertable documentation](https://altertable.ai/docs/lakehouse/authentication) to retrieve them.
+3. An existing catalog — see the [Altertable documentation](https://altertable.ai/docs/lakehouse/catalogs) to create one.
 
 ## Connection parameters
 
