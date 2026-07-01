@@ -15,6 +15,7 @@ from source_google_ads.components import (
     CustomGAQuerySchemaLoader,
     FlattenNestedDictsTransformation,
     GoogleAdsRetriever,
+    GoogleAdsServiceAccountAuthenticator,
     GoogleAdsStreamingDecoder,
     SerializeMessageFieldsTransformation,
     TimeoutHTTPAdapter,
@@ -1129,3 +1130,118 @@ def test_dynamic_streams_have_timeout_adapter_mounted(stream_name, retriever):
     assert isinstance(
         adapter, TimeoutHTTPAdapter
     ), f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+
+
+_SERVICE_ACCOUNT_KEY_DICT = {
+    "type": "service_account",
+    "project_id": "test-project",
+    "private_key_id": "key-id",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----\n",
+    "client_email": "sa@test-project.iam.gserviceaccount.com",
+    "client_id": "1234567890",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+}
+
+
+@patch("source_google_ads.components.service_account.Credentials")
+def test_service_account_authenticator_emits_bearer_token_with_subject(mock_credentials_cls):
+    delegated = MagicMock()
+    delegated.valid = False
+    delegated.token = "ya29.test"
+
+    base = MagicMock()
+    base.with_subject.return_value = delegated
+    mock_credentials_cls.from_service_account_info.return_value = base
+
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={
+            "credentials": {
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "service_account_info": json.dumps(_SERVICE_ACCOUNT_KEY_DICT),
+                "impersonated_email": "user@example.com",
+            }
+        },
+        parameters={},
+    )
+
+    assert authenticator.auth_header == "Authorization"
+    assert authenticator.token == "Bearer ya29.test"
+    mock_credentials_cls.from_service_account_info.assert_called_once_with(
+        _SERVICE_ACCOUNT_KEY_DICT, scopes=["https://www.googleapis.com/auth/adwords"]
+    )
+    base.with_subject.assert_called_once_with("user@example.com")
+    delegated.refresh.assert_called_once()
+
+
+@patch("source_google_ads.components.service_account.Credentials")
+def test_service_account_authenticator_skips_subject_when_not_configured(mock_credentials_cls):
+    credentials = MagicMock()
+    credentials.valid = True
+    credentials.token = "ya29.direct"
+    mock_credentials_cls.from_service_account_info.return_value = credentials
+
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={
+            "credentials": {
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "service_account_info": _SERVICE_ACCOUNT_KEY_DICT,
+            }
+        },
+        parameters={},
+    )
+
+    assert authenticator.token == "Bearer ya29.direct"
+    credentials.with_subject.assert_not_called()
+    credentials.refresh.assert_not_called()
+
+
+def test_service_account_authenticator_rejects_missing_info():
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={"credentials": {"auth_type": "Service", "developer_token": "x", "impersonated_email": "u@example.com"}},
+        parameters={},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _ = authenticator.token
+
+    assert "service_account_info" in exc_info.value.message
+
+
+def test_service_account_authenticator_rejects_invalid_json():
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={
+            "credentials": {
+                "auth_type": "Service",
+                "developer_token": "x",
+                "service_account_info": "not-json",
+                "impersonated_email": "u@example.com",
+            }
+        },
+        parameters={},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _ = authenticator.token
+
+    assert "service_account_info" in exc_info.value.message
+
+
+def test_service_account_authenticator_rejects_non_object_json():
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={
+            "credentials": {
+                "auth_type": "Service",
+                "developer_token": "x",
+                "service_account_info": "[]",
+            }
+        },
+        parameters={},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _ = authenticator.token
+
+    assert "JSON object" in exc_info.value.message
