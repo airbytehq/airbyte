@@ -64,7 +64,14 @@ class FileChunkTask<T>(
                 log.info { "Unexpected heartbeat. Ignoring..." }
             }
             is PipelineMessage -> {
-                val file = event.value.fileReference!!
+                val file = event.value.fileReference
+                if (file == null) {
+                    log.warn {
+                        "Record for stream ${event.key.stream} has no file reference. " +
+                            "Skipping file chunk processing."
+                    }
+                    return
+                }
                 val stream = catalog.getStream(event.key.stream)
 
                 val filePath =
