@@ -97,7 +97,6 @@ class StateManagerFactory(
                 when (inputState) {
                     is StreamInputState ->
                         throw ConfigErrorException("input state unexpectedly of type STREAM")
-
                     is GlobalInputState -> forGlobal(mq, allStreams, inputState)
                     is EmptyInputState -> forGlobal(mq, allStreams)
                 }
@@ -133,7 +132,10 @@ class StateManagerFactory(
                             // sorting.
                             // Output here needs to match Discover's JdbcAirbyteStreamFactory
                             SOCKET to PROTOBUF ->
-                                if (metadataQuerier.primaryKey(stream.id).isNotEmpty() && stream.configuredPrimaryKey?.isNotEmpty() == true) {
+                                if (
+                                    metadataQuerier.primaryKey(stream.id).isNotEmpty() &&
+                                        stream.configuredPrimaryKey?.isNotEmpty() == true
+                                ) {
                                     stream.copy(
                                         schema =
                                             stream.schema + metaFieldDecorator.globalMetaFields,
