@@ -3403,7 +3403,7 @@ definitions:
     lookback_window: P{{ config.get('look_back_window', 3) }}D
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d')) }}"
+      datetime: "{{ config.get('start_date', (today_utc() - duration('P1D')).strftime('%Y-%m-%d')) }}"
       # Amazon Ads Sponsored Brands reports have a 60-day data retention limit.
       # https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types
       min_datetime: "{{ today_utc() - duration('P60D') }}"
