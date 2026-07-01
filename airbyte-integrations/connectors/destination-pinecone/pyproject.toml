@@ -20,12 +20,12 @@ include = "destination_pinecone"
 python = "^3.9,<3.12"
 airbyte-cdk = { version = "<2.0.0", extras = ["vector-db-based"] }
 pinecone-client = { version = "3.1.0", extras = ["grpc"] }
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
 ruff = "^0.4"
 mypy = "^1.9.0"
-setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.scripts]
 destination-pinecone = "destination_pinecone.run:run"

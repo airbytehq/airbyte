@@ -16,6 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
 include = "destination_snowflake_cortex"
 
+[tool.poetry.dependencies]
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 [tool.poetry.dependencies.airbyte-cdk]
 # Version cnstrained by PyAirbyte (`airbyte`) version
 version = ">=1.0.0"
@@ -33,7 +35,6 @@ pytest = "^8.3.2"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 coverage = "^7.5.3"
-setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.scripts]
 destination-snowflake-cortex = "destination_snowflake_cortex.run:run"

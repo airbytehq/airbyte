@@ -20,6 +20,7 @@ include = "destination_weaviate"
 python = "^3.9,<3.12"
 airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
 weaviate-client = "3.25.2"
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
@@ -27,7 +28,6 @@ pytest-docker = "3.0.0"
 docker = "*"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
-setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.scripts]
 destination-weaviate = "destination_weaviate.run:run"
