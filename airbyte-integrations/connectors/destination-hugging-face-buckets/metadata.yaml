@@ -1,0 +1,48 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/hugging-face-buckets",
+  "connectorBuildOptions": {
+    "baseImage": "docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73"
+  },
+  "connectorSubtype": "file",
+  "connectorType": "destination",
+  "definitionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "dockerImageTag": "0.1.0",
+  "dockerRepository": "airbyte/destination-hugging-face-buckets",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/hugging-face-buckets",
+  "githubIssueLabel": "destination-hugging-face-buckets",
+  "icon": "icon.svg",
+  "license": "ELv2",
+  "name": "Hugging Face Buckets",
+  "registryOverrides": {
+    "cloud": {
+      "enabled": true
+    },
+    "oss": {
+      "enabled": true
+    }
+  },
+  "releaseStage": "alpha",
+  "supportLevel": "community",
+  "tags": [
+    "language:python",
+    "cdk:python"
+  ],
+  "connectorTestSuitesOptions": [
+    {
+      "suite": "unitTests"
+    },
+    {
+      "suite": "integrationTests",
+      "testSecrets": [
+        {
+          "name": "SECRET_DESTINATION-HF-BUCKETS__CREDS",
+          "fileName": "config.json",
+          "secretStore": {
+            "type": "GSM",
+            "alias": "airbyte-connector-testing-secret-store"
+          }
+        }
+      ]
+    }
+  ]
+}
