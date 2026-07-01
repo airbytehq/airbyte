@@ -230,6 +230,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.3.2 | 2026-06-30 | [81210](https://github.com/airbytehq/airbyte/pull/81210) | Fixed `side_conversations` stream: added millisecond-precision timestamp parsing for cursor field and added error handler to skip tickets returning HTTP 422 |
 | 5.3.1 | 2026-06-30 | [81305](https://github.com/airbytehq/airbyte/pull/81305) | Update dependencies |
 | 5.3.0 | 2026-06-10 | [79640](https://github.com/airbytehq/airbyte/pull/79640) | Added `side_conversations` stream to retrieve Side Conversations from tickets |
 | 5.2.12 | 2026-06-23 | [80725](https://github.com/airbytehq/airbyte/pull/80725) | Update dependencies |
