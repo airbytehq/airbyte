@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.mockk.Ordering
 import io.mockk.Runs
@@ -266,4 +267,165 @@ class CheckpointManagerUTest {
     private fun mockMessage(
         checkpointMessage: CheckpointMessage? = null
     ): Reserved<CheckpointMessage> = Reserved(value = checkpointMessage ?: mockk(relaxed = true))
+
+    /**
+     * Regression coverage for airbytehq/oncall#12017: in socket mode, `checkGlobalStreams` must
+     * treat records that the destination *rejected* (DLQ'd) as still accounted for when comparing
+     * to the source-reported record count. Without this, a single rejected record prevents the
+     * global checkpoint from ever flushing, and `awaitAllCheckpointsFlushed` busy-waits forever.
+     */
+    @Test
+    fun `socket-mode global checkpoint flushes when some records are rejected by the destination`() =
+        runTest {
+            val checkpointManager = makeSocketModeCheckpointManager()
+            val key = makeKey(1, "one")
+            // Source emitted 10 records for this checkpoint.
+            val sourceStats = CheckpointMessage.Stats(recordCount = 10)
+            val globalCheckpoint =
+                mockk<GlobalCheckpoint> {
+                    every { this@mockk.sourceStats } returns sourceStats
+                    every { checkpointKey } returns key
+                    every { updateStats(any()) } just Runs
+                    every { checkpoints } returns emptyList()
+                    every { destinationStats } returns null
+                    every { additionalProperties } returns emptyMap()
+                }
+            val message = mockMessage(globalCheckpoint)
+
+            // Both streams report their records as persisted...
+            coEvery { streamManager1.areRecordsPersistedForCheckpoint(key.checkpointId) } returns
+                true
+            coEvery { streamManager2.areRecordsPersistedForCheckpoint(key.checkpointId) } returns
+                true
+            // ...but 7 records committed + 3 rejected == 10 source records.
+            every { streamManager1.committedCount(key.checkpointId) } returns
+                CheckpointValue(records = 5, serializedBytes = 0, rejectedRecords = 2)
+            every { streamManager2.committedCount(key.checkpointId) } returns
+                CheckpointValue(records = 2, serializedBytes = 0, rejectedRecords = 1)
+
+            checkpointManager.addGlobalCheckpoint(key, message)
+            checkpointManager.flushReadyCheckpointMessages()
+
+            coVerify(exactly = 1) { outputConsumer.invoke(message, any(), any(), any()) }
+        }
+
+    /**
+     * Negative counterpart: if committed + rejected still does not equal the source-reported count,
+     * the checkpoint must not flush. This protects against an overly permissive fix that would emit
+     * checkpoints despite unaccounted-for records.
+     */
+    @Test
+    fun `socket-mode global checkpoint does not flush when committed plus rejected is still short of source`() =
+        runTest {
+            val checkpointManager = makeSocketModeCheckpointManager()
+            val key = makeKey(1, "one")
+            val sourceStats = CheckpointMessage.Stats(recordCount = 10)
+            val globalCheckpoint =
+                mockk<GlobalCheckpoint> {
+                    every { this@mockk.sourceStats } returns sourceStats
+                    every { checkpointKey } returns key
+                    every { updateStats(any()) } just Runs
+                    every { checkpoints } returns emptyList()
+                    every { destinationStats } returns null
+                    every { additionalProperties } returns emptyMap()
+                }
+            val message = mockMessage(globalCheckpoint)
+
+            coEvery { streamManager1.areRecordsPersistedForCheckpoint(key.checkpointId) } returns
+                true
+            coEvery { streamManager2.areRecordsPersistedForCheckpoint(key.checkpointId) } returns
+                true
+            every { streamManager1.committedCount(key.checkpointId) } returns
+                CheckpointValue(records = 4, serializedBytes = 0, rejectedRecords = 1)
+            every { streamManager2.committedCount(key.checkpointId) } returns
+                CheckpointValue(records = 2, serializedBytes = 0, rejectedRecords = 1)
+
+            checkpointManager.addGlobalCheckpoint(key, message)
+            checkpointManager.flushReadyCheckpointMessages()
+
+            coVerify(exactly = 0) { outputConsumer.invoke(any(), any(), any(), any()) }
+        }
+
+    /**
+     * Regression coverage for oncall#12017 on the stream-state code path: `flushStreamCheckpoints`
+     * must also count rejected records toward the source-vs-destination comparison when operating
+     * in socket mode.
+     */
+    @Test
+    fun `socket-mode stream checkpoint flushes when some records are rejected by the destination`() =
+        runTest {
+            val checkpointManager = makeSocketModeCheckpointManager()
+            val key = makeKey(1, "one")
+            val sourceStats = CheckpointMessage.Stats(recordCount = 10)
+            val streamCheckpoint =
+                mockk<CheckpointMessage>(relaxed = true) {
+                    every { this@mockk.sourceStats } returns sourceStats
+                    every { checkpointKey } returns key
+                    every { updateStats(any()) } just Runs
+                }
+            val message = mockMessage(streamCheckpoint)
+
+            coEvery { streamManager1.areRecordsPersistedForCheckpoint(key.checkpointId) } returns
+                true
+            every { streamManager1.committedCount(key.checkpointId) } returns
+                CheckpointValue(records = 7, serializedBytes = 0, rejectedRecords = 3)
+
+            checkpointManager.addStreamCheckpoint(stream1.mappedDescriptor, key, message)
+            checkpointManager.flushReadyCheckpointMessages()
+
+            coVerify(exactly = 1) { outputConsumer.invoke(message, any(), any(), any()) }
+        }
+
+    /** Regression coverage for oncall#12017 on the snapshot-checkpoint code path. */
+    @Test
+    fun `socket-mode snapshot checkpoint flushes when some records are rejected by the destination`() =
+        runTest {
+            val checkpointManager = makeSocketModeCheckpointManager()
+            val innerKey1 = makeKey(2, "inner1")
+            val innerKey2 = makeKey(3, "inner2")
+            val outerKey = makeKey(1, "outer")
+            val sourceStats = CheckpointMessage.Stats(recordCount = 10)
+            val snapshot =
+                mockk<GlobalSnapshotCheckpoint> {
+                    every { streamCheckpoints } returns
+                        mapOf(
+                            stream1.mappedDescriptor to innerKey1,
+                            stream2.mappedDescriptor to innerKey2,
+                        )
+                    every { this@mockk.sourceStats } returns sourceStats
+                    every { checkpointKey } returns outerKey
+                    every { updateStats(any()) } just Runs
+                    every { checkpoints } returns emptyList()
+                    every { destinationStats } returns null
+                    every { additionalProperties } returns emptyMap()
+                }
+            val message = mockMessage(snapshot)
+
+            coEvery {
+                streamManager1.areRecordsPersistedForCheckpoint(innerKey1.checkpointId)
+            } returns true
+            coEvery {
+                streamManager2.areRecordsPersistedForCheckpoint(innerKey2.checkpointId)
+            } returns true
+            every { streamManager1.committedCount(innerKey1.checkpointId) } returns
+                CheckpointValue(records = 4, serializedBytes = 0, rejectedRecords = 2)
+            every { streamManager2.committedCount(innerKey2.checkpointId) } returns
+                CheckpointValue(records = 3, serializedBytes = 0, rejectedRecords = 1)
+
+            checkpointManager.addGlobalCheckpoint(outerKey, message)
+            checkpointManager.flushReadyCheckpointMessages()
+
+            coVerify(exactly = 1) { outputConsumer.invoke(message, any(), any(), any()) }
+        }
+
+    private fun makeSocketModeCheckpointManager(): CheckpointManager {
+        return CheckpointManager(
+            catalog,
+            syncManager,
+            outputConsumer,
+            timeProvider,
+            socketMode = true,
+            NamespaceMapper(NamespaceDefinitionType.SOURCE),
+        )
+    }
 }
