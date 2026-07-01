@@ -14,9 +14,7 @@ class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration
 
     override fun extraChecks() {}
 
-    override fun close() {
-        // Nothing to do here.
-    }
+    override fun close() = Unit
 
     override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         val flavor = configuration.flavor

@@ -1,0 +1,102 @@
+name: OSS Unpin
+
+# This workflow automatically triggers AI triage for issues and discussions opened by
+# community members (users without write access to the repository). It helps provide
+# quick initial responses and escalates actionable items to the internal oncall team.
+
+on:
+  pull_request:
+    types: [closed]
+
+#  workflow_dispatch:
+#    inputs:
+#      connectors:
+#        description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
+#        default: "--name=source-pokeapi"
+#        type: string
+#      with-semver-suffix:
+#        description: |
+#          Semver suffix to apply ephemerally (not committed back to the repo):
+#          - default: Resolves to 'none' on push to master, 'preview' on manual trigger
+#          - none: Use exact version from metadata.yaml (for production releases)
+#          - preview: Append '-preview.{sha}' suffix (for development builds)
+#          - rc: Append '-rc1' suffix (for release candidates)
+#        default: default
+#        type: choice
+#        options:
+#          - default
+#          - none
+#          - preview
+#          - rc
+#      publish-java-tars:
+#        description: "Whether to publish Java connector tar files."
+#        required: false
+#        default: false
+#        type: boolean
+#      dry-run:
+#        description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
+#        required: false
+#        default: false
+#        type: boolean
+
+permissions:
+  issues: write
+  discussions: write
+
+jobs:
+  ai-unpin:
+    name: Unpin previously pinned versions
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+#    if: if_merged == false
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Post comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## AI Unpinning
+            >
+            > The following live connections will be unpinned upon approval:
+            > - XXXXX
+            > - XXXXX            
+            >
+            > [Check job output.](${{ steps.job-vars.outputs.run-url }})
+
+#      - name: Render template
+#        id: template
+#        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
+#        with:
+#          # Use a different template for internal vs forks (community)
+#          template: ${{ github.event.pull_request.head.repo.fork == true && '.github/pr-fork-permission-warning.md' || '.github/pr-fork-permission-warning.md' }}
+#          vars: |
+#            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
+#
+#      - name: Create comment
+#        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+#        with:
+#          issue-number: ${{ github.event.pull_request.number }}
+#          body: ${{ steps.template.outputs.result }}
+
+#      - name: Run AI Triage
+#        uses: aaronsteers/devin-action@main
+#        with:
+#          issue-number: ${{ github.event.issue.number }}
+##          playbook-macro: "!oss_connector_unpin"
+#          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+#          github-token: ${{ steps.get-app-token.outputs.token }}
+#          api-version: v3
+#          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+#          start-message: |
+#            **AI Unpinning Starting...**
+#            Please approve the unpinning of the following connections:
+#            XXXX
+#            XXXX
+#
+#            [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/oss_issue_triage.md)
+#          tags: |
+#            oss-issue-triage
+#            community-issue
