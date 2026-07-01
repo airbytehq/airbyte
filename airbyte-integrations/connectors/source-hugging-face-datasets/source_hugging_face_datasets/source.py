@@ -37,34 +37,6 @@ class SourceHuggingFaceDatasets(Source):
         self, logger: logging.Logger
     ) -> ConnectorSpecification:
         """Returns the connector specification."""
-        spec_path = __file__.replace("source.py", "spec.json")
-        if spec_path:
-            import os
-            if os.path.exists(spec_path):
-                with open(spec_path) as f:
-                    spec_dict = json.load(f)
-                # Extract the first item from the list (Airbyte spec format)
-                conn_spec = spec_dict["connectionSpecification"]
-                if isinstance(conn_spec, list):
-                    conn_spec = conn_spec[0] if conn_spec else {}
-                
-                # Add the streaming field if not present
-                if conn_spec.get("type") == "object":
-                    properties = conn_spec.get("properties", {})
-                    if "streaming" not in properties:
-                        properties["streaming"] = {
-                            "order": 4,
-                            "title": "Streaming Mode",
-                            "type": "boolean",
-                            "default": False,
-                            "description": "When true, datasets are streamed on-the-fly without caching to disk. Use this for very large datasets where you don't want to fill disk space. Note: streaming mode is slower and less reliable than non-streaming mode.",
-                        }
-                        conn_spec["properties"] = properties
-                
-                return ConnectorSpecification(
-                    connectionSpecification=conn_spec,
-                    documentationUrl=spec_dict.get("documentationUrl", ""),
-                )
         return ConnectorSpecification(
             connectionSpecification={
                 "title": "Dataset Configuration",
@@ -107,6 +79,8 @@ class SourceHuggingFaceDatasets(Source):
                 "type": "object",
             },
             documentationUrl="https://docs.airbyte.com/integrations/sources/hugging-face-datasets",
+            supports_incremental=False,
+            supported_destination_sync_modes=["append", "overwrite"]
         )
 
     def check(
