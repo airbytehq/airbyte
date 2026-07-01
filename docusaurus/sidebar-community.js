@@ -49,7 +49,7 @@ const mcpServers = {
       href: "/ai-agents/interfaces/mcp/",
     },
     "mcp-servers/airbyte-knowledge-mcp",
-    "mcp-servers/pyairbyte-mcp",
+    "mcp-servers/replication-mcp",
   ],
 };
 

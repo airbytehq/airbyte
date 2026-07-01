@@ -137,6 +137,10 @@ definitions:
                       - 404
           request_body_json:
             contentSelector:
+              context: "Extended"
+              contextTiming:
+                - "Now"
+                - "TimeOfCall"
               exposedFields:
                 media: true
                 content:
@@ -429,6 +433,7 @@ definitions:
           grant_type: refresh_token
           refresh_request_headers:
             Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
+          send_refresh_request_as_query_params: true
           refresh_token_updater:
             refresh_token_name: refresh_token
             access_token_config_path:

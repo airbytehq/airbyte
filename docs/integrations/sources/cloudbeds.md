@@ -23,6 +23,10 @@ You can learn more about the API here https://hotels.cloudbeds.com/api/v1.2/docs
 | transactions | transactionID | DefaultPaginator | ✅ |  ❌  |
 | packages | itemID | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,11 @@ You can learn more about the API here https://hotels.cloudbeds.com/api/v1.2/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.55 | 2026-06-30 | [81002](https://github.com/airbytehq/airbyte/pull/81002) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80414](https://github.com/airbytehq/airbyte/pull/80414) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [79789](https://github.com/airbytehq/airbyte/pull/79789) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79243](https://github.com/airbytehq/airbyte/pull/79243) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [77180](https://github.com/airbytehq/airbyte/pull/77180) | Update dependencies |
 | 0.0.50 | 2026-04-21 | [75783](https://github.com/airbytehq/airbyte/pull/75783) | Update dependencies |
 | 0.0.49 | 2026-03-17 | [74478](https://github.com/airbytehq/airbyte/pull/74478) | Update dependencies |
 | 0.0.48 | 2026-03-10 | [74460](https://github.com/airbytehq/airbyte/pull/74460) | Update dependencies |

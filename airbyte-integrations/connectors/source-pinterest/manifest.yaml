@@ -29,8 +29,9 @@ definitions:
         header: "X-RateLimit-Reset"
     response_filters:
       - type: HttpResponseFilter
-        action: IGNORE
-        error_message: "Max rate limit exceeded"
+        action: RATE_LIMITED
+        failure_type: transient_error
+        error_message: "Rate limit exceeded for Pinterest API."
         predicate: "{{ response.get('code') == 8 }}"
       - type: HttpResponseFilter
         action: IGNORE
@@ -54,6 +55,16 @@ definitions:
       - type: HttpResponseFilter
         action: RETRY
         http_codes: [400]
+        predicate: "{{ response.get('message', '') is string and 'Retry after' in response.get('message', '') }}"
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [400]
+        failure_type: transient_error
+        predicate: >-
+          {{ response.get('code') == 12 or
+          (response.get('message', '') is string and
+          'something went wrong' in response.get('message', '') | lower) }}
+        error_message: "Pinterest API request failed due to a temporary error."
 
   # Requester
   requester:
@@ -294,10 +305,22 @@ definitions:
       path: ad_accounts/{{ stream_partition['id'] }}/reports
       request_parameters:
         token: "'{{ creation_response['token'] }}'"
+    download_target_requester:
+      $ref: "#/definitions/requester"
+      path: "ad_accounts/{{ polling_response['request'].url | regex_search('ad_accounts/([^/]+)/reports') }}/reports?token={{ polling_response['request'].url | regex_search('[?&]token=([^&]+)') }}"
     download_requester:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: transient_error
+            http_codes: [403]
+            error_message_contains: "Request has expired"
+            error_message: "Pinterest report download URL is expired."
     download_decoder:
       type: JsonDecoder
 
@@ -553,6 +576,42 @@ definitions:
               attribution_types,
             ]
           value: "{{ components_values['attribution_types'] or ['INDIVIDUAL', 'HOUSEHOLD'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              campaign_statuses,
+            ]
+          value: "{{ components_values['campaign_statuses'] }}"
+          condition: "{{ components_values.get('campaign_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              ad_group_statuses,
+            ]
+          value: "{{ components_values['ad_group_statuses'] }}"
+          condition: "{{ components_values.get('ad_group_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              ad_statuses,
+            ]
+          value: "{{ components_values['ad_statuses'] }}"
+          condition: "{{ components_values.get('ad_statuses') is not none }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -4950,6 +5009,60 @@ spec:
                 description: "An enumeration."
                 enum: ["INDIVIDUAL", "HOUSEHOLD"]
               order: 8
+            campaign_statuses:
+              title: "Campaign statuses (max 6 values)"
+              description: "Select at most 6 campaign status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "RUNNING"
+                  - "PAUSED"
+                  - "NOT_STARTED"
+                  - "COMPLETED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 9
+            ad_group_statuses:
+              title: "Ad group statuses (max 6 values)"
+              description: "Select at most 6 ad group status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "RUNNING"
+                  - "PAUSED"
+                  - "NOT_STARTED"
+                  - "COMPLETED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 10
+            ad_statuses:
+              title: "Ad statuses (max 6 values)"
+              description: "Select at most 6 ad status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "APPROVED"
+                  - "PAUSED"
+                  - "PENDING"
+                  - "REJECTED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 11
             start_date:
               type: string
               title: "Start Date"
@@ -4958,24 +5071,24 @@ spec:
               pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
               pattern_descriptor: "YYYY-MM-DD"
               examples: ["2022-07-28"]
-              order: 9
+              order: 12
       account_id:
         type: string
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
         maxLength: 18 # Pinterest account IDs are at most 18 characters
         examples: ["1234567890"]
-      num_threads:
+      num_workers:
         type: integer
-        title: Number of concurrent threads
+        title: Number of concurrent workers
         minimum: 1
         maximum: 40
         default: 2
         examples:
           - 1
           - 2
-          - 3
-        description: The number of parallel threads to use for the sync.
+          - 5
+        description: The number of worker threads to use for the sync. Higher values can speed up syncs but may increase rate-limit pressure against Pinterest.
         order: 10
   advanced_auth:
     auth_flow_type: "oauth2.0"
@@ -5035,7 +5148,6 @@ spec:
                   {%- endfor -%}
                   {{- migrated_reports -}}
             condition: "{{ config.get('custom_reports', False) }}"
-
 streams:
   # Full refresh streams
   - "#/definitions/boards_stream"
@@ -5090,31 +5202,5 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_threads'] or 4 }}"
+  default_concurrency: "{{ config.get('num_workers') or config.get('num_threads') or 2 }}"
   max_concurrency: 50
-
-api_budget:
-  type: HTTPAPIBudget
-  status_codes_for_ratelimit_hit: [429]
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - interval: "PT60S"
-          limit: 300
-      matchers:
-        # ad account analytics (NOT user_account/analytics)
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/analytics"
-        # campaign analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/campaigns/analytics"
-        # ad group analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ad_groups/analytics"
-        # ad analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ads/analytics"

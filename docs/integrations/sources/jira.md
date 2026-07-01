@@ -12,6 +12,7 @@ This page contains the setup guide and reference information for the [Jira](http
 - One of the following authentication methods:
   - OAuth 2.0 access to Jira
   - An Atlassian account email and an Atlassian API token without scopes
+  - An Atlassian Service Account API token
 - Jira permissions for the data you want to sync. To sync all workflow records, the authenticating user needs the **Administer Jira** global permission. Project-scoped workflows require at least one of the **Administer projects** and **View (read-only) workflow** project permissions.
 
 ## Setup guide
@@ -22,6 +23,7 @@ Choose how you want Airbyte to authenticate to Jira.
 
 - To use OAuth 2.0, authorize Airbyte to access your Jira site. If you configure a custom OAuth app, see Atlassian's [OAuth 2.0 (3LO) documentation](https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/). The connector requests the scopes it needs, including `offline_access`, `read:workflow:jira`, and `manage:jira-configuration`.
 - To use an API token, create an Atlassian API token without scopes by following Atlassian's [API token instructions](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). API token authentication uses HTTP Basic authentication with your Atlassian account email and Jira site hostname.
+- To use a Service Account token, create an Atlassian Service Account API token with scopes by following Atlassian's [Service Account API token instructions](https://support.atlassian.com/user-management/docs/manage-api-tokens-for-service-accounts/).
 
 ### Step 2: Set up the Jira connector in Airbyte
 
@@ -33,7 +35,7 @@ Choose how you want Airbyte to authenticate to Jira.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Jira from the Source type dropdown.
 4. Enter a name for the Jira connector.
-5. Choose an authentication method. To use OAuth 2.0, authenticate your Jira account. To use API token authentication, enter the **Email** for your Atlassian account and the **API Token** you created.
+5. Choose an authentication method. To use OAuth 2.0, authenticate your Jira account. To use API token authentication, enter the **Email** for your Atlassian account and the **API Token** you created. To use Service Account authentication, enter the **Service Account Token**.
 6. Enter the **Domain** for your Jira site, for example `airbyteio.atlassian.net`. Don't include `https://` or a path.
 7. Enter the list of **Projects (Optional)** to replicate data for, or leave it empty to replicate data for all projects the authenticated user can access.
 8. Enter the **Start Date (Optional)** from which you'd like to replicate Jira data in the format `YYYY-MM-DDTHH:MM:SSZ`. The connector uses this value only for these streams: Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues. Other streams always sync all available records.
@@ -47,12 +49,72 @@ Choose how you want Airbyte to authenticate to Jira.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Jira from the Source type dropdown.
 4. Enter a name for the Jira connector.
-5. Choose an authentication method. To use API token authentication, enter the **Email** for your Atlassian account and the **API Token** you created. To use OAuth 2.0, enter the client ID, client secret, and refresh token from your Atlassian OAuth app.
+5. Choose an authentication method. To use API token authentication, enter the **Email** for your Atlassian account and the **API Token** you created. To use OAuth 2.0, enter the client ID, client secret, and refresh token from your Atlassian OAuth app. To use Service Account authentication, enter the **Service Account Token**.
 6. Enter the **Domain** for your Jira site, for example `airbyteio.atlassian.net`. Don't include `https://` or a path.
 7. Enter the list of **Projects (Optional)** to replicate data for, or leave it empty to replicate data for all projects the authenticated user can access.
 8. Enter the **Start Date (Optional)** from which you'd like to replicate Jira data in the format `YYYY-MM-DDTHH:MM:SSZ`. The connector uses this value only for these streams: Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues. Other streams always sync all available records.
 
 <!-- /env:oss -->
+
+### Use Atlassian Service Account API tokens
+
+Atlassian Service Account API tokens must use Atlassian's Platform API Gateway. To use one in Airbyte, set **Authentication** to **Service Account** and enter the **Domain** for your Jira site. The connector resolves the Cloud ID from the domain, routes Jira requests through `https://api.atlassian.com/ex/jira/{cloudId}/`, and authenticates with a Bearer token.
+
+To create a Service Account API token:
+
+1. Go to [admin.atlassian.com](https://admin.atlassian.com/).
+2. Go to **Directory** > **Service accounts**.
+3. Create a service account, or choose an existing service account.
+4. Under **Credentials**, click **Create credential**.
+5. Select **API token**.
+6. Set a token name and expiration date. The maximum expiration is 365 days.
+7. Add the required scopes. You can paste the full comma-separated scope list into scope search to filter the list.
+8. Select the scopes, click **Next**, and create the token.
+
+Service Account API tokens use the same Jira OAuth scopes as OAuth 2.0 credentials. Select these scopes when creating the token:
+
+```text
+read:jira-work
+read:jql:jira
+read:group:jira
+read:project-role:jira
+read:issue-details:jira
+read:status:jira
+read:jira-user
+read:user:jira
+read:avatar:jira
+read:webhook:jira
+read:project-category:jira
+read:screenable-field:jira
+read:screen-field:jira
+offline_access
+read:board-scope:jira-software
+read:project:jira
+read:sprint:jira-software
+read:application-role:jira
+read:notification-scheme:jira
+read:issue-security-scheme:jira
+read:issue-security-level:jira
+read:issue-type-scheme:jira
+read:issue-type-screen-scheme:jira
+read:permission-scheme:jira
+read:screen:jira
+read:screen-scheme:jira
+read:screen-tab:jira
+read:workflow:jira
+read:workflow-scheme:jira
+read:project.email:jira
+read:custom-field-contextual-configuration:jira
+manage:jira-configuration
+```
+
+You can paste this comma-separated scope list into Atlassian's scope search:
+
+```text
+read:jira-work,read:jql:jira,read:group:jira,read:project-role:jira,read:issue-details:jira,read:status:jira,read:jira-user,read:user:jira,read:avatar:jira,read:webhook:jira,read:project-category:jira,read:screenable-field:jira,read:screen-field:jira,offline_access,read:board-scope:jira-software,read:project:jira,read:sprint:jira-software,read:application-role:jira,read:notification-scheme:jira,read:issue-security-scheme:jira,read:issue-security-level:jira,read:issue-type-scheme:jira,read:issue-type-screen-scheme:jira,read:permission-scheme:jira,read:screen:jira,read:screen-scheme:jira,read:screen-tab:jira,read:workflow:jira,read:workflow-scheme:jira,read:project.email:jira,read:custom-field-contextual-configuration:jira,manage:jira-configuration
+```
+
+The service account must also have Jira app access and the project permissions required for the streams you sync. To sync all workflow records, the service account needs the **Administer Jira** global permission.
 
 ## Supported sync modes
 
@@ -75,7 +137,6 @@ This connector outputs the following full refresh streams:
 - [Filter sharing](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get)
 - [Groups](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-groups-picker-get)
 - [Issue fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get)
-- [Issue field configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get)
 - [Issue custom field contexts](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get)
 - [Issue custom field options](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get)
 - [Issue link types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get)
@@ -139,6 +200,7 @@ If you sync the `workflows` stream and upgrade from a version earlier than `5.0.
 
 In the list above, a subset of streams makes one HTTP request per issue. These streams can significantly slow down a sync when you have many issues. If you use one or more of these streams and experience slowness, filter the issue list using the **Projects** configuration field, or remove these streams from the sync.
 
+* Issue changelogs
 * Issue comments
 * Issue properties
 * Issue remote links
@@ -158,18 +220,23 @@ Check out common troubleshooting issues for the Jira connector on our Airbyte Fo
 
 The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 The connector uses these configuration fields for programmatic setup with PyAirbyte, Terraform, or the Airbyte API:
 
 | Field | Required | Description |
 | :--- | :---: | :--- |
-| `credentials.auth_type` | Yes | Authentication method. Valid values are `API Token` and `OAuth2.0`. |
+| `credentials.auth_type` | Yes | Authentication method. Valid values are `API Token`, `OAuth2.0`, and `Service Account`. |
 | `credentials.email` | Required for API token authentication | Atlassian account email used with the API token. |
 | `credentials.api_token` | Required for API token authentication | Atlassian API token. Use an API token without scopes. |
 | `credentials.client_id` | Required for OAuth 2.0 authentication | Client ID of your Atlassian OAuth app. |
 | `credentials.client_secret` | Required for OAuth 2.0 authentication | Client secret of your Atlassian OAuth app. |
 | `credentials.refresh_token` | Required for OAuth 2.0 authentication | Refresh token returned by the Atlassian OAuth flow. |
+| `credentials.service_account_token` | Required for Service Account authentication | Atlassian Service Account API token with the required Jira scopes. |
 | `domain` | Yes | Jira site hostname, for example `airbyteio.atlassian.net`. Don't include `https://` or a path. |
 | `projects` | No | List of Jira project keys to replicate. Leave empty to replicate all projects the authenticated user can access. |
 | `start_date` | No | UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Applies to the Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues streams. If unset, defaults to two years before the first sync. |
@@ -183,6 +250,10 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2026-06-24 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
+| 5.1.1 | 2026-06-09 | [79606](https://github.com/airbytehq/airbyte/pull/79606) | Clean up cancelled RC; revert source to previous stable |
+| 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
+| 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
 | 5.0.0 | 2026-05-20 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
 | 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
 | 4.4.0 | 2026-05-11 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |

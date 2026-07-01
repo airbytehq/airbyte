@@ -1,8 +1,9 @@
 const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
+const { parseCDKVersion } = require("../scripts/connector_registry");
 const {
-  parseCDKVersion,
-} = require("../scripts/connector_registry");
+  getDefaultDataWorkersForSource,
+} = require("../scripts/data-worker-consumption");
 const visit = require("unist-util-visit").visit;
 
 /**
@@ -39,15 +40,14 @@ const plugin = () => {
           registryEntry,
           "generated.metrics.[all|cloud|oss].usage",
         );
+        const defaultDataWorkers =
+          getDefaultDataWorkersForSource(registryEntry);
         const lastUpdated = getFromPaths(
           registryEntry,
           "generated.source_file_info.metadata_last_modified",
         );
 
-        const { version, isLatest, url } = parseCDKVersion(
-          rawCDKVersion,
-          null,
-        );
+        const { version, isLatest, url } = parseCDKVersion(rawCDKVersion, null);
 
         const attrDict = {
           isOss: registryEntry.is_oss,
@@ -59,10 +59,13 @@ const plugin = () => {
           issue_url: registryEntry.issue_url,
           originalTitle,
           cdkVersion: version,
-          ...(isLatest !== undefined && { isLatestCDKString: boolToBoolString(isLatest) }),
+          ...(isLatest !== undefined && {
+            isLatestCDKString: boolToBoolString(isLatest),
+          }),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,
+          defaultDataWorkers,
           lastUpdated,
           definitionId: registryEntry.definitionId,
         };

@@ -33,6 +33,10 @@ The Appfollow source connector supports the following [sync modes](https://docs.
 
 The Appfollow connector ideally should gracefully handle Appfollow API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,11 @@ The Appfollow connector ideally should gracefully handle Appfollow API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
+| 1.1.50 | 2026-06-30 | [80962](https://github.com/airbytehq/airbyte/pull/80962) | Update dependencies |
+| 1.1.49 | 2026-06-23 | [80359](https://github.com/airbytehq/airbyte/pull/80359) | Update dependencies |
+| 1.1.48 | 2026-06-16 | [79756](https://github.com/airbytehq/airbyte/pull/79756) | Update dependencies |
+| 1.1.47 | 2026-06-09 | [79202](https://github.com/airbytehq/airbyte/pull/79202) | Update dependencies |
+| 1.1.46 | 2026-06-02 | [78595](https://github.com/airbytehq/airbyte/pull/78595) | Update dependencies |
 | 1.1.45 | 2026-04-28 | [77139](https://github.com/airbytehq/airbyte/pull/77139) | Update dependencies |
 | 1.1.44 | 2026-04-21 | [76509](https://github.com/airbytehq/airbyte/pull/76509) | Update dependencies |
 | 1.1.43 | 2026-04-01 | [75882](https://github.com/airbytehq/airbyte/pull/75882) | Update dependencies |

@@ -1,8 +1,14 @@
 # PokéAPI
 
+<HideInUI>
+
+This page contains the setup guide and reference information for the [PokéAPI](https://pokeapi.co/) source connector.
+
+</HideInUI>
+
 ## Tutorials
 
-The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
+The PokéAPI is primarily used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
 - [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
 - [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
@@ -20,17 +26,23 @@ The PokéAPI is primarly used as a tutorial and educational resource, as it requ
 
 This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to serve and retrieve information about Pokémon. This connector should be primarily used for educational purposes or for getting a trial source up and running without needing any dependencies. As this API is fully open and is not rate-limited, no authentication or rate-limiting is performed, so you can use this connector right out of the box without any further configuration.
 
-## Output Schema
+## Supported streams
 
-Currently, only one output stream is available from this source, which is the Pokémon output stream. This schema is defined [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json).
+This source provides a single stream:
 
-## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
+- **pokemon** — returns detailed data for the Pokémon name you specify in the connector configuration, including base stats, abilities, types, sprites, moves, and held items.
+
+## Rate limiting and performance considerations
 
 According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
 
 ## Data Type Mapping
 
 The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -39,6 +51,12 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.60 | 2026-06-30 | [81200](https://github.com/airbytehq/airbyte/pull/81200) | Update dependencies |
+| 0.3.59 | 2026-06-25 | [80885](https://github.com/airbytehq/airbyte/pull/80885) | POC: Test autopilot rollout pipeline |
+| 0.3.58 | 2026-06-23 | [80588](https://github.com/airbytehq/airbyte/pull/80588) | Update dependencies |
+| 0.3.57 | 2026-06-16 | [79995](https://github.com/airbytehq/airbyte/pull/79995) | Update dependencies |
+| 0.3.56 | 2026-06-09 | [79458](https://github.com/airbytehq/airbyte/pull/79458) | Update dependencies |
+| 0.3.55 | 2026-06-02 | [78874](https://github.com/airbytehq/airbyte/pull/78874) | Update dependencies |
 | 0.3.54 | 2026-04-28 | [77372](https://github.com/airbytehq/airbyte/pull/77372) | Update dependencies |
 | 0.3.53 | 2026-04-21 | [76700](https://github.com/airbytehq/airbyte/pull/76700) | Update dependencies |
 | 0.3.52 | 2026-03-31 | [75872](https://github.com/airbytehq/airbyte/pull/75872) | Update dependencies |
