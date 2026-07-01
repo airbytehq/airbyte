@@ -75,14 +75,14 @@ files = [
 
 [[package]]
 name = "altertable-flightsql"
-version = "0.2.2"
+version = "0.3.1"
 description = "Python client library for Altertable"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "altertable_flightsql-0.2.2-py3-none-any.whl", hash = "sha256:ef7162f6a118bfdd48106acb2a31f571af11e633e99b7f718113818baeff1891"},
-    {file = "altertable_flightsql-0.2.2.tar.gz", hash = "sha256:e36e2c54f1d7abbc34f746e3e9803f4c00830b0d1b366c3eca7c429037210e36"},
+    {file = "altertable_flightsql-0.3.1-py3-none-any.whl", hash = "sha256:06c41dedc7af24421ef44aa380648a5af1943b25bad7dfdb5c6f31aa66661394"},
+    {file = "altertable_flightsql-0.3.1.tar.gz", hash = "sha256:b04616d0f1e499f7c00b3668f47cddb43ed2a6140e05165f6d68676652de509c"},
 ]
 
 [package.dependencies]
@@ -3122,4 +3122,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "4a1060ac970e06c704f26d7c651b9672512f71b9f940ae20b6f347862b24de19"
+content-hash = "9ebda4f9ad94ae4ce0b16a2e5e1d041c4a0e4d491f8a7a48d4f7064efb788d7e"

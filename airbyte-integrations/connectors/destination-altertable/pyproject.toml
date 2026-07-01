@@ -19,7 +19,7 @@ include = "destination_altertable"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
 airbyte-cdk = ">=6.51.0"
-altertable-flightsql = ">=0.2.2"
+altertable-flightsql = ">=0.3.1"
 orjson = ">=3.10.7"
 pyarrow = ">=15.0.0"
 serpyco-rs = ">=1.10.2"
