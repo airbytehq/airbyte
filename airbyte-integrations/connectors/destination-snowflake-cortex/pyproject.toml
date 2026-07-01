@@ -22,7 +22,7 @@ version = ">=1.0.0"
 extras = ["vector-db-based"]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 
 airbyte = "^0.12.0"
 sqlalchemy = "<2.0"
