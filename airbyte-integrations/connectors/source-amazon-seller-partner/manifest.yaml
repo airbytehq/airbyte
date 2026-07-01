@@ -247,7 +247,7 @@ spec:
           removed in a future version. Rate limiting is now handled automatically
           by the connector."
         default: false
-        order: 17
+        order: 13
         airbyte_hidden: true
       max_done_report_age_hours:
         title: "Max Age of Completed Reports to Reuse (Hours)"
@@ -299,7 +299,7 @@ spec:
         - '90D'
         - '180D'
         default: '180D'
-        order: 18
+        order: 13
       num_workers:
         title: Number of Workers
         description: The number of workers to use for the connector when syncing concurrently.
@@ -307,14 +307,14 @@ spec:
         default: 2
         minimum: 2
         maximum: 10
-        order: 19
+        order: 14
       max_async_job_count:
         title: Maximum Concurrent Async Job Count
         description: The maximum number of concurrent asynchronous job requests that can be active at a time.
         type: integer
         default: 2
         minimum: 1
-        order: 20
+        order: 15
       include_pii:
         title: Include PII (Personally Identifiable Information)
         description: >-
@@ -327,7 +327,7 @@ spec:
           empty.
         type: boolean
         default: false
-        order: 21
+        order: 16
       financial_events_max_results_per_page:
         title: Financial Events Max Results Per Page
         description: >-
@@ -339,7 +339,7 @@ spec:
         default: 100
         minimum: 1
         maximum: 100
-        order: 22
+        order: 17
       report_stream_lookback_window_in_hours:
         title: Report Stream Lookback Window (Hours)
         description: >-
@@ -353,7 +353,7 @@ spec:
         type: integer
         default: 0
         minimum: 0
-        order: 23
+        order: 18
       failed_retry_wait_time_in_seconds:
         title: Failed Report Retry Wait Time (Seconds)
         description: >-
@@ -367,7 +367,7 @@ spec:
         default: 1800
         minimum: 1
         maximum: 14400
-        order: 24
+        order: 19
       creation_requester_429_max_retries:
         title: Report Creation 429 Max Retries
         description: >-
@@ -378,7 +378,7 @@ spec:
         type: integer
         default: 5
         minimum: 0
-        order: 25
+        order: 20
       stop_sync_on_rate_limit:
         title: Stop Sync When Report Streams Are Rate Limited
         description: >-
@@ -393,7 +393,7 @@ spec:
           rescheduled automatically.
         type: boolean
         default: false
-        order: 26
+        order: 21
       inbound_replication_mode:
         title: Inbound Replication Mode
         description: >-
@@ -404,7 +404,7 @@ spec:
           - fixed
           - rolling_days
         default: rolling_days
-        order: 27
+        order: 22
       inbound_start_datetime:
         title: Inbound Start Datetime
         description: >-
@@ -414,7 +414,7 @@ spec:
         examples:
           - '2026-01-25T00:00:00Z'
         format: date-time
-        order: 28
+        order: 23
       inbound_end_datetime:
         title: Inbound End Datetime
         description: >-
@@ -426,7 +426,7 @@ spec:
         examples:
           - '2026-02-25T00:00:00Z'
         format: date-time
-        order: 29
+        order: 24
       inbound_rolling_days:
         title: Inbound Rolling Days
         description: >-
@@ -435,7 +435,7 @@ spec:
         type: integer
         minimum: 1
         default: 30
-        order: 30
+        order: 25
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
