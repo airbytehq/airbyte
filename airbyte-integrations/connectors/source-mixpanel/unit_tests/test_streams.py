@@ -631,6 +631,42 @@ def test_export_stream(requests_mock, export_response, config):
     assert records_length == 1
 
 
+def test_export_stream_nested_objects_are_json_encoded(requests_mock, config):
+    """Nested object/array event properties must be JSON-encoded, not stringified
+    with str() (which emits invalid Python-dict syntax like "{'enabled': False}"
+    that downstream destinations cannot parse).
+
+    Regression test for https://github.com/airbytehq/airbyte/issues/73493.
+    """
+    response = setup_response(
+        200,
+        {
+            "event": "Viewed E-commerce Page",
+            "properties": {
+                "time": 1623860880,
+                "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
+                "$browser": "Chrome",
+                "feature_flags": {"activation": {"enabled": False}, "variant": "new"},
+                "tags": ["a", "b"],
+            },
+        },
+    )
+    stream = Export(authenticator=MagicMock(), **config)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), response)
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+    assert len(records) == 1
+    record = records[0]
+    # Nested object -> valid JSON that round-trips back to the original structure.
+    assert json.loads(record["feature_flags"]) == {"activation": {"enabled": False}, "variant": "new"}
+    # Array -> valid JSON.
+    assert json.loads(record["tags"]) == ["a", "b"]
+    # Scalar values keep the existing string coercion.
+    assert record["browser"] == "Chrome"
+
+
 def test_export_stream_fail(requests_mock, export_response, config):
     stream = Export(authenticator=MagicMock(), **config)
     error_message = ""
