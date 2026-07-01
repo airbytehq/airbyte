@@ -157,6 +157,55 @@ def test_read_records_refreshes_download_url_before_fetch(requests_mock, test_co
     assert not any(request.url.rstrip("/") == expired_report_download_url for request in requests_mock.request_history)
 
 
+@freeze_time("2022-11-16 12:03:11+00:00")
+def test_report_rate_limit_during_download_target_refresh_retries(requests_mock, test_config):
+    """Rate-limit (code=8) on download_target_requester should be retried, not ignored."""
+    report_download_url = "https://download.report"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    final_response = {"campaign_id": [{"metric": 1}]}
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        status_code=200,
+    )
+    requests_mock.get(
+        report_request_url,
+        [
+            {  # polling: report finished
+                "json": {"report_status": "FINISHED", "url": report_download_url},
+                "status_code": 200,
+            },
+            {  # download_target_requester hits rate limit (code=8)
+                "json": {"code": 8, "message": "You have exceeded your rate limit. Try again later."},
+                "status_code": 400,
+                "headers": {"X-RateLimit-Reset": "0"},
+            },
+            {  # retry succeeds
+                "json": {"report_status": "FINISHED", "url": report_download_url},
+                "status_code": 200,
+            },
+        ],
+    )
+    requests_mock.get(report_download_url, json=final_response, status_code=200)
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "campaign_analytics_report",
+            {"DATE": "2022-11-15"},
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data
+        for record in read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, state=state).records
+    ]
+    assert records == [{"metric": 1}]
+
+
 def test_custom_streams(test_config):
     config = copy.deepcopy(test_config)
     config["custom_reports"] = [

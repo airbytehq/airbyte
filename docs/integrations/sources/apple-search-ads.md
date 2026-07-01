@@ -103,6 +103,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.9 | 2026-06-30 | [80968](https://github.com/airbytehq/airbyte/pull/80968) | Update dependencies |
+| 1.1.8 | 2026-06-23 | [80356](https://github.com/airbytehq/airbyte/pull/80356) | Update dependencies |
+| 1.1.7 | 2026-06-16 | [79764](https://github.com/airbytehq/airbyte/pull/79764) | Update dependencies |
 | 1.1.6 | 2026-06-09 | [79235](https://github.com/airbytehq/airbyte/pull/79235) | Update dependencies |
 | 1.1.5 | 2026-06-02 | [78565](https://github.com/airbytehq/airbyte/pull/78565) | Update dependencies |
 | 1.1.4 | 2026-05-12 | [78029](https://github.com/airbytehq/airbyte/pull/78029) | Refresh expired OAuth access tokens before retrying failed Apple Ads API requests |
