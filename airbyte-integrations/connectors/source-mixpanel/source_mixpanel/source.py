@@ -145,12 +145,17 @@ class SourceMixpanel(YamlDeclarativeSource):
             else:
                 credentials["option_title"] = "Service Account"
 
-        streams = super().streams(config=config)
+        selected_streams = config.get("streams")
+
+        all_streams = super().streams(config=config)
 
         config_transformed = copy.deepcopy(config)
         config_transformed = self._validate_and_transform(config_transformed)
         auth = self.get_authenticator(config)
 
-        streams.append(Export(authenticator=auth, **config_transformed))
+        all_streams.append(Export(authenticator=auth, **config_transformed))
 
-        return streams
+        if selected_streams:
+            all_streams = [s for s in all_streams if s.name in selected_streams]
+
+        return all_streams
