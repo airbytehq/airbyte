@@ -18,6 +18,8 @@ The Tiktok-Marketing connector is optimized to handle prompts like these.
 - Show me daily ad performance reports
 - Get campaign performance metrics for the last 30 days
 - Show me advertiser spend reports
+- Show me hourly ad performance reports
+- Get lifetime ad performance metrics
 - List all Spark Ad posts
 - Show me my product catalogs
 - Which campaigns have the highest budget?
@@ -57,6 +59,8 @@ This connector supports the following entities and actions. For more details, se
 | Campaigns Reports Daily | [List](./REFERENCE.md#campaigns-reports-daily-list), [Context Store Search](./REFERENCE.md#campaigns-reports-daily-context-store-search) |
 | Ad Groups Reports Daily | [List](./REFERENCE.md#ad-groups-reports-daily-list), [Context Store Search](./REFERENCE.md#ad-groups-reports-daily-context-store-search) |
 | Ads Reports Daily | [List](./REFERENCE.md#ads-reports-daily-list), [Context Store Search](./REFERENCE.md#ads-reports-daily-context-store-search) |
+| Ads Reports Hourly | [List](./REFERENCE.md#ads-reports-hourly-list), [Context Store Search](./REFERENCE.md#ads-reports-hourly-context-store-search) |
+| Ads Reports Lifetime | [List](./REFERENCE.md#ads-reports-lifetime-list), [Context Store Search](./REFERENCE.md#ads-reports-lifetime-context-store-search) |
 
 
 ## Tiktok-Marketing API docs
