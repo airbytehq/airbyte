@@ -9,9 +9,6 @@ import orjson
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
-
-from airbyte_cdk.models import FailureType
-
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (
     Collections,
@@ -30,7 +27,7 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 
 
 _ANY_SLICE = {}

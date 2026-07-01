@@ -47,9 +47,7 @@ class ShopifyBulkManager:
     parent_stream_cursor: Optional[str] = None
 
     # keywords (lowercased) that indicate an authentication/credential error from Shopify
-    _AUTH_ERROR_KEYWORDS: Final[Tuple[str, ...]] = (
-        "invalid api key or access token",
-    )
+    _AUTH_ERROR_KEYWORDS: Final[Tuple[str, ...]] = ("invalid api key or access token",)
 
     # 10Mb chunk size to save the file
     _retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
