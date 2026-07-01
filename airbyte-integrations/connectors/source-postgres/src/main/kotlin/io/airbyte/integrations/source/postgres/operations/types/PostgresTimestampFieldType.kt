@@ -9,7 +9,9 @@ import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeParseException
 
 object PostgresTimestampFieldType :
     SymmetricJdbcFieldType<String>(
@@ -17,6 +19,24 @@ object PostgresTimestampFieldType :
         PgTimestampAccessor,
         PgTimestampCodec,
     )
+
+/** Parses a timestamp string, falling back to date-only format (appending T00:00:00). */
+internal fun parseTimestampWithDateFallback(str: String): LocalDateTime {
+    return try {
+        LocalDateTime.parse(str)
+    } catch (e: DateTimeParseException) {
+        try {
+            LocalDate.parse(str).atStartOfDay()
+        } catch (e2: DateTimeParseException) {
+            throw DateTimeParseException(
+                "Cannot parse timestamp value '$str' as either datetime or date format",
+                str,
+                e.errorIndex,
+                e
+            )
+        }
+    }
+}
 
 // TODO: Improve performance by not stringifying and parsing
 object PgTimestampCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
@@ -34,7 +54,7 @@ object PgTimestampCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun valueForProtobufEncoding(v: String): Any? {
         val isBce = v.endsWith(" BC")
         val str = if (isBce) v.removeSuffix(" BC") else v
-        val parsed = LocalDateTime.parse(str)
+        val parsed = parseTimestampWithDateFallback(str)
         return if (isBce) parsed.withYear(1 - parsed.year) else parsed
     }
 }
@@ -53,7 +73,7 @@ private object PgTimestampAccessor : JdbcAccessor<String> {
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: String) {
         val isBce = value.endsWith(" BC")
         val str = if (isBce) value.removeSuffix(" BC") else value
-        val parsed = LocalDateTime.parse(str)
+        val parsed = parseTimestampWithDateFallback(str)
         stmt.setObject(paramIdx, if (isBce) parsed.withYear(1 - parsed.year) else parsed)
     }
 }
