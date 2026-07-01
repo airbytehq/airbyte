@@ -9,6 +9,9 @@ import orjson
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
+
+from airbyte_cdk.models import FailureType
+
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (
     Collections,
@@ -287,6 +290,48 @@ def test_retry_on_job_creation_exception(
 
     # we expect different call_count, because we set the different max_retries
     assert expected_msg in repr(error.value) and requests_mock.call_count == call_count_expected
+
+
+@pytest.mark.parametrize(
+    "job_response, expected_error_type, expected_failure_type, expected_msg",
+    [
+        pytest.param(
+            "bulk_response_with_auth_error",
+            ShopifyBulkExceptions.BulkJobAuthFailedError,
+            FailureType.config_error,
+            "Shopify access token is invalid or has expired.",
+            id="auth_error_from_server_errors_string",
+        ),
+        pytest.param(
+            "bulk_response_with_auth_error_in_user_errors",
+            ShopifyBulkExceptions.BulkJobAuthFailedError,
+            FailureType.config_error,
+            "Shopify access token is invalid or has expired.",
+            id="auth_error_from_user_errors_dict",
+        ),
+        pytest.param(
+            "bulk_successful_response_with_errors",
+            ShopifyBulkExceptions.BulkJobNonHandableError,
+            FailureType.system_error,
+            "Non-handable error occured",
+            id="non_auth_error_stays_system_error",
+        ),
+    ],
+)
+def test_auth_error_classified_as_config_error(
+    request, requests_mock, auth_config, job_response, expected_error_type, expected_failure_type, expected_msg
+) -> None:
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._job_backoff_time = 0
+    stream.job_manager._job_max_retries = 0
+
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+
+    with pytest.raises(expected_error_type) as error:
+        stream.job_manager.create_job(_ANY_SLICE, _ANY_FILTER_FIELD)
+
+    assert expected_msg in str(error.value)
+    assert error.value.failure_type == expected_failure_type
 
 
 @pytest.mark.parametrize(

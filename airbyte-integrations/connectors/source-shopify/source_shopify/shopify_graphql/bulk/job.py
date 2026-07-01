@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from time import sleep, time
-from typing import Any, Final, Iterable, List, Mapping, Optional
+from typing import Any, Final, Iterable, List, Mapping, Optional, Tuple
 
 import pendulum as pdm
 import requests
@@ -45,6 +45,11 @@ class ShopifyBulkManager:
 
     parent_stream_name: Optional[str] = None
     parent_stream_cursor: Optional[str] = None
+
+    # keywords (lowercased) that indicate an authentication/credential error from Shopify
+    _AUTH_ERROR_KEYWORDS: Final[Tuple[str, ...]] = (
+        "invalid api key or access token",
+    )
 
     # 10Mb chunk size to save the file
     _retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
@@ -386,7 +391,24 @@ class ShopifyBulkManager:
     def _on_job_with_errors(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobError(f"Could not validate the status of the BULK Job `{self._job_id}`. Errors: {errors}.")
 
+    def _is_auth_error(self, errors: List[Mapping[str, Any]]) -> bool:
+        for error in errors:
+            if isinstance(error, str):
+                error_text = error
+            elif isinstance(error, dict):
+                error_text = error.get("message", "")
+            else:
+                continue
+            if any(keyword in error_text.lower() for keyword in self._AUTH_ERROR_KEYWORDS):
+                return True
+        return False
+
     def _on_non_handable_job_error(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
+        if self._is_auth_error(errors):
+            raise ShopifyBulkExceptions.BulkJobAuthFailedError(
+                internal_message=f"The Stream: `{self.http_client.name}`, auth error: {errors}",
+                message="Shopify access token is invalid or has expired.",
+            )
         raise ShopifyBulkExceptions.BulkJobNonHandableError(f"The Stream: `{self.http_client.name}`, Non-handable error occured: {errors}")
 
     def _get_server_errors(self, response: requests.Response) -> List[Optional[Mapping[str, Any]]]:
