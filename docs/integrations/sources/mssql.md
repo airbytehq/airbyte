@@ -400,13 +400,13 @@ test!
 | `datetime`                                              | timestamp               |       |
 | `datetime2`                                             | timestamp               |       |
 | `datetimeoffset`                                        | timestamp with timezone |       |
-| `decimal`                                               | number                  |       |
+| `decimal`                                               | number / integer        | maps to `integer` when the column scale is 0      |
 | `int`                                                   | number                  |       |
 | `float`                                                 | number                  |       |
 | `geography`                                             | string                  |       |
 | `geometry`                                              | string                  |       |
 | `money`                                                 | number                  |       |
-| `numeric`                                               | number                  |       |
+| `numeric`                                               | number / integer        | maps to `integer` when the column scale is 0      |
 | `ntext`                                                 | string                  |       |
 | `nvarchar`                                              | string                  |       |
 | `nvarchar(max)`                                         | string                  |       |
@@ -489,6 +489,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0       | 2026-05-01 | [10595](https://github.com/airbytehq/oncall/issues/10595)                                                         | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics. |
 | 4.4.12      | 2026-06-16 | [80156](https://github.com/airbytehq/airbyte/pull/80156)                                                          | Log a message when a `DECIMAL`/`NUMERIC` column with scale 0 is discovered, ahead of an upcoming `number` -> `integer` remapping. No functional change. |
 | 4.4.11      | 2026-06-11 | [79128](https://github.com/airbytehq/airbyte/pull/79128)                                                          | Fix incremental sync failure when the saved state has a null cursor (table was empty on prior CDK version).                                     |
 | 4.4.10      | 2026-06-10 | [79149](https://github.com/airbytehq/airbyte/pull/79149)                                                          | Update cursor-based incremental query to prevent missing rows with high-precision datetime cursors.                                             |

@@ -344,6 +344,17 @@ definitions:
               $ref: "#/definitions/conferences_stream"
               retriever:
                 $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+                partition_router:
+                  - type: ListPartitionRouter
+                    values:
+                      - "completed"
+                      - "in-progress"
+                    cursor_field: conference_status
+                    request_option:
+                      type: RequestOption
+                      field_name: Status
+                      inject_into: request_parameter
+                  - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
                 record_selector:
                   $ref: "#/definitions/base_stream/retriever/record_selector"
                   record_filter:
@@ -363,11 +374,17 @@ definitions:
     $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
     retriever:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        url: "https://api.twilio.com{{ stream_partition['subresource_uri'] }}"
-        request_parameters:
-          Status: completed
+      partition_router:
+        - type: ListPartitionRouter
+          values:
+            - "completed"
+            - "in-progress"
+          cursor_field: conference_status
+          request_option:
+            type: RequestOption
+            field_name: Status
+            inject_into: request_parameter
+        - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -575,7 +592,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
       datetime_format: "%Y-%m-%d %H:%M:%SZ"
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT1S
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%SZ'), day_delta(-400, format='%Y-%m-%d %H:%M:%SZ')) }}"
@@ -610,7 +627,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
       datetime_format: "%Y-%m-%d %H:%M:%SZ"
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT1S
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%SZ'), day_delta(-400, format='%Y-%m-%d %H:%M:%SZ')) }}"
