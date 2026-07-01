@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test
  * The edge case this guards against: a table with no source-defined primary key (hence ineligible
  * for CDC incremental) that is configured as full refresh append+dedup. Such a stream has a
  * configured primary key but no source-defined one, and its catalog schema does NOT contain the
- * meta fields. Decorating its records would misalign fields the destination cannot resolve in
- * speed mode.
+ * meta fields. Decorating its records would misalign fields the destination cannot resolve in speed
+ * mode.
  */
 @MicronautTest(rebuildContext = true)
 @Property(name = "airbyte.connector.config.host", value = "localhost")
@@ -65,7 +65,9 @@ class StateManagerSpeedModeDecorationTest {
         assertNotDecorated("NO_PK")
     }
 
-    /** SOCKET/PROTOBUF full refresh stream with both source and configured primary keys: decorated. */
+    /**
+     * SOCKET/PROTOBUF full refresh stream with both source and configured primary keys: decorated.
+     */
     @Test
     @Property(name = "airbyte.connector.state.json", value = "[]")
     @Property(
