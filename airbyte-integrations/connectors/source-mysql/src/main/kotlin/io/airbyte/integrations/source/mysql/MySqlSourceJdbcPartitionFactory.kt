@@ -64,7 +64,10 @@ class MySqlSourceJdbcPartitionFactory(
             DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
         }
 
-    private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<EmittedField>): JsonNode {
+    private fun findPkUpperBound(
+        stream: Stream,
+        pkChosenFromCatalog: List<EmittedField>
+    ): JsonNode {
         // find upper bound using maxPk query
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
@@ -85,7 +88,10 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<EmittedField>): JsonNode {
+    private fun findPkLowerBound(
+        stream: Stream,
+        pkChosenFromCatalog: List<EmittedField>
+    ): JsonNode {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
         jdbcConnectionFactory.get().use { connection ->
@@ -308,7 +314,8 @@ class MySqlSourceJdbcPartitionFactory(
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkValue)
 
                 val cursorChosenFromCatalog: EmittedField =
-                    stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
+                    stream.configuredCursor as? EmittedField
+                        ?: throw ConfigErrorException("no cursor")
 
                 // in a state where it's still in primary_key read part.
                 return MySqlSourceJdbcSnapshotWithCursorPartition(
@@ -321,7 +328,8 @@ class MySqlSourceJdbcPartitionFactory(
                 )
             }
             // resume back to cursor based increment.
-            val cursor: EmittedField = stream.fields.find { it.id == sv.cursorField.first() } as EmittedField
+            val cursor: EmittedField =
+                stream.fields.find { it.id == sv.cursorField.first() } as EmittedField
             val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursors)
 
             // Compose a jsonnode of cursor label to cursor value to fit in

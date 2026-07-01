@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.read.cdc.PartiallyOrdered
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import io.airbyte.cdk.read.cdc.PartiallyOrdered

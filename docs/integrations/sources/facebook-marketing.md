@@ -39,8 +39,8 @@ This page contains the setup guide and reference information for the [Facebook M
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
 4. Enter a name for the Facebook Marketing connector.
-<FieldAnchor field="access_token">
-5. In the **Access Token** field, enter the Marketing API access token.
+<FieldAnchor field="credentials">
+5. For **Authentication**, select **Service Account Key Authentication** and enter the Marketing API access token you generated. See the steps below for how to generate a token.
 </FieldAnchor>
 
 ### Airbyte Open Source
@@ -59,13 +59,13 @@ Follow these five key steps:
 
 A Meta Developer account is your gateway to the App Dashboard, SDKs, APIs, development tools, and documentation.
 
-To register, follow the official instructions: 🔗 [Register as a Meta Developer](https://developers.facebook.com/docs/development/register/)
+To register, follow the official instructions: [Register as a Meta Developer](https://developers.facebook.com/docs/development/register/)
 
 ### 2. Create a New App
 
 Your Meta app serves as a container for your API credentials and permissions. Meta uses it to monitor API usage, enforce rate limits, and ensure application security.
 
-- Go to the 🔗 [Meta for Developers App Dashboard](https://developers.facebook.com/apps/) and click **Create App**.
+- Go to the [Meta for Developers App Dashboard](https://developers.facebook.com/apps/) and click **Create App**.
 
 - **Important:**
   During the setup process, at the **"Use case"** step, select:
@@ -83,8 +83,7 @@ After creating your app, you’ll need to enable the Marketing API to begin maki
 - Click **Add Product**.
 - Find and select **Marketing API** from the list of available products.
 
-📚 **Further Reading:** For an overview of the Marketing API, see: [Facebook Developer Marketing API Docs](https://developers.facebook.com/docs/marketing-apis)
-
+For an overview of the Marketing API, see the [Facebook Developer Marketing API Docs](https://developers.facebook.com/docs/marketing-apis).
 
 ### 4. Generate an Access Token
 
@@ -104,7 +103,7 @@ To authorize your application to interact with the Facebook Marketing API, you'l
   Use this Access Token to authenticate your API calls when using the “Service Account Key Authentication” method.
 
 :::tip
-You can always view your existing access tokens, their permissions, and lifecycles using the 🔗 [Access Token Tool](https://developers.facebook.com/tools/accesstoken).
+You can always view your existing access tokens, their permissions, and lifecycles using the [Access Token Tool](https://developers.facebook.com/tools/accesstoken).
 :::
 
 ### 5. Request Increased Rate Limits
@@ -137,8 +136,7 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 	- Facebook continuously evaluates your API activity based on the past 15 days, not just immediately after approval.
 	- Falling below the 1,500 call threshold during any 15-day period may result in your advanced access being revoked.
 
-
-📚 **Guidance:** Refer to Facebook's official documentation on [Access Levels and Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization/) for detailed instructions on requesting Advanced Access.
+Refer to Facebook's official documentation on [Access Levels and Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization/) for detailed instructions on requesting Advanced Access.
 
 <!-- /env:oss -->
 
@@ -222,11 +220,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.action_report_time">
-   6. (Optional) For **Action Report Time**, enter the action report time you want to configure. This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported.
-
-      - `impression`: Actions are attributed to the time the ad was viewed (Jan 1st).
-      - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
-      - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
+   6. **Action Report Time** is deprecated and hidden from the UI since v3.5.0. It defaults to `mixed` and cannot be changed through the Airbyte UI. If you set it programmatically (via API, Terraform, or PyAirbyte), the available values are `impression` (attributed to view time), `conversion` (attributed to action time), or `mixed` (click-through to view time, view-through to action time).
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment">
@@ -443,6 +437,24 @@ Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_
 - The `1d_view` attribution window remains supported and continues returning data where applicable.
 - Click-through attribution windows (`1d_click`, `7d_click`, `28d_click`) are not affected by this change.
 
+### Connection check fails with "Invalid access token" after re-authenticating
+
+If your connection check fails with an "Invalid access token" or "Error validating access token" error shortly after you re-authenticated through the OAuth flow, your saved token may have been corrupted by Chrome's autofill feature.
+
+#### What happened
+
+Chrome can detect two adjacent form fields — the Ad Account ID (text) followed by the Access Token (password) — as a login form and silently inject saved browser credentials into them. When the connector configuration is saved with this autofilled value, an internal migration overwrites the valid OAuth token with the autofilled value, causing all subsequent syncs and connection checks to fail.
+
+This issue was fixed in connector version 6.0.2 ([airbytehq/airbyte#81331](https://github.com/airbytehq/airbyte/pull/81331)). If you are on an older version, upgrade to 6.0.2 or later to prevent recurrence.
+
+#### How to fix it
+
+1. Open your Facebook Marketing source configuration in Airbyte.
+2. Click **Authenticate your account** (or **Re-authenticate**) to go through the OAuth flow again. This generates a fresh, valid access token.
+3. Click **Save** and then run **Test Connection** to confirm the new token works.
+
+If the connection check still fails after re-authenticating, [contact Airbyte Support](https://docs.airbyte.com/community/getting-support) for further assistance.
+
 ### Missing purchases or purchase value metrics
 
 You may notice that Purchases or purchase value fields in the Ads Insights stream appear incomplete or under-reported for certain date ranges. This issue has been observed across multiple platforms, including direct Facebook API calls. It's not specific to Airbyte, but linked to intermittent upstream API behavior.
@@ -484,6 +496,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
 | 6.0.1 | 2026-06-24 | [80779](https://github.com/airbytehq/airbyte/pull/80779) | Fix TypeError in `CursorPatch.load_next_page()` when Facebook API returns malformed (non-dict) responses or data items |
 | 6.0.0 | 2026-06-23 | [80324](https://github.com/airbytehq/airbyte/pull/80324) | Replace deprecated `ads_insights_dma` and `ads_insights_demographics_dma_region` streams with `ads_insights_comscore_market` and `ads_insights_demographics_comscore_market_region` following Meta's DMA → Comscore Market transition. Remove `dma` from Custom Insights breakdowns. |
 | 5.2.14 | 2026-06-11 | [79643](https://github.com/airbytehq/airbyte/pull/79643) | Replace the cryptic `system_error` on un-generatable Ads Insights reports with a clear, actionable `config_error` that names the offending stream/field/breakdown and how to resolve it (unselect the field, or disable the incrementality attribution window) (oncall #12088). |
@@ -657,8 +670,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 0.2.68 | 2022-10-12 | [17869](https://github.com/airbytehq/airbyte/pull/17869) | Remove "format" from optional datetime `end_date` field |
 | 0.2.67 | 2022-10-04 | [17551](https://github.com/airbytehq/airbyte/pull/17551) | Add `cursor_field` for custom_insights stream schema |
 | 0.2.65 | 2022-09-29 | [17371](https://github.com/airbytehq/airbyte/pull/17371) | Fix stream CustomConversions `enable_deleted=False` |
-| 0.2.64 | 2022-09-22 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state. |
 | 0.2.64 | 2022-09-22 | [17027](https://github.com/airbytehq/airbyte/pull/17027) | Limit time range with 37 months when creating an insight job from lower edge object. Retry bulk request when getting error code `960` |
+| 0.2.64 | 2022-09-22 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state. |
 | 0.2.63 | 2022-09-06 | [15724](https://github.com/airbytehq/airbyte/pull/15724) | Add the Custom Conversion stream |
 | 0.2.62 | 2022-09-01 | [16222](https://github.com/airbytehq/airbyte/pull/16222) | Remove `end_date` from config if empty value (re-implement #16096) |
 | 0.2.61 | 2022-08-29 | [16096](https://github.com/airbytehq/airbyte/pull/16096) | Remove `end_date` from config if empty value |
