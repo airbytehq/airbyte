@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-chroma"
-version = "0.0.54"
+version = "0.0.55"
 description = "Airbyte destination implementation for Chroma."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "ELv2"
@@ -20,6 +20,7 @@ include = "destination_chroma"
 python = "^3.9,<3.12"
 airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
 chromadb = "*"
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-pgvector"
-version = "0.1.9"
+version = "0.1.10"
 description = "Airbyte destination implementation for PGVector."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "ELv2"
@@ -24,6 +24,7 @@ extras = ["vector-db-based"]
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 airbyte = "^0.12.0"
 sqlalchemy = "<2.0"
 pgvector = "0.3.2"

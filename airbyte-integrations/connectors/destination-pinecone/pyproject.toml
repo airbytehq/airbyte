@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-pinecone"
-version = "0.1.48"
+version = "0.1.49"
 description = "Airbyte destination implementation for Pinecone."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "ELv2"
@@ -20,6 +20,7 @@ include = "destination_pinecone"
 python = "^3.9,<3.12"
 airbyte-cdk = { version = "<2.0.0", extras = ["vector-db-based"] }
 pinecone-client = { version = "3.1.0", extras = ["grpc"] }
+setuptools = "<82"  # setuptools 82 removed pkg_resources, needed by transitive deps
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
