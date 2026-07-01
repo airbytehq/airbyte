@@ -1,0 +1,38 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/hugging-face-buckets",
+  "supported_destination_sync_modes": ["overwrite"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Hugging Face Buckets",
+    "type": "object",
+    "required": ["destination_path"],
+    "additionalProperties": false,
+    "properties": {
+      "destination_path": {
+        "title": "Destination Path",
+        "type": "string",
+        "description": "The path to the Hugging Face Bucket where data will be written. Format: hf://buckets/{username}/{bucket}/{path}/. For example: hf://buckets/lhoestq/b/",
+        "examples": [
+          "hf://buckets/lhoestq/b/"
+        ],
+        "order": 0
+      },
+      "file_format": {
+        "title": "File Format",
+        "type": "string",
+        "description": "The format to use when writing files to the bucket.",
+        "enum": ["parquet", "jsonl"],
+        "default": "parquet",
+        "order": 1
+      },
+      "token": {
+        "title": "Hugging Face Token",
+        "type": "string",
+        "description": "Your Hugging Face token for authentication. Required for private buckets or write access.",
+        "airbyte_secret": true,
+        "order": 2
+      }
+    }
+  }
+}

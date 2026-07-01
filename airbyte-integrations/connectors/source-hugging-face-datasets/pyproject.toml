@@ -1,0 +1,16 @@
+[project]
+name = "airbyte-source-hugging-face-datasets"
+version = "0.0.1"
+description = "Airbyte Source for Hugging Face Datasets using the datasets library"
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+license = {text = "ELv2"}
+
+dependencies = [
+    "airbyte-cdk>=7.0,<8.0",
+    "datasets>=4.0.0",
+    "pandas>=2.0.0",
+]
+
+[project.scripts]
+airbyte-source-hugging-face-datasets = "source_hugging_face_datasets.run:main"

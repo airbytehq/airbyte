@@ -1,15 +1,15 @@
-documentationUrl: https://docs.airbyte.com/integrations/sources/hugging-face-datasets
+documentationUrl: https://docs.airbyte.com/integrations/sources/hugging-face-buckets
 connectorBuildOptions:
   baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
 connectorSubtype: file
 connectorType: source
 definitionId: b1c2d3e4-f5a6-7890-bcde-f12345678901
 dockerImageTag: "0.1.0"
-dockerRepository: airbyte/source-hugging-face-datasets
-githubIssueLabel: source-hugging-face-datasets
+dockerRepository: airbyte/source-hugging-face-buckets
+githubIssueLabel: source-hugging-face-buckets
 icon: icon.svg
 license: ELv2
-name: Hugging Face datasets (Source)
+name: Hugging Face Buckets (Source)
 registryOverrides:
   cloud:
     enabled: true
