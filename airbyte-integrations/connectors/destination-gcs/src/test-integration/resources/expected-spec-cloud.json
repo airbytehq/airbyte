@@ -1,0 +1,346 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/gcs",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "GCS V2 Destination Spec",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "credential" : {
+        "oneOf" : [ {
+          "title" : "HMAC key",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "credential_type" : {
+              "type" : "string",
+              "enum" : [ "HMAC_KEY" ],
+              "default" : "HMAC_KEY"
+            },
+            "hmac_key_access_id" : {
+              "type" : "string",
+              "description" : "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
+              "title" : "HMAC Access Key",
+              "examples" : [ "1234567890abcdefghij1234" ],
+              "airbyte_secret" : true,
+              "order" : 0
+            },
+            "hmac_key_secret" : {
+              "type" : "string",
+              "description" : "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
+              "title" : "HMAC Secret",
+              "examples" : [ "1234567890abcdefghij1234567890ABCDEFGHIJ" ],
+              "airbyte_secret" : true,
+              "order" : 1
+            }
+          },
+          "required" : [ "credential_type", "hmac_key_access_id", "hmac_key_secret" ]
+        } ],
+        "description" : "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
+        "title" : "Credential",
+        "order" : 0,
+        "type" : "object"
+      },
+      "gcs_bucket_name" : {
+        "type" : "string",
+        "description" : "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
+        "title" : "GCS Bucket Name",
+        "examples" : [ "airbyte_sync" ],
+        "order" : 1
+      },
+      "gcs_bucket_path" : {
+        "type" : "string",
+        "description" : "Directory under the GCS bucket where data will be written.",
+        "title" : "GCS Bucket Path",
+        "examples" : [ "data_sync/test" ],
+        "order" : 2
+      },
+      "gcs_bucket_region" : {
+        "type" : "string",
+        "default" : "us",
+        "enum" : [ "asia", "eu", "us", "asia1", "eur4", "eur5", "eur7", "eur8", "nam4", "africa-south1", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central2", "europe-north1", "europe-north2", "europe-southwest1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "europe-west10", "europe-west12", "me-central1", "me-central2", "me-west1", "northamerica-northeast1", "northamerica-northeast2", "northamerica-south1", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east4", "us-east5", "us-south1", "us-west1", "us-west2", "us-west3", "us-west4" ],
+        "description" : "Select a Region of the GCS Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/locations\">here</a>.",
+        "title" : "GCS Bucket Region",
+        "examples" : [ "us" ],
+        "order" : 3
+      },
+      "format" : {
+        "oneOf" : [ {
+          "title" : "CSV: Comma-Separated Values",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "CSV" ],
+              "default" : "CSV"
+            },
+            "flattening" : {
+              "type" : "string",
+              "default" : "No flattening",
+              "enum" : [ "No flattening", "Root level flattening" ],
+              "title" : "Flattening"
+            },
+            "compression" : {
+              "oneOf" : [ {
+                "title" : "No Compression",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "No Compression" ],
+                    "default" : "No Compression"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              }, {
+                "title" : "GZIP",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "GZIP" ],
+                    "default" : "GZIP"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              } ],
+              "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+              "title" : "Compression",
+              "type" : "object"
+            }
+          },
+          "required" : [ "format_type", "flattening" ]
+        }, {
+          "title" : "JSON Lines: Newline-delimited JSON",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "JSONL" ],
+              "default" : "JSONL"
+            },
+            "flattening" : {
+              "type" : "string",
+              "default" : "No flattening",
+              "enum" : [ "No flattening", "Root level flattening" ],
+              "title" : "Flattening"
+            },
+            "compression" : {
+              "oneOf" : [ {
+                "title" : "No Compression",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "No Compression" ],
+                    "default" : "No Compression"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              }, {
+                "title" : "GZIP",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "GZIP" ],
+                    "default" : "GZIP"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              } ],
+              "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+              "title" : "Compression",
+              "type" : "object"
+            }
+          },
+          "required" : [ "format_type" ]
+        }, {
+          "title" : "Avro: Apache Avro",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "Avro" ],
+              "default" : "Avro"
+            },
+            "compression_codec" : {
+              "oneOf" : [ {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "no compression" ],
+                    "default" : "no compression"
+                  }
+                },
+                "title" : "no compression",
+                "required" : [ "codec" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "Deflate" ],
+                    "default" : "Deflate"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Deflate Level"
+                  }
+                },
+                "title" : "Deflate",
+                "required" : [ "codec", "compression_level" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "bzip2" ],
+                    "default" : "bzip2"
+                  }
+                },
+                "title" : "bzip2",
+                "required" : [ "codec" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "xz" ],
+                    "default" : "xz"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Compression Level"
+                  }
+                },
+                "title" : "xz",
+                "required" : [ "codec", "compression_level" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "zstandard" ],
+                    "default" : "zstandard"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Compression Level"
+                  },
+                  "include_checksum" : {
+                    "type" : "boolean",
+                    "title" : "Include Checksum"
+                  }
+                },
+                "title" : "zstandard",
+                "required" : [ "codec", "compression_level", "include_checksum" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "snappy" ],
+                    "default" : "snappy"
+                  }
+                },
+                "title" : "snappy",
+                "required" : [ "codec" ]
+              } ],
+              "description" : "The compression algorithm used to compress data. Default to no compression.",
+              "title" : "Compression Codec",
+              "order" : 1,
+              "type" : "object"
+            }
+          },
+          "required" : [ "format_type", "compression_codec" ]
+        }, {
+          "title" : "Parquet: Columnar Storage",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "Parquet" ],
+              "default" : "Parquet"
+            },
+            "compression_codec" : {
+              "type" : "string",
+              "default" : "UNCOMPRESSED",
+              "enum" : [ "UNCOMPRESSED", "SNAPPY", "GZIP", "LZO", "BROTLI", "LZ4", "ZSTD" ],
+              "description" : "The compression algorithm used to compress data pages.",
+              "title" : "Compression Codec"
+            },
+            "block_size_mb" : {
+              "type" : "integer",
+              "default" : 128,
+              "description" : "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
+              "title" : "Block Size (Row Group Size) (MB)"
+            },
+            "max_padding_size_mb" : {
+              "type" : "integer",
+              "default" : 8,
+              "description" : "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
+              "title" : "Max Padding Size (MB)"
+            },
+            "page_size_kb" : {
+              "type" : "integer",
+              "default" : 1024,
+              "description" : "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB.",
+              "title" : "Page Size (KB)"
+            },
+            "dictionary_page_size_kb" : {
+              "type" : "integer",
+              "default" : 1024,
+              "description" : "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB.",
+              "title" : "Dictionary Page Size (KB)"
+            },
+            "dictionary_encoding" : {
+              "type" : "boolean",
+              "description" : "Default: true.",
+              "title" : "Dictionary Encoding"
+            }
+          },
+          "required" : [ "format_type" ]
+        } ],
+        "description" : "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
+        "title" : "Output Format",
+        "order" : 4,
+        "type" : "object"
+      },
+      "gcs_path_format" : {
+        "type" : "string",
+        "description" : "Format string on how data will be organized inside the GCS bucket directory.",
+        "title" : "GCS Path Format",
+        "examples" : [ "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_" ],
+        "order" : 5
+      },
+      "file_name_pattern" : {
+        "type" : "string",
+        "description" : "Pattern to match file names in the bucket directory.",
+        "title" : "File Name Pattern",
+        "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ],
+        "order" : 6
+      }
+    },
+    "required" : [ "credential", "gcs_bucket_name", "gcs_bucket_path", "format" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append" ]
+}

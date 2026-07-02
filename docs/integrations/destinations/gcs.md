@@ -236,6 +236,46 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
+## Upgrading to 1.0.0
+
+Version 1.0.0 re-implements destination-gcs on Airbyte's **Bulk Load CDK** (the same engine as
+destination-s3 v1.x), replacing the legacy Java CDK. The goal is significantly higher throughput on
+large syncs, achieved by a parallel, back-pressured multipart-upload pipeline instead of the old
+single-stream uploader.
+
+**What is preserved (no action needed):**
+
+- **Authentication** is unchanged: HMAC keys over the GCS S3-interoperability endpoint
+  (`credential.credential_type = HMAC_KEY`, `hmac_key_access_id`, `hmac_key_secret`). Existing
+  configs keep working.
+- **Formats and codecs**: Avro, CSV, JSONL, Parquet, with the same compression options — including
+  **Avro + snappy** (the snappy codec still lives inside the Avro container; the object extension
+  stays `.avro`).
+- **Output layout**: data is still written under `<gcs_bucket_path>/<namespace>/<stream>/` with
+  name-transformed path segments.
+
+**Output paths and file names are preserved.** With the same config as 0.4.x (path template in
+`gcs_bucket_path`, `gcs_path_format` left empty), object keys are byte-for-byte identical to 0.4.x,
+including the `<date>_<epoch>_0.<ext>` file name and the directory layout — verified against a real
+0.4.x production object. Note that `gcs_bucket_path` is now a substituted path template composed
+with `gcs_path_format`; when `gcs_path_format` is empty it falls back to
+`${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`, exactly reproducing 0.4.x behaviour
+(namespace/stream appended after the bucket-path template). Only change worth knowing:
+
+- A stream larger than ~200 MB is now split into multiple objects (`..._0`, `..._1`, …) instead of
+  one large file, so consumers should read **all** objects under a stream's prefix.
+- CSV and JSONL are **GZIP-compressed by default** (`.csv.gz` / `.jsonl.gz`); set
+  `format.compression.compression_type = "No Compression"` for uncompressed output. Avro and Parquet
+  are not affected (their compression is internal to the container).
+
+## Performance
+
+The connector uses tuned object-storage pipeline defaults and exposes no performance-tuning
+settings, matching the other Bulk-CDK object-storage destinations. Throughput scales with the
+destination pod's CPU/memory and — for SOCKET-mode syncs — with the source's read concurrency and
+the number of streams synced in parallel. In SOCKET mode the CDK sizes the socket count, part size,
+and upload parallelism from the negotiated CPU limits automatically.
+
 ## Changelog
 
 <details>
@@ -243,6 +283,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0   | 2026-07-02 | [81376](https://github.com/airbytehq/airbyte/pull/81376)   | Migrate to the Bulk Load CDK for significantly higher throughput. Preserves HMAC-key auth and AVRO+snappy/CSV/JSONL/Parquet output, with the same object paths and `<date>_<epoch>_0` file names as 0.4.x (verified byte-for-byte against a production object — see "Upgrading to 1.0.0"). Advertises the SOCKET/PROTOBUF high-throughput data channel (`connectorIPCOptions`), with STDIO/JSONL as the negotiated fallback. Ships tuned ObjectLoader defaults with no user-facing tuning knobs, matching the other Bulk-CDK object-storage destinations. |
 | 0.4.9   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906)   | Use M4 Compatible base image.                                                                                              |
 | 0.4.8   | 2025-01-10 | [51479](https://github.com/airbytehq/airbyte/pull/51479)   | Use a non root base image                                                                                                  |
 | 0.4.7   | 2024-12-18 | [49884](https://github.com/airbytehq/airbyte/pull/49884)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                        |
