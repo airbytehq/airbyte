@@ -588,9 +588,7 @@ def test_manifest_lookback_window_on_sales_and_traffic_streams(stream_key, shoul
     has_lookback = "lookback_window" in incremental_sync
 
     if should_have_lookback:
-        assert has_lookback, (
-            f"Stream '{stream_key}' should have a lookback_window (it extracts per-day records)"
-        )
+        assert has_lookback, f"Stream '{stream_key}' should have a lookback_window (it extracts per-day records)"
     else:
         assert not has_lookback, (
             f"Stream '{stream_key}' must NOT have a lookback_window "
