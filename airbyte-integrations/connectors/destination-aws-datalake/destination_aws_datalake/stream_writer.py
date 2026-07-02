@@ -354,6 +354,11 @@ class StreamWriter:
                     json_columns.add(col)
                     result_typ = "string"
 
+                # array of objects without usable properties, serialize as JSON string
+                elif item_type == "object":
+                    json_columns.add(col)
+                    result_typ = "string"
+
                 # array with single type
                 elif item_type and not self._json_schema_type_has_mixed_types(raw_item_type):
                     result_typ = f"array<{type_mapper[item_type]}>"
