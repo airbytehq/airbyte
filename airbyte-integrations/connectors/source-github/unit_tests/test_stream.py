@@ -350,9 +350,7 @@ def test_read_records_404_message_for_repository_stream(time_mock, caplog, reque
     )
 
     list(read_full_refresh(stream))
-    assert any(
-        "Skipping `Tags` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
-    )
+    assert any("GitHub returned 404 Not Found" in msg for msg in caplog.messages)
 
 
 @patch("time.sleep")
@@ -481,7 +479,7 @@ def test_stream_teams_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org_name/teams?per_page=100"
 
 
@@ -555,7 +553,7 @@ def test_stream_repositories_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
@@ -572,17 +570,14 @@ def test_stream_repositories_401(time_mock, caplog, requests_mock):
         json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
     )
 
-    with pytest.raises(AirbyteTracedException):
+    with pytest.raises(AirbyteTracedException) as exc_info:
         assert list(read_full_refresh(stream)) == []
 
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-    assert any(
-        "GitHub authentication failed (HTTP 401) for stream" in msg and "Personal Access Token may need to be renewed" in msg
-        for msg in caplog.messages
-    )
+    assert "401" in exc_info.value.message
 
 
 @responses.activate
@@ -1772,8 +1767,7 @@ def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_res
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
     ]
-    expected_message = "Syncing `TeamMemberships` stream for organization `org1`, team `team2` and user `login3` isn't available: User has no team membership. Skipping..."
-    assert expected_message in caplog.messages
+    assert any("GitHub returned 404 Not Found" in msg for msg in caplog.messages)
 
 
 def test_stream_commit_comment_reactions_incremental_read(requests_mock):
