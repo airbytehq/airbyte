@@ -543,27 +543,15 @@ Classes
         - country_code: User's country code
         - created_at: When the user was created
         - email: User's email address
-        - enabled: Whether the user account is enabled
         - id: Unique user identifier
-        - is_admin: Whether the user is an admin
-        - is_guest: Whether the user is a guest
-        - is_pending: Whether the user is pending
-        - is_view_only: Whether the user is view-only
-        - is_verified: Whether the user is verified
-        - join_date: When the user joined
         - location: User's location
         - mobile_phone: User's mobile phone number
         - name: User's display name
         - phone: User's phone number
-        - photo_original: URL to original size photo
-        - photo_small: URL to small photo
-        - photo_thumb: URL to thumbnail photo
-        - photo_thumb_small: URL to small thumbnail photo
-        - photo_tiny: URL to tiny photo
         - time_zone_identifier: User's timezone identifier
         - title: User's job title
         - url: User's Monday.com profile URL
-        - utc_hours_diff: UTC hours difference for the user's timezone
+        - utc_hours_diff: UTC hours difference for the user's timezone (Float under API 2026-07)
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -589,8 +577,13 @@ Classes
         Returns:
             dict[str, Any]
 
-    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[User]]`
+    `list(self, page: int | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[User]]`
     :   Returns all users in the Monday.com account
+        
+        Args:
+            page: Page number for pagination
+            limit: Number of users to return per page (API 2026-07 maximum is 1000)
+            **kwargs: Additional parameters
         
         Returns:
             UsersListResult

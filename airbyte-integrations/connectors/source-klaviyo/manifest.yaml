@@ -1088,6 +1088,11 @@ definitions:
                   - recipients
                   - revenue_per_recipient
                   - average_order_value
+                  - spam_complaint_rate
+                  - spam_complaints
+                  - unsubscribe_rate
+                  - unsubscribe_uniques
+                  - unsubscribes
                 timeframe:
                   start: "{{ stream_interval.start_time }}"
                   end: "{{ stream_interval.end_time }}"
@@ -4191,6 +4196,41 @@ schemas:
               - "null"
               - array
             description: Average order value per day
+            items:
+              type: number
+          unsubscribes:
+            type:
+              - "null"
+              - array
+            description: Number of unsubscribes per day
+            items:
+              type: number
+          unsubscribe_uniques:
+            type:
+              - "null"
+              - array
+            description: Number of unique unsubscribes per day
+            items:
+              type: number
+          unsubscribe_rate:
+            type:
+              - "null"
+              - array
+            description: Unsubscribe rate per day
+            items:
+              type: number
+          spam_complaints:
+            type:
+              - "null"
+              - array
+            description: Number of spam complaints per day
+            items:
+              type: number
+          spam_complaint_rate:
+            type:
+              - "null"
+              - array
+            description: Spam complaint rate per day
             items:
               type: number
   campaign_values_reports:
