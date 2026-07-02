@@ -7,7 +7,6 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
 from airbyte_cdk.models import (
-    AirbyteCatalog,
     AirbyteMessage,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
