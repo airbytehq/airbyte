@@ -15,9 +15,9 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
@@ -109,12 +109,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             if selected:
                 yield from self._concurrent_source.read(selected)
 
-        synchronous_catalog = ConfiguredAirbyteCatalog(
-            streams=[
-                s for s in catalog.streams
-                if s.stream.name not in concurrent_stream_names
-            ]
-        )
+        synchronous_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name not in concurrent_stream_names])
         if synchronous_catalog.streams:
             yield from AbstractSource.read(self, logger, config, synchronous_catalog, state)
 
