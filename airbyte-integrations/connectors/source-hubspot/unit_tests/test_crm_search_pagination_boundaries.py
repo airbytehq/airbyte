@@ -669,8 +669,9 @@ def test_slice_boundary_record_assignment():
     slice2_start = slice1_end + 1
 
     # Exactly at boundary → slice 1
-    assert slice1_end <= slice1_end  # In slice 1 (LTE)
-    assert slice1_end < slice2_start  # Not in slice 2 (GTE)
+    ts_boundary = slice1_end
+    assert ts_boundary <= slice1_end  # In slice 1 (LTE)
+    assert ts_boundary < slice2_start  # Not in slice 2 (GTE)
 
     # 1ms after → slice 2
     ts_next = slice1_end + 1
