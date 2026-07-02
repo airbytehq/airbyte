@@ -523,12 +523,11 @@ jobs:
           exit 1
 
       - name: Post merge failure comment
-        if: failure() && steps.merge.outcome == 'failure' && steps.status-comment.outputs.comment-id
+        if: failure() && steps.merge.outcome == 'failure'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
-          comment-id: ${{ steps.status-comment.outputs.comment-id }}
-          edit-mode: replace
+          issue-number: ${{ inputs.pr }}
           body: |
             > **Auto-merge: MERGE FAILED**
             >
