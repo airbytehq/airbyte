@@ -14,6 +14,9 @@ airbyteBulkConnector {
 }
 
 dependencies {
+    // Force Debezium 3.4.2.Final to pick up null-safe MySqlGtidSet.UUIDSet handling (PR #75559).
+    // Avoids NPE in CDK pre-flight UUIDSet comparison after RDS UUID drift / replica promotion / source-endpoint switch.
+    api enforcedPlatform('io.debezium:debezium-bom:3.4.2.Final')
     api "com.google.protobuf:protobuf-java:4.27.5" // for fixing vulnerability of protobuf-java used by Debezium
     implementation 'com.mysql:mysql-connector-j:9.1.0'
     implementation 'io.debezium:debezium-connector-mysql'

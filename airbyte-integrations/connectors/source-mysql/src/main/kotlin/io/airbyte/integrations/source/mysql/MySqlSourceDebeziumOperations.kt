@@ -217,15 +217,88 @@ class MySqlSourceDebeziumOperations(
      */
     private fun validate(debeziumState: UnvalidatedDeserializedState): DebeziumWarmStartState {
         val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
-        val (_: MySqlSourceCdcPosition, gtidSet: String?) = queryPositionAndGtids()
+        val (livePosition: MySqlSourceCdcPosition, gtidSet: String?) = queryPositionAndGtids()
         if (gtidSet.isNullOrEmpty() && !savedStateOffset.gtidSet.isNullOrEmpty()) {
             return abortCdcSync(
                 "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"
             )
         }
 
-        val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
+        val originalSavedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
         val availableGtidSet = MySqlGtidSet(gtidSet)
+
+        // UUID reconciliation for seamless master <-> replica host swap.
+        // Master/replica swaps, RDS failover, replica promotions, and operator state edits
+        // can introduce UUID divergence between the saved CDC offset and the server's current
+        // executed_gtid_set:
+        //   - Auto-prune:  drop UUIDSets in saved whose UUID the server doesn't have (e.g. an
+        //                  old replica's local-write UUID after swapping to master).
+        //   - Auto-inject: add UUIDSets the server has but saved doesn't, at the server's
+        //                  current known range (e.g. a new replica's local-write UUID first
+        //                  time we sync from it). Trades backfill of those UUIDs for continuity.
+        // When reconciliation changes the GTID set AND the saved binlog file isn't on the
+        // current host, also reset the offset's file/pos to the oldest available binlog file at
+        // pos=0. The CDK's lower/upper-bound cursor comparison uses
+        // cursorValue = (fileExtension shl 32) or position; if the new host's binlog naming
+        // differs, saved's encoded position can exceed live's and CdcPartitionsCreator would
+        // silently declare "already caught up", exiting before Debezium fetches anything. The
+        // oldest-file-at-pos-0 sentinel keeps lowerBound below upperBound. Debezium itself
+        // resumes via GTID, so file/pos is just a CDK comparison input.
+        //
+        // If the saved file IS still on the host (same-host state edit, or topology change
+        // that preserved binlog naming), leave file/pos alone — they were valid before and
+        // resetting them to live would force lowerBound == upperBound and cause the same
+        // silent-skip issue.
+        val savedGtidSet: MySqlGtidSet =
+            if (originalSavedGtidSet.isEmpty) {
+                // GTID newly enabled or empty saved state — leave to the downstream binlog-file
+                // check (after the purge gap check) to handle resume positioning.
+                originalSavedGtidSet
+            } else {
+                val reconciledGtidString =
+                    reconcileSavedGtidSet(originalSavedGtidSet, availableGtidSet)
+                val reconciled = MySqlGtidSet(reconciledGtidString)
+                if (reconciled != originalSavedGtidSet) {
+                    val offsetValue: ObjectNode =
+                        debeziumState.offset.wrapped.values.first() as ObjectNode
+                    offsetValue.put("gtids", reconciledGtidString)
+                    val existingLogFiles: List<String> = getBinaryLogFileNames()
+                    val savedFileStillOnHost: Boolean =
+                        existingLogFiles.contains(savedStateOffset.position.fileName)
+                    if (!savedFileStillOnHost) {
+                        val oldestFile: String =
+                            existingLogFiles.firstOrNull() ?: livePosition.fileName
+                        offsetValue.put("file", oldestFile)
+                        offsetValue.put("pos", 0L)
+                        log.warn {
+                            "Reconciled saved CDC state to absorb a UUID drift event " +
+                                "(master<->replica swap, RDS failover, or replica promotion). " +
+                                "Original GTIDs=$originalSavedGtidSet, " +
+                                "Server GTIDs=$availableGtidSet, " +
+                                "Reconciled GTIDs=$reconciled. " +
+                                "Saved binlog file ${savedStateOffset.position.fileName} not " +
+                                "found on the current host; resetting cursor to oldest " +
+                                "available file $oldestFile:0 so the CDK comparison does not " +
+                                "short-circuit."
+                        }
+                    } else {
+                        log.warn {
+                            "Reconciled saved CDC state to absorb a UUID drift event " +
+                                "(same-host state edit or topology change). " +
+                                "Original GTIDs=$originalSavedGtidSet, " +
+                                "Server GTIDs=$availableGtidSet, " +
+                                "Reconciled GTIDs=$reconciled. " +
+                                "Saved binlog file ${savedStateOffset.position.fileName} is " +
+                                "still on the host; preserving cursor at " +
+                                "${savedStateOffset.position.fileName}:" +
+                                "${savedStateOffset.position.position} so the CDK partition " +
+                                "fetches new events."
+                        }
+                    }
+                }
+                reconciled
+            }
+
         if (!savedGtidSet.isContainedWithin(availableGtidSet)) {
             return abortCdcSync(
                 "Connector last known GTIDs are $savedGtidSet, but MySQL server only has $availableGtidSet"
@@ -234,10 +307,41 @@ class MySqlSourceDebeziumOperations(
 
         // newGtidSet is gtids from server that hasn't been seen by this connector yet. If the set
         // exists, check that they are not purged, or we may lose those data.
-        val newGtidSet = availableGtidSet.subtract(savedGtidSet)
+        // Note: MySqlGtidSet.subtract() can throw a NullPointerException when the available
+        // GTID set contains server UUIDs not present in the saved GTID set (e.g., after a
+        // MySQL failover or topology change on managed MySQL). We catch this and treat it as
+        // a CDC state invalidation requiring a sync abort/reset.
+        val newGtidSet: MySqlGtidSet =
+            try {
+                availableGtidSet.subtract(savedGtidSet) as MySqlGtidSet
+            } catch (e: NullPointerException) {
+                log.warn(e) {
+                    "GTID set subtraction failed due to mismatched server UUIDs. " +
+                        "Available: $availableGtidSet, Saved: $savedGtidSet"
+                }
+                return abortCdcSync(
+                    "MySQL server GTID set contains server UUIDs not present in saved CDC state. " +
+                        "This typically occurs after a MySQL failover or topology change. " +
+                        "Available GTIDs: $availableGtidSet, Saved GTIDs: $savedGtidSet"
+                )
+            }
         if (!newGtidSet.isEmpty) {
             val purgedGtidSet = queryPurgedIds()
-            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+            val remainingGtidSet: MySqlGtidSet =
+                try {
+                    newGtidSet.subtract(purgedGtidSet) as MySqlGtidSet
+                } catch (e: NullPointerException) {
+                    log.warn(e) {
+                        "GTID set subtraction failed during purge check. " +
+                            "New: $newGtidSet, Purged: $purgedGtidSet"
+                    }
+                    return abortCdcSync(
+                        "MySQL server GTID set contains server UUIDs not present in saved CDC state. " +
+                            "This typically occurs after a MySQL failover or topology change. " +
+                            "New GTIDs: $newGtidSet, Purged GTIDs: $purgedGtidSet"
+                    )
+                }
+            if (!purgedGtidSet.isEmpty && !remainingGtidSet.equals(newGtidSet)) {
                 return abortCdcSync(
                     "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
                 )
@@ -256,7 +360,205 @@ class MySqlSourceDebeziumOperations(
                 )
             }
         }
-        return ValidDebeziumWarmStartState(debeziumState.offset, debeziumState.schemaHistory)
+
+        // Schema-history full rebuild (v7).
+        //
+        // Background: Airbyte source-mysql runs Debezium with snapshot.mode=recovery and never
+        // issues SHOW CREATE TABLE itself. Schema history is built entirely from binlog DDL
+        // events visible at sync time, which depends on the current host's binlog retention.
+        // Any table whose CREATE TABLE pre-dates retention is permanently absent from history,
+        // and the first row event for it crashes Debezium with "schema isn't known to this
+        // connector". Master <-> replica swap is hostile to this because each host retains a
+        // different binlog window.
+        //
+        // v6 attempted a coverage-based bootstrap (regex-match existing DDLs to find covered
+        // table names, only synthesize CREATE TABLE for missing tables). That failed in
+        // practice — the coverage regex either matched some incidental "CREATE TABLE X"
+        // substring or the existing DDL for X was present but Debezium's parser silently
+        // failed to register the table, leaving Debezium without a schema while v6 thought
+        // the table was covered.
+        //
+        // v7 approach: stop trusting the existing schema history. Replace it entirely with a
+        // fresh, complete set of CREATE TABLE statements pulled live via SHOW CREATE TABLE for
+        // every table in information_schema for the configured database. Since SHOW CREATE
+        // TABLE returns the *current* schema (post all historical ALTERs), this is
+        // semantically equivalent to replaying all historical DDLs and ending at the latest
+        // state. No information lost. Bounded size (N records, N = current table count).
+        //
+        // Safety: if information_schema or any SHOW CREATE TABLE call fails, fall back to
+        // existing history rather than partial-replace. Worst-case v7 is no worse than v6.
+        val rebuiltSchemaHistory: DebeziumSchemaHistory? =
+            try {
+                rebuildSchemaHistoryFromSource(
+                    existing = debeziumState.schemaHistory,
+                    referencePosition = savedStateOffset.position,
+                )
+            } catch (e: Exception) {
+                log.warn(e) {
+                    "Schema history rebuild failed; proceeding with existing history. " +
+                        "${e.message}"
+                }
+                debeziumState.schemaHistory
+            }
+        return ValidDebeziumWarmStartState(debeziumState.offset, rebuiltSchemaHistory)
+    }
+
+    private val createTableHeadPattern: Regex =
+        Regex("""CREATE\s+TABLE\s+(?!IF\s+NOT\s+EXISTS)""", RegexOption.IGNORE_CASE)
+
+    private fun rebuildSchemaHistoryFromSource(
+        existing: DebeziumSchemaHistory?,
+        referencePosition: MySqlSourceCdcPosition,
+    ): DebeziumSchemaHistory? {
+        val existingSize: Int = existing?.wrapped?.size ?: 0
+
+        val allTables: List<String> =
+            try {
+                queryAllTablesInDatabase()
+            } catch (e: Exception) {
+                log.warn(e) {
+                    "v7 schema-history rebuild: could not query information_schema.tables for " +
+                        "database '$databaseName'; falling back to existing history " +
+                        "($existingSize record(s)). ${e.message}"
+                }
+                return existing
+            }
+
+        if (allTables.isEmpty()) {
+            log.warn {
+                "v7 schema-history rebuild: information_schema reported zero BASE TABLE rows " +
+                    "for database '$databaseName'; falling back to existing history " +
+                    "($existingSize record(s))."
+            }
+            return existing
+        }
+
+        log.warn {
+            "v7 schema-history rebuild: information_schema reports ${allTables.size} table(s) " +
+                "in '$databaseName'. Fetching SHOW CREATE TABLE for each to build a fresh " +
+                "schema history (existing had $existingSize record(s)). Tables: $allTables"
+        }
+
+        val topicPrefix: String = DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
+        val now: Instant = Instant.now()
+        val tsSec: Long = now.epochSecond
+        val tsMs: Long = now.toEpochMilli()
+
+        val freshRecords: MutableList<HistoryRecord> = mutableListOf()
+        val failedTables: MutableList<String> = mutableListOf()
+
+        for (table in allTables) {
+            try {
+                val ddl: String? = queryCreateTableDdl(table)
+                if (ddl == null) {
+                    failedTables.add(table)
+                    log.warn {
+                        "v7 schema-history rebuild: SHOW CREATE TABLE returned no rows for " +
+                            "$databaseName.$table — unusual; will fall back to existing history."
+                    }
+                } else {
+                    freshRecords.add(
+                        buildBootstrapHistoryRecord(
+                            topicPrefix = topicPrefix,
+                            position = referencePosition,
+                            tsSec = tsSec,
+                            tsMs = tsMs,
+                            tableName = table,
+                            ddl = ddl,
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                failedTables.add(table)
+                log.warn(e) {
+                    "v7 schema-history rebuild: SHOW CREATE TABLE failed for " +
+                        "$databaseName.$table. ${e.message}"
+                }
+            }
+        }
+
+        if (failedTables.isNotEmpty()) {
+            log.warn {
+                "v7 schema-history rebuild: ${failedTables.size} table(s) failed to fetch DDL " +
+                    "($failedTables); NOT replacing existing schema history to avoid losing " +
+                    "schemas. Falling back to existing history ($existingSize record(s))."
+            }
+            return existing
+        }
+
+        log.warn {
+            "v7 schema-history rebuild: successfully built ${freshRecords.size} fresh CREATE " +
+                "TABLE record(s) for all tables. Replacing existing schema history " +
+                "($existingSize record(s) -> ${freshRecords.size} record(s))."
+        }
+
+        return DebeziumSchemaHistory(freshRecords.toList())
+    }
+
+    private fun queryAllTablesInDatabase(): List<String> =
+        jdbcConnectionFactory.get().use { connection: Connection ->
+            val sql =
+                "SELECT TABLE_NAME FROM information_schema.tables " +
+                    "WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = 'BASE TABLE'"
+            connection.prepareStatement(sql).use { stmt ->
+                stmt.setString(1, databaseName)
+                stmt.executeQuery().use { rs: ResultSet ->
+                    generateSequence { if (rs.next()) rs.getString(1) else null }.toList()
+                }
+            }
+        }
+
+    private fun queryCreateTableDdl(tableName: String): String? =
+        jdbcConnectionFactory.get().use { connection: Connection ->
+            connection.createStatement().use { stmt: Statement ->
+                val safeDb: String = databaseName.replace("`", "``")
+                val safeTable: String = tableName.replace("`", "``")
+                stmt.executeQuery("SHOW CREATE TABLE `$safeDb`.`$safeTable`").use {
+                    rs: ResultSet ->
+                    if (rs.next()) rs.getString(2) else null
+                }
+            }
+        }
+
+    private fun buildBootstrapHistoryRecord(
+        topicPrefix: String,
+        position: MySqlSourceCdcPosition,
+        tsSec: Long,
+        tsMs: Long,
+        tableName: String,
+        ddl: String,
+    ): HistoryRecord {
+        // Defensive: rewrite the bootstrap DDL to use CREATE TABLE IF NOT EXISTS so that, if our
+        // coverage check missed an alias or rename and the table is in fact already known to
+        // Debezium, the DDL parser treats it as a no-op rather than erroring on duplicate CREATE.
+        val safeDdl: String =
+            createTableHeadPattern.replaceFirst(ddl, "CREATE TABLE IF NOT EXISTS ")
+
+        val sourceNode: ObjectNode =
+            Jsons.objectNode().apply { put("server", topicPrefix) }
+        val positionNode: ObjectNode =
+            Jsons.objectNode().apply {
+                put("ts_sec", tsSec)
+                put("file", position.fileName)
+                put("pos", position.position)
+                put("snapshot", true)
+            }
+        val recordJson: ObjectNode =
+            Jsons.objectNode().apply {
+                set<JsonNode>("source", sourceNode)
+                set<JsonNode>("position", positionNode)
+                put("ts_ms", tsMs)
+                put("databaseName", databaseName)
+                put("ddl", safeDdl)
+                set<JsonNode>("tableChanges", Jsons.arrayNode())
+            }
+        // Round-trip through Debezium's Document parser. Matches how existing schema history
+        // records are constructed during deserialization (see deserializeStateUnvalidated).
+        val document = DocumentReader.defaultReader().read(recordJson.toString())
+        // tableName parameter is unused at runtime but is kept for log clarity in callers and
+        // for documentation; databaseName is already in the record.
+        require(tableName.isNotEmpty()) { "bootstrap table name must not be empty" }
+        return HistoryRecord(document)
     }
 
     private fun abortCdcSync(reason: String): InvalidDebeziumWarmStartState =
@@ -580,6 +882,39 @@ class MySqlSourceDebeziumOperations(
             }
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
             return MySqlSourceCdcPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
+        }
+
+        /**
+         * Reconcile a saved GTID set against the live server's executed GTID set.
+         *
+         * Returns a GTID string built from:
+         *   - UUIDSets from `saved` whose UUID is also present on the server (kept verbatim).
+         *   - UUIDSets from `available` whose UUID is absent from `saved` (auto-inject at the
+         *     server's current known range; chooses continuity over backfill of those UUIDs).
+         *
+         * UUIDSets in `saved` whose UUID is absent from `available` are dropped (auto-prune).
+         *
+         * Iteration is intentionally over `getUUIDSets()` rather than `.toString()` parsing so
+         * multi-interval UUIDSets (e.g. `uuid:1-10:20-30`) round-trip without re-merging gaps.
+         */
+        internal fun reconcileSavedGtidSet(
+            saved: MySqlGtidSet,
+            available: MySqlGtidSet,
+        ): String {
+            val availableUuids: Set<String> =
+                available.uuidSets.asSequence().map { it.uuid }.toSet()
+            val savedUuids: Set<String> =
+                saved.uuidSets.asSequence().map { it.uuid }.toSet()
+            val parts: MutableList<String> = mutableListOf()
+            saved.uuidSets
+                .asSequence()
+                .filter { it.uuid in availableUuids }
+                .forEach { parts.add(it.toString()) }
+            available.uuidSets
+                .asSequence()
+                .filter { it.uuid !in savedUuids }
+                .forEach { parts.add(it.toString()) }
+            return parts.joinToString(",")
         }
     }
 }
