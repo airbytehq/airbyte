@@ -346,9 +346,10 @@ spec:
           Increase this value if Amazon continues updating report data after the
           previous sync has completed. Duplicates from the lookback window are
           handled by destination deduplication. Set to 0 to disable. This does
-          not apply to GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH or
-          GET_VENDOR_SALES_REPORT, which use monthly or date-only report
-          boundaries.
+          not apply to GET_SALES_AND_TRAFFIC_REPORT (which aggregates across
+          the full date range and is incompatible with lookback),
+          GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH, or GET_VENDOR_SALES_REPORT,
+          which use monthly or date-only report boundaries.
         type: integer
         default: 0
         minimum: 0
@@ -2907,7 +2908,6 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: "P1D"
         cursor_granularity: "PT1S"
-        lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
