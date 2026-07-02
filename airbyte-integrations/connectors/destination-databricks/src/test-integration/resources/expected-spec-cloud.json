@@ -126,9 +126,7 @@
         "title" : "Agree to the Databricks JDBC Driver Terms & Conditions",
         "group" : "connection",
         "order" : 6,
-        "default" : false,
-        "const" : true,
-        "always_show" : true
+        "default" : false
       }
     },
     "required" : [ "hostname", "http_path", "database", "authentication", "accept_terms" ],
