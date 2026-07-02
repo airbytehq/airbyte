@@ -55,6 +55,9 @@ jobs:
       - name: Build (compile only, continue past failures)
         # Use --continue so a single connector's dependency failure
         # does not block analysis of the rest of the codebase.
+        # continue-on-error because --continue still exits non-zero
+        # when any task fails, which would skip the analysis step.
+        continue-on-error: true
         run: |
           ./gradlew compileJava compileKotlin \
             --continue \
