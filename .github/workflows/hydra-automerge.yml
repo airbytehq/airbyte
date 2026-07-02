@@ -262,7 +262,7 @@ jobs:
                     required: [pass, reasoning]
                   ai_review_passed:
                     type: object
-                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
+                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] OR airbyte-support-bot containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. Either author is valid — the AI review playbook posts as airbyte-support-bot so the PR-owning Devin session recognizes it as an external comment. If no such comment exists from either author, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
                     properties:
                       pass:
                         type: boolean
@@ -506,6 +506,7 @@ jobs:
           --body "Auto-approved by AI-gated auto-merge evaluation."
 
       - name: Squash merge PR
+        id: merge
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
@@ -520,6 +521,22 @@ jobs:
           done
           echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
           exit 1
+
+      - name: Post merge failure comment
+        if: failure() && steps.merge.outcome == 'failure' && steps.status-comment.outputs.comment-id
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            > **Auto-merge: MERGE FAILED**
+            >
+            > Evaluation passed but the PR could not be merged after 3 attempts.
+            > This is usually caused by a merge conflict with the base branch.
+            > Rebase or update the branch and re-run `/ai-ready`.
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Post automerge notification to Slack
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
