@@ -26,7 +26,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
-        configured_catalog_path: integration_tests/basic_read_catalog.json
         expect_records:
           path: integration_tests/expected_records.jsonl
         timeout_seconds: 3600
@@ -39,6 +38,30 @@ acceptance_tests:
             bypass_reason: No value in re-create every 90 days
           - name: list_memberships
             bypass_reason: Test account may not have populated list memberships
+          - name: contacts_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: companies_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: deals_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: tickets_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: engagements_calls_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: engagements_emails_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: engagements_meetings_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: engagements_notes_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: engagements_tasks_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: goals_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: line_items_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
+          - name: products_web_analytics
+            bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
   full_refresh:
     tests:
       - config_path: secrets/config.json
