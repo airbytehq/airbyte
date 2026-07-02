@@ -239,6 +239,7 @@ spec:
                     title: Value
                     type: string
                     order: 1
+
       wait_to_avoid_fatal_errors:
         title: "[Deprecated] Wait between requests to avoid fatal statuses in reports"
         type: boolean
@@ -393,6 +394,48 @@ spec:
         type: boolean
         default: false
         order: 21
+      inbound_replication_mode:
+        title: Inbound Replication Mode
+        description: >-
+          Settings only for Fulfillment Inbound streams. Use fixed datetimes or rolling window (last N days).
+          When inbound_replication_mode=fixed, inbound_start_datetime is required. When inbound_replication_mode=rolling_days, inbound_rolling_days is required.
+        type: string
+        enum:
+          - fixed
+          - rolling_days
+        default: rolling_days
+        order: 22
+      inbound_start_datetime:
+        title: Inbound Start Datetime
+        description: >-
+          Only used when inbound_replication_mode=fixed. Required when inbound_replication_mode=fixed. UTC datetime in format 2026-01-25T00:00:00Z.
+        type: string
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - '2026-01-25T00:00:00Z'
+        format: date-time
+        order: 23
+      inbound_end_datetime:
+        title: Inbound End Datetime
+        description: >-
+          Only used when inbound_replication_mode=fixed. Optional when inbound_replication_mode=fixed.
+          If not set, the connector uses the current UTC time.
+          UTC datetime in format 2026-01-25T00:00:00Z.
+        type: string
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - '2026-02-25T00:00:00Z'
+        format: date-time
+        order: 24
+      inbound_rolling_days:
+        title: Inbound Rolling Days
+        description: >-
+          Only used when inbound_replication_mode=rolling_days. Required when inbound_replication_mode=rolling_days.
+          Fetch data including today, for the last N days.
+        type: integer
+        minimum: 1
+        default: 30
+        order: 25
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -1006,6 +1049,126 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/vendor_orders_status"
+
+    fba_inbound_shipments:
+      type: DeclarativeStream
+      name: FbaInboundShipments
+      primary_key:
+        - ShipmentId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "fba/inbound/v0/shipments"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          request_parameters:
+            MarketplaceId: '{{ config["marketplace_id"] }}'
+            # When paginating, SP-API expects QueryType=NEXT_TOKEN along with NextToken.
+            # (ref) getShipments QueryType: DATE_RANGE / NEXT_TOKEN https://developer-docs.amazon.com/sp-api/reference/getshipments
+            QueryType: "{{ 'NEXT_TOKEN' if next_page_token else 'DATE_RANGE' }}"
+            ShipmentStatusList: "{{ ['WORKING', 'READY_TO_SHIP', 'SHIPPED', 'RECEIVING', 'CANCELLED', 'DELETED', 'CLOSED', 'ERROR', 'IN_TRANSIT', 'DELIVERED', 'CHECKED_IN'] | join(',') }}"
+            LastUpdatedAfter: >-
+              {%- if config.get('inbound_replication_mode', 'rolling_days') == 'fixed' -%}
+              {{ format_datetime(config['inbound_start_datetime'], '%Y-%m-%dT%H:%M:%SZ') }}
+              {%- else -%}
+              {{ format_datetime(now_utc() - duration('P' ~ config.get('inbound_rolling_days', 30) ~ 'D'), '%Y-%m-%dT%H:%M:%SZ') }}
+              {%- endif -%}
+            LastUpdatedBefore: >-
+              {%- if config.get('inbound_replication_mode', 'rolling_days') == 'fixed' -%}
+              {{ format_datetime(config.get('inbound_end_datetime', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}
+              {%- else -%}
+              {{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+              {%- endif -%}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
+                      - 429
+                backoff_strategies:
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 1
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "ShipmentData"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+            stop_condition: "{{ not response.get('payload', {}).get('NextToken') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fba_inbound_shipments"
+
+    fba_inbound_shipment_items:
+      type: DeclarativeStream
+      name: FbaInboundShipmentItems
+      primary_key:
+        - ShipmentId
+        - SellerSKU
+      retriever:
+        type: SimpleRetriever
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/streams/fba_inbound_shipments"
+              parent_key: "ShipmentId"
+              partition_field: "ShipmentId"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "fba/inbound/v0/shipments/{{ stream_slice['ShipmentId'] }}/items"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          request_parameters:
+            MarketplaceId: '{{ config["marketplace_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
+                      - 429
+                backoff_strategies:
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 1
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "ItemData"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["ShipmentId"]
+              value: "{{ stream_slice['ShipmentId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fba_inbound_shipment_items"
 
     # FinanceStream
     list_financial_event_groups:
@@ -3388,6 +3551,7 @@ streams:
   # Seller-only REST streams: only available for non-Vendor accounts.
   # The Orders/OrderItems endpoints (orders/v0/orders) and Finances API (finances/v0/*)
   # are seller-only per Amazon SP-API docs. Vendor accounts get HTTP 403.
+  # FBA Inbound (fba/inbound/v0) is also seller-only — vendors ship via their own routes.
   - type: ConditionalStreams
     condition: "{{ config.get('account_type', 'Seller') == 'Seller' }}"
     streams:
@@ -3395,6 +3559,8 @@ streams:
       - $ref: "#/definitions/streams/order_items"
       - $ref: "#/definitions/streams/list_financial_event_groups"
       - $ref: "#/definitions/streams/list_financial_events"
+      - $ref: "#/definitions/streams/fba_inbound_shipments"
+      - $ref: "#/definitions/streams/fba_inbound_shipment_items"
 
   # Vendor-only streams: only available for Vendor accounts.
   # Amazon SP-API rejects these with 403 (REST) or 400 InvalidInput (reports) for Seller accounts.
@@ -3464,6 +3630,119 @@ concurrency_level:
 max_concurrent_async_job_count: "{{ config.get('max_async_job_count', 2) }}"
 
 schemas:
+  fba_inbound_shipments:
+    title: Fulfillment Inbound Shipments
+    description: getShipments payload.ShipmentData items
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ShipmentId:
+        description: The shipment identifier submitted in the request.
+        type:
+          - "null"
+          - string
+      ShipmentName:
+        description: The name for the inbound shipment.
+        type:
+          - "null"
+          - string
+      DestinationFulfillmentCenterId:
+        description: An Amazon fulfillment center identifier created by Amazon.
+        type:
+          - "null"
+          - string
+      ShipmentStatus:
+        description: Indicates the status of the inbound shipment. When used with the createInboundShipment operation, WORKING is the only valid value. When used with the updateInboundShipment operation, possible values are WORKING, SHIPPED or CANCELLED.
+        type:
+          - "null"
+          - string
+      LabelPrepType:
+        description: The type of label preparation that is required for the inbound shipment.
+        type:
+          - "null"
+          - string
+      AreCasesRequired:
+        description: Indicates whether or not an inbound shipment contains case-packed boxes. When AreCasesRequired = true for an inbound shipment, all items in the inbound shipment must be case packed.
+        type:
+          - "null"
+          - boolean
+      ConfirmedNeedByDate:
+        description: Date by which the shipment must arrive at the Amazon fulfillment center to avoid delivery promise breaks for pre-ordered items.
+        type:
+          - "null"
+          - string
+        format: date
+      ShipFromAddress:
+        description: The return address.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      BoxContentsSource:
+        description: Where the seller provided box contents information for a shipment.
+        type:
+          - "null"
+          - string
+      EstimatedBoxContentsFee:
+        description: An estimate of the manual processing fee charged by Amazon for boxes without box content information. This is only returned when BoxContentsSource is NONE.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+
+  fba_inbound_shipment_items:
+    title: Fulfillment Inbound Shipment Items
+    description: getShipmentItemsByShipmentId payload.ItemData items with ShipmentId injected
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ShipmentId:
+        description: A shipment identifier originally returned by the createInboundShipmentPlan operation.
+        type:
+          - "null"
+          - string
+      SellerSKU:
+        description: The seller SKU of the item.
+        type:
+          - "null"
+          - string
+      FulfillmentNetworkSKU:
+        description: Amazon's fulfillment network SKU of the item.
+        type:
+          - "null"
+          - string
+      QuantityShipped:
+        description: The item quantity that you are shipping.
+        type:
+          - "null"
+          - integer
+      QuantityReceived:
+        description: The item quantity that has been received at an Amazon fulfillment center.
+        type:
+          - "null"
+          - integer
+      QuantityInCase:
+        description: The item quantity in each case, for case-packed items. Note that QuantityInCase multiplied by the number of boxes in the inbound shipment equals QuantityShipped. Also note that all of the boxes of an inbound shipment must either be case packed or individually packed. For that reason, when you submit the createInboundShipment or the updateInboundShipment operation, the value of QuantityInCase must be provided for every item in the shipment or for none of the items in the shipment.
+        type:
+          - "null"
+          - integer
+      ReleaseDate:
+        description: The date that a pre-order item will be available for sale.
+        type:
+          - "null"
+          - string
+        format: date
+      PrepDetailsList:
+        description: List of prep instruction details.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+
   get_flat_file_all_orders_data_by_order_date_general:
     title: Flat File All Orders Data Reports
     description: Flat File All Orders Data by Order Date General Reports
