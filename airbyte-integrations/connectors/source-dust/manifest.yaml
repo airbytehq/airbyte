@@ -1,0 +1,996 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  Dust AI is an enterprise AI platform and "operating system" that allows teams
+  to build custom, context-aware AI assistants without writing any code.
+
+check:
+  type: CheckStream
+  stream_names:
+    - usage_metrics
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['bearer_token'] }}"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            max_retries: 3
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 401
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 30
+          - type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                  - 500
+                  - 502
+                  - 503
+                  - 504
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+      request_headers:
+        accept: application/json
+
+streams:
+  - type: DeclarativeStream
+    name: usage_metrics
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+                  error_message_contains: ""
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+                  error_message_contains: ""
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: usage_metrics
+          format: json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+        properties:
+          date:
+            type: string
+          messages:
+            type:
+              - number
+              - "null"
+          activeUsers:
+            type:
+              - number
+              - "null"
+          conversations:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['end_date'] or  (today_utc() -
+          duration('P1D')).strftime('%Y-%m-%d')  }}
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: endDate
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: startDate
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: active_users
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: active_users
+          format: json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+        properties:
+          dau:
+            type:
+              - number
+              - "null"
+          mau:
+            type:
+              - number
+              - "null"
+          wau:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['end_date'] or  (today_utc() -
+          duration('P1D')).strftime('%Y-%m-%d')  }}
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: endDate
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: startDate
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: source
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: source
+          format: json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - date
+      - source
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - source
+        properties:
+          date:
+            type: string
+          source:
+            type: string
+          messageCount:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['end_date'] or  (today_utc() -
+          duration('P1D')).strftime('%Y-%m-%d')  }}
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: endDate
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: startDate
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: tool_usage
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: tool_usage
+          format: json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - date
+      - toolName
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - toolName
+        properties:
+          date:
+            type: string
+          toolName:
+            type: string
+          executions:
+            type:
+              - number
+              - "null"
+          uniqueUsers:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['end_date'] or  (today_utc() -
+          duration('P1D')).strftime('%Y-%m-%d')  }}
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: endDate
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: startDate
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: skill_usage
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: skill_usage
+          format: json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - date
+      - skillName
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - skillName
+        properties:
+          date:
+            type: string
+          skillName:
+            type: string
+          executions:
+            type:
+              - number
+              - "null"
+          uniqueUsers:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['end_date'] or  (today_utc() -
+          duration('P1D')).strftime('%Y-%m-%d')  }}
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: endDate
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: startDate
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: agents
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: agents
+          format: json
+          endDate: >-
+            {{ config['end_date'] or  (today_utc() -
+            duration('P1D')).strftime('%Y-%m-%d')  }}
+          startDate: "{{ config['start_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - agentId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - agentId
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          agentId:
+            type: string
+          modelId:
+            type:
+              - string
+              - "null"
+          lastEdit:
+            type:
+              - string
+              - "null"
+          messages:
+            type:
+              - number
+              - "null"
+          settings:
+            type:
+              - string
+              - "null"
+          providerId:
+            type:
+              - string
+              - "null"
+          authorEmails:
+            type:
+              - string
+              - "null"
+          distinctUsersReached:
+            type:
+              - number
+              - "null"
+          distinctConversations:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations: []
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: users
+          format: json
+          endDate: "{{ stream_interval.start_time }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - userId
+      - snapshot_date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - userId
+          - snapshot_date
+        properties:
+          groups:
+            type:
+              - string
+              - "null"
+          userId:
+            type: string
+          userName:
+            type:
+              - string
+              - "null"
+          userEmail:
+            type:
+              - string
+              - "null"
+          messageCount:
+            type:
+              - number
+              - "null"
+          snapshot_date:
+            type: string
+          activeDaysCount:
+            type:
+              - number
+              - "null"
+          lastMessageSent:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - snapshot_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: snapshot_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['end_date'] or  (today_utc() -
+          duration('P1D')).strftime('%Y-%m-%d')  }}
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: startDate
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: messages
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://dust.tt/api/v1/w/{{ config['workspace_id']}}/analytics/export
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 401
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 30
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+        request_headers:
+          accept: application/json
+        request_parameters:
+          table: messages
+          format: json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: messageId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - messageId
+          - createdAt
+        properties:
+          source:
+            type:
+              - string
+              - "null"
+          userId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type: string
+          messageId:
+            type: string
+          userEmail:
+            type:
+              - string
+              - "null"
+          assistantId:
+            type:
+              - string
+              - "null"
+          assistantName:
+            type:
+              - string
+              - "null"
+          conversationId:
+            type:
+              - string
+              - "null"
+          assistantSettings:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: createdAt
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['end_date'] or  (today_utc() -
+          duration('P1D')).strftime('%Y-%m-%d')  }}
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: endDate
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: startDate
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%d"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - bearer_token
+    properties:
+      end_date:
+        type: string
+        description: The end date for the extracted data in YYY-MM-DD format
+        order: 1
+        title: End Date
+      start_date:
+        type: string
+        description: The start date for data extraction in YYY-MM-DD fromat
+        order: 0
+        title: Start Date
+      bearer_token:
+        type: string
+        description: token needed for authentication to dust
+        order: 3
+        title: Bearer Token
+        airbyte_secret: true
+      workspace_id:
+        type: string
+        description: Unique string identifier for the workspace
+        order: 2
+        title: workspace ID
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    users:
+      isStale: false
+      hasRecords: true
+      streamHash: 83fadf373c641519c975e67231e3f0675c24ad55
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agents:
+      isStale: false
+      hasRecords: true
+      streamHash: 0ef2fc2dc9e0a1e2c134fa20d1dda8cdac076b2e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    source:
+      isStale: false
+      hasRecords: true
+      streamHash: 1671d04f85e88d17b7e4154ae5e142384c5d82f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    messages:
+      isStale: false
+      hasRecords: true
+      streamHash: 5007961cb93ad7d1efef03b9d6dbb2d4f3ee3b06
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    tool_usage:
+      isStale: false
+      hasRecords: true
+      streamHash: f7c07bb926182cbe423e236fa5709ca25b93d620
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    skill_usage:
+      isStale: false
+      hasRecords: true
+      streamHash: 7825929960db32dbd89c88a92a7db0de889f36c1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    active_users:
+      isStale: false
+      hasRecords: true
+      streamHash: 087f1671a5402fa4ee3508eefc7e7013ee7d7f22
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    usage_metrics:
+      isStale: false
+      hasRecords: true
+      streamHash: a89f793a0897bb3f93eaaa7aa6dbfb2825a6fecc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    users: false
+    agents: false
+    source: false
+    messages: false
+    tool_usage: false
+    skill_usage: false
+    active_users: false
+    usage_metrics: false
