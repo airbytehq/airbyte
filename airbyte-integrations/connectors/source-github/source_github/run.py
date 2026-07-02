@@ -16,6 +16,11 @@ from source_github import SourceGithub
 from source_github.config_migrations import MigrateBranch, MigrateRepository
 
 
+def _run_migrations(args: List[str], source: SourceGithub) -> None:
+    MigrateRepository.migrate(args, source)
+    MigrateBranch.migrate(args, source)
+
+
 def _get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
@@ -50,8 +55,9 @@ def _get_source(args: List[str]):
 def run() -> None:
     init_uncaught_exception_handler(logger)
     _args = sys.argv[1:]
+    # Run config migrations before constructing the source so that
+    # self._config inside YamlDeclarativeSource sees the migrated config.
+    _run_migrations(_args, SourceGithub())
     source = _get_source(_args)
     if source:
-        MigrateRepository.migrate(_args, source)
-        MigrateBranch.migrate(_args, source)
         launch(source, _args)

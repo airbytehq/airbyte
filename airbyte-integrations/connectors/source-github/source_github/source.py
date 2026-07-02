@@ -7,10 +7,12 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
 from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     FailureType,
+    Status,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -75,9 +77,14 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         catalog: Optional[ConfiguredAirbyteCatalog] = None,
         config: Optional[Mapping[str, Any]] = None,
         state: Optional[TState] = None,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+        super().__init__(catalog=catalog, config=config, state=state, path_to_yaml="manifest.yaml")
+
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        check_succeeded, error = self.check_connection(logger, config)
+        if not check_succeeded:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
         self,
