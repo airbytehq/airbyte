@@ -1,0 +1,733 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  Reddit ads are paid promotional posts that appear in user feeds and within
+  specific community threads, clearly marked as "Promoted".
+
+check:
+  type: CheckStream
+  stream_names:
+    - ad
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        grant_type: refresh_token
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        refresh_token_updater:
+          refresh_token_config_path:
+            - refresh_token
+        token_refresh_endpoint: https://www.reddit.com/api/v1/access_token
+        refresh_request_headers:
+          User-Agent: "{{ config['user_agent'] }}"
+          Content-Type: application/x-www-form-urlencoded
+          Authorization: >-
+            Basic {{ (config['client_id'] ~ ':' ~ config['client_secret']) |
+            base64encode }}
+        token_expiry_date_format: "%Y-%m-%dT%H:%M:%S%z"
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 10
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 401
+            error_message: Token expired, refreshing...
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 5
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page.token
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response.get('pagination', {}).get('next_url',
+            '').split('page.token=')[-1].split('&')[0] if
+            response.get('pagination', {}).get('next_url') else None }}
+          stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
+
+streams:
+  - type: DeclarativeStream
+    name: ad
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://ads-api.reddit.com/api/v3/ad_accounts/{{
+          config['ad_account_id'] }}/ads
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - modified_at
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          post_id:
+            type:
+              - string
+              - "null"
+          post_url:
+            type:
+              - string
+              - "null"
+          products:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+          click_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          profile_id:
+            type:
+              - string
+              - "null"
+          ad_group_id:
+            type:
+              - string
+              - "null"
+          campaign_id:
+            type:
+              - string
+              - "null"
+          modified_at:
+            type: string
+          preview_url:
+            type:
+              - string
+              - "null"
+          ad_account_id:
+            type:
+              - string
+              - "null"
+          event_trackers:
+            type:
+              - array
+              - "null"
+          preview_expiry:
+            type:
+              - string
+              - "null"
+          effective_status:
+            type:
+              - string
+              - "null"
+          rejection_reason:
+            type:
+              - string
+              - "null"
+          configured_status:
+            type:
+              - string
+              - "null"
+          campaign_objective_type:
+            type:
+              - string
+              - "null"
+          click_url_query_parameters:
+            type:
+              - array
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: modified_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: campaign
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://ads-api.reddit.com/api/v3/ad_accounts/{{
+          config['ad_account_id'] }}/campaigns
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - modified_at
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          goal_type:
+            type:
+              - string
+              - "null"
+          objective:
+            type:
+              - string
+              - "null"
+          spend_cap:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          goal_value:
+            type:
+              - integer
+              - "null"
+          modified_at:
+            type: string
+          ad_account_id:
+            type:
+              - string
+              - "null"
+          age_restriction:
+            type:
+              - string
+              - "null"
+          effective_status:
+            type:
+              - string
+              - "null"
+          configured_status:
+            type:
+              - string
+              - "null"
+          funding_instrument_id:
+            type:
+              - string
+              - "null"
+          special_ad_categories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          is_campaign_budget_optimization:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: modified_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: campaign_report
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://ads-api.reddit.com/api/v3/ad_accounts/{{
+          config['ad_account_id'] }}/reports
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            data:
+              fields:
+                - ACCOUNT_ID
+                - AD_CREATE_TIME
+                - AD_EFFECTIVE_STATUS
+                - AD_GROUP_ID
+                - AD_ID
+                - AD_UPDATE_TIME
+                - ADGROUP_CREATE_TIME
+                - ADGROUP_UPDATE_TIME
+                - IMPRESSIONS
+                - KEYWORD
+                - PLACEMENT
+                - POST_ID
+                - REACH
+                - REDDIT_LEADS
+                - REGION
+                - SPEND
+                - VIDEO_VIEWABLE_IMPRESSIONS
+                - ENGAGED_CLICK
+                - KEY_CONVERSION_CLICKS
+                - KEY_CONVERSION_ECPA
+                - KEY_CONVERSION_RATE
+                - KEY_CONVERSION_TOTAL_COUNT
+                - KEY_CONVERSION_VIEWS
+                - CPC
+                - COUNTRY
+                - CPV
+                - CTR
+                - FREQUENCY
+                - DATETIME
+                - ECPM
+                - CONVERSION_SIGN_UP_VIEWS
+                - CONVERSION_ROAS
+                - CONVERSION_SIGNUP_AVG_VALUE
+                - CONVERSION_SIGNUP_TOTAL_VALUE
+                - CONVERSION_VIEW_CONTENT_CLICKS
+                - CONVERSION_VIEW_CONTENT_ECPA
+                - CONVERSION_VIEW_CONTENT_VIEWS
+                - CONVERSION_LEAD_AVG_VALUE
+                - CONVERSION_LEAD_CLICKS
+                - CONVERSION_LEAD_ECPA
+                - CONVERSION_LEAD_TOTAL_VALUE
+                - CONVERSION_LEAD_VIEWS
+                - CONVERSION_PAGE_VISIT_CLICKS
+                - CONVERSION_PAGE_VISIT_ECPA
+                - CONVERSION_PAGE_VISIT_VIEWS
+                - COMMUNITY
+                - CLICKS
+                - CAMPAIGN_UPDATE_TIME
+                - CAMPAIGN_CREATE_TIME
+                - BID_STRATEGY
+                - DMA
+                - CONVERSION_PURCHASE_TOTAL_VALUE
+                - CONVERSION_PURCHASE_VIEWS
+                - CONVERSION_SEARCH_CLICKS
+                - CONVERSION_SEARCH_ECPA
+                - CONVERSION_SEARCH_VIEWS
+                - CONVERSION_SIGN_UP_CLICKS
+                - CONVERSION_PURCHASE_AVG_VALUE
+                - CONVERSION_PURCHASE_CLICKS
+                - CONVERSION_PURCHASE_ECPA
+                - CONVERSION_PURCHASE_TOTAL_ITEMS
+                - CONVERSION_SIGN_UP_ECPA
+              breakdowns:
+                - campaign_id
+                - date
+              time_zone_id: GMT
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 10
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+              error_message: Token expired, refreshing...
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+              backoff_strategy:
+                type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - metrics
+    primary_key:
+      - campaign_id
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - campaign_id
+          - date
+        properties:
+          cpc:
+            type:
+              - number
+              - "null"
+          cpv:
+            type:
+              - number
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          ecpm:
+            type:
+              - number
+              - "null"
+          reach:
+            type:
+              - number
+              - "null"
+          spend:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          post_id:
+            type:
+              - string
+              - "null"
+          frequency:
+            type:
+              - number
+              - "null"
+          campaign_id:
+            type: string
+          impressions:
+            type:
+              - number
+              - "null"
+          reddit_leads:
+            type:
+              - number
+              - "null"
+          engaged_click:
+            type:
+              - number
+              - "null"
+          conversion_roas:
+            type:
+              - number
+              - "null"
+          key_conversion_ecpa:
+            type:
+              - number
+              - "null"
+          key_conversion_rate:
+            type:
+              - number
+              - "null"
+          conversion_lead_ecpa:
+            type:
+              - number
+              - "null"
+          key_conversion_views:
+            type:
+              - number
+              - "null"
+          conversion_lead_views:
+            type:
+              - number
+              - "null"
+          key_conversion_clicks:
+            type:
+              - number
+              - "null"
+          conversion_lead_clicks:
+            type:
+              - number
+              - "null"
+          conversion_search_ecpa:
+            type:
+              - number
+              - "null"
+          conversion_search_views:
+            type:
+              - number
+              - "null"
+          conversion_sign_up_ecpa:
+            type:
+              - number
+              - "null"
+          conversion_purchase_ecpa:
+            type:
+              - number
+              - "null"
+          conversion_search_clicks:
+            type:
+              - number
+              - "null"
+          conversion_sign_up_views:
+            type:
+              - number
+              - "null"
+          conversion_lead_avg_value:
+            type:
+              - number
+              - "null"
+          conversion_purchase_views:
+            type:
+              - number
+              - "null"
+          conversion_sign_up_clicks:
+            type:
+              - number
+              - "null"
+          conversion_page_visit_ecpa:
+            type:
+              - number
+              - "null"
+          conversion_purchase_clicks:
+            type:
+              - number
+              - "null"
+          key_conversion_total_count:
+            type:
+              - number
+              - "null"
+          video_viewable_impressions:
+            type:
+              - number
+              - "null"
+          conversion_lead_total_value:
+            type:
+              - number
+              - "null"
+          conversion_page_visit_views:
+            type:
+              - number
+              - "null"
+          conversion_signup_avg_value:
+            type:
+              - number
+              - "null"
+          conversion_page_visit_clicks:
+            type:
+              - number
+              - "null"
+          conversion_view_content_ecpa:
+            type:
+              - number
+              - "null"
+          conversion_purchase_avg_value:
+            type:
+              - number
+              - "null"
+          conversion_signup_total_value:
+            type:
+              - number
+              - "null"
+          conversion_view_content_views:
+            type:
+              - number
+              - "null"
+          conversion_view_content_clicks:
+            type:
+              - number
+              - "null"
+          conversion_purchase_total_items:
+            type:
+              - number
+              - "null"
+          conversion_purchase_total_value:
+            type:
+              - number
+              - "null"
+          conversion_purchase_total_value_all:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P3D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ now_utc().replace(minute=0, second=0,
+          microsecond=0).strftime('%Y-%m-%dT%H:00:00Z') }}
+      is_data_feed: false
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:00:00Z"
+      end_time_option:
+        type: RequestOption
+        field_path:
+          - data
+          - ends_at
+        inject_into: body_json
+      lookback_window: PT7H
+      start_time_option:
+        type: RequestOption
+        field_path:
+          - data
+          - starts_at
+        inject_into: body_json
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+
+spec:
+  type: Spec
+  documentation_url: https://ads-api.reddit.com/docs/v3/
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - user_agent
+      - ad_account_id
+      - client_secret
+      - refresh_token
+      - start_time
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      start_time:
+        type: string
+        order: 5
+        title: start_time
+        default: "2024-05-11T00:00:00Z"
+      user_agent:
+        type: string
+        description: >-
+          A unique and descriptive user agent string in the format:
+          platform:app_id:version (by /u/yourusername). Required for all
+          requests.
+        order: 1
+        title: User Agent
+        airbyte_secret: true
+      ad_account_id:
+        type: string
+        order: 2
+        title: ad_account_id
+        airbyte_secret: true
+      client_secret:
+        type: string
+        name: client_secret
+        order: 3
+        title: OAuth Client Secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        name: refresh_token
+        order: 4
+        title: OAuth Refresh Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://ads-api.reddit.com/docs/v3/
+  testedStreams:
+    ad:
+      isStale: true
+      hasRecords: true
+      streamHash: 12f761940133b9a5bbf75c27bb07896233b0e613
+      hasResponse: true
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaign:
+      isStale: true
+      hasRecords: true
+      streamHash: 86ac3ffe1ca0bde79d13b215405daa42a30e564a
+      hasResponse: true
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaign_report:
+      isStale: true
+      hasRecords: true
+      streamHash: c10e6796c645c14fce59738fd22163c6596f6833
+      hasResponse: true
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    ad: false
+    campaign: false
+    campaign_report: true
