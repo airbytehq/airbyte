@@ -418,6 +418,351 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdsReportsHourlySearchData"></a>
+
+`AdsReportsHourlySearchData(**data: Any)`
+:   Search result data for ads_reports_hourly entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `ad_id: int | None`
+    :   The unique identifier for the ad.
+
+    `ad_name: str | None`
+    :   The name of the ad.
+
+    `ad_text: str | None`
+    :   The text content of the ad.
+
+    `adgroup_id: int | None`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str | None`
+    :   The name of the ad group.
+
+    `app_install: float | None`
+    :   Number of app installations.
+
+    `average_video_play: float | None`
+    :   Average video play duration.
+
+    `average_video_play_per_user: float | None`
+    :   Average video play duration per user.
+
+    `campaign_id: int | None`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str | None`
+    :   The name of the marketing campaign.
+
+    `clicks: str | None`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: float | None`
+    :   Number of clicks on the music disc.
+
+    `comments: float | None`
+    :   Number of comments.
+
+    `conversion: str | None`
+    :   Number of conversions.
+
+    `conversion_rate: str | None`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str | None`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str | None`
+    :   Cost per conversion.
+
+    `cost_per_result: str | None`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str | None`
+    :   Cost per secondary goal result.
+
+    `cpc: str | None`
+    :   Cost per click.
+
+    `cpm: str | None`
+    :   Cost per thousand impressions.
+
+    `ctr: str | None`
+    :   Click-through rate.
+
+    `follows: float | None`
+    :   Number of follows.
+
+    `frequency: str | None`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str | None`
+    :   Number of times the ad was displayed.
+
+    `likes: float | None`
+    :   Number of likes.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `placement_type: str | None`
+    :   Type of ad placement.
+
+    `profile_visits: float | None`
+    :   Number of profile visits.
+
+    `reach: str | None`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: float | None`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: float | None`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str | None`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str | None`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str | None`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str | None`
+    :   Real-time cost per result.
+
+    `real_time_result: str | None`
+    :   Real-time results.
+
+    `real_time_result_rate: str | None`
+    :   Real-time result rate.
+
+    `result: str | None`
+    :   Number of results.
+
+    `result_rate: str | None`
+    :   Rate of results.
+
+    `secondary_goal_result: str | None`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str | None`
+    :   Rate of secondary goal results.
+
+    `shares: float | None`
+    :   Number of shares.
+
+    `spend: str | None`
+    :   Total amount of money spent.
+
+    `stat_time_hour: str | None`
+    :   The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+
+    `video_play_actions: float | None`
+    :   Number of video play actions.
+
+    `video_views_p100: float | None`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: float | None`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: float | None`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: float | None`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: float | None`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: float | None`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsLifetimeSearchData"></a>
+
+`AdsReportsLifetimeSearchData(**data: Any)`
+:   Search result data for ads_reports_lifetime entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `ad_id: int | None`
+    :   The unique identifier for the ad.
+
+    `ad_name: str | None`
+    :   The name of the ad.
+
+    `ad_text: str | None`
+    :   The text content of the ad.
+
+    `adgroup_id: int | None`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str | None`
+    :   The name of the ad group.
+
+    `app_install: float | None`
+    :   Number of app installations.
+
+    `average_video_play: float | None`
+    :   Average video play duration.
+
+    `average_video_play_per_user: float | None`
+    :   Average video play duration per user.
+
+    `campaign_id: int | None`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str | None`
+    :   The name of the marketing campaign.
+
+    `clicks: str | None`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: float | None`
+    :   Number of clicks on the music disc.
+
+    `comments: float | None`
+    :   Number of comments.
+
+    `conversion: str | None`
+    :   Number of conversions.
+
+    `conversion_rate: str | None`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str | None`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str | None`
+    :   Cost per conversion.
+
+    `cost_per_result: str | None`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str | None`
+    :   Cost per secondary goal result.
+
+    `cpc: str | None`
+    :   Cost per click.
+
+    `cpm: str | None`
+    :   Cost per thousand impressions.
+
+    `ctr: str | None`
+    :   Click-through rate.
+
+    `follows: float | None`
+    :   Number of follows.
+
+    `frequency: str | None`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str | None`
+    :   Number of times the ad was displayed.
+
+    `likes: float | None`
+    :   Number of likes.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `placement_type: str | None`
+    :   Type of ad placement.
+
+    `profile_visits: float | None`
+    :   Number of profile visits.
+
+    `reach: str | None`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: float | None`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: float | None`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str | None`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str | None`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str | None`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str | None`
+    :   Real-time cost per result.
+
+    `real_time_result: str | None`
+    :   Real-time results.
+
+    `real_time_result_rate: str | None`
+    :   Real-time result rate.
+
+    `result: str | None`
+    :   Number of results.
+
+    `result_rate: str | None`
+    :   Rate of results.
+
+    `secondary_goal_result: str | None`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str | None`
+    :   Rate of secondary goal results.
+
+    `shares: float | None`
+    :   Number of shares.
+
+    `spend: str | None`
+    :   Total amount of money spent.
+
+    `video_play_actions: float | None`
+    :   Number of video play actions.
+
+    `video_views_p100: float | None`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: float | None`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: float | None`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: float | None`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: float | None`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: float | None`
+    :   Number of times video was watched for at least 6 seconds.
+
 <a id="AdsSearchData"></a>
 
 `AdsSearchData(**data: Any)`
@@ -828,6 +1173,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdGroupsReportsDailySearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdGroupsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsDailySearchData]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsHourlySearchData]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsLifetimeSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdvertisersReportsDailySearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdvertisersSearchData]
@@ -888,6 +1235,42 @@ Classes
 <a id="AdsReportsDailySearchResult"></a>
 
 `AdsReportsDailySearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="AdsReportsHourlySearchResult"></a>
+
+`AdsReportsHourlySearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="AdsReportsLifetimeSearchResult"></a>
+
+`AdsReportsLifetimeSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
