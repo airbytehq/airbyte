@@ -39,9 +39,7 @@ class MySqlExceptionClassifierTest {
     @Test
     fun testEofFailedToReadNextByte() {
         val exception =
-            RuntimeException(
-                "java.io.EOFException: Failed to read next byte from position 9093464"
-            )
+            RuntimeException("java.io.EOFException: Failed to read next byte from position 9093464")
         val result = classifier.classify(exception)
         Assertions.assertInstanceOf(TransientError::class.java, result)
         val transient = result as TransientError
@@ -70,8 +68,7 @@ class MySqlExceptionClassifierTest {
     @Test
     fun testChangeEventProducerWrappingEofClassifiesAsTransient() {
         // Simulates the real exception chain: ConnectException wrapping an EOFException
-        val eofException =
-            java.io.EOFException("Failed to read next byte from position 9093464")
+        val eofException = java.io.EOFException("Failed to read next byte from position 9093464")
         val debeziumException = RuntimeException("Failed to deserialize data", eofException)
         val connectException =
             RuntimeException(
