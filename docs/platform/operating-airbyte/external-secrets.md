@@ -292,6 +292,7 @@ The internal `POST /v1/sources/get` and `POST /v1/destinations/get` endpoints al
 
 - The secret coordinate you pass after the `secret_coordinate::` prefix must match the key, path, or name of a secret that exists (or will exist) in the secret manager configured for your workspace or organization.
 - If no custom secret storage is configured for your workspace/organization, the `secret_coordinate::` prefix will not resolve correctly at runtime.
+- **Nested JSON key extraction is not supported.** The text after `secret_coordinate::` is passed directly to the secret manager as the secret identifier. If your secret stores a JSON object with multiple keys (e.g., `{"DB_USER": "admin", "DB_PASSWORD": "hunter2"}`), you cannot reference an individual key within that object (e.g., `secret_coordinate::my_secret/DB_PASSWORD` will not work — it will look for a secret literally named `my_secret/DB_PASSWORD`). Instead, store each value as a separate secret and reference them individually.
 
 ## Verification Steps
 
