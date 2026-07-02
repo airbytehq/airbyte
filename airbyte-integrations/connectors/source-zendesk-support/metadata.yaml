@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.3.1
+  dockerImageTag: 5.4.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -68,6 +68,7 @@ data:
       - ticket_comments
       - ticket_fields
       - ticket_forms
+      - ticket_events
       - ticket_metric_events
       - ticket_metrics
       - tickets
