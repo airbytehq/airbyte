@@ -12,7 +12,7 @@ For migration details and backward compatibility options, see the [Databricks Mi
 
 - A Databricks workspace with [Unity Catalog](https://docs.databricks.com/en/data-governance/unity-catalog/index.html) enabled.
 - A SQL warehouse or compute cluster to run queries against.
-- Authentication credentials: OAuth client ID and secret (AWS only), or a personal access token.
+- Authentication credentials: an [OAuth2 client ID and secret](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html) (recommended), or a [personal access token](https://docs.databricks.com/en/dev-tools/auth/pat.html).
 - Acceptance of the Databricks [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). By using this connector, you agree that it may only be used to connect third-party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
 ## Network access
@@ -42,16 +42,11 @@ You will need the following information from your Databricks workspace:
 
 ### Authentication
 
-:::info
-OAuth2 authentication is currently supported only on AWS. If you are running Databricks on Azure or GCP, use a personal access token.
-:::
+#### OAuth2 (Recommended)
 
-#### OAuth (Recommended for AWS deployments of Databricks)
+Create a [service principal](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html) in your Databricks workspace and generate a client ID and secret.
 
-Follow the instructions in [Databricks documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html)
-to generate a client ID and secret.
-
-#### Personal Access Token (Recommended for Azure and GCP deployments)
+#### Personal Access Token
 
 1. Open your workspace console.
 2. Click on your icon in the top-right corner, and head to `settings`, then `developer`, then `manage` under `access tokens`
@@ -71,7 +66,8 @@ to generate a client ID and secret.
 5. Select your **Authentication** method and enter the required credentials.
 6. Configure the remaining options:
    - `Default Schema` - The schema that will contain your data. You can later override this on a per-connection basis.
-   - `Purge Staging Files and Tables` - Whether Airbyte should delete files after loading them into tables. Note: if deselected, Databricks will still delete your files after your retention period has passed (default - 7 days).
+   - `CDC deletion mode` - Whether CDC deletions are propagated as hard deletes (the row is removed) or soft deletes (the row is kept with a tombstone). Defaults to hard delete.
+   - `Purge Staging Files and Tables` - Whether to delete staging files after loading them into tables. Disable for debugging.
 7. Click **Set up destination**.
 
 ## Supported sync modes
