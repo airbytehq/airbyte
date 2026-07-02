@@ -96,7 +96,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.49 | 2026-07-02 | [81382](https://github.com/airbytehq/airbyte/pull/81382) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
+| 0.1.50 | 2026-07-02 | [81382](https://github.com/airbytehq/airbyte/pull/81382) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
+| 0.1.49 | 2026-07-02 | [81396](https://github.com/airbytehq/airbyte/pull/81396) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
 | 0.1.48 | 2026-03-17 | [75170](https://github.com/airbytehq/airbyte/pull/75170) | Add logging to check and write operations and fix `__init__` bug |
 | 0.1.47 | 2026-03-17 | [75136](https://github.com/airbytehq/airbyte/pull/75136) | Emit TRACE error instead of LOG on write failure for proper error surfacing |
 | 0.1.46 | 2025-10-21 | [68334](https://github.com/airbytehq/airbyte/pull/68334) | Update dependencies |
