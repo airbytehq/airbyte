@@ -262,7 +262,7 @@ jobs:
                     required: [pass, reasoning]
                   ai_review_passed:
                     type: object
-                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
+                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] OR airbyte-support-bot containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. Either author is valid — the AI review playbook posts as airbyte-support-bot so the PR-owning Devin session recognizes it as an external comment. If no such comment exists from either author, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
                     properties:
                       pass:
                         type: boolean
