@@ -12,7 +12,7 @@ For migration details and backward compatibility options, see the [Databricks Mi
 
 - A Databricks workspace with [Unity Catalog](https://docs.databricks.com/en/data-governance/unity-catalog/index.html) enabled.
 - A SQL warehouse or compute cluster to run queries against.
-- Authentication credentials: OAuth client ID and secret (AWS only), or a personal access token.
+- Authentication credentials: an [OAuth2 client ID and secret](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html) (recommended), or a [personal access token](https://docs.databricks.com/en/dev-tools/auth/pat.html).
 - Acceptance of the Databricks [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). By using this connector, you agree that it may only be used to connect third-party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
 ## Network access
@@ -38,20 +38,15 @@ You will need the following information from your Databricks workspace:
 
 4. Note the **Server Hostname**, **HTTP Path**, and **Port** values.
 
-5. Finally, you'll need to note the **Databricks Unity Catalog Path**, which is the path to the database you wish to use within the Unity Catalog. This is often the same as the workspace name.
+5. You will also need the **Databricks Unity Catalog Name** — the name of the Unity Catalog that contains the database you want to write to. This is not found on the Connection Details tab; look for it in the Databricks workspace sidebar under **Catalog**.
 
 ### Authentication
 
-:::info
-At this time, OAuth2 authentication is only supported in AWS deployments. If you are running Databricks in GCP, you **must** use a personal access token.
-:::
+#### OAuth2 (Recommended)
 
-#### OAuth (Recommended for AWS deployments of Databricks)
+Create a [service principal](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html) in your Databricks workspace and generate a client ID and secret.
 
-Follow the instructions in [Databricks documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html)
-to generate a client ID and secret.
-
-#### Access Token (Recommended for Google Cloud deployments of Databricks)
+#### Personal Access Token
 
 1. Open your workspace console.
 2. Click on your icon in the top-right corner, and head to `settings`, then `developer`, then `manage` under `access tokens`
@@ -67,11 +62,12 @@ to generate a client ID and secret.
 1. Log in to your Airbyte account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ New destination**.
 3. Find and select **Databricks Lakehouse** from the list of available destinations.
-4. Enter the **Server Hostname**, **HTTP Path**, **Port**, and **Databricks Unity Catalog Path** from Step 1.
+4. Enter the **Server Hostname**, **HTTP Path**, **Port**, and **Databricks Unity Catalog Name** from Step 1.
 5. Select your **Authentication** method and enter the required credentials.
 6. Configure the remaining options:
    - `Default Schema` - The schema that will contain your data. You can later override this on a per-connection basis.
-   - `Purge Staging Files and Tables` - Whether Airbyte should delete files after loading them into tables. Note: if deselected, Databricks will still delete your files after your retention period has passed (default - 7 days).
+   - `CDC deletion mode` - Whether CDC deletions are propagated as hard deletes (the row is removed) or soft deletes (the row is kept with a tombstone). Defaults to hard delete.
+   - `Purge Staging Files and Tables` - Whether to delete staging files after loading them into tables. Disable for debugging.
 7. Click **Set up destination**.
 
 ## Supported sync modes
@@ -84,11 +80,9 @@ to generate a client ID and secret.
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-## Output Schema
+## Output schema
 
-### Output Schema (Direct Load)
-
-The Databricks destination uses Direct Load architecture. Each stream is written directly to a final table in your configured schema. The table includes your data columns plus the following Airbyte metadata columns:
+Each stream is written directly to a final table in your configured schema. The table includes your data columns plus the following Airbyte metadata columns:
 
 | Column                   |   Type      | Notes                                                                    |
 | :----------------------- | :---------: | :----------------------------------------------------------------------- |
@@ -115,10 +109,9 @@ The Databricks destination uses Direct Load architecture. Each stream is written
 
 ## Naming conventions
 
-Databricks uses [Unity Catalog](https://docs.databricks.com/en/data-governance/unity-catalog/index.html) identifiers with the following rules:
-
-- Identifiers are **case-insensitive**. Stream and namespace names are lowercased when creating tables and schemas.
-- Special characters and mixed-case names are handled by the connector automatically.
+- **Schema and table names** are lowercased automatically. Databricks treats them as case-insensitive identifiers.
+- **Column names** preserve the casing from your source data.
+- Special characters in identifiers are escaped automatically by the connector.
 
 ## Namespace support
 
@@ -131,7 +124,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                                |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.0   | 2026-06-29 | [80823](https://github.com/airbytehq/airbyte/pull/80823)                                                            | Major rewrite: upgraded to Direct-Load architecture and new Bulk CDK                                                                                                                   |
+| 4.0.0   | 2026-06-29 | [80951](https://github.com/airbytehq/airbyte/pull/80951)                                                            | Major rewrite: upgraded to Direct-Load architecture using the Bulk CDK                                                                                                                 |
 | 3.3.8   | 2026-03-11 | [74732](https://github.com/airbytehq/airbyte/pull/74732)                                                            | Add JDBC ConnectTimeout and SocketTimeout to prevent indefinite hangs when Databricks SQL warehouse is paused or unresponsive                                                          |
 | 3.3.7   | 2025-07-15 | [63311](https://github.com/airbytehq/airbyte/pull/63311)                                                            | Support arbitrary number of streams in findExisitngTable query                                                                                                                         |
 | 3.3.6   | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)                                                            | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                      |
