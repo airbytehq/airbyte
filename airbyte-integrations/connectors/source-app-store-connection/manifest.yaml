@@ -1,0 +1,608 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  The App Store Connect app lets you monitor your app's sales and downloads,
+  reply to App Store Review, get notified of new reviews, respond to reviews,
+  and more.
+
+check:
+  type: CheckStream
+  stream_names:
+    - list_id_apps
+
+definitions:
+  streams:
+    list_id_apps:
+      type: DeclarativeStream
+      name: list_id_apps
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: HttpRequester
+          url: https://api.appstoreconnect.apple.com/v1/apps
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/linked/HttpRequester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            bundleId:
+              type:
+                - string
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            primaryLocale:
+              type:
+                - string
+                - "null"
+            isOrEverWasMadeForKids:
+              type:
+                - boolean
+                - "null"
+            streamlinedPurchasingEnabled:
+              type:
+                - boolean
+                - "null"
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ (record.get('attributes') or {}).get('name') }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path:
+                - bundleId
+              value: "{{ (record.get('attributes') or {}).get('bundleId') }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path:
+                - sku
+              value: "{{ (record.get('attributes') or {}).get('sku') }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path:
+                - primaryLocale
+              value: "{{ (record.get('attributes') or {}).get('primaryLocale') }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path:
+                - isOrEverWasMadeForKids
+              value: >-
+                {{ (record.get('attributes') or
+                {}).get('isOrEverWasMadeForKids') }}
+              value_type: boolean
+            - type: AddedFieldDefinition
+              path:
+                - streamlinedPurchasingEnabled
+              value: >-
+                {{ (record.get('attributes') or
+                {}).get('streamlinedPurchasingEnabled') }}
+              value_type: boolean
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+            - - relationships
+            - - links
+  linked:
+    HttpRequester:
+      authenticator:
+        type: JwtAuthenticator
+        algorithm: ES256
+        secret_key: "{{ config['secret_key'] }}"
+        jwt_headers:
+          kid: "{{ config['kid'] }}"
+          typ: JWT
+        jwt_payload:
+          aud: appstoreconnect-v1
+          iss: "{{ config['iss'] }}"
+        header_prefix: Bearer
+        token_duration: 1200
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
+
+streams:
+  - $ref: "#/definitions/streams/list_id_apps"
+  - type: DeclarativeStream
+    name: subscriber_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: \t
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_parameters:
+          filter[version]: "1_3"
+          filter[frequency]: DAILY
+          filter[reportType]: SUBSCRIBER
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: DETAILED
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Units:
+            type:
+              - string
+              - "null"
+          Client:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Refund:
+            type:
+              - string
+              - "null"
+          Country:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Event Date:
+            type:
+              - string
+              - "null"
+          App Apple ID:
+            type:
+              - string
+              - "null"
+          Purchase Date:
+            type:
+              - string
+              - "null"
+          Subscriber ID:
+            type:
+              - string
+              - "null"
+          Customer Price:
+            type:
+              - string
+              - "null"
+          Proceeds Reason:
+            type:
+              - string
+              - "null"
+          Customer Currency:
+            type:
+              - string
+              - "null"
+          Preserved Pricing:
+            type:
+              - string
+              - "null"
+          Proceeds Currency:
+            type:
+              - string
+              - "null"
+          Subscription Name:
+            type:
+              - string
+              - "null"
+          Developer Proceeds:
+            type:
+              - string
+              - "null"
+          Subscriber ID Reset:
+            type:
+              - string
+              - "null"
+          Promotional Offer ID:
+            type:
+              - string
+              - "null"
+          Subscription Apple ID:
+            type:
+              - string
+              - "null"
+          Subscription Group ID:
+            type:
+              - string
+              - "null"
+          Subscription Offer Name:
+            type:
+              - string
+              - "null"
+          Subscription Offer Type:
+            type:
+              - string
+              - "null"
+          Marketing Opt-In Duration:
+            type:
+              - string
+              - "null"
+          Subscription Offer Duration:
+            type:
+              - string
+              - "null"
+          Standard Subscription Duration:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: sales_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: \t
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_parameters:
+          filter[version]: "1_0"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ (now_utc() - duration('P2D')).strftime('%Y-%m-%d') }}"
+          filter[reportType]: SALES
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: SUMMARY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          CMB:
+            type:
+              - string
+              - "null"
+          SKU:
+            type:
+              - string
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          Units:
+            type:
+              - string
+              - "null"
+          Client:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Period:
+            type:
+              - string
+              - "null"
+          Version:
+            type:
+              - string
+              - "null"
+          Category:
+            type:
+              - string
+              - "null"
+          End Date:
+            type:
+              - string
+              - "null"
+          Provider:
+            type:
+              - string
+              - "null"
+          Developer:
+            type:
+              - string
+              - "null"
+          Begin Date:
+            type:
+              - string
+              - "null"
+          Order Type:
+            type:
+              - string
+              - "null"
+          Promo Code:
+            type:
+              - string
+              - "null"
+          Country Code:
+            type:
+              - string
+              - "null"
+          Subscription:
+            type:
+              - string
+              - "null"
+          Customer Price:
+            type:
+              - string
+              - "null"
+          Proceeds Reason:
+            type:
+              - string
+              - "null"
+          Apple Identifier:
+            type:
+              - string
+              - "null"
+          Provider Country:
+            type:
+              - string
+              - "null"
+          Customer Currency:
+            type:
+              - string
+              - "null"
+          Parent Identifier:
+            type:
+              - string
+              - "null"
+          Preserved Pricing:
+            type:
+              - string
+              - "null"
+          Developer Proceeds:
+            type:
+              - string
+              - "null"
+          Supported Platforms:
+            type:
+              - string
+              - "null"
+          Currency of Proceeds:
+            type:
+              - string
+              - "null"
+          Product Type Identifier:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: customer_reviews_per_app
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/apps/{{
+          stream_partition.app_id }}/customerReviews
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_parameters:
+          sort: "-createdDate"
+          limit: "200"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/streams/list_id_apps"
+            parent_key: id
+            partition_field: app_id
+    primary_key:
+      - id
+      - app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          rating:
+            type:
+              - integer
+              - "null"
+          territory:
+            type:
+              - string
+              - "null"
+          createdDate:
+            type:
+              - string
+              - "null"
+          reviewerNickname:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - rating
+            value: "{{ (record.get('attributes') or {}).get('rating') }}"
+            value_type: integer
+          - type: AddedFieldDefinition
+            path:
+              - title
+            value: "{{ (record.get('attributes') or {}).get('title') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - body
+            value: "{{ (record.get('attributes') or {}).get('body') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - reviewerNickname
+            value: "{{ (record.get('attributes') or {}).get('reviewerNickname') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - createdDate
+            value: "{{ (record.get('attributes') or {}).get('createdDate') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - territory
+            value: "{{ (record.get('attributes') or {}).get('territory') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_partition.app_id }}"
+            value_type: string
+      - type: RemoveFields
+        field_pointers:
+          - - attributes
+          - - relationships
+          - - links
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['reviews_start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      lookback_window: P7D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+
+spec:
+  type: Spec
+  documentation_url: >-
+    https://developer.apple.com/documentation/appstoreconnectapi/get-v1-salesreports
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - iss
+      - kid
+      - secret_key
+      - vendorID
+    properties:
+      iss:
+        type: string
+        description: The ISS (Issuer) to use for the JWT token
+        order: 0
+        title: JWT Payload ISS
+        airbyte_secret: true
+      kid:
+        type: string
+        description: The KID (Key ID) to use for the JWT token
+        order: 1
+        title: JWT Header KID
+        airbyte_secret: true
+      vendorID:
+        type: string
+        order: 3
+        title: vendorID
+        airbyte_secret: true
+      secret_key:
+        type: string
+        description: The secret key to use for the JWT token
+        order: 2
+        title: JWT Secret Key
+        multiline: true
+        airbyte_secret: true
+      reviews_start_date:
+        type: string
+        order: 4
+        title: Reviews start date
+        default: "2020-01-01T00:00:00Z"
+    additionalProperties: true
