@@ -8,7 +8,6 @@ from urllib.parse import urlparse
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
-    AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
@@ -16,6 +15,8 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -70,14 +71,14 @@ from .utils import read_full_refresh
 class SourceGithub(YamlDeclarativeSource, AbstractSource):
     continue_sync_on_stream_failure = True
 
-    def __init__(self) -> None:
-        super().__init__(path_to_yaml="manifest.yaml")
-
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        return AbstractSource.check(self, logger, config)
-
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        return AirbyteCatalog(streams=[stream.as_airbyte_stream() for stream in self.streams(config=config)])
+    def __init__(
+        self,
+        catalog: Optional[ConfiguredAirbyteCatalog] = None,
+        config: Optional[Mapping[str, Any]] = None,
+        state: Optional[TState] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     def read(
         self,
@@ -86,7 +87,36 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         catalog: ConfiguredAirbyteCatalog,
         state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
-        yield from AbstractSource.read(self, logger, config, catalog, state)
+        """Route manifest streams to ConcurrentDeclarativeSource and Python streams to AbstractSource.
+
+        CDK v7 removed the _group_streams mechanism that CDK v6 had. This override
+        replicates that behavior: DeclarativeStream objects are read concurrently,
+        while regular Python Stream objects are read through AbstractSource.read().
+        As streams are migrated from Python to manifest, they will automatically
+        move from the synchronous to the concurrent path.
+        """
+        all_streams = self.streams(config=self._config or config)
+        concurrent_streams = []
+        concurrent_stream_names: set[str] = set()
+
+        for stream in all_streams:
+            if isinstance(stream, AbstractStream):
+                concurrent_streams.append(stream)
+                concurrent_stream_names.add(stream.name)
+
+        if concurrent_streams:
+            selected = self._select_streams(streams=concurrent_streams, configured_catalog=catalog)
+            if selected:
+                yield from self._concurrent_source.read(selected)
+
+        synchronous_catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                s for s in catalog.streams
+                if s.stream.name not in concurrent_stream_names
+            ]
+        )
+        if synchronous_catalog.streams:
+            yield from AbstractSource.read(self, logger, config, synchronous_catalog, state)
 
     @staticmethod
     def _get_org_repositories(

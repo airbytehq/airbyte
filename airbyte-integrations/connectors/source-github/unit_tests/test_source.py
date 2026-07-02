@@ -19,8 +19,8 @@ from .utils import command_check
 
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
-    source = SourceGithub()
     config = {"access_token": "test_token", "repository": repo_line}
+    source = SourceGithub(config=config)
     logger_mock = MagicMock()
     return source.check(logger_mock, config)
 
