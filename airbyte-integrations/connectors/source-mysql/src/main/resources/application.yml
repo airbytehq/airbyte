@@ -105,14 +105,21 @@ airbyte:
             output: The sync encountered a connection issue while reading from the MySQL Vitess database, will retry.
             reference-links: https://vitess.io/docs/archive/13.0/user-guides/configuration-basic/troubleshooting.html
 
+          - pattern: (?i).*Failed to read next byte from position.*
+            input-example: >-
+              java.io.EOFException: Failed to read next byte from position 9093464
+            error: transient
+            group: MySQL EOF Exception
+            output: The sync encountered a communication issue while reading data from the MySQL server, will retry.
+            reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
+
           - pattern: (?i).*exception occurred in the change event produce.*
             input-example: >-
               java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: 
               An exception occurred in the change event producer. This connector will be stopped.
-            error: config
+            error: transient
             group: MySQL Connector Error
-            output: >-
-              The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
+            output: The sync encountered an unexpected error in the change event producer, will retry.
             reference-links: https://docs.oracle.com/javase/9/docs/api/java/lang/RuntimeException.html
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
