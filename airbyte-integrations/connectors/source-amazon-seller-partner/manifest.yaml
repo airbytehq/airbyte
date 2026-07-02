@@ -2922,8 +2922,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_SALES_AND_TRAFFIC_REPORT
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+            # Anchor the report window to the slice's calendar day. When a sync ends mid-day the
+            # slice bounds drift off midnight; the API then rounds an off-midnight window outward to
+            # every calendar day it spans and sums them, inflating the day's metrics. Deriving the
+            # window from the slice start day keeps every request a single, correct calendar day.
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             reportOptions:
               asinGranularity: "{{ config.get('sales_and_traffic_report_asin_granularity', 'PARENT') }}"
@@ -2938,8 +2942,9 @@ definitions:
           fields:
             - path: ["date"]
               value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}"
+            # Day-align the cursor value too, so destination dedup compares stable per-day values.
             - path: ["queryEndDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             - path: ["marketplaceId"]
               value: "{{ config['marketplace_id'] }}"
       schema_loader:
@@ -3029,8 +3034,10 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_SALES_AND_TRAFFIC_REPORT
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+            # Anchor the report window to the slice's calendar day (see GET_SALES_AND_TRAFFIC_REPORT
+            # above): an off-midnight window is otherwise rounded outward and summed by the API.
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
         download_decoder:
           type: CustomDecoder
@@ -3041,8 +3048,9 @@ definitions:
       transformations:
         - type: AddFields
           fields:
+            # Day-align the cursor value too, so destination dedup compares stable per-day values.
             - path: ["queryEndDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3075,6 +3083,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_VENDOR_SALES_REPORT
+            # Anchor the report window to the slice's calendar day (see GET_SALES_AND_TRAFFIC_REPORT):
+            # override the shared requester's raw slice bounds so an off-midnight window is not
+            # rounded outward and summed by the API. These are omitted on the shared requester on
+            # purpose, since non-daily report streams need their raw multi-day/month windows.
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
         download_decoder:
           type: CustomDecoder
@@ -3085,8 +3099,9 @@ definitions:
       transformations:
         - type: AddFields
           fields:
+            # Day-align the cursor value too, so destination dedup compares stable per-day values.
             - path: ["endDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
