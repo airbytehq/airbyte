@@ -6,14 +6,22 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlob
+import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
+import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
@@ -25,7 +33,6 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
-import io.airbyte.integrations.destination.mssql.v2.BulkInsert.Companion.CONFIG_FILE
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.DataSourceFactory
@@ -34,20 +41,20 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfigurationFac
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-abstract class MSSQLWriterTest(
+abstract class MSSQLAcceptanceTest(
     configPath: Path,
     configUpdater: ConfigurationUpdater,
     dataDumper: DestinationDataDumper,
@@ -89,6 +96,51 @@ abstract class MSSQLWriterTest(
     @Disabled("there's a bug in the connector")
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
+    }
+
+    @Test
+    open fun testBigDecimalScientificNotation() {
+        val schema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "number" to FieldType(NumberType, nullable = true),
+                ),
+            )
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
+                importType = Append,
+                schema = schema,
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = NamespaceMapper(),
+            )
+
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(stream, """{"id": 1, "number": 1.5E8}""", emittedAtMs = 100),
+            ),
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data = mapOf("id" to 1, "number" to BigDecimal("150000000")),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
     }
 }
 
@@ -158,10 +210,11 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
 }
 
 object MSSQLDataCleaner : DestinationCleaner {
+    private const val CLEANER_CONFIG_FILE = "secrets/azure_bulk_config.json"
     private val mssqlSpecification =
         ValidatedJsonUtils.parseOne(
             MSSQLSpecification::class.java,
-            Files.readString(Path.of(CONFIG_FILE))
+            Files.readString(Path.of(CLEANER_CONFIG_FILE)),
         )
     private val config =
         MSSQLConfigurationFactory().makeWithOverrides(mssqlSpecification, emptyMap())
@@ -267,45 +320,44 @@ object MSSQLDataCleaner : DestinationCleaner {
     }
 }
 
-// Re-enable once we fix our Azure account
-@Disabled("Our Azure creds are not functioning right now")
-internal class StandardInsert :
-    MSSQLWriterTest(
-        configPath = MSSQLTestConfigUtil.getConfigPath("check/valid.json"),
-        configUpdater = MSSQLConfigUpdater(),
+internal class StandardInsertMSSQLAcceptanceTest :
+    MSSQLAcceptanceTest(
+        configPath = Path.of(CONFIG_FILE),
+        configUpdater = InsertConfigUpdater,
         dataDumper =
             MSSQLDataDumper { spec ->
-                val configOverrides = buildOverridesForTestContainer()
-                MSSQLConfigurationFactory().makeWithOverrides(spec, configOverrides)
+                MSSQLConfigurationFactory().makeWithOverrides(spec, emptyMap())
             },
         dataCleaner = MSSQLDataCleaner,
     ) {
 
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-
     companion object {
-        @JvmStatic
-        @BeforeAll
-        fun beforeAll() {
-            MSSQLContainerHelper.start()
-        }
-
-        /** Builds a map of overrides for the test container environment. */
-        private fun buildOverridesForTestContainer(): MutableMap<String, String> {
-            return mutableMapOf("host" to MSSQLContainerHelper.getHost()).apply {
-                MSSQLContainerHelper.getPort()?.let { port -> put("port", port.toString()) }
-            }
-        }
+        const val CONFIG_FILE = "secrets/azure_bulk_config.json"
     }
 }
 
-// Re-enable once we fix our Azure account
-@Disabled("Our Azure creds are not functioning right now")
-internal class BulkInsert :
-    MSSQLWriterTest(
+/**
+ * Rewrites the config JSON so that `load_type` is set to INSERT instead of BULK, allowing the same
+ * Azure SQL DB credentials to be reused for the standard INSERT code-path tests.
+ */
+object InsertConfigUpdater : ConfigurationUpdater {
+    override fun update(config: String): String {
+        val node = Jsons.deserialize(config) as com.fasterxml.jackson.databind.node.ObjectNode
+        node.set<com.fasterxml.jackson.databind.node.ObjectNode>(
+            "load_type",
+            Jsons.jsonNode(mapOf("load_type" to "INSERT")),
+        )
+        return Jsons.serialize(node)
+    }
+
+    override fun setDefaultNamespace(
+        config: String,
+        defaultNamespace: String
+    ): DefaultNamespaceResult = DefaultNamespaceResult(config, null)
+}
+
+internal class BulkInsertMSSQLAcceptanceTest :
+    MSSQLAcceptanceTest(
         configPath = Path.of(CONFIG_FILE),
         configUpdater = FakeConfigurationUpdater,
         dataDumper =
@@ -314,12 +366,8 @@ internal class BulkInsert :
             },
         dataCleaner = MSSQLDataCleaner,
     ) {
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
 
     companion object {
-        const val CONFIG_FILE = "secrets/bulk_upload_config.json"
+        const val CONFIG_FILE = "secrets/azure_bulk_config.json"
     }
 }

@@ -1292,3 +1292,26 @@ class UserIdentitiesResponseBuilder(HttpResponseBuilder):
             FieldPath("identities"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
+
+
+class SideConversationsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def side_conversations_record(cls) -> "SideConversationsRecordBuilder":
+        record_template = cls.extract_record("side_conversations", __file__, NestedPath(["side_conversations", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: str) -> "SideConversationsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class SideConversationsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def side_conversations_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "SideConversationsResponseBuilder":
+        return cls(
+            find_template("side_conversations", __file__),
+            FieldPath("side_conversations"),
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )

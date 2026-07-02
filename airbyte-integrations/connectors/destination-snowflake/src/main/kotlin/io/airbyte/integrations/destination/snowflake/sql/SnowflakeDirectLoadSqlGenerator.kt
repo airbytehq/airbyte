@@ -134,7 +134,7 @@ class SnowflakeDirectLoadSqlGenerator(
                 pks.joinToString(" AND ") { columnName ->
                     val targetTableColumnName = "target_table.${columnName.quote()}"
                     val newRecordColumnName = "new_record.${columnName.quote()}"
-                    """($targetTableColumnName = $newRecordColumnName OR ($targetTableColumnName IS NULL AND $newRecordColumnName IS NULL))"""
+                    """$targetTableColumnName = $newRecordColumnName"""
                 }
             } else {
                 // If no primary key, we can't perform a meaningful upsert
