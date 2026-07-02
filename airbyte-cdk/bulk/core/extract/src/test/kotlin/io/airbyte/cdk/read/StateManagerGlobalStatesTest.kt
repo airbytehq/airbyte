@@ -283,6 +283,26 @@ class StateManagerGlobalStatesTest {
         Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
     }
 
+    @Test
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
+    @Property(
+        name = "airbyte.connector.state.json",
+        value =
+            """
+[{"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "KV", "namespace": "PUBLIC" },
+    "stream_state": { "xmin": "12345" }
+}}]""",
+    )
+    fun testStreamStateFallbackInGlobalMode() {
+        val streams: Streams = prelude()
+        // Legacy STREAM state should be discarded; all streams should start fresh.
+        Assertions.assertNull(stateManager.scoped(streams.global).current())
+        Assertions.assertNull(stateManager.scoped(streams.kv).current())
+        Assertions.assertNull(stateManager.scoped(streams.events).current())
+        Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
+    }
+
     private fun prelude(): Streams {
         val globals: List<Global> = stateManager.feeds.mapNotNull { it as? Global }
         Assertions.assertEquals(1, globals.size)
