@@ -1287,7 +1287,7 @@ class TestSalesAndTrafficReportRequestBody:
         stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
         http_mocker.clear_all_matchers()
 
-        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"}, data_end_time="2023-01-02T00:00:00Z")
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"}, data_end_time="2023-01-01T23:59:59Z")
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
@@ -1315,7 +1315,7 @@ class TestSalesAndTrafficReportRequestBody:
         stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
         http_mocker.clear_all_matchers()
 
-        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"}, data_end_time="2023-01-02T00:00:00Z")
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"}, data_end_time="2023-01-01T23:59:59Z")
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
