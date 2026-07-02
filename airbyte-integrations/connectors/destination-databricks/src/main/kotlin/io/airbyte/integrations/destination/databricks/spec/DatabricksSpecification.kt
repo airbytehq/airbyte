@@ -102,10 +102,7 @@ open class DatabricksSpecification : ConfigurationSpecification() {
         """You must agree to the Databricks JDBC Driver <a href="https://databricks.com/jdbc-odbc-driver-license">Terms & Conditions</a> to use this connector.""",
     )
     @get:JsonProperty("accept_terms")
-    @get:JsonSchemaInject(
-        json =
-            """{"group": "connection", "order": 6, "default": false, "const": true, "always_show": true}""",
-    )
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 6, "default": false}""")
     val acceptTerms: Boolean = false
 }
 
