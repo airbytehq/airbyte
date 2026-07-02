@@ -24,7 +24,6 @@ _A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketEventsStreamFullRefresh(TestCase):
-
     @property
     def _config(self):
         return (
@@ -46,9 +45,7 @@ class TestTicketEventsStreamFullRefresh(TestCase):
             .with_start_time(self._config["start_date"])
             .with_any_query_params()
             .build(),
-            TicketEventsResponseBuilder.ticket_events_response()
-            .with_record(TicketEventsRecordBuilder.ticket_events_record())
-            .build(),
+            TicketEventsResponseBuilder.ticket_events_response().with_record(TicketEventsRecordBuilder.ticket_events_record()).build(),
         )
 
         output = read_stream("ticket_events", SyncMode.full_refresh, self._config)
@@ -88,7 +85,6 @@ class TestTicketEventsStreamFullRefresh(TestCase):
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketEventsStreamIncremental(TestCase):
-
     @property
     def _config(self):
         return (
