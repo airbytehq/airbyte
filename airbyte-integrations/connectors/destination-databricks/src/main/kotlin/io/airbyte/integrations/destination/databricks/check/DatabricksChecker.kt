@@ -37,6 +37,9 @@ class DatabricksChecker(
     private var checkTableName: TableName? = null
 
     override fun check() {
+        require(config.acceptTerms) {
+            "You must agree to the Databricks JDBC Driver Terms & Conditions to use this connector."
+        }
         val namespace = config.schema.lowercase()
         val tableName = "_airbyte_check_${Instant.now().epochSecond}"
         val table = TableName(namespace = namespace, name = tableName)
