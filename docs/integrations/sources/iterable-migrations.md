@@ -1,4 +1,4 @@
-# Iterable Source Migration Guide
+# Iterable Migration Guide
 
 ## Upgrading to 1.0.0
 
