@@ -21,9 +21,9 @@ def test_ads_stream_has_no_record_filter():
     manifest = _load_manifest()
     ads_def = manifest["definitions"]["ads_stream"]
     record_selector = ads_def["retriever"]["record_selector"]
-    assert "record_filter" not in record_selector, (
-        "ads stream should not have a record_filter; the CDK now handles records with missing cursor fields gracefully"
-    )
+    assert (
+        "record_filter" not in record_selector
+    ), "ads stream should not have a record_filter; the CDK now handles records with missing cursor fields gracefully"
 
 
 def test_ads_schema_modify_time_is_nullable():
@@ -31,9 +31,9 @@ def test_ads_schema_modify_time_is_nullable():
     manifest = _load_manifest()
     modify_time = manifest["definitions"]["schemas"]["ads"]["properties"]["modify_time"]
     field_type = modify_time["type"]
-    assert isinstance(field_type, list) and "null" in field_type, (
-        f"modify_time type should be nullable (e.g. ['null', 'string']), got {field_type}"
-    )
+    assert (
+        isinstance(field_type, list) and "null" in field_type
+    ), f"modify_time type should be nullable (e.g. ['null', 'string']), got {field_type}"
 
 
 @pytest.mark.parametrize(
@@ -84,6 +84,6 @@ def test_ads_stream_emits_records_with_null_modify_time(records, expected_count)
         messages = list(source.read(logger=None, config=config, catalog=catalog, state=[]))
 
     record_messages = [msg for msg in messages if msg.type == Type.RECORD]
-    assert len(record_messages) == expected_count, (
-        f"Expected {expected_count} records but got {len(record_messages)}; records with null modify_time should not be filtered out"
-    )
+    assert (
+        len(record_messages) == expected_count
+    ), f"Expected {expected_count} records but got {len(record_messages)}; records with null modify_time should not be filtered out"
