@@ -808,8 +808,7 @@ internal class SnowflakeAirbyteClientTest {
 
         every { statement.executeQuery(sql) } throws
             SnowflakeSQLException(
-                "SQL access control error: " +
-                    "Your role does not have privileges on this object."
+                "SQL access control error: " + "Your role does not have privileges on this object."
             )
         every { connection.close() } just Runs
 
@@ -844,8 +843,7 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns mockConnection
 
         runBlocking {
-            val exception =
-                assertThrows<ConfigErrorException> { client.tableExists(tableName) }
+            val exception = assertThrows<ConfigErrorException> { client.tableExists(tableName) }
 
             assertTrue(exception.message!!.contains("Insufficient privileges"))
             assertTrue(exception.cause is SnowflakeSQLException)
@@ -872,8 +870,7 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns mockConnection
 
         runBlocking {
-            val exception =
-                assertThrows<SnowflakeSQLException> { client.tableExists(tableName) }
+            val exception = assertThrows<SnowflakeSQLException> { client.tableExists(tableName) }
 
             assertEquals("Connection timeout", exception.message)
         }
