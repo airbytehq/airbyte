@@ -22,8 +22,7 @@ def test_ads_stream_has_no_record_filter():
     ads_def = manifest["definitions"]["ads_stream"]
     record_selector = ads_def["retriever"]["record_selector"]
     assert "record_filter" not in record_selector, (
-        "ads stream should not have a record_filter; "
-        "the CDK now handles records with missing cursor fields gracefully"
+        "ads stream should not have a record_filter; the CDK now handles records with missing cursor fields gracefully"
     )
 
 
@@ -86,6 +85,5 @@ def test_ads_stream_emits_records_with_null_modify_time(records, expected_count)
 
     record_messages = [msg for msg in messages if msg.type == Type.RECORD]
     assert len(record_messages) == expected_count, (
-        f"Expected {expected_count} records but got {len(record_messages)}; "
-        "records with null modify_time should not be filtered out"
+        f"Expected {expected_count} records but got {len(record_messages)}; records with null modify_time should not be filtered out"
     )
