@@ -1,8 +1,8 @@
-# AppLovin
+# AppLovin Ads
 
-This page contains the setup guide and reference information for the AppLovin source connector.
+This page contains the setup guide and reference information for the AppLovin Ads source connector.
 
-It syncs advertising reporting data from AppLovin's [Reporting API](https://support.applovin.com/en/growth/promoting-your-websites/api/reporting-api) and [Asset Reporting API](https://support.applovin.com/en/growth/promoting-your-websites/api/asset-reporting-api).
+It covers AppLovin's advertising (growth) side only — monetization (MAX) reporting is not implemented. It syncs advertising reporting data from AppLovin's [Reporting API](https://support.applovin.com/en/growth/promoting-your-websites/api/reporting-api) and [Asset Reporting API](https://support.applovin.com/en/growth/promoting-your-websites/api/asset-reporting-api).
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ In the AppLovin dashboard, click your account name (top right) → **Keys** and 
 
 ### Step 2: Set up the source in Airbyte
 
-1. In Airbyte, click **Sources** → **+ New source** and select **AppLovin**.
+1. In Airbyte, click **Sources** → **+ New source** and select **AppLovin Ads**.
 2. Enter your **Report Key**.
 3. For **Start Date**, enter a `YYYY-MM-DD` date. Leave **End Date** blank to sync up to today.
 4. Optionally adjust the **Lookback Window** and the column lists for each report.
