@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.s3_data_lake.dataflow
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.services.glue.model.GlueException
 
 internal class S3DataLakeAggregateTest {
