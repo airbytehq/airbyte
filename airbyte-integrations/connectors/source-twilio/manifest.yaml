@@ -362,6 +362,9 @@ definitions:
                     condition: "{{ parameters.get('subresource_uri_key') or parameters.get('data_field') or parameters['name'] in record.get('subresource_uris', {}) }}"
             parent_key: subresource_uris
             partition_field: subresource_uris
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioConferenceParticipantsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -385,6 +388,11 @@ definitions:
             field_name: Status
             inject_into: request_parameter
         - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioConferencesStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:

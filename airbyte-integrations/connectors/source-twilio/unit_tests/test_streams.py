@@ -5,6 +5,7 @@
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
+from components import TwilioConferenceParticipantsStateMigration, TwilioConferencesStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -549,3 +550,155 @@ class TestTwilioNestedStream:
         records = read_from_stream(TEST_CONFIG, stream_name, SyncMode.full_refresh).records
 
         assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "input_state,expected_state,should_migrate",
+    [
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="single_partition_duplicated_for_both_statuses",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            None,
+            False,
+            id="already_migrated_no_op",
+        ),
+        pytest.param(
+            {},
+            None,
+            False,
+            id="empty_state_no_op",
+        ),
+    ],
+)
+def test_conferences_state_migration(input_state, expected_state, should_migrate):
+    migration = TwilioConferencesStateMigration()
+    assert migration.should_migrate(input_state) == should_migrate
+    if should_migrate:
+        assert migration.migrate(input_state) == expected_state
+
+
+@pytest.mark.parametrize(
+    "input_state,expected_state,should_migrate",
+    [
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "completed",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "in-progress",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="single_partition_adds_conference_status_to_parent_slice",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "completed",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            None,
+            False,
+            id="already_migrated_no_op",
+        ),
+        pytest.param(
+            {},
+            None,
+            False,
+            id="empty_state_no_op",
+        ),
+    ],
+)
+def test_conference_participants_state_migration(input_state, expected_state, should_migrate):
+    migration = TwilioConferenceParticipantsStateMigration()
+    assert migration.should_migrate(input_state) == should_migrate
+    if should_migrate:
+        assert migration.migrate(input_state) == expected_state
