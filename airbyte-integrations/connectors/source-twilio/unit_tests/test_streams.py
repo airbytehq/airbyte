@@ -372,6 +372,197 @@ class TestConferencesStream:
         statuses = {r.record.data["status"] for r in records}
         assert statuses == {"completed", "in-progress"}
 
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conferences_incremental_emits_state_with_conference_status_partition(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        def _match_status_completed(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            return q.get("Status") == ["completed"]
+
+        def _match_status_in_progress(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            return q.get("Status") == ["in-progress"]
+
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF1",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T10:00:00Z",
+                        "status": "completed",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_status_completed,
+        )
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={"conferences": []},
+            status_code=200,
+            additional_matcher=_match_status_in_progress,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        output = read_from_stream(cfg, "conferences", SyncMode.incremental)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["sid"] == "CF1"
+        state_messages = output.state_messages
+        assert len(state_messages) > 0
+        final_state = state_messages[-1].state.stream
+        assert final_state.stream_descriptor.name == "conferences"
+        partition_states = final_state.stream_state.states or []
+        partition_keys = {s["partition"].get("conference_status") for s in partition_states}
+        assert "completed" in partition_keys, "State must include a 'completed' partition"
+
+
+class TestConferenceParticipantsStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_returns_records_from_both_status_partitions(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        def _match_status_completed(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            return q.get("Status") == ["completed"]
+
+        def _match_status_in_progress(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            return q.get("Status") == ["in-progress"]
+
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF1",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T10:00:00Z",
+                        "status": "completed",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_status_completed,
+        )
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:00:00Z",
+                        "status": "in-progress",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF2/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_status_in_progress,
+        )
+
+        # Participants for completed conference CF1
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences/CF1/Participants.json",
+            json={
+                "participants": [
+                    {
+                        "call_sid": "CA1",
+                        "conference_sid": "CF1",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T10:01:00Z",
+                        "date_updated": "2022-11-15T10:05:00Z",
+                        "status": "complete",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        # Participants for in-progress conference CF2
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences/CF2/Participants.json",
+            json={
+                "participants": [
+                    {
+                        "call_sid": "CA2",
+                        "conference_sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:01:00Z",
+                        "date_updated": "2022-11-15T11:05:00Z",
+                        "status": "connected",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert len(records) == 2
+        conference_sids = {r.record.data["conference_sid"] for r in records}
+        assert conference_sids == {"CF1", "CF2"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_empty_parent_returns_no_records(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={"conferences": []},
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert len(records) == 0
+
 
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
