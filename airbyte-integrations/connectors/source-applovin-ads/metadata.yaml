@@ -3,15 +3,15 @@ data:
   connectorType: source
   definitionId: fabb2024-85c9-40e5-a3ab-5b3b8f92f59a
   dockerImageTag: 0.1.0
-  dockerRepository: airbyte/source-applovin
-  githubIssueLabel: source-applovin
+  dockerRepository: airbyte/source-applovin-ads
+  githubIssueLabel: source-applovin-ads
   icon: icon.svg
   license: ELv2
-  name: AppLovin
+  name: AppLovin Ads
   remoteRegistries:
     pypi:
       enabled: false
-      packageName: airbyte-source-applovin
+      packageName: airbyte-source-applovin-ads
   registryOverrides:
     cloud:
       enabled: false
@@ -19,7 +19,7 @@ data:
       enabled: false
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/applovin
+  documentationUrl: https://docs.airbyte.com/integrations/sources/applovin-ads
   tags:
     - cdk:low-code
     - language:manifest-only
@@ -31,7 +31,7 @@ data:
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-APPLOVIN__CREDS
+        - name: SECRET_SOURCE-APPLOVIN-ADS__CREDS
           fileName: config.json
           secretStore:
             type: GSM
