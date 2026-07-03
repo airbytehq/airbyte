@@ -3,8 +3,26 @@ name: "CodeQL"
 on:
   push:
     branches: [master]
+    paths:
+      - "**.java"
+      - "**.kt"
+      - "**.kts"
+      - "**/build.gradle"
+      - "buildSrc/**"
+      - "settings.gradle"
+      - ".github/workflows/**"
+      - ".github/actions/**"
   pull_request:
     branches: [master]
+    paths:
+      - "**.java"
+      - "**.kt"
+      - "**.kts"
+      - "**/build.gradle"
+      - "buildSrc/**"
+      - "settings.gradle"
+      - ".github/workflows/**"
+      - ".github/actions/**"
   schedule:
     # Run weekly on Monday at 00:00 UTC
     - cron: "0 0 * * 1"
