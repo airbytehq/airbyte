@@ -857,8 +857,7 @@ internal class SnowflakeAirbyteClientTest {
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery() } throws
-                    SnowflakeSQLException("Connection timeout")
+                every { executeQuery() } throws SnowflakeSQLException("Connection timeout")
                 every { close() } just runs
             }
         val mockConnection =
