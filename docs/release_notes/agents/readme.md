@@ -1,5 +1,20 @@
 # Airbyte Agents release notes
 
+## July 3, 2026
+
+Web app
+
+- You can now see an "Admin" badge next to admin members when managing workspace members, making it easier to identify who has administrative permissions.
+
+SDK
+
+- Semantic search can now return multiple matching passages from the same source record. Set the new `dedup` option to `none` to retrieve all relevant chunks, or keep the default `max` to get only the single best match per record.
+
+Connectors
+
+- The Linear connector now supports semantic search over issue descriptions and comments, so your agents can find relevant Linear content using natural language.
+- Connectors using OAuth no longer lose refreshed tokens during health checks, which previously could cause intermittent authentication failures.
+
 ## July 2, 2026
 
 Web app
