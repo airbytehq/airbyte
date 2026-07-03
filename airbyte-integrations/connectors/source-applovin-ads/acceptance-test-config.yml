@@ -8,7 +8,7 @@ acceptance_tests:
   connection:
     tests:
       - config_path: "secrets/config.json"
-        status: "succeeded"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:

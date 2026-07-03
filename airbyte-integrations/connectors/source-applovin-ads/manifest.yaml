@@ -137,6 +137,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
+          schema_normalization: Default
           extractor:
             type: DpathExtractor
             field_path:
@@ -168,6 +169,7 @@ definitions:
             $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
+          schema_normalization: Default
           extractor:
             type: DpathExtractor
             field_path:
@@ -258,8 +260,11 @@ metadata:
 
 schemas:
   # Columns are user-configurable, so schemas are permissive (additionalProperties).
-  # Documented columns are typed loosely. advertiser_report_daily cursors on the API's
-  # native `day` column; asset_report_daily cursors on `date`, injected by the connector.
+  # Fields are single-typed: the API returns metrics as strings, and
+  # schema_normalization on the record selectors casts them to the declared type,
+  # so destinations get plain scalars (no number/string union structs in parquet).
+  # advertiser_report_daily cursors on the API's native `day` column;
+  # asset_report_daily cursors on `date`, injected by the connector.
   advertiser_report_daily:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -289,6 +294,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       hour:
         type:
           - string
@@ -320,257 +326,206 @@ schemas:
       cost:
         type:
           - number
-          - string
           - "null"
       campaign_bid_goal:
         type:
           - number
-          - string
           - "null"
       optimization_day_target:
         type:
-          - number
-          - string
+          - integer
           - "null"
       average_cpc:
         type:
           - number
-          - string
           - "null"
       clicks:
         type:
-          - number
-          - string
+          - integer
           - "null"
       ctr:
         type:
           - number
-          - string
           - "null"
       impressions:
         type:
-          - number
-          - string
+          - integer
           - "null"
       sales:
         type:
-          - number
-          - string
+          - integer
           - "null"
       cost_per_target_event_0d:
         type:
           - number
-          - string
           - "null"
       target_event_count_0d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       nc_d0_checkouts:
         type:
-          - number
-          - string
+          - integer
           - "null"
       nc_d0_checkout_rev:
         type:
           - number
-          - string
           - "null"
       nc_d0_cpp:
         type:
           - number
-          - string
           - "null"
       nc_d0_roas:
         type:
           - number
-          - string
           - "null"
       nc_percent_d0_checkouts:
         type:
           - number
-          - string
           - "null"
       nc_percent_d0_checkout_rev:
         type:
           - number
-          - string
           - "null"
       nc_d7_checkouts:
         type:
-          - number
-          - string
+          - integer
           - "null"
       nc_d7_checkout_rev:
         type:
           - number
-          - string
           - "null"
       nc_d7_cpp:
         type:
           - number
-          - string
           - "null"
       nc_d7_roas:
         type:
           - number
-          - string
           - "null"
       nc_percent_d7_checkouts:
         type:
           - number
-          - string
           - "null"
       nc_percent_d7_checkout_rev:
         type:
           - number
-          - string
           - "null"
       new_visitor_rate:
         type:
           - number
-          - string
           - "null"
       sales_0d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       sales_1d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       sales_2d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       sales_3d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       sales_7d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       sales_14d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       sales_28d:
         type:
-          - number
-          - string
+          - integer
           - "null"
       cpp_0d:
         type:
           - number
-          - string
           - "null"
       cpp_1d:
         type:
           - number
-          - string
           - "null"
       cpp_2d:
         type:
           - number
-          - string
           - "null"
       cpp_3d:
         type:
           - number
-          - string
           - "null"
       cpp_7d:
         type:
           - number
-          - string
           - "null"
       cpp_14d:
         type:
           - number
-          - string
           - "null"
       cpp_28d:
         type:
           - number
-          - string
           - "null"
       roas_0d:
         type:
           - number
-          - string
           - "null"
       roas_1d:
         type:
           - number
-          - string
           - "null"
       roas_2d:
         type:
           - number
-          - string
           - "null"
       roas_3d:
         type:
           - number
-          - string
           - "null"
       roas_7d:
         type:
           - number
-          - string
           - "null"
       roas_14d:
         type:
           - number
-          - string
           - "null"
       roas_28d:
         type:
           - number
-          - string
           - "null"
       chka_usd_0d:
         type:
           - number
-          - string
           - "null"
       chka_usd_1d:
         type:
           - number
-          - string
           - "null"
       chka_usd_2d:
         type:
           - number
-          - string
           - "null"
       chka_usd_3d:
         type:
           - number
-          - string
           - "null"
       chka_usd_7d:
         type:
           - number
-          - string
           - "null"
       chka_usd_14d:
         type:
           - number
-          - string
           - "null"
       chka_usd_28d:
         type:
           - number
-          - string
           - "null"
   asset_report_daily:
     type: object
@@ -581,10 +536,10 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       asset_id:
         type:
           - string
-          - number
           - "null"
       asset_name:
         type:
@@ -601,7 +556,6 @@ schemas:
       campaign_id:
         type:
           - string
-          - number
           - "null"
       creative_set:
         type:
@@ -610,15 +564,14 @@ schemas:
       creative_set_id:
         type:
           - string
-          - number
           - "null"
       impressions:
         type:
-          - number
+          - integer
           - "null"
       clicks:
         type:
-          - number
+          - integer
           - "null"
       ctr:
         type:
@@ -627,5 +580,4 @@ schemas:
       cost:
         type:
           - number
-          - string
           - "null"
