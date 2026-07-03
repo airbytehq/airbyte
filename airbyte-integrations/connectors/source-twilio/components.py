@@ -296,9 +296,7 @@ class TwilioConferencesStateMigration(StateMigration):
         return {"states": new_states}
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if stream_state and any(
-            "conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])
-        ):
+        if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
             return True
         return False
 
@@ -367,8 +365,7 @@ class TwilioConferenceParticipantsStateMigration(StateMigration):
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if stream_state and any(
-            "conference_status" not in state.get("partition", {}).get("parent_slice", {})
-            for state in stream_state.get("states", [])
+            "conference_status" not in state.get("partition", {}).get("parent_slice", {}) for state in stream_state.get("states", [])
         ):
             return True
         return False
