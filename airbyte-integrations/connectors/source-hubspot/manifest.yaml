@@ -2390,6 +2390,7 @@ definitions:
       name: contacts_web_analytics
       primary_key: id
       object_type: contact
+      required_scopes: business-intelligence, crm.objects.contacts.read
 
   companies_web_analytics_stream:
     type: DeclarativeStream
@@ -2414,6 +2415,7 @@ definitions:
       name: companies_web_analytics
       primary_key: id
       object_type: company
+      required_scopes: business-intelligence, crm.objects.companies.read
 
   deals_web_analytics_stream:
     type: DeclarativeStream
@@ -2438,6 +2440,7 @@ definitions:
       name: deals_web_analytics
       primary_key: id
       object_type: deal
+      required_scopes: business-intelligence, crm.objects.deals.read
 
   tickets_web_analytics_stream:
     type: DeclarativeStream
@@ -2462,6 +2465,7 @@ definitions:
       name: tickets_web_analytics
       primary_key: id
       object_type: ticket
+      required_scopes: business-intelligence, tickets
 
   engagements_calls_web_analytics_stream:
     type: DeclarativeStream
@@ -2486,6 +2490,7 @@ definitions:
       name: engagements_calls_web_analytics
       primary_key: id
       object_type: calls
+      required_scopes: business-intelligence, crm.objects.contacts.read
 
   engagements_emails_web_analytics_stream:
     type: DeclarativeStream
@@ -2510,6 +2515,7 @@ definitions:
       name: engagements_emails_web_analytics
       primary_key: id
       object_type: emails
+      required_scopes: business-intelligence, crm.objects.contacts.read, sales-email-read
 
   engagements_meetings_web_analytics_stream:
     type: DeclarativeStream
@@ -2534,6 +2540,7 @@ definitions:
       name: engagements_meetings_web_analytics
       primary_key: id
       object_type: meetings
+      required_scopes: business-intelligence, crm.objects.contacts.read
 
   engagements_notes_web_analytics_stream:
     type: DeclarativeStream
@@ -2558,6 +2565,7 @@ definitions:
       name: engagements_notes_web_analytics
       primary_key: id
       object_type: notes
+      required_scopes: business-intelligence, crm.objects.contacts.read
 
   engagements_tasks_web_analytics_stream:
     type: DeclarativeStream
@@ -2582,6 +2590,7 @@ definitions:
       name: engagements_tasks_web_analytics
       primary_key: id
       object_type: tasks
+      required_scopes: business-intelligence, crm.objects.contacts.read
 
   goals_web_analytics_stream:
     type: DeclarativeStream
@@ -2606,6 +2615,7 @@ definitions:
       name: goals_web_analytics
       primary_key: id
       object_type: goal_targets
+      required_scopes: business-intelligence, crm.objects.goals.read
 
   line_items_web_analytics_stream:
     type: DeclarativeStream
@@ -2630,6 +2640,7 @@ definitions:
       name: line_items_web_analytics
       primary_key: id
       object_type: line_item
+      required_scopes: business-intelligence, e-commerce, crm.objects.line_items.read
 
   products_web_analytics_stream:
     type: DeclarativeStream
@@ -2654,6 +2665,7 @@ definitions:
       name: products_web_analytics
       primary_key: id
       object_type: product
+      required_scopes: business-intelligence, e-commerce
 
 streams:
   - "#/definitions/campaigns_stream"
@@ -3268,6 +3280,7 @@ spec:
           - scope: "crm.objects.goals.read"
           - scope: "crm.objects.invoices.read"
           - scope: "crm.objects.leads.read"
+          - scope: "crm.objects.line_items.read"
           - scope: "crm.objects.listings.read"
           - scope: "crm.objects.marketing_events.read"
           - scope: "crm.objects.orders.read"
@@ -3280,6 +3293,7 @@ spec:
           - scope: "crm.schemas.companies.read"
           - scope: "crm.schemas.custom.read"
           - scope: "crm.schemas.deals.read"
+          - scope: "business-intelligence"
           - scope: "settings.users.read"
         extract_output:
           - refresh_token
