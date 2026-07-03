@@ -46,6 +46,10 @@ The Wikipedia Pageviews source connector supports the following [sync modes](htt
 
 100 req/s per endpoint.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

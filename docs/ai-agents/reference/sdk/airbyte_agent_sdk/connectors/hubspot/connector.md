@@ -68,6 +68,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, properties: CompaniesCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
+    :   Create a new company in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Company properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Company
+
     `get(self, company_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
     :   Get a single company by ID
         
@@ -97,6 +107,17 @@ Classes
         
         Returns:
             CompaniesListResult
+
+    `update(self, properties: CompaniesUpdateParamsProperties, company_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
+    :   Update an existing company's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Company properties to update
+            company_id: Company ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Company
 
 <a id="ContactsQuery"></a>
 
@@ -158,6 +179,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, properties: ContactsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
+    :   Create a new contact in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Contact properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Contact
+
     `get(self, contact_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
     :   Get a single contact by ID
         
@@ -187,6 +218,17 @@ Classes
         
         Returns:
             ContactsListResult
+
+    `update(self, properties: ContactsUpdateParamsProperties, contact_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
+    :   Update an existing contact's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Contact properties to update
+            contact_id: Contact ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Contact
 
 <a id="DealsQuery"></a>
 
@@ -251,6 +293,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, properties: DealsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
+    :   Create a new deal in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Deal properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Deal
+
     `get(self, deal_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
     :   Get a single deal by ID
         
@@ -280,6 +332,17 @@ Classes
         
         Returns:
             DealsListResult
+
+    `update(self, properties: DealsUpdateParamsProperties, deal_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
+    :   Update an existing deal's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Deal properties to update
+            deal_id: Deal ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Deal
 
 <a id="HubspotConnector"></a>
 
@@ -420,7 +483,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'api_search', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'api_search', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -432,6 +495,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -589,6 +655,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, properties: TicketsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
+    :   Create a new support ticket in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Ticket properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
+
     `get(self, ticket_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
     :   Get a single ticket by ID
         
@@ -618,3 +694,14 @@ Classes
         
         Returns:
             TicketsListResult
+
+    `update(self, properties: TicketsUpdateParamsProperties, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
+    :   Update an existing ticket's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Ticket properties to update
+            ticket_id: Ticket ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket

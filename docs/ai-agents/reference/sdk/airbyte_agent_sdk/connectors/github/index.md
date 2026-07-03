@@ -630,9 +630,6 @@ Classes
     `name: str | None`
     :   Branch name (e.g. `main`, `feature/foo`)
 
-    `prefix: str | None`
-    :   Git ref prefix for the branch (typically `refs/heads/`)
-
 <a id="CommentsSearchData"></a>
 
 `CommentsSearchData(**data: Any)`
@@ -663,9 +660,6 @@ Classes
     `id: str | None`
     :   GraphQL node ID of the comment
 
-    `is_minimized: bool | None`
-    :   Whether the comment has been hidden/collapsed
-
     `model_config`
     :   The type of the None singleton.
 
@@ -693,34 +687,13 @@ Classes
 
     ### Class variables
 
-    `abbreviated_oid: str | None`
-    :   Abbreviated Git commit SHA (typically 7 characters)
-
-    `additions: int | None`
-    :   Number of lines added across all files in the commit
-
-    `authored_date: str | None`
-    :   ISO 8601 timestamp when the commit was originally authored
-
-    `changed_files: int | None`
-    :   Number of files changed in the commit
-
-    `committed_date: str | None`
-    :   ISO 8601 timestamp when the commit was applied to its tree
-
-    `deletions: int | None`
-    :   Number of lines deleted across all files in the commit
-
-    `message: str | None`
-    :   Full commit message
-
-    `message_headline: str | None`
-    :   First line of the commit message
+    `created_at: str | None`
+    :   ISO 8601 timestamp of the commit
 
     `model_config`
     :   The type of the None singleton.
 
-    `oid: str | None`
+    `sha: str | None`
     :   Full Git commit SHA
 
     `url: str | None`
@@ -928,7 +901,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['get', 'list', 'api_search', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['get', 'list', 'api_search', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -940,6 +913,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -1032,10 +1008,10 @@ Classes
     :   Repository-scoped issue number
 
     `state: str | None`
-    :   Issue state: `OPEN` or `CLOSED`
+    :   Issue state in the cache: lowercase `open` or `closed`
 
     `state_reason: str | None`
-    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+    :   Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
 
     `title: str | None`
     :   Issue title
@@ -1067,9 +1043,6 @@ Classes
     `color: str | None`
     :   Label color as a 6-character hex string without a leading `#`
 
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the label was created
-
     `description: str | None`
     :   Short description of what the label is used for
 
@@ -1083,7 +1056,7 @@ Classes
     :   Label name
 
     `url: str | None`
-    :   Permalink to the label on GitHub
+    :   API URL to the label resource
 
 <a id="MilestonesSearchData"></a>
 
@@ -1124,11 +1097,8 @@ Classes
     `number: int | None`
     :   Repository-scoped milestone number
 
-    `progress_percentage: float | None`
-    :   Percentage of associated issues/PRs that are closed
-
     `state: str | None`
-    :   Milestone state: `OPEN` or `CLOSED`
+    :   Milestone state in the cache: lowercase `open` or `closed`
 
     `title: str | None`
     :   Milestone title
@@ -1313,9 +1283,6 @@ Classes
 
     ### Class variables
 
-    `base_ref_name: str | None`
-    :   Name of the branch being merged into
-
     `closed_at: str | None`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -1325,17 +1292,11 @@ Classes
     `database_id: int | None`
     :   REST API numeric identifier for the pull request
 
-    `head_ref_name: str | None`
-    :   Name of the branch with the proposed changes
-
     `id: str | None`
     :   GraphQL node ID of the pull request
 
     `is_draft: bool | None`
     :   Whether the pull request is still a draft
-
-    `merged: bool | None`
-    :   Whether the pull request has been merged
 
     `merged_at: str | None`
     :   ISO 8601 timestamp when the pull request was merged, if applicable
@@ -1347,7 +1308,7 @@ Classes
     :   Repository-scoped pull request number
 
     `state: str | None`
-    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+    :   Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
 
     `title: str | None`
     :   Pull request title
@@ -1503,7 +1464,7 @@ Classes
     :   The type of the None singleton.
 
     `state: str | None`
-    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+    :   Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
 
     `submitted_at: str | None`
     :   ISO 8601 timestamp when the review was submitted
@@ -1562,9 +1523,6 @@ Classes
     `name: str | None`
     :   Tag name (e.g. `v1.2.3`)
 
-    `prefix: str | None`
-    :   Git ref prefix for the tag (typically `refs/tags/`)
-
 <a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
@@ -1583,9 +1541,6 @@ Classes
 
     ### Class variables
 
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the team was created
-
     `database_id: int | None`
     :   REST API numeric identifier for the team
 
@@ -1602,13 +1557,10 @@ Classes
     :   Display name of the team
 
     `privacy: str | None`
-    :   Team visibility: `SECRET` or `VISIBLE`
+    :   Team visibility: `secret` or `closed` (REST API values)
 
     `slug: str | None`
     :   URL-friendly slug for the team within its organization
-
-    `updated_at: str | None`
-    :   ISO 8601 timestamp when the team was last updated
 
     `url: str | None`
     :   Permalink to the team on GitHub
@@ -1631,38 +1583,17 @@ Classes
 
     ### Class variables
 
-    `company: str | None`
-    :   Public company affiliation of the user, if set
-
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the user account was created
-
     `database_id: int | None`
     :   REST API numeric identifier for the user
 
-    `email: str | None`
-    :   Public email address of the user, if set
-
     `id: str | None`
     :   GraphQL node ID of the user
-
-    `is_hireable: bool | None`
-    :   Whether the user has marked themselves as available for hire
-
-    `location: str | None`
-    :   Public location of the user, if set
 
     `login: str | None`
     :   User login/handle
 
     `model_config`
     :   The type of the None singleton.
-
-    `name: str | None`
-    :   Public display name of the user, if set
-
-    `twitter_username: str | None`
-    :   Public Twitter/X username of the user, if set
 
     `url: str | None`
     :   Permalink to the user's profile on GitHub

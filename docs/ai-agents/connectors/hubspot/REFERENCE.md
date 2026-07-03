@@ -8,10 +8,10 @@ The Hubspot connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Context Store Search](#companies-context-store-search) |
-| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Context Store Search](#deals-context-store-search) |
-| Tickets | [List](#tickets-list), [Get](#tickets-get), [API Search](#tickets-api-search), [Context Store Search](#tickets-context-store-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
+| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [API Search](#companies-api-search), [Context Store Search](#companies-context-store-search) |
+| Deals | [List](#deals-list), [Create](#deals-create), [Get](#deals-get), [Update](#deals-update), [API Search](#deals-api-search), [Context Store Search](#deals-context-store-search) |
+| Tickets | [List](#tickets-list), [Create](#tickets-create), [Get](#tickets-get), [Update](#tickets-update), [API Search](#tickets-api-search), [Context Store Search](#tickets-context-store-search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
 
@@ -20,6 +20,17 @@ The Hubspot connector supports the following entities and actions.
 ### Contacts List
 
 Returns a paginated list of contacts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -80,9 +91,108 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Contacts Create
+
+Create a new contact in HubSpot CRM with the provided properties.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "create",
+  "params": {
+    "properties": {
+      "email": "<str>"
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.contacts.create(
+    properties={
+        "email": "<str>"
+    }
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "create",
+    "params": {
+        "properties": {
+            "email": "<str>"
+        }
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Contact properties to set |
+| `properties.email` | `string` | Yes | Contact email address (required, used as unique identifier) |
+| `properties.firstname` | `string` | No | Contact first name |
+| `properties.lastname` | `string` | No | Contact last name |
+| `properties.phone` | `string` | No | Contact phone number |
+| `properties.company` | `string` | No | Company name associated with the contact |
+| `properties.website` | `string` | No | Contact website URL |
+| `properties.lifecyclestage` | `string` | No | Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other) |
+| `properties.jobtitle` | `string` | No | Contact job title |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this contact |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Contacts Get
 
 Get a single contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "contactId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -141,9 +251,103 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Contacts Update
+
+Update an existing contact's properties by ID. Only the specified properties will be updated.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "contactId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.contacts.update(
+    properties={},
+    contact_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "contactId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Contact properties to update |
+| `properties.email` | `string` | No | Contact email address |
+| `properties.firstname` | `string` | No | Contact first name |
+| `properties.lastname` | `string` | No | Contact last name |
+| `properties.phone` | `string` | No | Contact phone number |
+| `properties.company` | `string` | No | Company name associated with the contact |
+| `properties.website` | `string` | No | Contact website URL |
+| `properties.lifecyclestage` | `string` | No | Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other) |
+| `properties.jobtitle` | `string` | No | Contact job title |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this contact |
+| `contactId` | `string` | Yes | Contact ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Contacts API Search
 
 Search for contacts by filtering on properties, searching through associations, and sorting results.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -215,6 +419,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -302,6 +526,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve all companies, using query parameters to control the information that gets returned.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -361,9 +596,113 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Companies Create
+
+Create a new company in HubSpot CRM with the provided properties.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "create",
+  "params": {
+    "properties": {
+      "name": "<str>"
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.companies.create(
+    properties={
+        "name": "<str>"
+    }
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "create",
+    "params": {
+        "properties": {
+            "name": "<str>"
+        }
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Company properties to set |
+| `properties.name` | `string` | Yes | Company name (required) |
+| `properties.domain` | `string` | No | Company domain name (e.g., example.com) |
+| `properties.description` | `string` | No | Company description |
+| `properties.phone` | `string` | No | Company phone number |
+| `properties.industry` | `string` | No | Company industry |
+| `properties.city` | `string` | No | Company city |
+| `properties.state` | `string` | No | Company state/region |
+| `properties.country` | `string` | No | Company country |
+| `properties.zip` | `string` | No | Company postal/zip code |
+| `properties.numberofemployees` | `string` | No | Number of employees |
+| `properties.annualrevenue` | `string` | No | Annual revenue |
+| `properties.lifecyclestage` | `string` | No | Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other) |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this company |
+| `properties.website` | `string` | No | Company website URL |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Companies Get
 
 Get a single company by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "get",
+  "params": {
+    "companyId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -422,9 +761,108 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Companies Update
+
+Update an existing company's properties by ID. Only the specified properties will be updated.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "companyId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.companies.update(
+    properties={},
+    company_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "companyId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Company properties to update |
+| `properties.name` | `string` | No | Company name |
+| `properties.domain` | `string` | No | Company domain name (e.g., example.com) |
+| `properties.description` | `string` | No | Company description |
+| `properties.phone` | `string` | No | Company phone number |
+| `properties.industry` | `string` | No | Company industry |
+| `properties.city` | `string` | No | Company city |
+| `properties.state` | `string` | No | Company state/region |
+| `properties.country` | `string` | No | Company country |
+| `properties.zip` | `string` | No | Company postal/zip code |
+| `properties.numberofemployees` | `string` | No | Number of employees |
+| `properties.annualrevenue` | `string` | No | Annual revenue |
+| `properties.lifecyclestage` | `string` | No | Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other) |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this company |
+| `properties.website` | `string` | No | Company website URL |
+| `companyId` | `string` | Yes | Company ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Companies API Search
 
 Search for companies by filtering on properties, searching through associations, and sorting results.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -496,6 +934,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Companies Context Store Search
 
 Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "companies",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -579,6 +1037,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of deals
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -638,9 +1107,107 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Deals Create
+
+Create a new deal in HubSpot CRM with the provided properties.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "create",
+  "params": {
+    "properties": {
+      "dealname": "<str>"
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.deals.create(
+    properties={
+        "dealname": "<str>"
+    }
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "deals",
+    "action": "create",
+    "params": {
+        "properties": {
+            "dealname": "<str>"
+        }
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Deal properties to set |
+| `properties.dealname` | `string` | Yes | Deal name (required) |
+| `properties.amount` | `string` | No | Deal amount |
+| `properties.dealstage` | `string` | No | Deal stage ID (e.g., appointmentscheduled, qualifiedtobuy, presentationscheduled, decisionmakerboughtin, contractsent, closedwon, closedlost) |
+| `properties.pipeline` | `string` | No | Deal pipeline ID (defaults to the default pipeline) |
+| `properties.closedate` | `string` | No | Expected close date (ISO 8601 format, e.g., 2024-12-31T00:00:00.000Z) |
+| `properties.dealtype` | `string` | No | Deal type (e.g., newbusiness, existingbusiness) |
+| `properties.description` | `string` | No | Deal description |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this deal |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Deals Get
 
 Get a single deal by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "get",
+  "params": {
+    "dealId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -699,9 +1266,102 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Deals Update
+
+Update an existing deal's properties by ID. Only the specified properties will be updated.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "dealId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.deals.update(
+    properties={},
+    deal_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "deals",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "dealId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Deal properties to update |
+| `properties.dealname` | `string` | No | Deal name |
+| `properties.amount` | `string` | No | Deal amount |
+| `properties.dealstage` | `string` | No | Deal stage ID (e.g., appointmentscheduled, qualifiedtobuy, presentationscheduled, decisionmakerboughtin, contractsent, closedwon, closedlost) |
+| `properties.pipeline` | `string` | No | Deal pipeline ID |
+| `properties.closedate` | `string` | No | Expected close date (ISO 8601 format, e.g., 2024-12-31T00:00:00.000Z) |
+| `properties.dealtype` | `string` | No | Deal type (e.g., newbusiness, existingbusiness) |
+| `properties.description` | `string` | No | Deal description |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this deal |
+| `dealId` | `string` | Yes | Deal ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Deals API Search
 
 Search deals with filters and sorting
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -773,6 +1433,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Deals Context Store Search
 
 Search and filter deals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "deals",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -866,6 +1546,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of tickets
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -925,9 +1616,112 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tickets Create
+
+Create a new support ticket in HubSpot CRM with the provided properties.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "create",
+  "params": {
+    "properties": {
+      "subject": "<str>",
+      "hs_pipeline": "<str>",
+      "hs_pipeline_stage": "<str>"
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tickets.create(
+    properties={
+        "subject": "<str>",
+        "hs_pipeline": "<str>",
+        "hs_pipeline_stage": "<str>"
+    }
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tickets",
+    "action": "create",
+    "params": {
+        "properties": {
+            "subject": "<str>",
+            "hs_pipeline": "<str>",
+            "hs_pipeline_stage": "<str>"
+        }
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Ticket properties to set |
+| `properties.subject` | `string` | Yes | Ticket subject line (required) |
+| `properties.content` | `string` | No | Ticket description/content |
+| `properties.hs_pipeline` | `string` | Yes | Ticket pipeline ID (required, use '0' for default pipeline) |
+| `properties.hs_pipeline_stage` | `string` | Yes | Pipeline stage ID (required, e.g., '1' for New in the default pipeline) |
+| `properties.hs_ticket_priority` | `string` | No | Ticket priority (e.g., LOW, MEDIUM, HIGH) |
+| `properties.hs_ticket_category` | `string` | No | Ticket category |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this ticket |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Tickets Get
 
 Get a single ticket by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "get",
+  "params": {
+    "ticketId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -986,9 +1780,101 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tickets Update
+
+Update an existing ticket's properties by ID. Only the specified properties will be updated.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "ticketId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tickets.update(
+    properties={},
+    ticket_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tickets",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "ticketId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Ticket properties to update |
+| `properties.subject` | `string` | No | Ticket subject line |
+| `properties.content` | `string` | No | Ticket description/content |
+| `properties.hs_pipeline` | `string` | No | Ticket pipeline ID |
+| `properties.hs_pipeline_stage` | `string` | No | Pipeline stage ID |
+| `properties.hs_ticket_priority` | `string` | No | Ticket priority (e.g., LOW, MEDIUM, HIGH) |
+| `properties.hs_ticket_category` | `string` | No | Ticket category |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this ticket |
+| `ticketId` | `string` | Yes | Ticket ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `propertiesWithHistory` | `object \| null` |  |
+| `associations` | `object \| null` |  |
+| `objectWriteTraceId` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 ### Tickets API Search
 
 Search for tickets by filtering on properties, searching through associations, and sorting results.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -1060,6 +1946,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tickets Context Store Search
 
 Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tickets",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1151,6 +2057,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all custom object schemas to discover available custom objects
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "schemas",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1211,6 +2128,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Schemas Get
 
 Get the schema for a specific custom object type
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "schemas",
+  "action": "get",
+  "params": {
+    "objectType": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1280,6 +2211,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Read a page of objects. Control what is returned via the properties query param.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "objects",
+  "action": "list",
+  "params": {
+    "objectType": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1348,6 +2293,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Objects Get
 
 Read an Object identified by \{objectId\}. \{objectId\} refers to the internal object ID by default, or optionally any unique property value as specified by the idProperty query param. Control what is returned via the properties query param.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "objects",
+  "action": "get",
+  "params": {
+    "objectType": "<str>",
+    "objectId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

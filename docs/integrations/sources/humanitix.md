@@ -17,6 +17,10 @@ Docs : https://humanitix.stoplight.io/docs/humanitix-public-api/e508a657c1467-hu
 | tickets | _id | DefaultPaginator | ✅ |  ❌  |
 | tags | _id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,11 @@ Docs : https://humanitix.stoplight.io/docs/humanitix-public-api/e508a657c1467-hu
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-30 | [81095](https://github.com/airbytehq/airbyte/pull/81095) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80523](https://github.com/airbytehq/airbyte/pull/80523) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79908](https://github.com/airbytehq/airbyte/pull/79908) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79361](https://github.com/airbytehq/airbyte/pull/79361) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78775](https://github.com/airbytehq/airbyte/pull/78775) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77271](https://github.com/airbytehq/airbyte/pull/77271) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [76660](https://github.com/airbytehq/airbyte/pull/76660) | Update dependencies |
 | 0.0.46 | 2026-03-31 | [75653](https://github.com/airbytehq/airbyte/pull/75653) | Update dependencies |

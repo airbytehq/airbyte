@@ -21,6 +21,10 @@ API documentation: https://developer.cisco.com/meraki/api-v1/introduction/
 | organization_saml | uuid | DefaultPaginator | ✅ |  ❌  |
 | organization_network_settings | uuid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,11 @@ API documentation: https://developer.cisco.com/meraki/api-v1/introduction/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2026-06-30 | [81016](https://github.com/airbytehq/airbyte/pull/81016) | Update dependencies |
+| 0.0.37 | 2026-06-23 | [80390](https://github.com/airbytehq/airbyte/pull/80390) | Update dependencies |
+| 0.0.36 | 2026-06-16 | [79815](https://github.com/airbytehq/airbyte/pull/79815) | Update dependencies |
+| 0.0.35 | 2026-06-09 | [79254](https://github.com/airbytehq/airbyte/pull/79254) | Update dependencies |
+| 0.0.34 | 2026-06-02 | [78629](https://github.com/airbytehq/airbyte/pull/78629) | Update dependencies |
 | 0.0.33 | 2026-04-28 | [77162](https://github.com/airbytehq/airbyte/pull/77162) | Update dependencies |
 | 0.0.32 | 2026-04-21 | [76538](https://github.com/airbytehq/airbyte/pull/76538) | Update dependencies |
 | 0.0.31 | 2026-03-24 | [74463](https://github.com/airbytehq/airbyte/pull/74463) | Update dependencies |

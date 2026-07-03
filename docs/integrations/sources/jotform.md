@@ -25,6 +25,10 @@ To get started, you need a valid API key.
 | form_properties | id | No pagination | ✅ |  ❌  |
 | form_files | url | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,11 @@ To get started, you need a valid API key.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.53 | 2026-06-30 | [81114](https://github.com/airbytehq/airbyte/pull/81114) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80505](https://github.com/airbytehq/airbyte/pull/80505) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79921](https://github.com/airbytehq/airbyte/pull/79921) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79358](https://github.com/airbytehq/airbyte/pull/79358) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78796](https://github.com/airbytehq/airbyte/pull/78796) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77310](https://github.com/airbytehq/airbyte/pull/77310) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [76647](https://github.com/airbytehq/airbyte/pull/76647) | Update dependencies |
 | 0.0.46 | 2026-03-31 | [75680](https://github.com/airbytehq/airbyte/pull/75680) | Update dependencies |

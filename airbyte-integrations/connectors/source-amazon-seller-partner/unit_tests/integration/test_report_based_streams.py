@@ -584,6 +584,123 @@ class TestIncremental:
         # format between record and cursor value can differ hence we rely on pendulum parsing to ignore those discrepancies
         assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(cursor_value_from_latest_record)
 
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, state_cursor_value",
+        [
+            pytest.param("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "dataEndTime", "2023-01-15T00:00:00Z", id="data_end_time"),
+        ],
+    )
+    @HttpMocker()
+    def test_given_hourly_lookback_window_when_incremental_read_then_create_report_uses_adjusted_start_time(
+        self, stream_name: str, cursor_field: str, state_cursor_value: str, http_mocker: HttpMocker
+    ) -> None:
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: state_cursor_value}).build()
+        create_report_request_body = {
+            "reportType": stream_name,
+            "marketplaceIds": [MARKETPLACE_ID],
+            "dataStartTime": "2023-01-14T18:00:00Z",
+            "dataEndTime": CONFIG_END_DATE,
+        }
+
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_request_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format="csv"),
+        )
+
+        output = self._read(
+            stream_name,
+            config().with_report_stream_lookback_window_in_hours(6),
+            state=initial_state,
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, state_cursor_value, create_report_request_body, download_response_stream_name",
+        [
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH",
+                "queryEndDate",
+                "2023-01-15T00:00:00Z",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-15T00:00:00Z",
+                    "dataEndTime": "2023-01-16T00:00:00Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"dateGranularity": "MONTH", "asinGranularity": "PARENT"},
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                id="monthly_sales_and_traffic",
+            ),
+            pytest.param(
+                "GET_VENDOR_SALES_REPORT",
+                "endDate",
+                "2023-01-15T00:00:00Z",
+                {
+                    "reportType": "GET_VENDOR_SALES_REPORT",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_VENDOR_SALES_REPORT",
+                id="vendor_sales_date_only",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_hourly_lookback_window_when_unsupported_report_stream_then_create_report_does_not_apply_lookback(
+        self,
+        stream_name: str,
+        cursor_field: str,
+        state_cursor_value: str,
+        create_report_request_body: dict,
+        download_response_stream_name: str,
+        http_mocker: HttpMocker,
+    ) -> None:
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: state_cursor_value}).build()
+
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_request_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(download_response_stream_name, data_format="json"),
+        )
+
+        config_builder = config().with_report_stream_lookback_window_in_hours(6).with_end_date(pendulum.parse("2023-01-16T00:00:00Z"))
+        if "VENDOR" in stream_name:
+            config_builder = config_builder.with_account_type("Vendor")
+        output = self._read(
+            stream_name,
+            config_builder,
+            state=initial_state,
+        )
+        assert len(output.records) > 0
+
     @HttpMocker()
     def test_given_cancelled_report_when_incremental_read_then_state_unchanged(self, http_mocker: HttpMocker) -> None:
         """When a CANCELLED report is skipped (via SKIPPED status mapping), verify that:
@@ -720,7 +837,7 @@ class TestVendorSalesReportsFullRefresh:
     @staticmethod
     def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
-            config_builder=config_,
+            config_builder=config_.with_account_type("Vendor"),
             stream_name=stream_name,
             sync_mode=SyncMode.full_refresh,
             expecting_exception=expecting_exception,
