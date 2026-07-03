@@ -211,6 +211,10 @@ The LinkedIn Ads API does not return records that have no values for any of the 
 
 The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

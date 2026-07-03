@@ -56,6 +56,10 @@ The Export API (used by the Events stream) doesn't have documented rate limits, 
 
 If you encounter rate limit issues that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -63,6 +67,8 @@ If you encounter rate limit issues that are not automatically retried, [create a
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.33 | 2026-07-02 | [81393](https://github.com/airbytehq/airbyte/pull/81393) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
+| 0.7.32 | 2026-06-23 | [78601](https://github.com/airbytehq/airbyte/pull/78601) | Update dependencies |
 | 0.7.31 | 2026-04-28 | [72688](https://github.com/airbytehq/airbyte/pull/72688) | Update dependencies |
 | 0.7.30 | 2026-03-31 | [75406](https://github.com/airbytehq/airbyte/pull/75406) | Upgrade CDK to v7.14.0 and use weight-based rate limiting for Dashboard REST API streams |
 | 0.7.29 | 2026-03-03 | [70841](https://github.com/airbytehq/airbyte/pull/70841) | Add HTTPAPIBudget and concurrency_level |

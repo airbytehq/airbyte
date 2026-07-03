@@ -21,6 +21,10 @@ API Reference: https://www.fastly.com/documentation/reference/api/
 | service_domain | uuid | DefaultPaginator | ✅ |  ✅  |
 | service_acl | uuid | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,11 @@ API Reference: https://www.fastly.com/documentation/reference/api/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2026-06-30 | [81047](https://github.com/airbytehq/airbyte/pull/81047) | Update dependencies |
+| 0.0.37 | 2026-06-23 | [80465](https://github.com/airbytehq/airbyte/pull/80465) | Update dependencies |
+| 0.0.36 | 2026-06-16 | [79868](https://github.com/airbytehq/airbyte/pull/79868) | Update dependencies |
+| 0.0.35 | 2026-06-09 | [79308](https://github.com/airbytehq/airbyte/pull/79308) | Update dependencies |
+| 0.0.34 | 2026-06-02 | [78725](https://github.com/airbytehq/airbyte/pull/78725) | Update dependencies |
 | 0.0.33 | 2026-04-28 | [77228](https://github.com/airbytehq/airbyte/pull/77228) | Update dependencies |
 | 0.0.32 | 2026-04-21 | [76567](https://github.com/airbytehq/airbyte/pull/76567) | Update dependencies |
 | 0.0.31 | 2026-03-31 | [75760](https://github.com/airbytehq/airbyte/pull/75760) | Update dependencies |

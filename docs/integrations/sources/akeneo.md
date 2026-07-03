@@ -26,6 +26,10 @@ The Akeneo Airbyte connector enables seamless data synchronization between Akene
 | currencies | code | DefaultPaginator | ✅ |  ❌  |
 | measure_families | code | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,11 @@ The Akeneo Airbyte connector enables seamless data synchronization between Akene
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-06-30 | [80969](https://github.com/airbytehq/airbyte/pull/80969) | Update dependencies |
+| 0.0.43 | 2026-06-23 | [80372](https://github.com/airbytehq/airbyte/pull/80372) | Update dependencies |
+| 0.0.42 | 2026-06-16 | [79753](https://github.com/airbytehq/airbyte/pull/79753) | Update dependencies |
+| 0.0.41 | 2026-06-09 | [79204](https://github.com/airbytehq/airbyte/pull/79204) | Update dependencies |
+| 0.0.40 | 2026-06-02 | [78602](https://github.com/airbytehq/airbyte/pull/78602) | Update dependencies |
 | 0.0.39 | 2026-04-28 | [77137](https://github.com/airbytehq/airbyte/pull/77137) | Update dependencies |
 | 0.0.38 | 2026-04-21 | [76508](https://github.com/airbytehq/airbyte/pull/76508) | Update dependencies |
 | 0.0.37 | 2026-03-24 | [75347](https://github.com/airbytehq/airbyte/pull/75347) | Update dependencies |

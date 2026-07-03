@@ -81,10 +81,13 @@ definitions:
       error_handler:
         type: DefaultErrorHandler
         response_filters:
+          - error_message_contains: "You do not have access"
+            action: IGNORE
+            error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
           - http_codes: [403, 404]
             action: FAIL
             failure_type: config_error
-            error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
+            error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The endpoint returned an error indicating a configuration issue. Please ensure that your account has the necessary access level and that the endpoint is available. Error message: {{ response.get('error') }}"
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
@@ -1003,6 +1006,32 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  side_conversations_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/side_conversations"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "ticket_id"
+            stream:
+              $ref: "#/definitions/tickets_stream"
+            incremental_dependency: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/side_conversations"
+    $parameters:
+      name: "side_conversations"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
   ticket_fields_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -1070,6 +1099,24 @@ definitions:
       name: "ticket_metric_events"
       path: "incremental/ticket_metric_events"
       cursor_field: "time"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+  ticket_events_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/end_of_stream_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ticket_events"
+    $parameters:
+      name: "ticket_events"
+      path: "incremental/ticket_events.json"
+      cursor_field: "timestamp"
       cursor_filter: "start_time"
       primary_key: "id"
 
@@ -1363,7 +1410,9 @@ streams:
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
   - $ref: "#/definitions/ticket_comments_stream"
+  - $ref: "#/definitions/side_conversations_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
+  - $ref: "#/definitions/ticket_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/tickets_stream"
   - $ref: "#/definitions/ticket_metrics_stream"
@@ -1919,6 +1968,94 @@ schemas:
           - "null"
           - string
         format: date-time
+  side_conversations:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: The unique identifier for the side conversation.
+        type:
+          - "null"
+          - string
+      ticket_id:
+        description: The ID of the parent ticket.
+        type:
+          - "null"
+          - integer
+      subject:
+        description: The subject of the side conversation.
+        type:
+          - "null"
+          - string
+      state:
+        description: The state of the side conversation (open, closed).
+        type:
+          - "null"
+          - string
+      participants:
+        description: The list of participants in the side conversation.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            user_id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+      created_at:
+        description: The time the side conversation was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        description: The time the side conversation was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      message_added_at:
+        description: The time the last message was added.
+        type:
+          - "null"
+          - string
+        format: date-time
+      state_updated_at:
+        description: The time the state was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      external_ids:
+        description: External IDs associated with the side conversation.
+        type:
+          - "null"
+          - object
+      preview_text:
+        description: A preview of the side conversation content.
+        type:
+          - "null"
+          - string
+      url:
+        description: The API URL of the side conversation.
+        type:
+          - "null"
+          - string
+
   satisfaction_ratings:
     $schema: https://json-schema.org/draft-07/schema#
     type:
@@ -4779,6 +4916,69 @@ schemas:
         type:
           - "null"
           - boolean
+  ticket_events:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier for the ticket event
+        type:
+          - "null"
+          - integer
+      ticket_id:
+        description: The ID of the ticket associated with this event
+        type:
+          - "null"
+          - integer
+      timestamp:
+        description: Unix timestamp of when the event was created
+        type:
+          - "null"
+          - integer
+      created_at:
+        description: ISO 8601 datetime when the event was created
+        type:
+          - "null"
+          - string
+      updater_id:
+        description: The ID of the user or system that triggered the event
+        type:
+          - "null"
+          - integer
+      via:
+        description: How the event was initiated (e.g., web, API, rule)
+        type:
+          - "null"
+          - string
+      via_reference_id:
+        description: Reference ID for the via channel
+        type:
+          - "null"
+          - integer
+      system:
+        description: System information about the event
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      child_events:
+        description: List of child events associated with this ticket event
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      event_type:
+        description: The type of the ticket event
+        type:
+          - "null"
+          - string
   ticket_forms:
     $schema: https://json-schema.org/draft-07/schema#
     type:

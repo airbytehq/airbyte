@@ -42,6 +42,10 @@ This connector outputs the following streams:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -49,6 +53,11 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.53 | 2026-06-30 | [81266](https://github.com/airbytehq/airbyte/pull/81266) | Update dependencies |
+| 0.4.52 | 2026-06-23 | [80676](https://github.com/airbytehq/airbyte/pull/80676) | Update dependencies |
+| 0.4.51 | 2026-06-16 | [80081](https://github.com/airbytehq/airbyte/pull/80081) | Update dependencies |
+| 0.4.50 | 2026-06-09 | [79555](https://github.com/airbytehq/airbyte/pull/79555) | Update dependencies |
+| 0.4.49 | 2026-06-02 | [78991](https://github.com/airbytehq/airbyte/pull/78991) | Update dependencies |
 | 0.4.48 | 2026-04-28 | [77432](https://github.com/airbytehq/airbyte/pull/77432) | Update dependencies |
 | 0.4.47 | 2026-04-21 | [76795](https://github.com/airbytehq/airbyte/pull/76795) | Update dependencies |
 | 0.4.46 | 2026-03-31 | [75748](https://github.com/airbytehq/airbyte/pull/75748) | Update dependencies |

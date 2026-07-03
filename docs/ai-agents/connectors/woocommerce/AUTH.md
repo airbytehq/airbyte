@@ -2,49 +2,15 @@
 
 This page documents the authentication and configuration options for the Woocommerce agent connector.
 
-## Authentication
+## Hosted mode (most cases)
 
-### Open source execution
+In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
-In open source mode, you provide API credentials directly to the connector.
-
-#### OAuth
+### OAuth
 This authentication method isn't available for this connector.
 
-#### Token
 
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `api_key` | `str` | Yes | WooCommerce REST API consumer key (starts with ck_) |
-| `api_secret` | `str` | Yes | WooCommerce REST API consumer secret (starts with cs_) |
-
-Example request:
-
-```python
-from airbyte_agent_sdk.connectors.woocommerce import WoocommerceConnector
-from airbyte_agent_sdk.connectors.woocommerce.models import WoocommerceAuthConfig
-
-connector = WoocommerceConnector(
-    auth_config=WoocommerceAuthConfig(
-        api_key="<WooCommerce REST API consumer key (starts with ck_)>",
-        api_secret="<WooCommerce REST API consumer secret (starts with cs_)>"
-    )
-)
-```
-
-### Hosted execution
-
-In hosted mode, you first create a connector via the Airbyte Agent API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
-
-#### OAuth
-This authentication method isn't available for this connector.
-
-#### Bring your own OAuth flow
-This authentication method isn't available for this connector.
-
-#### Token
+### Token
 Create a connector with Token credentials.
 
 
@@ -82,11 +48,48 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-#### Execution
+### Execution
 
-After creating the connector, execute operations using either the Python SDK or API.
-If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
+After creating the connector, execute operations using the CLI, Python SDK, or API.
+If your Airbyte client can access multiple organizations, set the default organization with `airbyte-agent organizations use`, include `organization_id` in `AirbyteAuthConfig`, or include `X-Organization-Id` in raw API calls.
 
+**CLI**
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "woocommerce"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "woocommerce"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "woocommerce",
+  "entity": "<entity>",
+  "action": "<action>",
+  "params": {}
+}'
+```
 
 **Python SDK**
 
@@ -283,9 +286,43 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ```
 
 
+## Open source mode
+
+In open source mode, provide API credentials directly to the connector.
+
+### OAuth
+This authentication method isn't available for this connector.
+
+### Token
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `api_key` | `str` | Yes | WooCommerce REST API consumer key (starts with ck_) |
+| `api_secret` | `str` | Yes | WooCommerce REST API consumer secret (starts with cs_) |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.woocommerce import WoocommerceConnector
+from airbyte_agent_sdk.connectors.woocommerce.models import WoocommerceAuthConfig
+
+connector = WoocommerceConnector(
+    auth_config=WoocommerceAuthConfig(
+        api_key="<WooCommerce REST API consumer key (starts with ck_)>",
+        api_secret="<WooCommerce REST API consumer secret (starts with cs_)>"
+    )
+)
+```
+
 ## Configuration
 
-The Woocommerce connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
+The Woocommerce connector also needs these configuration values to construct the base API URL.
+
+- **Hosted CLI**: `airbyte-agent connectors create` doesn't currently accept these configuration fields directly. For hosted connectors that need these values, create the connector with the hosted API `replication_config`, then use the CLI for describe and execute operations after creation.
+- **Hosted API**: pass these values in the connector creation `replication_config`.
+- **Open source mode**: provide these values with your local connector setup so the connector can build the correct API base URL.
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|

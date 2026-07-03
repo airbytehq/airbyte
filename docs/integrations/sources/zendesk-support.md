@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ## Prerequisites
 
-- A Zendesk account with an Administrator role.
+- A Zendesk account. An Administrator role is recommended for full access to all streams. Non-admin accounts can still sync, but streams that require admin permissions are automatically skipped.
 - The unique Zendesk subdomain associated with the account.
 
 ## Setup guide
@@ -89,7 +89,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 3. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
+8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 4. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
 9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
 10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
@@ -149,6 +149,7 @@ The Zendesk Support source connector supports the following streams:
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
 - [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\) \(Enterprise only\)
 - [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
+- [Ticket Events](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
@@ -195,13 +196,19 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 | Enterprise | 700 |
 | Enterprise Plus / High Volume API add-on | 2500 |
 
-The connector's **Number of concurrent threads** setting (default: 3) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
+The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The `tickets` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The `tickets` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
 The connector should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+
+#### Permissions and stream skipping
+
+Some streams require administrator-level permissions in Zendesk (for example, `account_attributes`, `attribute_definitions`, `audit_logs`, and `ticket_forms`). If the authenticated user does not have access to a stream's endpoint, the connector skips that stream and continues syncing the remaining streams. Skipped streams are logged with a message indicating the permission issue.
+
+To sync all available streams, authenticate with a Zendesk account that has an Administrator role.
 
 #### Search index delay
 
@@ -213,6 +220,10 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -220,6 +231,14 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.4.0 | 2026-07-02 | [81403](https://github.com/airbytehq/airbyte/pull/81403) | Added `ticket_events` stream for Zendesk Incremental Ticket Event Export API |
+| 5.3.1 | 2026-06-30 | [81305](https://github.com/airbytehq/airbyte/pull/81305) | Update dependencies |
+| 5.3.0 | 2026-06-10 | [79640](https://github.com/airbytehq/airbyte/pull/79640) | Added `side_conversations` stream to retrieve Side Conversations from tickets |
+| 5.2.12 | 2026-06-23 | [80725](https://github.com/airbytehq/airbyte/pull/80725) | Update dependencies |
+| 5.2.11 | 2026-06-16 | [80108](https://github.com/airbytehq/airbyte/pull/80108) | Update dependencies |
+| 5.2.10 | 2026-06-12 | [79668](https://github.com/airbytehq/airbyte/pull/79668) | Gracefully skip streams when Zendesk returns permission-denied error instead of failing the entire sync |
+| 5.2.9 | 2026-06-09 | [79583](https://github.com/airbytehq/airbyte/pull/79583) | Update dependencies |
+| 5.2.8 | 2026-06-02 | [77507](https://github.com/airbytehq/airbyte/pull/77507) | Update dependencies |
 | 5.2.7 | 2026-05-15 | [78120](https://github.com/airbytehq/airbyte/pull/78120) | Promoted release candidate to GA |
 | 5.2.7-rc.4 | 2026-05-07 | [77857](https://github.com/airbytehq/airbyte/pull/77857) | Step default concurrency back from 5 to 4 while keeping the endpoint-specific HTTP API budget LIVE (incremental 10/min, search/export 100/min, deleted_tickets 10/min) |
 | 5.2.7-rc.3 | 2026-05-05 | [77784](https://github.com/airbytehq/airbyte/pull/77784) | Restore the endpoint-specific HTTP API budget from 5.2.6 (incremental 10/min, search/export 100/min, deleted_tickets 10/min) and remove the `subscription_tier` config field; keep default concurrency at 5 |

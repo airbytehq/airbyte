@@ -324,12 +324,18 @@ definitions:
   search_analytics_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.LoadQuotaBackoffStrategy
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 60
+        jitter_range_in_seconds: 15
     response_filters:
       - type: HttpResponseFilter
         action: RATE_LIMITED
         error_message_contains: "Search Analytics QPS quota exceeded"
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        error_message_contains: "Search Analytics load quota exceeded"
       - type: HttpResponseFilter
         action: IGNORE
         error_message_contains: "User does not have sufficient permission"
@@ -406,7 +412,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1003,7 +1009,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1088,7 +1094,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1352,7 +1358,7 @@ dynamic_streams:
             inject_into: body_json
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25000
+            page_size: 5000
             inject_on_first_request: true
         record_selector:
           type: RecordSelector

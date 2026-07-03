@@ -146,6 +146,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Customer#field-customer-addresses)
 - [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/events) — Product deletion events
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode)
+- [Discount Codes Sync (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode) — Synchronous variant of Discount Codes that returns all redeem codes for discounts with more than ~100 codes. See [Syncing discount codes](#syncing-discount-codes).
 - [Disputes](https://shopify.dev/docs/api/admin-rest/latest/resources/dispute)
 - [Draft Orders](https://shopify.dev/api/admin-rest/latest/resources/draftorder#top)
 - [Fulfillments](https://shopify.dev/api/admin-rest/latest/resources/fulfillment)
@@ -180,6 +181,21 @@ For deleted products, use the dedicated `Deleted Products` stream, which queries
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/latest/resources/event).
 
+## Syncing discount codes
+
+The connector provides two streams for discount codes:
+
+| Stream | Method | Best for |
+|---|---|---|
+| **Discount Codes** | Bulk Operations (async) | Stores where every discount has fewer than ~100 redeem codes. High throughput, low API cost. |
+| **Discount Codes Sync** | Synchronous cursor-paginated GraphQL | Stores that have one or more discounts with **more than ~100 redeem codes**. Guarantees every code is returned. |
+
+Shopify's Bulk Operations API silently truncates the nested `codes` connection at approximately 100 records per parent discount, even with `groupObjects: true`. If a discount has 500 codes, the bulk stream will only return ~100 of them without any error or warning.
+
+**Discount Codes Sync** avoids this limitation by querying parent discounts with cursor pagination, then explicitly paging through each parent's child codes (up to 250 per page). The trade-off is higher per-record API cost and lower throughput compared to the bulk stream.
+
+**Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
+
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
@@ -193,6 +209,10 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 | Full Refresh Sync         | Yes                  |
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Data type map
 
@@ -250,7 +270,6 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 </details>
 
-
 ## Changelog
 
 <details>
@@ -258,7 +277,10 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.0 | 2026-05-12 | [76192](https://github.com/airbytehq/airbyte/pull/76192) | Add `lookback_window_in_days` config option to re-fetch recent records during incremental syncs, preventing missing data from race conditions or late-arriving updates. |
+| 3.5.1 | 2026-06-24 | [80787](https://github.com/airbytehq/airbyte/pull/80787) | Validate and normalize the `shop` config value: accept a bare subdomain or full myshopify URL, and reject malformed input with a clear config error. The normalized handle is also written to the `shop_url` record field, so previously-malformed configs now emit a clean value. |
+| 3.5.0 | 2026-06-11 | [79624](https://github.com/airbytehq/airbyte/pull/79624) | Add new synchronous cursor-paginated `discount_codes_sync` stream with support for >100 redeem codes per discount |
+| 3.4.1 | 2026-06-10 | [78513](https://github.com/airbytehq/airbyte/pull/78513) | Enable `groupObjects: true` on the `discount_codes` bulk query to preserve grouped output for stores with many redeem codes per discount. |
+| 3.4.0 | 2026-05-19 | [76192](https://github.com/airbytehq/airbyte/pull/76192) | Add `lookback_window_in_days` config option to re-fetch recent records during incremental syncs, preventing missing data from race conditions or late-arriving updates. |
 | 3.3.3 | 2026-05-11 | [77005](https://github.com/airbytehq/airbyte/pull/77005) | Fix some incremental GraphQL Bulk streams silently skipping parent records when a bulk job checkpoints mid-output. Use the parent cursor tracked by the bulk record producer to advance the next slice, not the child record's cursor. |
 | 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
 | 3.3.1 | 2026-04-22 | [76920](https://github.com/airbytehq/airbyte/pull/76920) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |

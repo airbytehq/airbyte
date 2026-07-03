@@ -23,6 +23,10 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 | workspace_users | emailId | No pagination | ✅ |  ❌  |
 | folders | folderId | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,11 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-06-30 | [81306](https://github.com/airbytehq/airbyte/pull/81306) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80727](https://github.com/airbytehq/airbyte/pull/80727) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [80125](https://github.com/airbytehq/airbyte/pull/80125) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79565](https://github.com/airbytehq/airbyte/pull/79565) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [79067](https://github.com/airbytehq/airbyte/pull/79067) | Update dependencies |
 | 0.0.52 | 2026-04-28 | [77501](https://github.com/airbytehq/airbyte/pull/77501) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76815](https://github.com/airbytehq/airbyte/pull/76815) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75831](https://github.com/airbytehq/airbyte/pull/75831) | Update dependencies |

@@ -73,6 +73,25 @@ Classes
         Returns:
             Channel
 
+<a id="ChannelJoinsQuery"></a>
+
+`ChannelJoinsQuery(connector: SlackConnector)`
+:   Query class for ChannelJoins entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.Channel`
+    :   Joins an existing public channel. The calling bot or user token will be added as a member of the channel.
+        
+        Args:
+            channel: ID of the channel to join
+            **kwargs: Additional parameters
+        
+        Returns:
+            Channel
+
 <a id="ChannelKicksQuery"></a>
 
 `ChannelKicksQuery(connector: SlackConnector)`
@@ -597,7 +616,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -609,6 +628,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
