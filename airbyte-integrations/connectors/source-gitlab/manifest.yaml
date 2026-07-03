@@ -915,6 +915,8 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "/members"
+    # Patterns are matched with re.search against the full request path
+    # (e.g. /api/v4/groups/:id/projects), so they must not be anchored with ^.
     # GET /groups (list) and /descendant_groups: 200 requests/min
     - type: MovingWindowCallRatePolicy
       rates:
@@ -922,7 +924,7 @@ api_budget:
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^groups$"
+          url_path_pattern: "/groups$"
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 200
@@ -937,14 +939,24 @@ api_budget:
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^groups/[^/]+$"
+          url_path_pattern: "/groups/[^/]+$"
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 400
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^projects/[^/]+$"
+          url_path_pattern: "/projects/[^/]+$"
+    # GET /groups/:id/projects: 600 requests/min. Highest-volume call from the
+    # paginated per-group project fetch; without its own policy it falls through
+    # to the catch-all and GitLab returns 429. Set under 600 for margin.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 550
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "/groups/[^/]+/projects$"
     # Catch-all authenticated API traffic: 2,000 requests/min
     - type: MovingWindowCallRatePolicy
       rates:
