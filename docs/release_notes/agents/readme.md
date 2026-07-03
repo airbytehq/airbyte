@@ -5,7 +5,6 @@
 Web app
 
 - You can now filter sessions by workspace on the Sessions page, making it easier to find sessions for a specific workspace.
-- BigQuery is now available as a destination for data replication.
 - Fixed an issue where workspace members on shared workspaces could not launch the connector setup experience.
 
 MCP
