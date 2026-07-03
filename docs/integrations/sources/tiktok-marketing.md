@@ -167,6 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0 | 2026-07-03 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Include Smart+ ads that were previously dropped due to missing `modify_time` cursor field |
 | 5.1.2 | 2026-06-30 | [81267](https://github.com/airbytehq/airbyte/pull/81267) | Update dependencies |
 | 5.1.1 | 2026-06-23 | [80705](https://github.com/airbytehq/airbyte/pull/80705) | Update dependencies |
 | 5.1.0 | 2026-06-18 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |

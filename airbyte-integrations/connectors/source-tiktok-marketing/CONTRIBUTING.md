@@ -74,16 +74,15 @@ rate limits are per-access-token.
 
 ---
 
-## 5. Smart+ Ads Missing modify_time Filter
+## 5. Smart+ Ads Without modify_time (Resolved)
 
-The `ads` stream includes a `RecordFilter` that drops records where `modify_time` is `None`. This is
-specifically to handle TikTok's Smart+ Ad records, which can be returned by the API without a
-`modify_time` value. Since the stream uses `modify_time` as its incremental cursor, records without
-this field would cause cursor comparison failures.
-
-**Why this matters:** This filter silently drops valid ad records from the sync output. If a user
-reports missing ads data, Smart+ ads without `modify_time` values are the likely cause. This is a known
-trade-off to maintain incremental sync reliability.
+TikTok's Smart+ Ad records can be returned by the API without a `modify_time` value. Previously, the
+`ads` stream included a `RecordFilter` that dropped these records because the CDK crashed on missing
+cursor fields. This was resolved by a CDK fix
+([airbytehq/airbyte-python-cdk#605](https://github.com/airbytehq/airbyte-python-cdk/pull/605)) — the
+CDK now handles missing cursor fields gracefully: records without the cursor field are always synced
+and do not advance the cursor state. The `RecordFilter` was removed and `modify_time` is now nullable
+in the ads schema, so Smart+ ads are included in syncs.
 
 ---
 
