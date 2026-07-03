@@ -1,5 +1,17 @@
 # Airbyte Agents release notes
 
+## July 2, 2026
+
+Web app
+
+- Workspace filter options on the Sessions page are now sorted alphabetically.
+- You can now click links in connector setup field descriptions to open external documentation.
+
+Connectors
+
+- You can now create, update, and delete contacts, companies, and conversations with the Intercom connector.
+- You can now access hourly and lifetime ad performance reports through the TikTok Marketing connector.
+
 ## July 1, 2026
 
 Web app
