@@ -23,6 +23,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 DATASET_PATH = "rest/3.1/analytics/dataset"
+DATASET_METADATA_PATH = "rest/3.1/analytics/Dataset"
 SCHEMA_PATH = "rest/3.1/Analytics/model"
 EXPORT_PREFIX = "export"
 DEFAULT_MODE = "Full"
@@ -194,7 +195,50 @@ class FlexibleDecoder(Decoder):
             )
 
         content_type = response.headers.get("Content-Type", "").lower()
-        self.logger.info("Response Content-Type: %s", content_type)
+        response_url = (response.url or "").lower()
+        self.logger.info("Response Content-Type: %s, URL: %s", content_type, response_url)
+
+        file_format = self._detect_format(content_type, response_url)
+        self.logger.info("Detected file format: %s", file_format)
+
+        if file_format == "PARQUET":
+            yield from self._decode_parquet(response)
+        elif file_format == "CSV":
+            yield from self._decode_csv(response)
+        else:
+            yield from self._decode_jsonl(response)
+
+    def _detect_format(self, content_type: str, url: str) -> str:
+        """Detect the response format from Content-Type header and URL."""
+        if ".parquet" in url or "application/parquet" in content_type or "application/x-parquet" in content_type:
+            return "PARQUET"
+        elif ".csv" in url or "text/csv" in content_type:
+            return "CSV"
+        return "JSONL"
+
+    def _decode_parquet(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        """Parquet is not supported in the manifest-only runtime environment."""
+        raise AirbyteTracedException(
+            message=(
+                "Received Parquet data but this format is not supported by the Airbyte connector. "
+                "Please configure the dataset export format to JSONL in Infor Nexus."
+            ),
+            failure_type=FailureType.config_error,
+        )
+
+    def _decode_csv(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        """CSV is not supported — configure the export to JSONL in Infor Nexus."""
+        raise AirbyteTracedException(
+            message=(
+                "Received CSV data but this format is not supported by the Airbyte connector. "
+                "Please configure the dataset export format to JSONL in Infor Nexus."
+            ),
+            failure_type=FailureType.config_error,
+        )
+
+    def _decode_jsonl(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        """Decode a JSONL (line-delimited JSON) response into records."""
+        content_type = response.headers.get("Content-Type", "").lower()
 
         is_jsonl = any(
             ct in content_type
@@ -211,7 +255,10 @@ class FlexibleDecoder(Decoder):
             self.logger.error("Unsupported or unrecognized Content-Type: %s. Cannot decode response.", content_type)
             raise ValueError(f"Unsupported or unrecognized Content-Type: {content_type}")
 
-        for line in response.content.decode("utf-8").splitlines():
+        # Use the encoding declared by the response if available, fall back to
+        # utf-8 with replacement to handle non-UTF-8 bytes (e.g. Latin-1 data).
+        encoding = response.encoding or "utf-8"
+        for line in response.content.decode(encoding, errors="replace").splitlines():
             if not line.strip():
                 continue
             try:
@@ -272,12 +319,55 @@ class DynamicSchemaLoader(SchemaLoader):
             querystring=parsed.query,
         )
 
+    def _resolve_model_name(self) -> str:
+        """
+        Resolve the model name from the dataset metadata API.
+
+        Calls GET <base_url>/rest/3.1/analytics/Dataset/<dataset_name> and extracts
+        the model name from the `modelName` field (format: "ModelName:Self").
+        """
+        dataset_name = self.config.get("dataset_name", "")
+        base_url = self.config.get("base_url", "").rstrip("/")
+        url = f"{base_url}/{DATASET_METADATA_PATH}/{dataset_name}"
+
+        self.logger.info("Resolving model name from dataset metadata: %s", url)
+
+        try:
+            headers = self._get_auth_headers(url)
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            raise AirbyteTracedException(
+                message=(
+                    f"Failed to resolve model name for dataset '{dataset_name}'. "
+                    f"Could not fetch dataset metadata from Infor Nexus. Error: {exc}"
+                ),
+                failure_type=FailureType.config_error,
+            ) from exc
+
+        response_json = response.json()
+        model_name_raw = response_json.get("modelName", "")
+
+        if not model_name_raw:
+            raise AirbyteTracedException(
+                message=(
+                    f"Dataset '{dataset_name}' metadata does not contain a 'modelName' field. "
+                    "Please verify the dataset exists and is properly configured in Infor Nexus."
+                ),
+                failure_type=FailureType.config_error,
+            )
+
+        # modelName format is "ModelName:Self" — take the left side.
+        model_name = model_name_raw.split(":")[0].strip()
+        self.logger.info("Resolved model name: %s (from raw: %s)", model_name, model_name_raw)
+        return model_name
+
     def get_json_schema(self) -> Mapping[str, Any]:
         # Return cached schema on subsequent calls — avoids redundant API requests.
         if self._schema_cache is not None:
             return self._schema_cache
 
-        dataset_model_name = self.config.get("dataset_model_name", "")
+        dataset_model_name = self._resolve_model_name()
         base_url = self.config.get("base_url", "").rstrip("/")
         url = f"{base_url}/{SCHEMA_PATH}/{dataset_model_name}/fetch"
 

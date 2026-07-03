@@ -55,7 +55,6 @@ spec:
       - secret_key
       - api_key
       - dataset_name
-      - dataset_model_name
     additionalProperties: true
     properties:
       base_url:
@@ -89,11 +88,6 @@ spec:
         type: string
         description: "The name of the dataset to export."
         order: 2
-      dataset_model_name:
-        title: "Dataset Model Name"
-        type: string
-        description: "The name of the dataset model to export."
-        order: 3
       mode:
         type: string
         title: Infor Streaming Mode
