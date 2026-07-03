@@ -226,6 +226,8 @@ class S3DataLakeUtil(
                 CatalogProperties.WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
                 AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId,
                 AwsClientProperties.CLIENT_REGION to region,
+                S3DataLakeGlueClientFactory.CLIENT_FACTORY_PROPERTY to
+                    S3DataLakeGlueClientFactory::class.java.name,
             )
 
         val roleArn = catalogConfig.awsArnRoleConfiguration.roleArn

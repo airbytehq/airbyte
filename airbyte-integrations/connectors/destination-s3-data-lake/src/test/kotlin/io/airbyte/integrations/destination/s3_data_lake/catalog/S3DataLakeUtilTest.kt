@@ -387,6 +387,17 @@ internal class S3DataLakeUtilTest {
     }
 
     @Test
+    fun `testGlueCatalogPropertiesIncludeCustomClientFactory`() {
+        val config = createGlueTestConfiguration(roleArn = null)
+        val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
+
+        Assertions.assertEquals(
+            S3DataLakeGlueClientFactory::class.java.name,
+            catalogProperties[S3DataLakeGlueClientFactory.CLIENT_FACTORY_PROPERTY]
+        )
+    }
+
+    @Test
     fun `testGlueCatalogPropertiesWithNullRoleArn`() {
         // Null role_arn should use key-based authentication
         val config = createGlueTestConfiguration(roleArn = null)
