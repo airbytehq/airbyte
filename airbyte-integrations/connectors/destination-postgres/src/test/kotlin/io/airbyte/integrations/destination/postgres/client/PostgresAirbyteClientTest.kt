@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.client
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
@@ -21,7 +22,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import io.airbyte.cdk.ConfigErrorException
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
