@@ -7,3 +7,7 @@ airbyte:
             input-example: "software.amazon.awssdk.services.glue.model.GlueException: Rate exceeded (Service: Glue, Status Code: 400)"
             error: transient
             output: "AWS API rate limit exceeded."
+  destination:
+    core:
+      types:
+        unions: DEFAULT
