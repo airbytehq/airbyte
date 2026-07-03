@@ -10,7 +10,7 @@ This version introduces a breaking change to the `users` stream schema.
 
 2. **`itblInternal` flattened to dotted keys**: The `itblInternal` field was previously declared as a nested object with sub-fields like `emailDomain`, `documentCreatedAt`, and `documentUpdatedAt`. The Iterable export API actually returns these as flat dotted keys (e.g. `itblInternal.emailDomain`, `itblInternal.documentCreatedAt`). The schema now correctly reflects this structure, and additionally includes `itblInternal.isUnknownUser`.
 
-3. **Removed `format: date-time`** from `signupDate` and `profileUpdatedAt`: The Iterable API returns these fields as space-separated timestamps (e.g. `2024-01-15 10:30:00 +0000`) which are not RFC 3339 compliant. The schema now declares them as plain strings.
+3. **Date fields updated**: `signupDate` and `profileUpdatedAt` now use `format: date-time` with `airbyte_type: timestamp_with_timezone` for proper downstream typing. The Iterable API returns these as space-separated timestamps (e.g. `2024-01-15 10:30:00 +0000`).
 
 4. **Added `itblUserId`**: Iterable's internal numeric user ID is now included in the schema.
 
