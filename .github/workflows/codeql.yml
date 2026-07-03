@@ -3,22 +3,8 @@ name: "CodeQL"
 on:
   push:
     branches: [master]
-    paths:
-      - "**.java"
-      - "**.kt"
-      - "**.kts"
-      - "**/build.gradle"
-      - "buildSrc/**"
-      - "settings.gradle"
   pull_request:
     branches: [master]
-    paths:
-      - "**.java"
-      - "**.kt"
-      - "**.kts"
-      - "**/build.gradle"
-      - "buildSrc/**"
-      - "settings.gradle"
   schedule:
     # Run weekly on Monday at 00:00 UTC
     - cron: "0 0 * * 1"
@@ -70,3 +56,26 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:java-kotlin"
+
+  analyze-actions:
+    name: Analyze GitHub Actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: actions
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:actions"
