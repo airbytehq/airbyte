@@ -1,5 +1,20 @@
 # Airbyte Agents release notes
 
+## July 1, 2026
+
+Web app
+
+- You can now filter sessions by workspace on the Sessions page, making it easier to find sessions for a specific workspace.
+- Fixed an issue where workspace members on shared workspaces could not launch the connector setup experience.
+
+MCP
+
+- If you belong to multiple organizations, you can now list and switch between them within an MCP session using the new `list_organizations` and `use_organization` tools.
+
+Connectors
+
+- The GitHub connector now automatically derives the repository owner and name from your configured repository paths, improving reliability when reading data across multiple repositories.
+
 ## June 29, 2026
 
 SDK
