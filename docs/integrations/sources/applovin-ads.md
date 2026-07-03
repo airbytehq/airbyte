@@ -47,6 +47,6 @@ The full set of documented columns is requested and typed in each stream's schem
 
 | Version | Date       | Pull Request | Subject         |
 | :------ | :--------- | :----------- | :-------------- |
-| 0.1.0   | 2026-06-29 |              | Initial release |
+| 0.1.0   | 2026-06-29 |      https://github.com/airbytehq/airbyte/pull/81418        | Initial release |
 
 </details>
