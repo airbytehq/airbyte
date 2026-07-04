@@ -33,6 +33,7 @@ data:
         message: >-
           Mercado Ads API breaking changes require updated stream schemas and sync paths across Brand Ads (August 2025), Product Ads (September 2025), and Display Ads endpoints. Affected users should refresh source schemas and clear data for impacted streams before upgrading. See the [Mercado Ads Migration Guide](https://docs.airbyte.com/integrations/sources/mercado-ads-migrations) for details. This release also adds the `display_creatives_metrics` stream.
         upgradeDeadline: "2026-10-15"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
