@@ -1,5 +1,8 @@
 # Mercado Ads
-Get ad analytics from all Mercado Ads placements
+
+Get ad analytics from all Mercado Ads placements. Follow [this guide](https://developers.mercadolibre.com.ar/en_us/authentication-and-authorization) to get the OAuth credentials.
+
+Make sure to give the ["Publicidad de un producto"](https://developers.mercadolibre.com.ar/es_ar/permisos-funcionales?nocache=true&password=permisos#Publicidad) read permission to fetch ad data.
 
 ## Configuration
 
@@ -27,6 +30,7 @@ Get ad analytics from all Mercado Ads placements
 | display_line_items | advertiser_id.campaign_id.line_item_id | No pagination | ✅ |  ❌  |
 | display_line_items_metrics | date.advertiser_id.campaign_id.line_item_id | No pagination | ✅ |  ✅  |
 | display_creatives | advertiser_id.campaign_id.line_item_id | No pagination | ✅ |  ❌  |
+| display_creatives_metrics | date.advertiser_id.campaign_id.line_item_id | No pagination | ✅ |  ✅  |
 | product_advertisers | advertiser_id | No pagination | ✅ |  ❌  |
 | product_campaigns | advertiser_id.campaign_id | DefaultPaginator | ✅ |  ❌  |
 | product_campaigns_metrics | date.advertiser_id.campaign_id | DefaultPaginator | ✅ |  ✅  |
@@ -44,6 +48,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-07-04 | | Update connector for Mercado Ads API breaking changes across Brand, Product, and Display Ads. Adds `display_creatives_metrics`. See [migration guide](mercado-ads-migrations.md). |
 | 0.0.34 | 2026-06-30 | [81144](https://github.com/airbytehq/airbyte/pull/81144) | Update dependencies |
 | 0.0.33 | 2026-06-23 | [80537](https://github.com/airbytehq/airbyte/pull/80537) | Update dependencies |
 | 0.0.32 | 2026-06-16 | [79954](https://github.com/airbytehq/airbyte/pull/79954) | Update dependencies |

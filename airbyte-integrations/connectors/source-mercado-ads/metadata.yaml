@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ada19dae-81e5-4241-8e64-a9b2680b1b35
-  dockerImageTag: 0.0.34
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-mercado-ads
   githubIssueLabel: source-mercado-ads
   icon: icon.svg
@@ -25,6 +25,31 @@ data:
   name: Mercado Ads
   releaseDate: 2025-05-26
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Mercado Ads API breaking changes require updated stream schemas and sync paths across Brand Ads (August 2025), Product Ads (September 2025), and Display Ads endpoints. Affected users should refresh source schemas and clear data for impacted streams before upgrading. See the [Mercado Ads Migration Guide](https://docs.airbyte.com/integrations/sources/mercado-ads-migrations) for details. This release also adds the `display_creatives_metrics` stream.
+        upgradeDeadline: "2026-10-15"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - brand_campaigns
+              - brand_campaigns_metrics
+              - brand_items
+              - brand_keywords
+              - brand_keywords_metrics
+              - display_campaigns
+              - display_campaigns_metrics
+              - display_line_items
+              - display_line_items_metrics
+              - display_creatives
+              - product_campaigns
+              - product_campaigns_metrics
+              - product_items
+              - product_items_metrics
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/mercado-ads
   tags:

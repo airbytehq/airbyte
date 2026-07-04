@@ -1,1260 +1,2867 @@
-version: 6.41.5
+version: 7.0.4
 
 type: DeclarativeSource
 
-description: Get ad analytics from all Mercado Ads placements
+description: >-
+  Get ad analytics from all Mercado Ads placements. Follow [this
+  guide](https://developers.mercadolibre.com.ar/en_us/authentication-and-authorization)
+  to get the OAuth credentials. Make sure to give the ["Publicidad de un
+  producto"](https://developers.mercadolibre.com.ar/es_ar/permisos-funcionales?nocache=true&password=permisos#Publicidad)
+  read permission to fetch ad data.
 
 check:
   type: CheckStream
-  stream_names:
-    - brand_advertisers
-    - display_advertisers
-    - product_advertisers
+  stream_names: []
 
 definitions:
-  streams:
-    brand_advertisers:
-      type: DeclarativeStream
-      name: brand_advertisers
-      primary_key:
-        - advertiser_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /advertising/advertisers
-          http_method: GET
-          request_parameters:
-            product_id: BADS
-          request_headers:
-            Api-Version: "1"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - advertisers
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/brand_advertisers"
-    brand_campaigns:
-      type: DeclarativeStream
-      name: brand_campaigns
-      primary_key:
-        - advertiser_id
-        - campaign_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{ stream_partition.advertiser_id
-            }}/brand_ads/campaigns
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - campaigns
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_id
-              partition_field: advertiser_id
-              stream:
-                $ref: "#/definitions/streams/brand_advertisers"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_campaign_id
-              value: "{{ record[\"advertiser_id\"] }}-{{ record[\"campaign_id\"] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/brand_campaigns"
-    brand_campaigns_metrics:
-      type: DeclarativeStream
-      name: brand_campaigns_metrics
-      primary_key:
-        - date
-        - advertiser_id
-        - campaign_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_id.split("-")[0]
-            }}/brand_ads/campaigns/{{
-            stream_partition.advertiser_campaign_id.split("-")[1] }}/metrics
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign metrics
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - metrics
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['prints'] > 0 }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_id
-              partition_field: advertiser_campaign_id
-              stream:
-                $ref: "#/definitions/streams/brand_campaigns"
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: date
-        lookback_window: P{{ config['lookback_days'] }}D
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ ( ( (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) <
-            (str_to_datetime(config['end_date']) - duration('P89D')) else
-            config['start_date'] ) if config['start_date'] else
-            (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else
-            ( ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) < (now_utc() -
-            duration('P89D')) else config['start_date'] ) if
-            config['start_date'] else (now_utc() -
-            duration('P89D')).strftime('%Y-%m-%d') ) }}
-          datetime_format: "%Y-%m-%d"
-        start_time_option:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: OAuthAuthenticator
+        scopes: []
+        client_id: '{{ config["client_id"] }}'
+        grant_type: refresh_token
+        client_secret: '{{ config["client_secret"] }}'
+        refresh_token: '{{ config["client_refresh_token"] }}'
+        access_token_value: A
+        refresh_request_body: {}
+        token_refresh_endpoint: https://api.mercadolibre.com/oauth/token
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: No campaigns found for advertiser
+      request_headers:
+        Api-Version: "1"
+      request_parameters:
+        product_id: DISPLAY
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
           type: RequestOption
-          field_name: date_from
+          field_name: limit
           inject_into: request_parameter
-        end_time_option:
+        page_token_option:
           type: RequestOption
-          field_name: date_to
+          field_name: offset
           inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[0] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[1] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/brand_campaigns_metrics"
-    brand_items:
-      type: DeclarativeStream
-      name: brand_items
-      primary_key:
-        - advertiser_id
-        - campaign_id
-        - item_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_id.split("-")[0]
-            }}/brand_ads/campaigns/{{
-            stream_partition.advertiser_campaign_id.split("-")[1] }}/items
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign items
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_id
-              partition_field: advertiser_campaign_id
-              stream:
-                $ref: "#/definitions/streams/brand_campaigns"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[0] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/brand_items"
-    brand_keywords:
-      type: DeclarativeStream
-      name: brand_keywords
-      primary_key:
-        - advertiser_id
-        - campaign_id
-        - term
-        - match_type
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_id.split("-")[0]
-            }}/brand_ads/campaigns/{{
-            stream_partition.advertiser_campaign_id.split("-")[1] }}/keywords
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign keyword
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_id
-              partition_field: advertiser_campaign_id
-              stream:
-                $ref: "#/definitions/streams/brand_campaigns"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[0] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/brand_keywords"
-    brand_keywords_metrics:
-      type: DeclarativeStream
-      name: brand_keywords_metrics
-      primary_key:
-        - date
-        - advertiser_id
-        - campaign_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_id.split("-")[0]
-            }}/brand_ads/campaigns/{{
-            stream_partition.advertiser_campaign_id.split("-")[1]
-            }}//keywords/metrics
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Advertiser has no access to campaign keyword metrics
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - metrics
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['keywords'] }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_id
-              partition_field: advertiser_campaign_id
-              stream:
-                $ref: "#/definitions/streams/brand_campaigns"
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: date
-        lookback_window: P{{ config['lookback_days'] }}D
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ ( ( (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) <
-            (str_to_datetime(config['end_date']) - duration('P89D')) else
-            config['start_date'] ) if config['start_date'] else
-            (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else
-            ( ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) < (now_utc() -
-            duration('P89D')) else config['start_date'] ) if
-            config['start_date'] else (now_utc() -
-            duration('P89D')).strftime('%Y-%m-%d') ) }}
-          datetime_format: "%Y-%m-%d"
-        start_time_option:
-          type: RequestOption
-          field_name: date_from
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_to
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[0] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[1] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/brand_keywords_metrics"
-    display_advertisers:
-      type: DeclarativeStream
-      name: display_advertisers
-      primary_key:
-        - advertiser_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /advertising/advertisers
-          http_method: GET
-          request_parameters:
-            product_id: DISPLAY
-          request_headers:
-            Api-Version: "1"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - advertisers
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/display_advertisers"
-    display_campaigns:
-      type: DeclarativeStream
-      name: display_campaigns
-      primary_key:
-        - advertiser_id
-        - campaign_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{ stream_partition.advertiser_id
-            }}/display/campaigns
-          http_method: GET
-          request_headers:
-            Api-Version: "1"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No campaigns found for advertiser
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_id
-              partition_field: advertiser_id
-              stream:
-                $ref: "#/definitions/streams/display_advertisers"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_campaign_id
-              value: "{{ record[\"advertiser_id\"] }}-{{ record[\"id\"] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ record[\"id\"] }}"
-        - type: RemoveFields
-          field_pointers:
-            - - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/display_campaigns"
-    display_campaigns_metrics:
-      type: DeclarativeStream
-      name: display_campaigns_metrics
-      primary_key:
-        - date
-        - advertiser_id
-        - campaign_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_id.split("-")[0]
-            }}/display/campaigns/{{
-            stream_partition.advertiser_campaign_id.split("-")[1] }}/metrics
-          http_method: GET
-          request_headers:
-            Api-Version: "1"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - metrics
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['prints'] > 0 }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_id
-              partition_field: advertiser_campaign_id
-              stream:
-                $ref: "#/definitions/streams/display_campaigns"
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: date
-        lookback_window: P{{ config['lookback_days'] }}D
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ ( ( (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) <
-            (str_to_datetime(config['end_date']) - duration('P89D')) else
-            config['start_date'] ) if config['start_date'] else
-            (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else
-            ( ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) < (now_utc() -
-            duration('P89D')) else config['start_date'] ) if
-            config['start_date'] else (now_utc() -
-            duration('P89D')).strftime('%Y-%m-%d') ) }}
-          datetime_format: "%Y-%m-%d"
-        start_time_option:
-          type: RequestOption
-          field_name: date_from
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_to
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[0] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[1] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/display_campaigns_metrics"
-    display_line_items:
-      type: DeclarativeStream
-      name: display_line_items
-      primary_key:
-        - advertiser_id
-        - campaign_id
-        - line_item_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_id.split("-")[0]
-            }}/display/campaigns/{{
-            stream_partition.advertiser_campaign_id.split("-")[1] }}/line_items
-          http_method: GET
-          request_headers:
-            Api-Version: "1"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No line items found for campaign
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_id
-              partition_field: advertiser_campaign_id
-              stream:
-                $ref: "#/definitions/streams/display_campaigns"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[0] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[1] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_campaign_line_item_id
-              value: >-
-                {{ record["advertiser_id"] }}-{{ record["campaign_id"] }}-{{
-                record["line_item_id"] }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/display_line_items"
-    display_line_items_metrics:
-      type: DeclarativeStream
-      name: display_line_items_metrics
-      primary_key:
-        - date
-        - advertiser_id
-        - campaign_id
-        - line_item_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_line_item_id.split("-")[0]
-            }}/display/metrics
-          http_method: GET
-          request_parameters:
-            ids: >-
-              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[2]
-              }}
-            dimension: line_items
-            campaign_id: >-
-              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[1]
-              }}
-          request_headers:
-            Api-Version: "1"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - metrics
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['prints'] > 0 }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_line_item_id
-              partition_field: advertiser_campaign_line_item_id
-              stream:
-                $ref: "#/definitions/streams/display_line_items"
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: date
-        lookback_window: P{{ config['lookback_days'] }}D
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ ( ( (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) <
-            (str_to_datetime(config['end_date']) - duration('P89D')) else
-            config['start_date'] ) if config['start_date'] else
-            (str_to_datetime(config['end_date']) -
-            duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else
-            ( ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
-            str_to_datetime(config['start_date']) < (now_utc() -
-            duration('P89D')) else config['start_date'] ) if
-            config['start_date'] else (now_utc() -
-            duration('P89D')).strftime('%Y-%m-%d') ) }}
-          datetime_format: "%Y-%m-%d"
-        start_time_option:
-          type: RequestOption
-          field_name: date_from
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_to
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: >-
-                {{
-                stream_partition.advertiser_campaign_line_item_id.split("-")[0]
-                }}
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: >-
-                {{
-                stream_partition.advertiser_campaign_line_item_id.split("-")[1]
-                }}
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - line_item_id
-              value: >-
-                {{
-                stream_partition.advertiser_campaign_line_item_id.split("-")[2]
-                }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/display_line_items_metrics"
-    display_creatives:
-      type: DeclarativeStream
-      name: display_creatives
-      primary_key:
-        - advertiser_id
-        - campaign_id
-        - line_item_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{
-            stream_partition.advertiser_campaign_line_item_id.split("-")[0]
-            }}/display/campaigns/{{
-            stream_partition.advertiser_campaign_line_item_id.split("-")[1]
-            }}/line_items/{{
-            stream_partition.advertiser_campaign_line_item_id.split("-")[2]
-            }}/creatives
-          http_method: GET
-          request_headers:
-            Api-Version: "1"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No creatives found for line_item
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_line_item_id
-              partition_field: advertiser_campaign_line_item_id
-              stream:
-                $ref: "#/definitions/streams/display_line_items"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: >-
-                {{
-                stream_partition.advertiser_campaign_line_item_id.split("-")[0]
-                }}
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_campaign_line_item_creative_id
-              value: >-
-                {{
-                stream_partition.advertiser_campaign_line_item_id.split("-")[0]
-                }}-{{ record["campaign_id"] }}-{{ record["line_item_id"] }}-{{
-                record["creative_id"] }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/display_creatives"
-    product_advertisers:
-      type: DeclarativeStream
-      name: product_advertisers
-      primary_key:
-        - advertiser_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /advertising/advertisers
-          http_method: GET
-          request_parameters:
-            product_id: PADS
-          request_headers:
-            Api-Version: "1"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - advertisers
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/product_advertisers"
-    product_campaigns:
-      type: DeclarativeStream
-      name: product_campaigns
-      primary_key:
-        - advertiser_id
-        - campaign_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{ stream_partition.advertiser_id
-            }}/product_ads/campaigns
-          http_method: GET
-          request_headers:
-            api-version: "2"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No campaigns found for advertiser
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_id
-              partition_field: advertiser_id
-              stream:
-                $ref: "#/definitions/streams/product_advertisers"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_campaign_id
-              value: "{{ record[\"advertiser_id\"] }}-{{ record[\"id\"] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ record[\"id\"] }}"
-        - type: RemoveFields
-          field_pointers:
-            - - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/product_campaigns"
-    product_campaigns_metrics:
-      type: DeclarativeStream
-      name: product_campaigns_metrics
-      primary_key:
-        - date
-        - advertiser_id
-        - campaign_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/product_ads/campaigns/{{
-            stream_partition.advertiser_campaign_id.split("-")[1] }}
-          http_method: GET
-          request_parameters:
-            metrics: >-
-              clicks,prints,ctr,cost,cpc,acos,organic_units_quantity,organic_units_amount,organic_items_quantity,direct_items_quantity,indirect_items_quantity,advertising_items_quantity,cvr,roas,sov,direct_units_quantity,indirect_units_quantity,units_quantity,direct_amount,indirect_amount,total_amount
-            aggregation_type: DAILY
-          request_headers:
-            api-version: "2"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['prints'] > 0 }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_id
-              partition_field: advertiser_campaign_id
-              stream:
-                $ref: "#/definitions/streams/product_campaigns"
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: date
-        lookback_window: P{{ config['lookback_days'] }}D
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ (day_delta(-89, format='%Y-%m-%d') if config['start_date'] <
-            day_delta(-89, format='%Y-%m-%d') else config['start_date']) if
-            config['start_date'] else day_delta(-89, format='%Y-%m-%d') }}
-          datetime_format: "%Y-%m-%d"
-        start_time_option:
-          type: RequestOption
-          field_name: date_from
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_to
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[0] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[1] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/product_campaigns_metrics"
-    product_items:
-      type: DeclarativeStream
-      name: product_items
-      primary_key:
-        - advertiser_id
-        - campaign_id
-        - item_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/advertisers/{{ stream_partition.advertiser_id
-            }}/product_ads/items
-          http_method: GET
-          request_parameters:
-            filters[statuses]: active,paused,hold,idle,delegated
-          request_headers:
-            api-version: "2"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: No items found for campaign
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_id
-              partition_field: advertiser_id
-              stream:
-                $ref: "#/definitions/streams/product_advertisers"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_campaign_item_id
-              value: >-
-                {{ record["advertiser_id"] }}-{{ record["campaign_id"] }}-{{
-                record["item_id"] }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/product_items"
-    product_items_metrics:
-      type: DeclarativeStream
-      name: product_items_metrics
-      primary_key:
-        - date
-        - advertiser_id
-        - campaign_id
-        - item_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            /advertising/product_ads/items/{{
-            stream_partition.advertiser_campaign_item_id.split("-")[2] }}
-          http_method: GET
-          request_parameters:
-            metrics: >-
-              clicks,prints,ctr,cost,cpc,acos,organic_units_quantity,organic_units_amount,organic_items_quantity,direct_items_quantity,indirect_items_quantity,advertising_items_quantity,cvr,roas,sov,direct_units_quantity,indirect_units_quantity,units_quantity,direct_amount,indirect_amount,total_amount
-            aggregation_type: DAILY
-          request_headers:
-            api-version: "2"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['prints'] > 0 }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: advertiser_campaign_item_id
-              partition_field: advertiser_campaign_item_id
-              stream:
-                $ref: "#/definitions/streams/product_items"
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: date
-        lookback_window: P{{ config['lookback_days'] }}D
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ (day_delta(-89, format='%Y-%m-%d') if config['start_date'] <
-            day_delta(-89, format='%Y-%m-%d') else config['start_date']) if
-            config['start_date'] else day_delta(-89, format='%Y-%m-%d') }}
-          datetime_format: "%Y-%m-%d"
-        start_time_option:
-          type: RequestOption
-          field_name: date_from
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: date_to
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - advertiser_id
-              value: "{{ stream_partition.advertiser_campaign_item_id.split(\"-\")[0] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - campaign_id
-              value: "{{ stream_partition.advertiser_campaign_item_id.split(\"-\")[1] }}"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - item_id
-              value: "{{ stream_partition.advertiser_campaign_item_id.split(\"-\")[2] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/product_items_metrics"
-  base_requester:
-    type: HttpRequester
-    url_base: https://api.mercadolibre.com
-    authenticator:
-      type: OAuthAuthenticator
-      scopes:
-        - offline_access
-        - read
-      client_id: "{{ config[\"client_id\"] }}"
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token\"] }}"
-      refresh_request_body: {}
-      token_refresh_endpoint: https://api.mercadolibre.com/oauth/token
-      grant_type: refresh_token
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1000
 
 streams:
-  - $ref: "#/definitions/streams/brand_advertisers"
-  - $ref: "#/definitions/streams/brand_campaigns"
-  - $ref: "#/definitions/streams/brand_campaigns_metrics"
-  - $ref: "#/definitions/streams/brand_items"
-  - $ref: "#/definitions/streams/brand_keywords"
-  - $ref: "#/definitions/streams/brand_keywords_metrics"
-  - $ref: "#/definitions/streams/display_advertisers"
-  - $ref: "#/definitions/streams/display_campaigns"
-  - $ref: "#/definitions/streams/display_campaigns_metrics"
-  - $ref: "#/definitions/streams/display_line_items"
-  - $ref: "#/definitions/streams/display_line_items_metrics"
-  - $ref: "#/definitions/streams/display_creatives"
-  - $ref: "#/definitions/streams/product_advertisers"
-  - $ref: "#/definitions/streams/product_campaigns"
-  - $ref: "#/definitions/streams/product_campaigns_metrics"
-  - $ref: "#/definitions/streams/product_items"
-  - $ref: "#/definitions/streams/product_items_metrics"
+  - type: DeclarativeStream
+    name: brand_advertisers
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api.mercadolibre.com/advertising/advertisers
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes: []
+          client_id: '{{ config["client_id"] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["client_refresh_token"] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.mercadolibre.com/oauth/token
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          product_id: BADS
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - advertisers
+    primary_key:
+      - advertiser_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+        properties:
+          site_id:
+            type:
+              - string
+              - "null"
+          account_name:
+            type:
+              - string
+              - "null"
+          advertiser_id:
+            type: number
+          advertiser_name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: brand_campaigns
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1000
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_id }}/brand_ads/campaigns
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - campaigns
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/0"
+            parent_key: advertiser_id
+            partition_field: advertiser_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+        properties:
+          cpc:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                status:
+                  type:
+                    - string
+                    - "null"
+                item_id:
+                  type:
+                    - string
+                    - "null"
+                campaign_id:
+                  type:
+                    - number
+                    - "null"
+          budget:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          status:
+            type:
+              - string
+              - "null"
+          site_id:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          headline:
+            type:
+              - string
+              - "null"
+          keywords:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                cpc:
+                  type:
+                    - number
+                    - "null"
+                term:
+                  type:
+                    - string
+                    - "null"
+                match_type:
+                  type:
+                    - string
+                    - "null"
+                campaign_id:
+                  type:
+                    - number
+                    - "null"
+                is_negative:
+                  type:
+                    - boolean
+                    - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          campaign_id:
+            type: number
+          advertiser_id:
+            type: number
+          campaign_type:
+            type:
+              - string
+              - "null"
+          destination_id:
+            type:
+              - number
+              - "null"
+          moderation_status:
+            type:
+              - string
+              - "null"
+          official_store_id:
+            type:
+              - number
+              - "null"
+          advertiser_campaign_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_campaign_id
+            value: '{{ record["advertiser_id"] }}-{{ record["campaign_id"] }}'
+  - type: DeclarativeStream
+    name: brand_campaigns_metrics
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1000
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_id.split("-")[0]
+          }}/brand_ads/campaigns/{{
+          stream_partition.advertiser_campaign_id.split("-")[1] }}/metrics
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 401
+                  error_message: Advertiser has no access to campaign metrics
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - metrics
+            - "*"
+            - metrics
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['prints'] > 0 }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/1"
+            parent_key: advertiser_campaign_id
+            partition_field: advertiser_campaign_id
+    primary_key:
+      - date
+      - advertiser_id
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - advertiser_id
+          - campaign_id
+        properties:
+          ctr:
+            type:
+              - number
+              - "null"
+          cvr:
+            type:
+              - number
+              - "null"
+          acos:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          leads:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          prints:
+            type:
+              - number
+              - "null"
+          campaign_id:
+            type: number
+          advertiser_id:
+            type: number
+          consumed_budget:
+            type:
+              - number
+              - "null"
+          cost_per_clicks:
+            type:
+              - number
+              - "null"
+          attribution_order_amount:
+            type:
+              - number
+              - "null"
+          attribution_order_conversions:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[0] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[1] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval['start_time'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ ( ( (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) <
+          (str_to_datetime(config['end_date']) - duration('P89D')) else
+          config['start_date'] ) if config['start_date'] else
+          (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else (
+          ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) < (now_utc() - duration('P89D'))
+          else config['start_date'] ) if config['start_date'] else (now_utc() -
+          duration('P89D')).strftime('%Y-%m-%d') ) }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: date_to
+        inject_into: request_parameter
+      lookback_window: P{{ config['lookback_days'] or 7 }}D
+      start_time_option:
+        type: RequestOption
+        field_name: date_from
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: brand_items
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_id.split("-")[0]
+          }}/brand_ads/campaigns/{{
+          stream_partition.advertiser_campaign_id.split("-")[1] }}/items
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 401
+                  error_message: Advertiser has no access to campaign items
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/1"
+            parent_key: advertiser_campaign_id
+            partition_field: advertiser_campaign_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+      - item_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+          - item_id
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+          item_id:
+            type: string
+          campaign_id:
+            type: number
+          advertiser_id:
+            type: number
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[0] }}'
+  - type: DeclarativeStream
+    name: brand_keywords
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 250
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_id.split("-")[0]
+          }}/brand_ads/campaigns/{{
+          stream_partition.advertiser_campaign_id.split("-")[1] }}/keywords
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 401
+                  error_message: Advertiser has no access to campaign keyword
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - content
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/1"
+            parent_key: advertiser_campaign_id
+            partition_field: advertiser_campaign_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+      - match_value
+      - match_type
+      - type
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+          - match_value
+          - match_type
+          - type
+        properties:
+          type:
+            type: string
+          match_type:
+            type: string
+          campaign_id:
+            type: number
+          match_value:
+            type: string
+          advertiser_id:
+            type: number
+          goal_cpc_value:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[0] }}'
+  - type: DeclarativeStream
+    name: brand_keywords_metrics
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 250
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_id.split("-")[0]
+          }}/brand_ads/campaigns/{{
+          stream_partition.advertiser_campaign_id.split("-")[1]
+          }}/keywords/metrics
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 401
+                  error_message: Advertiser has no access to campaign keyword metrics
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - metrics
+            - "*"
+            - metrics
+            - "*"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['prints'] > 0 }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/1"
+            parent_key: advertiser_campaign_id
+            partition_field: advertiser_campaign_id
+    primary_key:
+      - date
+      - advertiser_id
+      - campaign_id
+      - keyword
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - advertiser_id
+          - campaign_id
+          - keyword
+        properties:
+          ctr:
+            type:
+              - number
+              - "null"
+          cvr:
+            type:
+              - number
+              - "null"
+          acos:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          leads:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          prints:
+            type:
+              - number
+              - "null"
+          keyword:
+            type: string
+          is_deleted:
+            type:
+              - boolean
+              - "null"
+          campaign_id:
+            type: number
+          goal_cpc_max:
+            type:
+              - number
+              - "null"
+          advertiser_id:
+            type: number
+          consumed_budget:
+            type:
+              - number
+              - "null"
+          cost_per_clicks:
+            type:
+              - number
+              - "null"
+          attribution_order_amount:
+            type:
+              - number
+              - "null"
+          attribution_order_conversions:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[0] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[1] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval['start_time'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ ( ( (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) <
+          (str_to_datetime(config['end_date']) - duration('P89D')) else
+          config['start_date'] ) if config['start_date'] else
+          (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else (
+          ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) < (now_utc() - duration('P89D'))
+          else config['start_date'] ) if config['start_date'] else (now_utc() -
+          duration('P89D')).strftime('%Y-%m-%d') ) }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: date_to
+        inject_into: request_parameter
+      lookback_window: P{{ config['lookback_days'] or 7 }}D
+      start_time_option:
+        type: RequestOption
+        field_name: date_from
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: display_advertisers
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api.mercadolibre.com/advertising/advertisers
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes: []
+          client_id: '{{ config["client_id"] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["client_refresh_token"] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.mercadolibre.com/oauth/token
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          $ref: "#/definitions/linked/HttpRequester/request_parameters"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - advertisers
+    primary_key:
+      - advertiser_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+        properties:
+          site_id:
+            type:
+              - string
+              - "null"
+          account_name:
+            type:
+              - string
+              - "null"
+          advertiser_id:
+            type: number
+          advertiser_name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: display_campaigns
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_id }}/display/campaigns
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/6"
+            parent_key: advertiser_id
+            partition_field: advertiser_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          goal:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          site_id:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          campaign_id:
+            type: number
+          advertiser_id:
+            type: number
+          advertiser_campaign_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_campaign_id
+            value: '{{ record["advertiser_id"] }}-{{ record["id"] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ record["id"] }}'
+      - type: RemoveFields
+        field_pointers:
+          - - id
+  - type: DeclarativeStream
+    name: display_campaigns_metrics
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_id.split("-")[0]
+          }}/display/campaigns/{{
+          stream_partition.advertiser_campaign_id.split("-")[1] }}/metrics
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: No metrics found
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - metrics
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['prints'] > 0 }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/7"
+            parent_key: advertiser_campaign_id
+            partition_field: advertiser_campaign_id
+    primary_key:
+      - date
+      - advertiser_id
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - advertiser_id
+          - campaign_id
+        properties:
+          cpc:
+            type:
+              - number
+              - "null"
+          cpm:
+            type:
+              - number
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          reach:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          prints:
+            type:
+              - number
+              - "null"
+          site_id:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          event_time:
+            type:
+              - object
+              - "null"
+            properties:
+              cpl:
+                type:
+                  - number
+                  - "null"
+              roas:
+                type:
+                  - number
+                  - "null"
+              cpa_ppv:
+                type:
+                  - number
+                  - "null"
+              cpa_order:
+                type:
+                  - number
+                  - "null"
+              direct_amount:
+                type:
+                  - number
+                  - "null"
+              units_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_ppv:
+                type:
+                  - number
+                  - "null"
+              attribution_leads:
+                type:
+                  - number
+                  - "null"
+              attribution_bookmark:
+                type:
+                  - number
+                  - "null"
+              attribution_checkout:
+                type:
+                  - number
+                  - "null"
+              direct_item_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_add_to_cart:
+                type:
+                  - number
+                  - "null"
+          campaign_id:
+            type: number
+          touch_point:
+            type:
+              - object
+              - "null"
+            properties:
+              cpl:
+                type:
+                  - number
+                  - "null"
+              roas:
+                type:
+                  - number
+                  - "null"
+              cpa_ppv:
+                type:
+                  - number
+                  - "null"
+              cpa_order:
+                type:
+                  - number
+                  - "null"
+              direct_amount:
+                type:
+                  - number
+                  - "null"
+              units_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_ppv:
+                type:
+                  - number
+                  - "null"
+              attribution_leads:
+                type:
+                  - number
+                  - "null"
+              attribution_bookmark:
+                type:
+                  - number
+                  - "null"
+              attribution_checkout:
+                type:
+                  - number
+                  - "null"
+              direct_item_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_add_to_cart:
+                type:
+                  - number
+                  - "null"
+          active_views:
+            type:
+              - number
+              - "null"
+          advertiser_id:
+            type: number
+          completed_views:
+            type:
+              - number
+              - "null"
+          consumed_budget:
+            type:
+              - number
+              - "null"
+          average_frequency:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[0] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[1] }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ ( ( (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) <
+          (str_to_datetime(config['end_date']) - duration('P89D')) else
+          config['start_date'] ) if config['start_date'] else
+          (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else (
+          ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) < (now_utc() - duration('P89D'))
+          else config['start_date'] ) if config['start_date'] else (now_utc() -
+          duration('P89D')).strftime('%Y-%m-%d') ) }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: date_to
+        inject_into: request_parameter
+      lookback_window: P{{ config['lookback_days'] or 7 }}D
+      start_time_option:
+        type: RequestOption
+        field_name: date_from
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: display_line_items
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_id.split("-")[0]
+          }}/display/campaigns/{{
+          stream_partition.advertiser_campaign_id.split("-")[1] }}/line_items
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: No line items found for campaign
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/7"
+            parent_key: advertiser_campaign_id
+            partition_field: advertiser_campaign_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+      - line_item_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+          - line_item_id
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          campaign_id:
+            type: number
+          line_item_id:
+            type: number
+          advertiser_id:
+            type: number
+          advertiser_campaign_line_item_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[0] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ stream_partition.advertiser_campaign_id.split("-")[1] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_campaign_line_item_id
+            value: >-
+              {{ record["advertiser_id"] }}-{{ record["campaign_id"] }}-{{
+              record["line_item_id"] }}
+  - type: DeclarativeStream
+    name: display_line_items_metrics
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_line_item_id.split("-")[0]
+          }}/display/metrics
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: No metrics found
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          ids: >-
+            {{ stream_partition.advertiser_campaign_line_item_id.split("-")[2]
+            }}
+          dimension: line_items
+          campaign_id: >-
+            {{ stream_partition.advertiser_campaign_line_item_id.split("-")[1]
+            }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - metrics
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['prints'] > 0 }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/9"
+            parent_key: advertiser_campaign_line_item_id
+            partition_field: advertiser_campaign_line_item_id
+    primary_key:
+      - date
+      - advertiser_id
+      - campaign_id
+      - line_item_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - advertiser_id
+          - campaign_id
+          - line_item_id
+        properties:
+          cpc:
+            type:
+              - number
+              - "null"
+          cpm:
+            type:
+              - number
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          reach:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          prints:
+            type:
+              - number
+              - "null"
+          site_id:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          event_time:
+            type:
+              - object
+              - "null"
+            properties:
+              cpl:
+                type:
+                  - number
+                  - "null"
+              roas:
+                type:
+                  - number
+                  - "null"
+              cpa_ppv:
+                type:
+                  - number
+                  - "null"
+              cpa_order:
+                type:
+                  - number
+                  - "null"
+              direct_amount:
+                type:
+                  - number
+                  - "null"
+              units_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_ppv:
+                type:
+                  - number
+                  - "null"
+              attribution_leads:
+                type:
+                  - number
+                  - "null"
+              attribution_bookmark:
+                type:
+                  - number
+                  - "null"
+              attribution_checkout:
+                type:
+                  - number
+                  - "null"
+              direct_item_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_add_to_cart:
+                type:
+                  - number
+                  - "null"
+          campaign_id:
+            type: number
+          touch_point:
+            type:
+              - object
+              - "null"
+            properties:
+              cpl:
+                type:
+                  - number
+                  - "null"
+              roas:
+                type:
+                  - number
+                  - "null"
+              cpa_ppv:
+                type:
+                  - number
+                  - "null"
+              cpa_order:
+                type:
+                  - number
+                  - "null"
+              direct_amount:
+                type:
+                  - number
+                  - "null"
+              units_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_ppv:
+                type:
+                  - number
+                  - "null"
+              attribution_leads:
+                type:
+                  - number
+                  - "null"
+              attribution_bookmark:
+                type:
+                  - number
+                  - "null"
+              attribution_checkout:
+                type:
+                  - number
+                  - "null"
+              direct_item_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_add_to_cart:
+                type:
+                  - number
+                  - "null"
+          active_views:
+            type:
+              - number
+              - "null"
+          line_item_id:
+            type: number
+          advertiser_id:
+            type: number
+          completed_views:
+            type:
+              - number
+              - "null"
+          consumed_budget:
+            type:
+              - number
+              - "null"
+          average_frequency:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: >-
+              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[0]
+              }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: >-
+              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[1]
+              }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - line_item_id
+            value: >-
+              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[2]
+              }}
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ ( ( (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) <
+          (str_to_datetime(config['end_date']) - duration('P89D')) else
+          config['start_date'] ) if config['start_date'] else
+          (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else (
+          ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) < (now_utc() - duration('P89D'))
+          else config['start_date'] ) if config['start_date'] else (now_utc() -
+          duration('P89D')).strftime('%Y-%m-%d') ) }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: date_to
+        inject_into: request_parameter
+      lookback_window: P{{ config['lookback_days'] or 7 }}D
+      start_time_option:
+        type: RequestOption
+        field_name: date_from
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: display_creatives
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_line_item_id.split("-")[0]
+          }}/display/campaigns/{{
+          stream_partition.advertiser_campaign_line_item_id.split("-")[1]
+          }}/line_items/{{
+          stream_partition.advertiser_campaign_line_item_id.split("-")[2]
+          }}/creatives
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: No creatives found for line_item
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/9"
+            parent_key: advertiser_campaign_line_item_id
+            partition_field: advertiser_campaign_line_item_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+      - line_item_id
+      - creative_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+          - line_item_id
+          - creative_id
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          campaign_id:
+            type: number
+          creative_id:
+            type: number
+          line_item_id:
+            type: number
+          advertiser_id:
+            type: number
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: >-
+              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[0]
+              }}
+  - type: DeclarativeStream
+    name: display_creatives_metrics
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/advertisers/{{
+          stream_partition.advertiser_campaign_line_item_id.split("-")[0]
+          }}/display/metrics
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: No metrics found
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          dimension: creatives
+          line_item_id: >-
+            {{ stream_partition.advertiser_campaign_line_item_id.split("-")[2]
+            }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - metrics
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['prints'] > 0 }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/9"
+            parent_key: advertiser_campaign_line_item_id
+            partition_field: advertiser_campaign_line_item_id
+    primary_key:
+      - date
+      - advertiser_id
+      - campaign_id
+      - line_item_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - advertiser_id
+          - campaign_id
+          - line_item_id
+        properties:
+          cpc:
+            type:
+              - number
+              - "null"
+          cpm:
+            type:
+              - number
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          reach:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          prints:
+            type:
+              - number
+              - "null"
+          site_id:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          event_time:
+            type:
+              - object
+              - "null"
+            properties:
+              cpl:
+                type:
+                  - number
+                  - "null"
+              roas:
+                type:
+                  - number
+                  - "null"
+              cpa_ppv:
+                type:
+                  - number
+                  - "null"
+              cpa_order:
+                type:
+                  - number
+                  - "null"
+              direct_amount:
+                type:
+                  - number
+                  - "null"
+              units_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_ppv:
+                type:
+                  - number
+                  - "null"
+              attribution_leads:
+                type:
+                  - number
+                  - "null"
+              attribution_bookmark:
+                type:
+                  - number
+                  - "null"
+              attribution_checkout:
+                type:
+                  - number
+                  - "null"
+              direct_item_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_add_to_cart:
+                type:
+                  - number
+                  - "null"
+          campaign_id:
+            type: number
+          touch_point:
+            type:
+              - object
+              - "null"
+            properties:
+              cpl:
+                type:
+                  - number
+                  - "null"
+              roas:
+                type:
+                  - number
+                  - "null"
+              cpa_ppv:
+                type:
+                  - number
+                  - "null"
+              cpa_order:
+                type:
+                  - number
+                  - "null"
+              direct_amount:
+                type:
+                  - number
+                  - "null"
+              units_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_ppv:
+                type:
+                  - number
+                  - "null"
+              attribution_leads:
+                type:
+                  - number
+                  - "null"
+              attribution_bookmark:
+                type:
+                  - number
+                  - "null"
+              attribution_checkout:
+                type:
+                  - number
+                  - "null"
+              direct_item_quantity:
+                type:
+                  - number
+                  - "null"
+              attribution_add_to_cart:
+                type:
+                  - number
+                  - "null"
+          active_views:
+            type:
+              - number
+              - "null"
+          line_item_id:
+            type: number
+          advertiser_id:
+            type: number
+          completed_views:
+            type:
+              - number
+              - "null"
+          consumed_budget:
+            type:
+              - number
+              - "null"
+          average_frequency:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: >-
+              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[0]
+              }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: >-
+              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[1]
+              }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - line_item_id
+            value: >-
+              {{ stream_partition.advertiser_campaign_line_item_id.split("-")[2]
+              }}
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ ( ( (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) <
+          (str_to_datetime(config['end_date']) - duration('P89D')) else
+          config['start_date'] ) if config['start_date'] else
+          (str_to_datetime(config['end_date']) -
+          duration('P89D')).strftime('%Y-%m-%d') ) if config['end_date'] else (
+          ( (now_utc() - duration('P89D')).strftime('%Y-%m-%d') if
+          str_to_datetime(config['start_date']) < (now_utc() - duration('P89D'))
+          else config['start_date'] ) if config['start_date'] else (now_utc() -
+          duration('P89D')).strftime('%Y-%m-%d') ) }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: date_to
+        inject_into: request_parameter
+      lookback_window: P{{ config['lookback_days'] or 7 }}D
+      start_time_option:
+        type: RequestOption
+        field_name: date_from
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: product_advertisers
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api.mercadolibre.com/advertising/advertisers
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          product_id: PADS
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - advertisers
+    primary_key:
+      - advertiser_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+        properties:
+          site_id:
+            type:
+              - string
+              - "null"
+          account_name:
+            type:
+              - string
+              - "null"
+          advertiser_id:
+            type: number
+          advertiser_name:
+            type:
+              - string
+              - "null"
+          advertiser_site_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_site_id
+            value: '{{ record["advertiser_id"] }}-{{ record["site_id"] }}'
+  - type: DeclarativeStream
+    name: product_campaigns
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 50
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/{{
+          stream_partition.advertiser_site_id.split("-")[1] }}/advertisers/{{
+          stream_partition.advertiser_site_id.split("-")[0]
+          }}/product_ads/campaigns/search
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          api-version: "2"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/13"
+            parent_key: advertiser_site_id
+            partition_field: advertiser_site_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          budget:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          channel:
+            type:
+              - string
+              - "null"
+          strategy:
+            type:
+              - string
+              - "null"
+          acos_target:
+            type:
+              - number
+              - "null"
+          campaign_id:
+            type: number
+          roas_target:
+            type:
+              - number
+              - "null"
+          date_created:
+            type:
+              - string
+              - "null"
+          last_updated:
+            type:
+              - string
+              - "null"
+          advertiser_id:
+            type: number
+          automatic_budget:
+            type:
+              - boolean
+              - "null"
+          salesforce_event_id:
+            type:
+              - number
+              - "null"
+          acos_top_search_target:
+            type:
+              - number
+              - "null"
+          advertiser_site_campaign_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_site_campaign_id
+            value: '{{ stream_partition.advertiser_site_id }}-{{ record["id"] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ record["id"] }}'
+      - type: RemoveFields
+        field_pointers:
+          - - id
+  - type: DeclarativeStream
+    name: product_campaigns_metrics
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/{{
+          stream_partition.advertiser_site_campaign_id.split("-")[1]
+          }}/product_ads/campaigns/{{
+          stream_partition.advertiser_site_campaign_id.split("-")[2] }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: No metrics found
+        request_headers:
+          api-version: "2"
+        request_parameters:
+          metrics: >-
+            clicks,prints,ctr,cost,cpc,acos,organic_units_quantity,organic_units_amount,organic_items_quantity,direct_items_quantity,indirect_items_quantity,advertising_items_quantity,cvr,roas,sov,direct_units_quantity,indirect_units_quantity,units_quantity,direct_amount,indirect_amount,total_amount
+          aggregation_type: DAILY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['prints'] > 0 }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/14"
+            parent_key: advertiser_site_campaign_id
+            partition_field: advertiser_site_campaign_id
+    primary_key:
+      - date
+      - advertiser_id
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - advertiser_id
+          - campaign_id
+        properties:
+          cpc:
+            type:
+              - number
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          cvr:
+            type:
+              - number
+              - "null"
+          sov:
+            type:
+              - number
+              - "null"
+          acos:
+            type:
+              - number
+              - "null"
+          cost:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          roas:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          prints:
+            type:
+              - number
+              - "null"
+          campaign_id:
+            type: number
+          total_amount:
+            type:
+              - number
+              - "null"
+          advertiser_id:
+            type: number
+          direct_amount:
+            type:
+              - number
+              - "null"
+          acos_benchmark:
+            type:
+              - number
+              - "null"
+          units_quantity:
+            type:
+              - number
+              - "null"
+          indirect_amount:
+            type:
+              - number
+              - "null"
+          impression_share:
+            type:
+              - number
+              - "null"
+          organic_units_amount:
+            type:
+              - number
+              - "null"
+          top_impression_share:
+            type:
+              - number
+              - "null"
+          direct_items_quantity:
+            type:
+              - number
+              - "null"
+          direct_units_quantity:
+            type:
+              - number
+              - "null"
+          organic_items_quantity:
+            type:
+              - number
+              - "null"
+          organic_units_quantity:
+            type:
+              - number
+              - "null"
+          indirect_items_quantity:
+            type:
+              - number
+              - "null"
+          indirect_units_quantity:
+            type:
+              - number
+              - "null"
+          advertising_items_quantity:
+            type:
+              - number
+              - "null"
+          lost_impression_share_by_budget:
+            type:
+              - number
+              - "null"
+          lost_impression_share_by_ad_rank:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: '{{ stream_partition.advertiser_site_campaign_id.split("-")[0] }}'
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ stream_partition.advertiser_site_campaign_id.split("-")[2] }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ (day_delta(-89, format='%Y-%m-%d') if config['start_date'] <
+          day_delta(-89, format='%Y-%m-%d') else config['start_date']) if
+          config['start_date'] else day_delta(-89, format='%Y-%m-%d') }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: date_to
+        inject_into: request_parameter
+      lookback_window: P{{ config['lookback_days'] or 7 }}D
+      start_time_option:
+        type: RequestOption
+        field_name: date_from
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: product_items
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 250
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/{{
+          stream_partition.advertiser_site_id.split("-")[1] }}/advertisers/{{
+          stream_partition.advertiser_site_id.split("-")[0]
+          }}/product_ads/ads/search
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message: No items found for campaign
+        request_headers:
+          api-version: "2"
+        request_parameters:
+          filters[statuses]: active,paused,hold,idle,delegated
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/13"
+            parent_key: advertiser_site_id
+            partition_field: advertiser_site_id
+    primary_key:
+      - advertiser_id
+      - campaign_id
+      - ad_group_id
+      - brand_value_id
+      - domain_id
+      - official_store_id
+      - listing_type_id
+      - item_id
+      - channel
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - advertiser_id
+          - campaign_id
+          - ad_group_id
+          - brand_value_id
+          - domain_id
+          - official_store_id
+          - listing_type_id
+          - item_id
+          - channel
+        properties:
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          price:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          channel:
+            type: string
+          item_id:
+            type: string
+          metrics:
+            type:
+              - object
+              - "null"
+          condition:
+            type:
+              - string
+              - "null"
+          domain_id:
+            type: string
+          family_id:
+            type:
+              - number
+              - "null"
+          permalink:
+            type:
+              - string
+              - "null"
+          price_usd:
+            type:
+              - number
+              - "null"
+          thumbnail:
+            type:
+              - string
+              - "null"
+          ad_group_id:
+            type: number
+          campaign_id:
+            type: number
+          family_name:
+            type:
+              - string
+              - "null"
+          recommended:
+            type:
+              - boolean
+              - "null"
+          date_created:
+            type:
+              - string
+              - "null"
+          has_discount:
+            type:
+              - boolean
+              - "null"
+          advertiser_id:
+            type: number
+          current_level:
+            type:
+              - string
+              - "null"
+          image_quality:
+            type:
+              - string
+              - "null"
+          logistic_type:
+            type:
+              - string
+              - "null"
+          brand_value_id:
+            type: string
+          buy_box_winner:
+            type:
+              - boolean
+              - "null"
+          deferred_stock:
+            type:
+              - boolean
+              - "null"
+          catalog_listing:
+            type:
+              - boolean
+              - "null"
+          listing_type_id:
+            type: string
+          user_product_id:
+            type:
+              - string
+              - "null"
+          brand_value_name:
+            type:
+              - string
+              - "null"
+          official_store_id:
+            type: number
+          user_product_name:
+            type:
+              - string
+              - "null"
+          advertiser_site_campaign_item_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_site_campaign_item_id
+            value: >-
+              {{ stream_partition.advertiser_site_id }}-{{ record["campaign_id"]
+              }}-{{ record["item_id"] }}
+  - type: DeclarativeStream
+    name: product_items_metrics
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 250
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.mercadolibre.com/advertising/{{
+          stream_partition.advertiser_site_campaign_item_id.split("-")[1]
+          }}/product_ads/ads/{{
+          stream_partition.advertiser_site_campaign_item_id.split("-")[3] }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                    - 401
+                  error_message: No metrics found
+        request_headers:
+          api-version: "2"
+        request_parameters:
+          metrics: >-
+            clicks,prints,ctr,cost,cpc,acos,organic_units_quantity,organic_units_amount,organic_items_quantity,direct_items_quantity,indirect_items_quantity,advertising_items_quantity,cvr,roas,sov,direct_units_quantity,indirect_units_quantity,units_quantity,direct_amount,indirect_amount,total_amount
+          aggregation_type: DAILY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['prints'] > 0 }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/16"
+            parent_key: advertiser_site_campaign_item_id
+            partition_field: advertiser_site_campaign_item_id
+    primary_key:
+      - date
+      - advertiser_id
+      - campaign_id
+      - item_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - advertiser_id
+          - campaign_id
+          - item_id
+        properties:
+          cpc:
+            type:
+              - number
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          cvr:
+            type:
+              - number
+              - "null"
+          sov:
+            type:
+              - number
+              - "null"
+          acos:
+            type:
+              - number
+              - "null"
+          cost:
+            type:
+              - number
+              - "null"
+          date:
+            type: string
+          roas:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          prints:
+            type:
+              - number
+              - "null"
+          item_id:
+            type: string
+          campaign_id:
+            type: number
+          total_amount:
+            type:
+              - number
+              - "null"
+          advertiser_id:
+            type: number
+          direct_amount:
+            type:
+              - number
+              - "null"
+          units_quantity:
+            type:
+              - number
+              - "null"
+          indirect_amount:
+            type:
+              - number
+              - "null"
+          organic_units_amount:
+            type:
+              - number
+              - "null"
+          direct_items_quantity:
+            type:
+              - number
+              - "null"
+          direct_units_quantity:
+            type:
+              - number
+              - "null"
+          organic_items_quantity:
+            type:
+              - number
+              - "null"
+          organic_units_quantity:
+            type:
+              - number
+              - "null"
+          indirect_items_quantity:
+            type:
+              - number
+              - "null"
+          indirect_units_quantity:
+            type:
+              - number
+              - "null"
+          advertising_items_quantity:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - advertiser_id
+            value: >-
+              {{ stream_partition.advertiser_site_campaign_item_id.split("-")[0]
+              }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: >-
+              {{ stream_partition.advertiser_site_campaign_item_id.split("-")[2]
+              }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - item_id
+            value: >-
+              {{ stream_partition.advertiser_site_campaign_item_id.split("-")[3]
+              }}
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ (day_delta(-89, format='%Y-%m-%d') if config['start_date'] <
+          day_delta(-89, format='%Y-%m-%d') else config['start_date']) if
+          config['start_date'] else day_delta(-89, format='%Y-%m-%d') }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: date_to
+        inject_into: request_parameter
+      lookback_window: P{{ config['lookback_days'] or 7 }}D
+      start_time_option:
+        type: RequestOption
+        field_name: date_from
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
 
 spec:
   type: Spec
@@ -1265,1590 +2872,217 @@ spec:
       - client_id
       - client_secret
       - client_refresh_token
-      - lookback_days
     properties:
+      end_date:
+        type: string
+        description: Cannot exceed 90 days from current day for Product Ads and Brand Ads
+        order: 5
+        title: End Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       client_id:
         type: string
         order: 0
         title: Client ID
-        airbyte_secret: true
+      start_date:
+        type: string
+        description: >-
+          Cannot exceed 90 days from current day for Product Ads and Brand Ads,
+          and 90 days from "End Date" on Display Ads
+        order: 4
+        title: Start Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       client_secret:
         type: string
         order: 1
         title: Client secret
         airbyte_secret: true
+      lookback_days:
+        type: number
+        description: "7"
+        order: 3
+        title: Lookback Days
+        default: 7
       client_refresh_token:
         type: string
         order: 2
         title: Refresh token
         airbyte_secret: true
-      lookback_days:
-        type: number
-        order: 3
-        title: Lookback Days
-        default: 7
-      start_date:
-        type: string
-        description: >-
-          Cannot exceed 90 days from current day for Product Ads, and 90 days
-          from "End Date" on Brand and Display Ads
-        order: 4
-        title: Start Date
-        format: date
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-      end_date:
-        type: string
-        description: Cannot exceed 90 days from current day for Product Ads
-        order: 5
-        title: End Date
-        format: date
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
     additionalProperties: true
 
 metadata:
-  autoImportSchema:
-    brand_advertisers: true
-    brand_campaigns: true
-    brand_campaigns_metrics: true
-    brand_items: true
-    brand_keywords: true
-    brand_keywords_metrics: true
-    display_advertisers: true
-    display_campaigns: true
-    display_campaigns_metrics: true
-    display_line_items: true
-    display_line_items_metrics: true
-    display_creatives: true
-    product_advertisers: true
-    product_campaigns: true
-    product_campaigns_metrics: true
-    product_items: true
-    product_items_metrics: true
+  assist: {}
   testedStreams:
-    brand_advertisers:
-      hasRecords: true
-      streamHash: 7c396273825aebebf3847e37248babf42678c0ec
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    brand_campaigns:
-      hasRecords: true
-      streamHash: f489335b539429dbeace3230f9cb30c382a68b8d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    brand_campaigns_metrics:
-      hasRecords: true
-      streamHash: cc4b229b896a43506e11dda2b92e16a573fd3fb0
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     brand_items:
       hasRecords: true
-      streamHash: bdbfbd52812b682177d97d7ee6c719aca8b99ba6
+      streamHash: 42658fc599ca68e4a6bb35cf2067a7fda1adb5a8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_items:
+      isStale: false
+      hasRecords: true
+      streamHash: 5d2f3aa47b4974334fd58dd6f7c0a7b2a2e15a28
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     brand_keywords:
+      isStale: false
       hasRecords: true
-      streamHash: c004081203382a4fcf831a6801e28085b814a0a0
+      streamHash: 782f242d9198bec344e8ad50ce16e0ccb2f668a2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    brand_keywords_metrics:
-      hasRecords: true
-      streamHash: 68251f6c86e0731150db4adc7b6c0b96990d0cef
+    brand_campaigns:
+      isStale: false
+      hasRecords: false
+      streamHash: bd0314cc177264e745d2312943e4fe053416b001
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    display_advertisers:
-      hasRecords: true
-      streamHash: 37746f6899b24e1c064585a90d96b09773b9569e
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
+    brand_advertisers:
+      isStale: false
+      hasRecords: false
+      streamHash: bdce623c8940bdd400c3ef40420e8660a8da2237
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
     display_campaigns:
+      isStale: false
       hasRecords: true
-      streamHash: 4897e15fa3a8e96051a2958cb074caff306c12cf
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    display_campaigns_metrics:
-      hasRecords: true
-      streamHash: 62db61bdac680f95de4357739fcb9121b01f8158
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    display_line_items:
-      hasRecords: true
-      streamHash: 150958cc2a3605d2c54092d5ea36aad6505fdfe7
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    display_line_items_metrics:
-      hasRecords: true
-      streamHash: 419d979562667b9ac10b01f231215ebedab79e67
+      streamHash: 5b3cd3fe2240e8c0d82be819a6bf23ca156409c3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     display_creatives:
       hasRecords: true
-      streamHash: 47a27200da55b2d637d9b44ae244aef65862413b
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    product_advertisers:
-      hasRecords: true
-      streamHash: b995c58cbd631cec3fb3ea4c107279709e2c3cc6
+      streamHash: dd11816187afb4b45ac24cf0006cba63eb3d90f4
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     product_campaigns:
+      isStale: false
       hasRecords: true
-      streamHash: 2e3de83255ca36a08329063a437364f94e32ac71
+      streamHash: d6968fc09c818c5f0401924d5e00584cb4cdf278
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    product_campaigns_metrics:
+    display_line_items:
       hasRecords: true
-      streamHash: 8055a0a8eb8d0d9f10931c10d728dcf6621ace21
+      streamHash: bd43f49532c61141bd0476fccbc90fc2a9c9815b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    product_items:
+    display_advertisers:
+      isStale: false
+      hasRecords: false
+      streamHash: 98ed0b003c8e499d989019e624cb0e760c03107e
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
+    product_advertisers:
       hasRecords: true
-      streamHash: a095d4f1c74a31ea4df88bc887e198f7d8bda7e5
+      streamHash: 11834cc2dea9cfa3daf76ea07d19fd29b9d2cb1f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     product_items_metrics:
+      isStale: false
       hasRecords: true
-      streamHash: 090d239b4c62fae61e04ec24bc7e886c1ad141a7
+      streamHash: ff561e91439b0ac599667edabebd1886f1a63b83
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  assist: {}
+    brand_keywords_metrics:
+      isStale: false
+      hasRecords: true
+      streamHash: bb5ce042330d16e6ece260baff1d3d59399caab4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    brand_campaigns_metrics:
+      isStale: false
+      hasRecords: false
+      streamHash: 5ef3ad1276caeae3c970175c0cd5aef53c9fb7a4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    display_campaigns_metrics:
+      isStale: false
+      hasRecords: true
+      streamHash: d160144745f37eef6be217ecce54d7d78ee21040
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    display_creatives_metrics:
+      isStale: false
+      hasRecords: true
+      streamHash: 91c175925329a01befda4978189f5b45559ef383
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_campaigns_metrics:
+      isStale: false
+      hasRecords: true
+      streamHash: a44785b7ce3b706e95c52f32770f8658b5f005e8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    display_line_items_metrics:
+      isStale: false
+      hasRecords: true
+      streamHash: 58f2217ba25edc798dd69131a95ed7ac7086316a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    brand_items: true
+    product_items: true
+    brand_keywords: true
+    brand_campaigns: true
+    brand_advertisers: true
+    display_campaigns: true
+    display_creatives: true
+    product_campaigns: true
+    display_line_items: true
+    display_advertisers: true
+    product_advertisers: true
+    product_items_metrics: true
+    brand_keywords_metrics: true
+    brand_campaigns_metrics: true
+    display_campaigns_metrics: true
+    display_creatives_metrics: true
+    product_campaigns_metrics: true
+    display_line_items_metrics: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-10-22T10:41:54.787620+00:00"
+      from_version: 6.48.15
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-10-22T10:41:54.801295+00:00"
+      from_version: 6.48.15
 
-schemas:
-  brand_advertisers:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      account_name:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      advertiser_name:
-        type:
-          - string
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-  brand_campaigns:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      advertiser_campaign_id:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      budget:
-        type:
-          - object
-          - "null"
-        properties:
-          amount:
-            type:
-              - number
-              - "null"
-          currency:
-            type:
-              - string
-              - "null"
-      campaign_id:
-        type: number
-      campaign_type:
-        type:
-          - string
-          - "null"
-      cpc:
-        type:
-          - number
-          - "null"
-      destination_id:
-        type:
-          - number
-          - "null"
-      end_date:
-        type:
-          - string
-          - "null"
-      headline:
-        type:
-          - string
-          - "null"
-      items:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            campaign_id:
-              type:
-                - number
-                - "null"
-            item_id:
-              type:
-                - string
-                - "null"
-            status:
-              type:
-                - string
-                - "null"
-      keywords:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            campaign_id:
-              type:
-                - number
-                - "null"
-            cpc:
-              type:
-                - number
-                - "null"
-            is_negative:
-              type:
-                - boolean
-                - "null"
-            match_type:
-              type:
-                - string
-                - "null"
-            term:
-              type:
-                - string
-                - "null"
-      moderation_status:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      official_store_id:
-        type:
-          - number
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-      start_date:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-      - campaign_id
-  brand_campaigns_metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      acos:
-        type:
-          - number
-          - "null"
-      advertiser_id:
-        type: number
-      campaign_id:
-        type: number
-      clicks:
-        type:
-          - number
-          - "null"
-      consumed_budget:
-        type:
-          - number
-          - "null"
-      cpc:
-        type:
-          - number
-          - "null"
-      ctr:
-        type:
-          - number
-          - "null"
-      currency:
-        type:
-          - string
-          - "null"
-      cvr:
-        type:
-          - number
-          - "null"
-      date:
-        type: string
-      event_time:
-        type:
-          - object
-          - "null"
-        properties:
-          bookmark_conversions:
-            type:
-              - number
-              - "null"
-          cart_conversions:
-            type:
-              - number
-              - "null"
-          checkout_conversions:
-            type:
-              - number
-              - "null"
-          eshop_conversions:
-            type:
-              - number
-              - "null"
-          items_quantity:
-            type:
-              - number
-              - "null"
-          leads_im_conversions:
-            type:
-              - number
-              - "null"
-          leads_question_conversions:
-            type:
-              - number
-              - "null"
-          ppv_conversions:
-            type:
-              - number
-              - "null"
-          units_amount:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
-      prints:
-        type:
-          - number
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-      touch_point:
-        type:
-          - object
-          - "null"
-        properties:
-          bookmark_conversions:
-            type:
-              - number
-              - "null"
-          cart_conversions:
-            type:
-              - number
-              - "null"
-          checkout_conversions:
-            type:
-              - number
-              - "null"
-          eshop_conversions:
-            type:
-              - number
-              - "null"
-          items_quantity:
-            type:
-              - number
-              - "null"
-          leads_im_conversions:
-            type:
-              - number
-              - "null"
-          leads_question_conversions:
-            type:
-              - number
-              - "null"
-          ppv_conversions:
-            type:
-              - number
-              - "null"
-          units_amount:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
-    required:
-      - date
-      - advertiser_id
-      - campaign_id
-  brand_items:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      advertiser_id:
-        type: number
-      campaign_id:
-        type: number
-      item_id:
-        type: string
-      status:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-      - campaign_id
-      - item_id
-  brand_keywords:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      campaign_id:
-        type: number
-      cpc:
-        type:
-          - number
-          - "null"
-      is_negative:
-        type:
-          - boolean
-          - "null"
-      match_type:
-        type: string
-      term:
-        type: string
-    required:
-      - advertiser_id
-      - campaign_id
-      - term
-      - match_type
-  brand_keywords_metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      advertiser_id:
-        type: number
-      campaign_id:
-        type: number
-      date:
-        type: string
-      keywords:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            acos:
-              type:
-                - number
-                - "null"
-            clicks:
-              type:
-                - number
-                - "null"
-            consumed_budget:
-              type:
-                - number
-                - "null"
-            cpc:
-              type:
-                - number
-                - "null"
-            ctr:
-              type:
-                - number
-                - "null"
-            currency:
-              type:
-                - string
-                - "null"
-            cvr:
-              type:
-                - number
-                - "null"
-            event_time:
-              type:
-                - object
-                - "null"
-              properties:
-                bookmark_conversions:
-                  type:
-                    - number
-                    - "null"
-                cart_conversions:
-                  type:
-                    - number
-                    - "null"
-                checkout_conversions:
-                  type:
-                    - number
-                    - "null"
-                eshop_conversions:
-                  type:
-                    - number
-                    - "null"
-                items_quantity:
-                  type:
-                    - number
-                    - "null"
-                leads_im_conversions:
-                  type:
-                    - number
-                    - "null"
-                leads_question_conversions:
-                  type:
-                    - number
-                    - "null"
-                ppv_conversions:
-                  type:
-                    - number
-                    - "null"
-                units_amount:
-                  type:
-                    - number
-                    - "null"
-                units_quantity:
-                  type:
-                    - number
-                    - "null"
-            keyword:
-              type:
-                - string
-                - "null"
-            prints:
-              type:
-                - number
-                - "null"
-            site_id:
-              type:
-                - string
-                - "null"
-            touch_point:
-              type:
-                - object
-                - "null"
-              properties:
-                bookmark_conversions:
-                  type:
-                    - number
-                    - "null"
-                cart_conversions:
-                  type:
-                    - number
-                    - "null"
-                checkout_conversions:
-                  type:
-                    - number
-                    - "null"
-                eshop_conversions:
-                  type:
-                    - number
-                    - "null"
-                items_quantity:
-                  type:
-                    - number
-                    - "null"
-                leads_im_conversions:
-                  type:
-                    - number
-                    - "null"
-                leads_question_conversions:
-                  type:
-                    - number
-                    - "null"
-                ppv_conversions:
-                  type:
-                    - number
-                    - "null"
-                units_amount:
-                  type:
-                    - number
-                    - "null"
-                units_quantity:
-                  type:
-                    - number
-                    - "null"
-    required:
-      - date
-      - advertiser_id
-      - campaign_id
-  display_advertisers:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      account_name:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      advertiser_name:
-        type:
-          - string
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-  display_campaigns:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      advertiser_campaign_id:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      campaign_id:
-        type: number
-      end_date:
-        type:
-          - string
-          - "null"
-      goal:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-      start_date:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-      - campaign_id
-  display_campaigns_metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      active_views:
-        type:
-          - number
-          - "null"
-      advertiser_id:
-        type: number
-      average_frequency:
-        type:
-          - number
-          - "null"
-      campaign_id:
-        type: number
-      clicks:
-        type:
-          - number
-          - "null"
-      completed_views:
-        type:
-          - number
-          - "null"
-      consumed_budget:
-        type:
-          - number
-          - "null"
-      cpc:
-        type:
-          - number
-          - "null"
-      cpm:
-        type:
-          - number
-          - "null"
-      ctr:
-        type:
-          - number
-          - "null"
-      currency:
-        type:
-          - string
-          - "null"
-      date:
-        type: string
-      event_time:
-        type:
-          - object
-          - "null"
-        properties:
-          attribution_add_to_cart:
-            type:
-              - number
-              - "null"
-          attribution_bookmark:
-            type:
-              - number
-              - "null"
-          attribution_checkout:
-            type:
-              - number
-              - "null"
-          attribution_leads:
-            type:
-              - number
-              - "null"
-          attribution_ppv:
-            type:
-              - number
-              - "null"
-          cpa_order:
-            type:
-              - number
-              - "null"
-          cpa_ppv:
-            type:
-              - number
-              - "null"
-          cpl:
-            type:
-              - number
-              - "null"
-          direct_amount:
-            type:
-              - number
-              - "null"
-          direct_item_quantity:
-            type:
-              - number
-              - "null"
-          roas:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
-      prints:
-        type:
-          - number
-          - "null"
-      reach:
-        type:
-          - number
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-      touch_point:
-        type:
-          - object
-          - "null"
-        properties:
-          attribution_add_to_cart:
-            type:
-              - number
-              - "null"
-          attribution_bookmark:
-            type:
-              - number
-              - "null"
-          attribution_checkout:
-            type:
-              - number
-              - "null"
-          attribution_leads:
-            type:
-              - number
-              - "null"
-          attribution_ppv:
-            type:
-              - number
-              - "null"
-          cpa_order:
-            type:
-              - number
-              - "null"
-          cpa_ppv:
-            type:
-              - number
-              - "null"
-          cpl:
-            type:
-              - number
-              - "null"
-          direct_amount:
-            type:
-              - number
-              - "null"
-          direct_item_quantity:
-            type:
-              - number
-              - "null"
-          roas:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
-    required:
-      - date
-      - advertiser_id
-      - campaign_id
-  display_line_items:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      advertiser_campaign_line_item_id:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      campaign_id:
-        type: number
-      end_date:
-        type:
-          - string
-          - "null"
-      line_item_id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      start_date:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-      - campaign_id
-      - line_item_id
-  display_line_items_metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      active_views:
-        type:
-          - number
-          - "null"
-      advertiser_id:
-        type: number
-      average_frequency:
-        type:
-          - number
-          - "null"
-      campaign_id:
-        type: number
-      clicks:
-        type:
-          - number
-          - "null"
-      completed_views:
-        type:
-          - number
-          - "null"
-      consumed_budget:
-        type:
-          - number
-          - "null"
-      cpc:
-        type:
-          - number
-          - "null"
-      cpm:
-        type:
-          - number
-          - "null"
-      ctr:
-        type:
-          - number
-          - "null"
-      currency:
-        type:
-          - string
-          - "null"
-      date:
-        type: string
-      event_time:
-        type:
-          - object
-          - "null"
-        properties:
-          attribution_add_to_cart:
-            type:
-              - number
-              - "null"
-          attribution_bookmark:
-            type:
-              - number
-              - "null"
-          attribution_checkout:
-            type:
-              - number
-              - "null"
-          attribution_leads:
-            type:
-              - number
-              - "null"
-          attribution_ppv:
-            type:
-              - number
-              - "null"
-          cpa_order:
-            type:
-              - number
-              - "null"
-          cpa_ppv:
-            type:
-              - number
-              - "null"
-          cpl:
-            type:
-              - number
-              - "null"
-          direct_amount:
-            type:
-              - number
-              - "null"
-          direct_item_quantity:
-            type:
-              - number
-              - "null"
-          roas:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
-      line_item_id:
-        type: number
-      prints:
-        type:
-          - number
-          - "null"
-      reach:
-        type:
-          - number
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-      touch_point:
-        type:
-          - object
-          - "null"
-        properties:
-          attribution_add_to_cart:
-            type:
-              - number
-              - "null"
-          attribution_bookmark:
-            type:
-              - number
-              - "null"
-          attribution_checkout:
-            type:
-              - number
-              - "null"
-          attribution_leads:
-            type:
-              - number
-              - "null"
-          attribution_ppv:
-            type:
-              - number
-              - "null"
-          cpa_order:
-            type:
-              - number
-              - "null"
-          cpa_ppv:
-            type:
-              - number
-              - "null"
-          cpl:
-            type:
-              - number
-              - "null"
-          direct_amount:
-            type:
-              - number
-              - "null"
-          direct_item_quantity:
-            type:
-              - number
-              - "null"
-          roas:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
-    required:
-      - date
-      - advertiser_id
-      - campaign_id
-      - line_item_id
-  display_creatives:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      advertiser_campaign_line_item_creative_id:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      campaign_id:
-        type: number
-      creative_id:
-        type:
-          - number
-          - "null"
-      line_item_id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-      - campaign_id
-      - line_item_id
-  product_advertisers:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      account_name:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      advertiser_name:
-        type:
-          - string
-          - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-  product_campaigns:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      acos_target:
-        type:
-          - number
-          - "null"
-      acos_top_search_target:
-        type:
-          - number
-          - "null"
-      advertiser_campaign_id:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      automatic_budget:
-        type:
-          - boolean
-          - "null"
-      budget:
-        type:
-          - number
-          - "null"
-      campaign_id:
-        type: number
-      channel:
-        type:
-          - string
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-      last_updated:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      salesforce_event_id:
-        type:
-          - number
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      strategy:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-      - campaign_id
-  product_campaigns_metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      acos:
-        type:
-          - number
-          - "null"
-      acos_benchmark:
-        type:
-          - number
-          - "null"
-      advertiser_id:
-        type: number
-      advertising_items_quantity:
-        type:
-          - number
-          - "null"
-      campaign_id:
-        type: number
-      clicks:
-        type:
-          - number
-          - "null"
-      cost:
-        type:
-          - number
-          - "null"
-      cpc:
-        type:
-          - number
-          - "null"
-      ctr:
-        type:
-          - number
-          - "null"
-      cvr:
-        type:
-          - number
-          - "null"
-      date:
-        type: string
-      direct_amount:
-        type:
-          - number
-          - "null"
-      direct_items_quantity:
-        type:
-          - number
-          - "null"
-      direct_units_quantity:
-        type:
-          - number
-          - "null"
-      impression_share:
-        type:
-          - number
-          - "null"
-      indirect_amount:
-        type:
-          - number
-          - "null"
-      indirect_items_quantity:
-        type:
-          - number
-          - "null"
-      indirect_units_quantity:
-        type:
-          - number
-          - "null"
-      lost_impression_share_by_ad_rank:
-        type:
-          - number
-          - "null"
-      lost_impression_share_by_budget:
-        type:
-          - number
-          - "null"
-      organic_items_quantity:
-        type:
-          - number
-          - "null"
-      organic_units_amount:
-        type:
-          - number
-          - "null"
-      organic_units_quantity:
-        type:
-          - number
-          - "null"
-      prints:
-        type:
-          - number
-          - "null"
-      roas:
-        type:
-          - number
-          - "null"
-      sov:
-        type:
-          - number
-          - "null"
-      top_impression_share:
-        type:
-          - number
-          - "null"
-      total_amount:
-        type:
-          - number
-          - "null"
-      units_quantity:
-        type:
-          - number
-          - "null"
-    required:
-      - date
-      - advertiser_id
-      - campaign_id
-  product_items:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      advertiser_campaign_item_id:
-        type:
-          - string
-          - "null"
-      advertiser_id:
-        type: number
-      brand_value_id:
-        type:
-          - string
-          - "null"
-      brand_value_name:
-        type:
-          - string
-          - "null"
-      buy_box_winner:
-        type:
-          - boolean
-          - "null"
-      campaign_id:
-        type: number
-      catalog_listing:
-        type:
-          - boolean
-          - "null"
-      channel:
-        type:
-          - string
-          - "null"
-      condition:
-        type:
-          - string
-          - "null"
-      current_level:
-        type:
-          - string
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-      deferred_stock:
-        type:
-          - boolean
-          - "null"
-      domain_id:
-        type:
-          - string
-          - "null"
-      family_id:
-        type:
-          - number
-          - "null"
-      family_name:
-        type:
-          - string
-          - "null"
-      has_discount:
-        type:
-          - boolean
-          - "null"
-      image_quality:
-        type:
-          - string
-          - "null"
-      item_id:
-        type: string
-      listing_type_id:
-        type:
-          - string
-          - "null"
-      logistic_type:
-        type:
-          - string
-          - "null"
-      metrics:
-        type:
-          - object
-          - "null"
-      official_store_id:
-        type:
-          - number
-          - "null"
-      permalink:
-        type:
-          - string
-          - "null"
-      price:
-        type:
-          - number
-          - "null"
-      price_usd:
-        type:
-          - number
-          - "null"
-      recommended:
-        type:
-          - boolean
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      tags:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      thumbnail:
-        type:
-          - string
-          - "null"
-      title:
-        type:
-          - string
-          - "null"
-      user_product_id:
-        type:
-          - string
-          - "null"
-      user_product_name:
-        type:
-          - string
-          - "null"
-    required:
-      - advertiser_id
-      - campaign_id
-      - item_id
-  product_items_metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      acos:
-        type:
-          - number
-          - "null"
-      advertiser_id:
-        type: number
-      advertising_items_quantity:
-        type:
-          - number
-          - "null"
-      campaign_id:
-        type: number
-      clicks:
-        type:
-          - number
-          - "null"
-      cost:
-        type:
-          - number
-          - "null"
-      cpc:
-        type:
-          - number
-          - "null"
-      ctr:
-        type:
-          - number
-          - "null"
-      cvr:
-        type:
-          - number
-          - "null"
-      date:
-        type: string
-      direct_amount:
-        type:
-          - number
-          - "null"
-      direct_items_quantity:
-        type:
-          - number
-          - "null"
-      direct_units_quantity:
-        type:
-          - number
-          - "null"
-      indirect_amount:
-        type:
-          - number
-          - "null"
-      indirect_items_quantity:
-        type:
-          - number
-          - "null"
-      indirect_units_quantity:
-        type:
-          - number
-          - "null"
-      item_id:
-        type: string
-      organic_items_quantity:
-        type:
-          - number
-          - "null"
-      organic_units_amount:
-        type:
-          - number
-          - "null"
-      organic_units_quantity:
-        type:
-          - number
-          - "null"
-      prints:
-        type:
-          - number
-          - "null"
-      roas:
-        type:
-          - number
-          - "null"
-      sov:
-        type:
-          - number
-          - "null"
-      total_amount:
-        type:
-          - number
-          - "null"
-      units_quantity:
-        type:
-          - number
-          - "null"
-    required:
-      - date
-      - advertiser_id
-      - campaign_id
-      - item_id
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
