@@ -4,7 +4,6 @@
 
 import json
 import logging
-import time
 from typing import Any, Dict, Mapping
 
 import pytest
@@ -69,11 +68,6 @@ def _state() -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={}))
 
 
-def _wait(client: Client):
-    # Give Meilisearch a moment to finish processing the last enqueued task.
-    time.sleep(2)
-
-
 def test_check_valid_config(config: Mapping[str, Any]):
     outcome = DestinationMeilisearch().check(logging.getLogger("airbyte"), config)
     assert outcome.status == Status.SUCCEEDED
@@ -90,7 +84,6 @@ def test_append_dedup_uses_natural_key_and_upserts(config: Mapping[str, Any], cl
     destination = DestinationMeilisearch()
     list(destination.write(config, _catalog(DestinationSyncMode.append_dedup), [_record({"id": 1, "title": "first"}), _state()]))
     list(destination.write(config, _catalog(DestinationSyncMode.append_dedup), [_record({"id": 1, "title": "second"}), _state()]))
-    _wait(client)
     doc = client.index(INDEX).get_document(1)
     assert doc.title == "second"  # same natural key -> upsert, not a duplicate
 
@@ -101,7 +94,6 @@ def test_merge_preserves_untouched_fields(config: Mapping[str, Any], client: Cli
 
     merge_config = {**config, "update_method": "merge"}
     list(destination.write(merge_config, _catalog(DestinationSyncMode.append_dedup), [_record({"id": 2, "title": "updated"}), _state()]))
-    _wait(client)
     doc = client.index(INDEX).get_document(2)
     assert doc.title == "updated"
     assert doc.year == 1999  # field absent from the merge record survives
@@ -111,7 +103,25 @@ def test_overwrite_replaces_index(config: Mapping[str, Any], client: Client):
     destination = DestinationMeilisearch()
     list(destination.write(config, _catalog(DestinationSyncMode.overwrite), [_record({"id": 10, "title": "old"}), _state()]))
     list(destination.write(config, _catalog(DestinationSyncMode.overwrite), [_record({"id": 20, "title": "new"}), _state()]))
-    _wait(client)
     docs = client.index(INDEX).get_documents()
     ids = {d.id for d in docs.results}
     assert ids == {20}  # overwrite wiped the previous sync
+
+
+def test_overwrite_with_zero_records_keeps_empty_index(config: Mapping[str, Any], client: Client):
+    destination = DestinationMeilisearch()
+    list(destination.write(config, _catalog(DestinationSyncMode.overwrite), [_record({"id": 1, "title": "x"}), _state()]))
+    list(destination.write(config, _catalog(DestinationSyncMode.overwrite), [_state()]))
+    index = client.get_index(INDEX)  # index must survive an empty sync
+    assert index.primary_key == "id"
+    assert client.index(INDEX).get_documents().total == 0
+
+
+def test_append_dedup_fails_fast_on_primary_key_mismatch(config: Mapping[str, Any], client: Client):
+    # Simulate an index created by connector v1 (primaryKey _ab_pk).
+    task = client.index(INDEX).add_documents([{"_ab_pk": "abc", "title": "old"}], "_ab_pk")
+    client.wait_for_task(task.task_uid, 60_000, 200)
+
+    destination = DestinationMeilisearch()
+    with pytest.raises(ValueError, match="already has primary key '_ab_pk'"):
+        list(destination.write(config, _catalog(DestinationSyncMode.append_dedup), [_record({"id": 1, "title": "new"}), _state()]))
