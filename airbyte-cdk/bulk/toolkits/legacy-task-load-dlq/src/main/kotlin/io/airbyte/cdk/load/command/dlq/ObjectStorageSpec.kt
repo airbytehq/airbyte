@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecif
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecificationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificationProvider
+import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 
 abstract class ConfigurationSpecificationWithDlq(
@@ -85,7 +86,7 @@ class S3ObjectStorageSpec :
     override val s3BucketName: String = ""
 
     @get:JsonSchemaInject(json = """{"examples":["us-east-1"],"order":5,"default":""}""")
-    override val s3BucketRegion: String = ""
+    override val s3BucketRegion: S3BucketRegion = S3BucketRegion.NO_REGION
 
     @get:JsonSchemaInject(json = """{"examples":["http://localhost:9000"],"order":6}""")
     override val s3Endpoint: String? = null
