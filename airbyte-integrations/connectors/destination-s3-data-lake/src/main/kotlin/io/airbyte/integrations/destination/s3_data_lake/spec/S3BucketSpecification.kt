@@ -12,8 +12,6 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 
 // This file is copied from legacy CDK to avoid legacy toolkit dependency
 
-
-
 /**
  * Mix-in to provide S3 bucket configuration fields as properties.
  *

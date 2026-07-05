@@ -10,8 +10,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 
-
-
 /**
  * Mix-in to provide S3 bucket configuration fields as properties.
  *

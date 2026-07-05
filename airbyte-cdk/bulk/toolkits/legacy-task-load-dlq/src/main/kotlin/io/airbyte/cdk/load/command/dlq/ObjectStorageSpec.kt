@@ -19,7 +19,6 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecif
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecificationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificationProvider
-
 import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 
 abstract class ConfigurationSpecificationWithDlq(
