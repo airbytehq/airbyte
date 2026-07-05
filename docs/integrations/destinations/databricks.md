@@ -51,7 +51,7 @@ Create a [service principal](https://docs.databricks.com/en/dev-tools/auth/oauth
 1. Open your workspace console.
 2. Click on your icon in the top-right corner, and head to `settings`, then `developer`, then `manage` under `access tokens`
 
-   ![](/.gitbook/assets/destination/databricks/databricks_token_user_new.png)
+   ![](/.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
 
 3. Enter a description for the token and how long it will be valid for (or leave blank for a permanent token):
 
