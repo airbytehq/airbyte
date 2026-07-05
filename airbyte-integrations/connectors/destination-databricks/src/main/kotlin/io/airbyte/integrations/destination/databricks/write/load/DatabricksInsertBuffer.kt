@@ -140,10 +140,9 @@ class DatabricksInsertBuffer(
     }
 
     companion object {
-        private val executionDate = LocalDate.now(ZoneOffset.UTC)
-
         /** Format: `/Volumes/<database>/<namespace>/<table>_staging/<date>` */
         fun stagingDirectory(tableName: TableName, database: String): String {
+            val executionDate = LocalDate.now(ZoneOffset.UTC)
             return "$VOLUMES_BASE_PATH/$database/${tableName.namespace}/" +
                 "${tableName.name}_staging/$executionDate"
         }

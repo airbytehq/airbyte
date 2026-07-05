@@ -173,7 +173,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.22 | 2022-09-15 | [16770](https://github.com/airbytehq/airbyte/pull/16770) | Use "Retry-After" header for backoff |
 | 0.1.21 | 2022-09-11 | [16191](https://github.com/airbytehq/airbyte/pull/16191) | Improved connector's input configuration validation |
 | 0.1.20 | 2022-08-22 | [15091](https://github.com/airbytehq/airbyte/pull/15091) | Improve `export` stream cursor support |
-| 0.1.19 | 2022-08-18 | [15739](https://github.com/airbytehq/airbyte/pull/15739) | Update `titile` and `description` for `Project Secret` field |
+| 0.1.19 | 2022-08-18 | [15739](https://github.com/airbytehq/airbyte/pull/15739) | Update `title` and `description` for `Project Secret` field |
 | 0.1.18 | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and specs |
 | 0.1.17 | 2022-06-01 | [13372](https://github.com/airbytehq/airbyte/pull/13372) | Acceptance tests fix, fixing some bugs for beta release |
 | 0.1.16 | 2022-05-30 | [12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter |
