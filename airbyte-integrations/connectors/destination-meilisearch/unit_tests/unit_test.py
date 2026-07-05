@@ -2,12 +2,20 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import DestinationSyncMode
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    DestinationSyncMode,
+    StreamDescriptor,
+    Type,
+)
 
-from destination_meilisearch.destination import resolve_primary_key, sanitize_index_name
+from destination_meilisearch.destination import DestinationMeilisearch, resolve_primary_key, sanitize_index_name
 from destination_meilisearch.writer import (
     ID_HASH,
     ID_NATURAL,
@@ -196,3 +204,82 @@ def test_flush_raises_on_failed_task():
     writer.queue_write_operation({"id": 1})
     with pytest.raises(RuntimeError):
         writer.flush()
+
+
+# ---- natural key validation ----
+
+
+@pytest.mark.parametrize("value", [7, 0, -3, "abc", "A-b_1", "0"])
+def test_natural_key_valid_values_pass(value):
+    writer = _writer(ID_NATURAL)
+    assert writer._prepare({"id": value})["id"] == value
+
+
+@pytest.mark.parametrize("value", ["user@example.com", "a b", "a.b", "", None, True, 1.5, {"x": 1}])
+def test_natural_key_invalid_values_raise(value):
+    writer = _writer(ID_NATURAL)
+    with pytest.raises(ValueError, match="not a valid"):
+        writer._prepare({"id": value})
+
+
+def test_natural_key_missing_field_raises():
+    writer = _writer(ID_NATURAL)
+    with pytest.raises(ValueError, match="missing primary key"):
+        writer._prepare({"name": "x"})
+
+
+# ---- write() orchestration ----
+
+
+def _configured_stream(name, sync_mode=DestinationSyncMode.append_dedup, primary_key=None):
+    stream = MagicMock()
+    stream.stream.name = name
+    stream.destination_sync_mode = sync_mode
+    stream.primary_key = primary_key if primary_key is not None else [["id"]]
+    return stream
+
+
+def _catalog(*streams):
+    catalog = MagicMock()
+    catalog.streams = list(streams)
+    return catalog
+
+
+@patch("destination_meilisearch.destination.get_client")
+def test_write_rejects_colliding_index_names(mock_get_client):
+    catalog = _catalog(_configured_stream("user.events"), _configured_stream("user events"))
+    with pytest.raises(ValueError, match="both map to Meilisearch index"):
+        list(DestinationMeilisearch().write({"host": "h"}, catalog, []))
+
+
+@patch("destination_meilisearch.destination.get_client")
+def test_write_rejects_primary_key_mismatch_with_existing_index(mock_get_client):
+    mock_get_client.return_value.get_index.return_value.primary_key = "_ab_pk"
+    catalog = _catalog(_configured_stream("movies"))
+    with pytest.raises(ValueError, match="already has primary key '_ab_pk'"):
+        list(DestinationMeilisearch().write({"host": "h"}, catalog, []))
+
+
+def _state_message(name):
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=name)),
+        ),
+    )
+
+
+@patch("destination_meilisearch.destination.MeiliWriter")
+@patch("destination_meilisearch.destination.get_client")
+def test_stream_state_flushes_only_that_stream(mock_get_client, mock_writer_cls):
+    mock_get_client.return_value.get_index.return_value.primary_key = None
+    writer_a, writer_b = MagicMock(), MagicMock()
+    mock_writer_cls.side_effect = [writer_a, writer_b]
+    catalog = _catalog(_configured_stream("a"), _configured_stream("b"))
+
+    list(DestinationMeilisearch().write({"host": "h"}, catalog, [_state_message("a")]))
+
+    # stream-scoped state flushes only 'a'; the end-of-input flush hits both.
+    assert writer_a.flush.call_count == 2
+    assert writer_b.flush.call_count == 1

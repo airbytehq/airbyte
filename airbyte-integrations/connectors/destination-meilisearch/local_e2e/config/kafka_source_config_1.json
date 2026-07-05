@@ -1,0 +1,27 @@
+{
+  "bootstrap_servers": "redpanda:9092",
+  "subscription": {
+    "subscription_type": "subscribe",
+    "topic_pattern": "events"
+  },
+  "protocol": {
+    "security_protocol": "PLAINTEXT"
+  },
+  "MessageFormat": {
+    "deserialization_type": "JSON"
+  },
+  "test_topic": "events",
+  "client_id": "airbyte-e2e-client",
+  "client_dns_lookup": "use_all_dns_ips",
+  "enable_auto_commit": false,
+  "auto_commit_interval_ms": 5000,
+  "retry_backoff_ms": 100,
+  "request_timeout_ms": 30000,
+  "receive_buffer_bytes": 32768,
+  "max_poll_records": 500,
+  "polling_time": 3000,
+  "auto_offset_reset": "earliest",
+  "repeated_calls": 3,
+  "max_records_process": 100000,
+  "group_id": "airbyte-e2e-1783439146-1"
+}
