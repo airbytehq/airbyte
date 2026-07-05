@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedJsonFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecificationProvider
-
 import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 import io.airbyte.cdk.load.command.s3.S3PathSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension

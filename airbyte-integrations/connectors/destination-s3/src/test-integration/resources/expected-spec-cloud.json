@@ -47,7 +47,6 @@
       },
       "s3_bucket_region" : {
         "type" : "string",
-
         "description" : "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
         "title" : "S3 Bucket Region",
         "examples" : [ "us-east-1" ],
