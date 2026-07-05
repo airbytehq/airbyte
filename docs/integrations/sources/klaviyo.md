@@ -68,6 +68,7 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+- [Segments](https://developers.klaviyo.com/en/v2024-10-15/reference/get_segments)
 
 ### Analytics streams
 
@@ -132,6 +133,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.18.5 | 2026-06-30 | [81120](https://github.com/airbytehq/airbyte/pull/81120) | Update dependencies |
+| 2.18.4 | 2026-06-23 | [80514](https://github.com/airbytehq/airbyte/pull/80514) | Update dependencies |
+| 2.18.3 | 2026-06-18 | [76919](https://github.com/airbytehq/airbyte/pull/76919) | fix(source-klaviyo): Add missing unsubscribe and spam complaint fields to reporting streams |
+| 2.18.2 | 2026-06-16 | [79898](https://github.com/airbytehq/airbyte/pull/79898) | Update dependencies |
+| 2.18.1 | 2026-06-09 | [79342](https://github.com/airbytehq/airbyte/pull/79342) | Update dependencies |
+| 2.18.0 | 2026-06-04 | [76941](https://github.com/airbytehq/airbyte/pull/76941) | Add new `segments` stream |
+| 2.17.9 | 2026-06-02 | [78784](https://github.com/airbytehq/airbyte/pull/78784) | Update dependencies |
 | 2.17.8 | 2026-04-28 | [77313](https://github.com/airbytehq/airbyte/pull/77313) | Update dependencies |
 | 2.17.7 | 2026-04-25 | [77008](https://github.com/airbytehq/airbyte/pull/77008) | Fix sync failure when conversion metrics do not support values data queries in flow_series_reports and campaign_values_reports streams |
 | 2.17.6 | 2026-04-21 | [75707](https://github.com/airbytehq/airbyte/pull/75707) | Update dependencies |

@@ -2,10 +2,16 @@ version: 6.5.0
 
 type: DeclarativeSource
 
+# CheckDynamicStream is used instead of CheckStream because the Orders API v0
+# is "Sellers only" — Vendor accounts get HTTP 403 on the Orders endpoint.
+# CheckDynamicStream picks the first available stream from the catalog, which
+# is Orders for Seller accounts or VendorOrders for Vendor accounts (controlled
+# by ConditionalStreams ordering below). If stream ordering in ConditionalStreams
+# changes, ensure the first stream for each account type remains a valid,
+# non-report stream suitable for the connectivity check.
 check:
-  type: CheckStream
-  stream_names:
-    - Orders
+  type: CheckDynamicStream
+  stream_count: 1
 
 spec:
   type: Spec
@@ -249,10 +255,10 @@ spec:
           matching the same date range and marketplace, it can reuse that report
           instead of creating a new one. This setting controls how old (in hours)
           a completed report can be and still be reused. Set to 0 to always create
-          new reports. Maximum is 24 hours."
+          new reports. Maximum is 72 hours."
         default: 0
         minimum: 0
-        maximum: 24
+        maximum: 72
         order: 14
       financial_events_step:
         title: Financial Events Step Size
@@ -372,6 +378,21 @@ spec:
         default: 5
         minimum: 0
         order: 20
+      stop_sync_on_rate_limit:
+        title: Stop Sync When Report Streams Are Rate Limited
+        description: >-
+          Only applies to report streams. When enabled, the source stops
+          retrying immediately once the rate limit retry budget is exhausted
+          and fails with an actionable configuration error. This is useful
+          when persistent rate limiting indicates the connector configuration
+          needs adjustment (such as reducing the number of report streams or
+          increasing the sync interval). When disabled (default), the source
+          applies its backoff and retry strategy; if all retry attempts are
+          exhausted, a transient error is thrown and the sync may be
+          rescheduled automatically.
+        type: boolean
+        default: false
+        order: 21
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -3360,14 +3381,35 @@ api_budget:
   status_codes_for_ratelimit_hit: [429]
 
 streams:
-  # REST Streams
-  - $ref: "#/definitions/streams/orders"
-  - $ref: "#/definitions/streams/order_items"
-  - $ref: "#/definitions/streams/list_financial_event_groups"
-  - $ref: "#/definitions/streams/list_financial_events"
-  - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
-  - $ref: "#/definitions/streams/vendor_orders"
-  - $ref: "#/definitions/streams/vendor_orders_status"
+  # IMPORTANT: Stream ordering matters for CheckDynamicStream (see check: section above).
+  # The first stream in each ConditionalStreams block is used for the connectivity check.
+  # Do not reorder or prepend streams without verifying they are suitable for check.
+  #
+  # Seller-only REST streams: only available for non-Vendor accounts.
+  # The Orders/OrderItems endpoints (orders/v0/orders) and Finances API (finances/v0/*)
+  # are seller-only per Amazon SP-API docs. Vendor accounts get HTTP 403.
+  - type: ConditionalStreams
+    condition: "{{ config.get('account_type', 'Seller') == 'Seller' }}"
+    streams:
+      - $ref: "#/definitions/streams/orders"
+      - $ref: "#/definitions/streams/order_items"
+      - $ref: "#/definitions/streams/list_financial_event_groups"
+      - $ref: "#/definitions/streams/list_financial_events"
+
+  # Vendor-only streams: only available for Vendor accounts.
+  # Amazon SP-API rejects these with 403 (REST) or 400 InvalidInput (reports) for Seller accounts.
+  - type: ConditionalStreams
+    condition: "{{ config.get('account_type') == 'Vendor' }}"
+    # VendorOrders is listed first because it uses the standard Amazon Fulfillment role available to all vendors,
+    # while VendorDirectFulfillmentShipping requires the restricted Direct to Consumer Shipping role.
+    streams:
+      - $ref: "#/definitions/streams/vendor_orders"
+      - $ref: "#/definitions/streams/vendor_orders_status"
+      - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
+      - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
+      - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
+      - $ref: "#/definitions/streams/get_vendor_sales_report"
+      - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
     # Reports Streams
   - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"
@@ -3406,8 +3448,6 @@ streams:
   - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
 
   # Analytics Streams
-  - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
-  - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
   - $ref: "#/definitions/streams/get_brand_analytics_market_basket_report"
   - $ref: "#/definitions/streams/get_brand_analytics_search_terms_report"
   - $ref: "#/definitions/streams/get_brand_analytics_repeat_purchase_report"
@@ -3416,8 +3456,6 @@ streams:
   - $ref: "#/definitions/streams/get_sales_and_traffic_report"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_date"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_month"
-  - $ref: "#/definitions/streams/get_vendor_sales_report"
-  - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
 concurrency_level:
   type: ConcurrencyLevel

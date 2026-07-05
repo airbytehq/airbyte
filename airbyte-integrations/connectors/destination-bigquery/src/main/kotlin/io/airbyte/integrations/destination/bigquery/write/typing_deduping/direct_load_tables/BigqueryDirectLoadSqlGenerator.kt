@@ -140,7 +140,7 @@ class BigqueryDirectLoadSqlGenerator(
             importType.primaryKey.joinToString(" AND ") { fieldPath ->
                 val fieldName = fieldPath.first()
                 val columnName = columnNameMapping[fieldName]!!
-                """(target_table.`$columnName` = new_record.`$columnName` OR (target_table.`$columnName` IS NULL AND new_record.`$columnName` IS NULL))"""
+                """target_table.`$columnName` = new_record.`$columnName`"""
             }
 
         val columnList: String =

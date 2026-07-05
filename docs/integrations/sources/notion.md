@@ -126,6 +126,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.14 | 2026-06-30 | [81166](https://github.com/airbytehq/airbyte/pull/81166) | Update dependencies |
+| 4.0.13 | 2026-06-23 | [80566](https://github.com/airbytehq/airbyte/pull/80566) | Update dependencies |
+| 4.0.12 | 2026-06-16 | [79948](https://github.com/airbytehq/airbyte/pull/79948) | Update dependencies |
+| 4.0.11 | 2026-06-09 | [79397](https://github.com/airbytehq/airbyte/pull/79397) | Update dependencies |
+| 4.0.10 | 2026-06-02 | [78821](https://github.com/airbytehq/airbyte/pull/78821) | Update dependencies |
+| 4.0.9 | 2026-06-01 | [78048](https://github.com/airbytehq/airbyte/pull/78048) | Improve the permission error message for the Users stream when the Notion integration lacks user information capabilities. |
+| 4.0.8 | 2026-06-01 | [78543](https://github.com/airbytehq/airbyte/pull/78543) | Set final default concurrency to 3 with configurable worker count |
 | 4.0.8-rc.5 | 2026-05-27 | [78500](https://github.com/airbytehq/airbyte/pull/78500) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
 | 4.0.8-rc.4 | 2026-05-26 | [78433](https://github.com/airbytehq/airbyte/pull/78433) | Reduce default concurrency to 4 while preserving configurable worker count and Notion API budget |
 | 4.0.8-rc.3 | 2026-05-21 | [78343](https://github.com/airbytehq/airbyte/pull/78343) | Revert default concurrency to 5, add configurable worker count, and enforce Notion API budget |
