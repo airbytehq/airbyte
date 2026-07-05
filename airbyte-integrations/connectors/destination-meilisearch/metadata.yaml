@@ -22,6 +22,16 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  releases:
+    breakingChanges:
+      2.0.0:
+        message:
+          "Version 2.0.0 changes how documents are identified in Meilisearch: streams with a single
+          top-level primary key now use that field as the index primary key instead of the internal
+          `_ab_pk` field. Meilisearch cannot change an index's primary key once documents exist, so
+          syncs into indexes created by version 1.x will fail until the index is reset. See the
+          migration guide for the required steps."
+        upgradeDeadline: "2026-07-20"
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   connectorTestSuitesOptions:

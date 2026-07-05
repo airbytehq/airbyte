@@ -44,7 +44,7 @@ character outside `[a-zA-Z0-9_-]` replaced by `_`). The connector supports:
 ### Installing
 
 ```bash
-poetry install --no-root
+poetry install
 ```
 
 ### Configuration

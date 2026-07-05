@@ -3,6 +3,7 @@
 #
 
 import hashlib
+import re
 from collections.abc import Mapping
 from logging import getLogger
 from typing import Any, Dict, List
@@ -20,7 +21,10 @@ INTERNAL_PK_FIELD = "_ab_pk"
 # Task wait bounds. Indexing is asynchronous; we block on each batch so failures
 # surface in-line and back-pressure matches Meilisearch throughput.
 TASK_TIMEOUT_MS = 1_800_000  # 30 minutes
-TASK_INTERVAL_MS = 1_000
+TASK_INTERVAL_MS = 200
+
+# Meilisearch document-id constraint: integer, or string of these characters only.
+VALID_STRING_ID = re.compile(r"[a-zA-Z0-9_-]+")
 
 # id-resolution strategies, see resolve_primary_key.
 ID_NATURAL = "natural"  # the source field is the Meilisearch primary key; documents pass through
@@ -67,7 +71,7 @@ class MeiliWriter:
     def _prepare(self, data: Mapping[str, Any]) -> Dict[str, Any]:
         """Return the document to index, injecting the synthetic id when needed."""
         if self.id_mode == ID_NATURAL:
-            # The source field is the primary key; pass the document through untouched.
+            self._validate_natural_key(data)
             return dict(data)
         document = dict(data)
         if self.id_mode == ID_RANDOM:
@@ -75,6 +79,20 @@ class MeiliWriter:
         else:  # ID_HASH
             document[INTERNAL_PK_FIELD] = self._hash_key(data)
         return document
+
+    def _validate_natural_key(self, data: Mapping[str, Any]) -> None:
+        """Fail per record, naming the field and value, instead of letting the whole
+        Meilisearch batch task fail with an error that names neither."""
+        if self.primary_key not in data:
+            raise ValueError(f"Record for index '{self.index_name}' is missing primary key field '{self.primary_key}'")
+        value = data[self.primary_key]
+        if isinstance(value, bool) or not (
+            isinstance(value, int) or (isinstance(value, str) and VALID_STRING_ID.fullmatch(value))
+        ):
+            raise ValueError(
+                f"Primary key '{self.primary_key}'={value!r} for index '{self.index_name}' is not a valid "
+                f"Meilisearch document id (must be an integer or a string of only [a-zA-Z0-9_-])"
+            )
 
     def _hash_key(self, data: Mapping[str, Any]) -> str:
         values = []
