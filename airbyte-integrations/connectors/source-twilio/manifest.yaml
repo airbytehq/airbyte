@@ -342,6 +342,9 @@ definitions:
           - type: ParentStreamConfig
             stream:
               $ref: "#/definitions/conferences_stream"
+              # Only fetch in-progress conferences because the Twilio Participants API
+              # does not return data for completed conferences (participants are only
+              # available while the conference is active).
               retriever:
                 $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
                 partition_router:
