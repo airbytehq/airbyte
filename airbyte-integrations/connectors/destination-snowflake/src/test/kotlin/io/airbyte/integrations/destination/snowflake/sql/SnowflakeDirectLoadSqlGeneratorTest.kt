@@ -941,7 +941,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 |  FROM numbered_rows
                 |  WHERE row_number = 1
                 |) AS new_record
-                |ON (target_table."ID" = new_record."ID" OR (target_table."ID" IS NULL AND new_record."ID" IS NULL))
+                |ON target_table."ID" = new_record."ID"
                 |WHEN MATCHED AND (
                 |  target_table."UPDATED_AT" < new_record."UPDATED_AT"
                 |  OR (target_table."UPDATED_AT" = new_record."UPDATED_AT" AND target_table."_AIRBYTE_EXTRACTED_AT" < new_record."_AIRBYTE_EXTRACTED_AT")

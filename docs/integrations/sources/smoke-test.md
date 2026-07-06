@@ -78,6 +78,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2026-07-02 | [81368](https://github.com/airbytehq/airbyte/pull/81368) | Bump starlette to 1.3.1 to resolve GHSA-7f5h-v6xp-fcq8, GHSA-82w8-qh3p-5jfq, GHSA-wqp7-x3pw-xc5r |
 | 0.1.1 | 2026-06-02 | [75374](https://github.com/airbytehq/airbyte/pull/75374) | Update dependencies |
 | 0.1.0 | 2026-03-19 | [75181](https://github.com/airbytehq/airbyte/pull/75181) | Initial release: smoke test source for destination regression testing |
 

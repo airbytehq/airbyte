@@ -1,0 +1,72 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "**.java"
+      - "**.kt"
+      - "**.kts"
+      - "**/build.gradle"
+      - "buildSrc/**"
+      - "settings.gradle"
+  pull_request:
+    branches: [master]
+    paths:
+      - "**.java"
+      - "**.kt"
+      - "**.kts"
+      - "**/build.gradle"
+      - "buildSrc/**"
+      - "settings.gradle"
+  schedule:
+    # Run weekly on Monday at 00:00 UTC
+    - cron: "0 0 * * 1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze Java/Kotlin
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Java environment
+        uses: ./.github/actions/install-java-environment
+        with:
+          gradle_cache_read_only: true
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java-kotlin
+          # Extend default queries with security-and-quality
+          queries: security-and-quality
+
+      - name: Build (compile only, continue past failures)
+        # Use --continue so a single connector's dependency failure
+        # does not block analysis of the rest of the codebase.
+        # continue-on-error because --continue still exits non-zero
+        # when any task fails, which would skip the analysis step.
+        continue-on-error: true
+        run: |
+          ./gradlew compileJava compileKotlin \
+            --continue \
+            -x test \
+            -x integrationTestJava \
+            -x performanceTestJava \
+            -Dorg.gradle.jvmargs="-Xmx4g"
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:java-kotlin"
