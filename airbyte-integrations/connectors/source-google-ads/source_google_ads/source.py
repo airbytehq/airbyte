@@ -21,10 +21,21 @@ from .streams import (
 
 class SourceGoogleAds(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        if config is not None:
+            config = self._backfill_auth_type(dict(config))
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     # Raise exceptions on missing streams
     raise_exception_on_missing_stream = True
+
+    @staticmethod
+    def _backfill_auth_type(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        credentials = config.get("credentials")
+        if isinstance(credentials, Mapping) and "auth_type" not in credentials:
+            credentials = dict(credentials)
+            credentials["auth_type"] = "Client"
+            config["credentials"] = credentials
+        return config
 
     @staticmethod
     def _validate_and_transform(config: Mapping[str, Any]):
