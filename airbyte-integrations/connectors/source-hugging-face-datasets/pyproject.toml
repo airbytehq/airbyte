@@ -1,16 +1,31 @@
-[project]
-name = "airbyte-source-hugging-face-datasets"
-version = "0.0.1"
-description = "Airbyte Source for Hugging Face Datasets using the datasets library"
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source_hugging_face_datasets"
+description = "source implementation for Hugging Face Datasets"
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "ELv2"
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
-license = {text = "ELv2"}
+documentation = "https://docs.airbyte.com/integrations/sources/hugging-face-datasets"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_hugging_face_datasets"
 
-dependencies = [
-    "airbyte-cdk>=7.0,<8.0",
-    "datasets>=4.0.0",
-    "pandas>=2.0.0",
+[tool.poetry.dependencies]
+python = "^3.10,<3.14"
+airbyte-cdk = "^7"
+datasets = ">=4.0.0"
+pandas = ">=2.0.0"
+pyyaml = ">=6.0.0"
+
+[tool.poetry.scripts]
+source-hugging-face-datasets = "source_hugging_face_datasets.run:run"
+
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
-
-[project.scripts]
-airbyte-source-hugging-face-datasets = "source_hugging_face_datasets.run:main"
