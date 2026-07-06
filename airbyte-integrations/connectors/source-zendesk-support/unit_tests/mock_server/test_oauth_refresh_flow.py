@@ -14,6 +14,7 @@ the JSON-only body matcher.
 """
 
 import json
+import urllib.parse
 from datetime import timedelta
 from unittest import TestCase
 
@@ -230,6 +231,51 @@ class TestOAuthRefreshTokenRotation(TestCase):
 
         output = read_stream("tags", SyncMode.full_refresh, config)
         assert len(output.records) == 1
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestOAuthRefreshRequestBody(TestCase):
+    """Tests for the body sent to the OAuth token refresh endpoint."""
+
+    def _get_expired_token_expiry_date(self) -> str:
+        """Return a token expiry date in the past to trigger refresh."""
+        return (_NOW - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    @HttpMocker()
+    def test_given_refresh_when_read_then_request_body_omits_expires_in(self, http_mocker):
+        """
+        Zendesk enforces any expiry that a client explicitly requests. The
+        connector must therefore NOT send `expires_in` in the refresh request
+        body, otherwise every refreshed token is forced to expire early and
+        connections break (oncall#13049, oncall#11036). This asserts the
+        refresh request body carries the expected params but no `expires_in`.
+        """
+        config = _build_oauth_refresh_config(
+            refresh_token=_INITIAL_REFRESH_TOKEN,
+            access_token=_INITIAL_ACCESS_TOKEN,
+            token_expiry_date=self._get_expired_token_expiry_date(),
+        )
+
+        http_mocker._mocker.post(
+            _OAUTH_TOKEN_URL,
+            text=_build_token_refresh_response_json(_NEW_ACCESS_TOKEN, _ROTATED_REFRESH_TOKEN),
+            status_code=200,
+        )
+
+        oauth_authenticator = OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tags_endpoint(oauth_authenticator).with_page_size(100).build(),
+            TagsResponseBuilder.tags_response().with_record(TagsRecordBuilder.tags_record()).build(),
+        )
+
+        read_stream("tags", SyncMode.full_refresh, config)
+
+        token_requests = [req for req in http_mocker._mocker.request_history if req.url == _OAUTH_TOKEN_URL]
+        assert len(token_requests) == 1
+        refresh_body = urllib.parse.parse_qs(token_requests[0].text)
+        assert "expires_in" not in refresh_body
+        assert refresh_body["grant_type"] == ["refresh_token"]
+        assert refresh_body["refresh_token"] == [_INITIAL_REFRESH_TOKEN]
 
 
 @pytest.mark.parametrize(
