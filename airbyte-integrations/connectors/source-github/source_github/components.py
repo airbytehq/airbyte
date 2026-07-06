@@ -13,6 +13,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import ConfigTransformation
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -55,9 +56,7 @@ class RepositoryListResolver(ConfigTransformation):
             legacy = config.get("repository", "")
             config_repositories = set(filter(None, legacy.split(" ")))
 
-        organizations, repositories, pattern = self._resolve_repositories(
-            config_repositories, tokens
-        )
+        organizations, repositories, pattern = self._resolve_repositories(config_repositories, tokens)
 
         config["_resolved_repositories"] = sorted(repositories)
         config["_resolved_organizations"] = sorted(organizations)
@@ -104,15 +103,11 @@ class RepositoryListResolver(ConfigTransformation):
 
         if unchecked_orgs:
             org_names = [org.split("/")[0] for org in unchecked_orgs]
-            pattern = "|".join(
-                [f"({org.replace('*', '.*')})" for org in unchecked_orgs]
-            )
+            pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
             compiled_pattern = re.compile(pattern)
 
             for org_name in org_names:
-                org_repos = self._fetch_org_repos(
-                    org_name, tokens[token_index % len(tokens)]
-                )
+                org_repos = self._fetch_org_repos(org_name, tokens[token_index % len(tokens)])
                 for repo in org_repos:
                     full_name = repo.get("full_name", "")
                     if compiled_pattern.match(full_name):
@@ -123,9 +118,7 @@ class RepositoryListResolver(ConfigTransformation):
         unchecked_repos = unchecked_repos - repositories
         if unchecked_repos:
             for repo_name in unchecked_repos:
-                repo_data = self._validate_repo(
-                    repo_name, tokens[token_index % len(tokens)]
-                )
+                repo_data = self._validate_repo(repo_name, tokens[token_index % len(tokens)])
                 if repo_data:
                     repositories.add(repo_data["full_name"])
                     org_login = (repo_data.get("organization") or {}).get("login")
@@ -144,9 +137,7 @@ class RepositoryListResolver(ConfigTransformation):
         while url:
             response = requests.get(url, params=params, headers=headers, timeout=30)
             if response.status_code == 404:
-                logger.warning(
-                    "Organization '%s' not found (HTTP 404). Skipping.", org_name
-                )
+                logger.warning("Organization '%s' not found (HTTP 404). Skipping.", org_name)
                 break
             if response.status_code == 403:
                 logger.warning(
@@ -164,23 +155,17 @@ class RepositoryListResolver(ConfigTransformation):
 
         return all_repos
 
-    def _validate_repo(
-        self, repo_name: str, token: str
-    ) -> Optional[Mapping[str, Any]]:
+    def _validate_repo(self, repo_name: str, token: str) -> Optional[Mapping[str, Any]]:
         """Validate a single explicit repository by calling GET /repos/{owner}/{repo}."""
         url = f"{self._api_url}/repos/{repo_name}"
         headers = self._build_headers(token)
 
         response = requests.get(url, headers=headers, timeout=30)
         if response.status_code == 404:
-            logger.warning(
-                "Repository '%s' not found (HTTP 404). Skipping.", repo_name
-            )
+            logger.warning("Repository '%s' not found (HTTP 404). Skipping.", repo_name)
             return None
         if response.status_code == 403:
-            logger.warning(
-                "Access denied for repository '%s' (HTTP 403). Skipping.", repo_name
-            )
+            logger.warning("Access denied for repository '%s' (HTTP 403). Skipping.", repo_name)
             return None
         response.raise_for_status()
         return response.json()
