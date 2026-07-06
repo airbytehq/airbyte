@@ -16,6 +16,6 @@ Airbyte provides MCP (Model Context Protocol) servers for connecting AI assistan
 
 <CardWithIcon title="Knowledge MCP server" description="Provide Airbyte product and developer knowledge to AI agents through semantic search over Airbyte docs, specs, videos, and GitHub content." ctaText="Set up Knowledge MCP server" ctaLink="/community/mcp-servers/airbyte-knowledge-mcp" icon="fa-magnifying-glass" />
 
-<CardWithIcon title="PyAirbyte MCP server" description="Manage Airbyte data replication workflows through MCP-compatible clients, including connector listing, configuration validation, and sync operations." ctaText="Set up PyAirbyte MCP server" ctaLink="/community/mcp-servers/pyairbyte-mcp" icon="fa-python" />
+<CardWithIcon title="Airbyte Replication MCP server" description="Manage Airbyte data replication workflows through MCP-compatible clients, including connector listing, configuration validation, and sync operations." ctaText="Set up Airbyte Replication MCP server" ctaLink="/community/mcp-servers/replication-mcp" icon="fa-python" />
 
 </Grid>

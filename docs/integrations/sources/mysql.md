@@ -219,6 +219,10 @@ Any database or table encoding combination of charset and collation is supported
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -226,7 +230,8 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                                                                          | Subject                                                                                                                                          |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.52.3      | 2026-05-21 | [78318](https://github.com/airbytehq/airbyte/pull/78318)                                                  | Fix the CDC docs link on the MySQL config page.                                                                                             |
+| 3.53.0      | 2026-06-29 | [80950](https://github.com/airbytehq/airbyte/pull/80950)                                                  | Promote mysql to the latest CDK                                                                                                                  |
+| 3.52.3      | 2026-05-21 | [78318](https://github.com/airbytehq/airbyte/pull/78318)                                                  | Fix the CDC docs link on the MySQL config page.                                                                                                  |
 | 3.52.2      | 2026-05-11 | [77973](https://github.com/airbytehq/airbyte/pull/77973)                                                  | Improve concurrent initial snapshot partitioning for large MySQL tables with `BIGINT UNSIGNED` primary keys.                                     |
 | 3.52.1      | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787)                                              | Make the hidden additional properties fields in spec optional. No functional change.                                                             |
 | 3.52.0      | 2026-05-05 | [77772](https://github.com/airbytehq/airbyte/pull/77772)                                              | Add a `treat_tinyint1_as_integer` connector setting that maps TINYINT(1) columns to integers in both snapshot and CDC reads (default unchanged). |

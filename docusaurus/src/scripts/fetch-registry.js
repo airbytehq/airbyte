@@ -13,7 +13,11 @@
  */
 const fs = require("fs");
 const https = require("https");
-const { DATA_DIR, REGISTRY_CACHE_PATH, COMPOSITE_REGISTRY_URL } = require("./constants");
+const {
+  DATA_DIR,
+  REGISTRY_CACHE_PATH,
+  COMPOSITE_REGISTRY_URL,
+} = require("./constants");
 
 const GITHUB_REPO_NAME = "airbytehq/airbyte";
 const CONNECTORS_PATH = "airbyte-integrations/connectors";
@@ -78,7 +82,8 @@ function buildCompositeEntry(entry, connectorType) {
     dockerRepository,
     dockerImageTag: entry.dockerImageTag || "",
     supportLevel: entry.supportLevel || "community",
-    iconUrl: entry.iconUrl || "",
+    sourceType: entry.sourceType || "",
+    iconUrl: entry.iconUrl || (dockerRepository ? `https://connectors.airbyte.com/files/metadata/${dockerRepository}/latest/icon.svg` : ""),
     documentationUrl: entry.documentationUrl || "",
     spec: entry.spec || null,
     remoteRegistries: entry.remoteRegistries || {},
@@ -122,6 +127,7 @@ function extractMinimalRegistryData(fullRegistry) {
     dockerRepository: connector.dockerRepository || "",
     dockerImageTag: connector.dockerImageTag || "",
     supportLevel: connector.supportLevel || "community",
+    sourceType: connector.sourceType || "",
     iconUrl: connector.iconUrl || "",
     documentationUrl: connector.documentationUrl || "",
     // Strip `spec` down to only the subset remark/specDecoration.js consumes

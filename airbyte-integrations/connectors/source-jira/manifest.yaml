@@ -5092,34 +5092,6 @@ definitions:
         additionalProperties: true
         description: Details about a field.
 
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
-  issue_field_configurations_stream:
-    $ref: "#/definitions/full_refresh_stream"
-    name: issue_field_configurations
-    primary_key: "id"
-    $parameters:
-      path: "fieldconfiguration"
-      extract_field: "values"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        properties:
-          id:
-            description: The ID of the field configuration.
-            type: integer
-          name:
-            description: The name of the field configuration.
-            type: string
-          description:
-            description: The description of the field configuration.
-            type: string
-          isDefault:
-            description: Whether the field configuration is the default.
-            type: boolean
-        additionalProperties: true
-        description: Details of a field configuration.
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
   issue_link_types_stream:
@@ -14632,7 +14604,6 @@ streams:
 - "#/definitions/filters_stream"
 - "#/definitions/groups_stream"
 - "#/definitions/issue_fields_stream"
-- "#/definitions/issue_field_configurations_stream"
 - "#/definitions/issue_link_types_stream"
 - "#/definitions/issue_navigator_settings_stream"
 - "#/definitions/issue_notification_schemes_stream"
@@ -14913,11 +14884,11 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 3
+        default: 5
         examples:
         - 1
         - 2
-        - 3
+        - 5
         description: The number of worker threads to use for the sync.
         order: 6
   advanced_auth:
@@ -14947,7 +14918,6 @@ spec:
           - scope: "read:project:jira"
           - scope: "read:sprint:jira-software"
           - scope: "read:application-role:jira"
-          - scope: "read:field-configuration:jira"
           - scope: "read:notification-scheme:jira"
           - scope: "read:issue-security-scheme:jira"
           - scope: "read:issue-security-level:jira"

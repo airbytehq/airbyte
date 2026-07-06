@@ -12,6 +12,7 @@ This source is capable of syncing the following streams:
 - Payments
 - Payouts
 - Refunds
+- Subscriptions
 
 #### Features
 
@@ -28,6 +29,10 @@ This source is capable of syncing the following streams:
 - GoCardless Version
 - Start Date
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +40,8 @@ This source is capable of syncing the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| 0.2.26 | 2026-06-26 | [80919](https://github.com/airbytehq/airbyte/pull/80919) | Add subscriptions stream |
+| 0.2.25 | 2026-06-02 | [78730](https://github.com/airbytehq/airbyte/pull/78730) | Update dependencies |
 | 0.2.24 | 2025-05-24 | [60712](https://github.com/airbytehq/airbyte/pull/60712) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59846](https://github.com/airbytehq/airbyte/pull/59846) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59227](https://github.com/airbytehq/airbyte/pull/59227) | Update dependencies |

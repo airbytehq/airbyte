@@ -226,6 +226,10 @@ def test_memory_usage(send_email_stream, file_generator):
     assert abs(big_file_peak - small_file_peak) < 50 * 1024
 
 
+def test_export_request_kwargs_streams_response(send_email_stream):
+    assert send_email_stream.request_kwargs(stream_state={}) == {"stream": True}
+
+
 @pytest.mark.parametrize("job_statuses", ((("Created",), ("Completed",)), (("Created",), ("Cancelled",))))
 def test_export_sleep(send_email_stream, job_statuses):
     def tuple_to_generator(tuple_):

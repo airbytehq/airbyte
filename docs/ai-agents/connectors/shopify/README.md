@@ -21,20 +21,31 @@ The Shopify connector is optimized to handle prompts like these.
 - List all custom collections in my store
 - Show me details for a recent order
 - Show me product variants for a recent product
+- Create a new customer in Shopify with email test@example.com
+- Update a customer's first name
+- Create a new product called 'Summer T-Shirt'
+- Update a product title
+- Create a draft order for a customer
+- Complete a draft order
+- Set inventory quantity for a product variant at a location
+- Create a basic discount code for 10% off
+- Set a metafield on a product
+- Create a new page on my store
+- Create a new blog post
 - Show me orders from the last 30 days
 - Show me abandoned checkouts from this week
 - What price rules are currently active?
+- Show me all pages on my store
+- List all blog articles
+- Are there any open disputes?
 
 ## Unsupported prompts
 
 The Shopify connector isn't currently able to handle prompts like these.
 
-- Create a new customer in Shopify
-- Update product pricing
-- Delete an order
 - Process a refund
 - Send shipping notification to customer
-- Create a new discount code
+- Modify order line items after creation
 
 ## Entities and actions
 
@@ -42,10 +53,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
-| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get) |
-| Product Variants | [List](./REFERENCE.md#product-variants-list), [Get](./REFERENCE.md#product-variants-get), [Context Store Search](./REFERENCE.md#product-variants-context-store-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Create](./REFERENCE.md#customers-create), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
+| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Create](./REFERENCE.md#orders-create), [Update](./REFERENCE.md#orders-update), [Delete](./REFERENCE.md#orders-delete), [Context Store Search](./REFERENCE.md#orders-context-store-search) |
+| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Create](./REFERENCE.md#products-create), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [Context Store Search](./REFERENCE.md#products-context-store-search) |
+| Product Variants | [List](./REFERENCE.md#product-variants-list), [Get](./REFERENCE.md#product-variants-get), [Create](./REFERENCE.md#product-variants-create), [Update](./REFERENCE.md#product-variants-update), [Delete](./REFERENCE.md#product-variants-delete), [Context Store Search](./REFERENCE.md#product-variants-context-store-search) |
 | Product Images | [List](./REFERENCE.md#product-images-list), [Get](./REFERENCE.md#product-images-get), [Context Store Search](./REFERENCE.md#product-images-context-store-search) |
 | Abandoned Checkouts | [List](./REFERENCE.md#abandoned-checkouts-list), [Context Store Search](./REFERENCE.md#abandoned-checkouts-context-store-search) |
 | Locations | [List](./REFERENCE.md#locations-list), [Get](./REFERENCE.md#locations-get), [Context Store Search](./REFERENCE.md#locations-context-store-search) |
@@ -53,11 +64,11 @@ This connector supports the following entities and actions. For more details, se
 | Inventory Items | [List](./REFERENCE.md#inventory-items-list), [Get](./REFERENCE.md#inventory-items-get), [Context Store Search](./REFERENCE.md#inventory-items-context-store-search) |
 | Shop | [Get](./REFERENCE.md#shop-get), [Context Store Search](./REFERENCE.md#shop-context-store-search) |
 | Price Rules | [List](./REFERENCE.md#price-rules-list), [Get](./REFERENCE.md#price-rules-get), [Context Store Search](./REFERENCE.md#price-rules-context-store-search) |
-| Discount Codes | [List](./REFERENCE.md#discount-codes-list), [Get](./REFERENCE.md#discount-codes-get), [Context Store Search](./REFERENCE.md#discount-codes-context-store-search) |
-| Custom Collections | [List](./REFERENCE.md#custom-collections-list), [Get](./REFERENCE.md#custom-collections-get), [Context Store Search](./REFERENCE.md#custom-collections-context-store-search) |
+| Discount Codes | [List](./REFERENCE.md#discount-codes-list), [Get](./REFERENCE.md#discount-codes-get), [Create](./REFERENCE.md#discount-codes-create), [Update](./REFERENCE.md#discount-codes-update), [Delete](./REFERENCE.md#discount-codes-delete), [Context Store Search](./REFERENCE.md#discount-codes-context-store-search) |
+| Custom Collections | [List](./REFERENCE.md#custom-collections-list), [Get](./REFERENCE.md#custom-collections-get), [Create](./REFERENCE.md#custom-collections-create), [Update](./REFERENCE.md#custom-collections-update), [Delete](./REFERENCE.md#custom-collections-delete), [Context Store Search](./REFERENCE.md#custom-collections-context-store-search) |
 | Smart Collections | [List](./REFERENCE.md#smart-collections-list), [Get](./REFERENCE.md#smart-collections-get), [Context Store Search](./REFERENCE.md#smart-collections-context-store-search) |
 | Collects | [List](./REFERENCE.md#collects-list), [Get](./REFERENCE.md#collects-get), [Context Store Search](./REFERENCE.md#collects-context-store-search) |
-| Draft Orders | [List](./REFERENCE.md#draft-orders-list), [Get](./REFERENCE.md#draft-orders-get), [Context Store Search](./REFERENCE.md#draft-orders-context-store-search) |
+| Draft Orders | [List](./REFERENCE.md#draft-orders-list), [Get](./REFERENCE.md#draft-orders-get), [Create](./REFERENCE.md#draft-orders-create), [Update](./REFERENCE.md#draft-orders-update), [Delete](./REFERENCE.md#draft-orders-delete), [Context Store Search](./REFERENCE.md#draft-orders-context-store-search) |
 | Fulfillments | [List](./REFERENCE.md#fulfillments-list), [Get](./REFERENCE.md#fulfillments-get), [Context Store Search](./REFERENCE.md#fulfillments-context-store-search) |
 | Order Refunds | [List](./REFERENCE.md#order-refunds-list), [Get](./REFERENCE.md#order-refunds-get), [Context Store Search](./REFERENCE.md#order-refunds-context-store-search) |
 | Transactions | [List](./REFERENCE.md#transactions-list), [Get](./REFERENCE.md#transactions-get) |
@@ -74,23 +85,84 @@ This connector supports the following entities and actions. For more details, se
 | Metafield Product Images | [List](./REFERENCE.md#metafield-product-images-list), [Context Store Search](./REFERENCE.md#metafield-product-images-context-store-search) |
 | Customer Address | [List](./REFERENCE.md#customer-address-list), [Get](./REFERENCE.md#customer-address-get) |
 | Fulfillment Orders | [List](./REFERENCE.md#fulfillment-orders-list), [Get](./REFERENCE.md#fulfillment-orders-get), [Context Store Search](./REFERENCE.md#fulfillment-orders-context-store-search) |
+| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Create](./REFERENCE.md#pages-create), [Update](./REFERENCE.md#pages-update), [Delete](./REFERENCE.md#pages-delete), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
+| Blogs | [List](./REFERENCE.md#blogs-list), [Get](./REFERENCE.md#blogs-get), [Create](./REFERENCE.md#blogs-create), [Update](./REFERENCE.md#blogs-update), [Delete](./REFERENCE.md#blogs-delete), [Context Store Search](./REFERENCE.md#blogs-context-store-search) |
+| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Create](./REFERENCE.md#articles-create), [Update](./REFERENCE.md#articles-update), [Delete](./REFERENCE.md#articles-delete), [Context Store Search](./REFERENCE.md#articles-context-store-search) |
+| Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Context Store Search](./REFERENCE.md#balance-transactions-context-store-search) |
+| Disputes | [List](./REFERENCE.md#disputes-list), [Get](./REFERENCE.md#disputes-get), [Context Store Search](./REFERENCE.md#disputes-context-store-search) |
+| Metafield Pages | [List](./REFERENCE.md#metafield-pages-list), [Context Store Search](./REFERENCE.md#metafield-pages-context-store-search) |
+| Metafield Blogs | [List](./REFERENCE.md#metafield-blogs-list), [Context Store Search](./REFERENCE.md#metafield-blogs-context-store-search) |
+| Metafield Articles | [List](./REFERENCE.md#metafield-articles-list), [Context Store Search](./REFERENCE.md#metafield-articles-context-store-search) |
+| Draft Order Complete | [Update](./REFERENCE.md#draft-order-complete-update) |
+| Inventory Set | [Create](./REFERENCE.md#inventory-set-create) |
+| Inventory Adjust | [Create](./REFERENCE.md#inventory-adjust-create) |
+| Metafields | [Create](./REFERENCE.md#metafields-create), [Delete](./REFERENCE.md#metafields-delete) |
 
 
 ## Shopify API docs
 
 See the official [Shopify API reference](https://shopify.dev/docs/api/admin-rest).
 
-## SDK installation
+## Interfaces
+
+Use the Shopify connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "shopify",
+  "entity": "customers",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -280,7 +352,7 @@ async def shopify_execute(entity: str, action: str, params: dict | None = None):
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
@@ -289,10 +361,10 @@ In open source mode, you provide API credentials directly to the connector.
 ```python title="Pydantic AI"
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
-from airbyte_agent_sdk.connectors.shopify.models import ShopifyAuthConfig
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
 
 connector = ShopifyConnector(
-    auth_config=ShopifyAuthConfig(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
     )
 )
@@ -310,10 +382,10 @@ async def shopify_execute(entity: str, action: str, params: dict | None = None):
 ```python title="LangChain"
 from langchain_core.tools import tool
 from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
-from airbyte_agent_sdk.connectors.shopify.models import ShopifyAuthConfig
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
 
 connector = ShopifyConnector(
-    auth_config=ShopifyAuthConfig(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
     )
 )
@@ -332,10 +404,10 @@ async def shopify_execute(entity: str, action: str, params: dict | None = None):
 ```python title="OpenAI Agents"
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
-from airbyte_agent_sdk.connectors.shopify.models import ShopifyAuthConfig
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
 
 connector = ShopifyConnector(
-    auth_config=ShopifyAuthConfig(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
     )
 )
@@ -357,10 +429,10 @@ agent = Agent(name="Shopify Assistant", tools=[shopify_execute])
 ```python title="FastMCP"
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
-from airbyte_agent_sdk.connectors.shopify.models import ShopifyAuthConfig
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
 
 connector = ShopifyConnector(
-    auth_config=ShopifyAuthConfig(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
     )
 )
@@ -378,6 +450,10 @@ async def shopify_execute(entity: str, action: str, params: dict | None = None):
 ## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 

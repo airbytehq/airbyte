@@ -99,6 +99,10 @@ The Gutendex source connector supports the following [sync modes](https://docs.a
 
 There is no published rate limit. However, since this data updates infrequently, it is recommended to set the update cadence to 24hr or higher.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

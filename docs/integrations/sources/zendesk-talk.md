@@ -84,6 +84,10 @@ The connector automatically handles rate limiting by respecting `429` responses 
 | `array` | `array` |
 | `object` | `object` |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -91,6 +95,11 @@ The connector automatically handles rate limiting by respecting `429` responses 
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.0.16 | 2026-06-30 | [81319](https://github.com/airbytehq/airbyte/pull/81319) | Update dependencies |
+| 2.0.15 | 2026-06-23 | [80706](https://github.com/airbytehq/airbyte/pull/80706) | Update dependencies |
+| 2.0.14 | 2026-06-16 | [80118](https://github.com/airbytehq/airbyte/pull/80118) | Update dependencies |
+| 2.0.13 | 2026-06-09 | [79570](https://github.com/airbytehq/airbyte/pull/79570) | Update dependencies |
+| 2.0.12 | 2026-06-02 | [76832](https://github.com/airbytehq/airbyte/pull/76832) | Update dependencies |
 | 2.0.11 | 2026-04-30 | [77647](https://github.com/airbytehq/airbyte/pull/77647) | Promoted release candidate to GA |
 | 2.0.11-rc.1 | 2026-04-10 | [76203](https://github.com/airbytehq/airbyte/pull/76203) | Add concurrency support with default_concurrency of 12 |
 | 2.0.10 | 2026-04-07 | [76106](https://github.com/airbytehq/airbyte/pull/76106) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |

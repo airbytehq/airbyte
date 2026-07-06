@@ -1,5 +1,22 @@
 # Jira Migration Guide
 
+## Upgrading to 6.0.0
+
+Atlassian is removing the `GET /rest/api/3/fieldconfiguration` endpoint in July 2026 (see [RFC-103](https://community.developer.atlassian.com/t/rfc-103-jira-field-configuration-overhaul-admin-experience-and-api-changes/)). This version removes the `issue_field_configurations` stream entirely, with no replacement stream. After upgrading, this stream will no longer be available for syncing.
+
+### Who is affected
+
+Users syncing the `issue_field_configurations` stream. Users who do not sync this stream can upgrade without action.
+
+### Steps to migrate
+
+1. Select **Connections** in the main navbar, then select the affected connection(s).
+2. Select the **Schema** tab.
+3. Disable the `issue_field_configurations` stream.
+4. Select **Save changes** at the bottom of the page.
+
+If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/managing-airbyte/connector-updates).
+
 ## Upgrading to 5.0.0
 
 Atlassian is removing the `GET /rest/api/3/workflow/search` endpoint on June 1, 2026 (see Atlassian's [CHANGE-2569](https://developer.atlassian.com/cloud/jira/platform/changelog/#CHANGE-2569)). This version of the source-jira connector migrates the `workflows` stream to the replacement endpoint `GET /rest/api/3/workflows/search`, which returns a different response shape.

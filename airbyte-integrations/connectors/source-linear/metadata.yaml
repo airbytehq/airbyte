@@ -16,11 +16,11 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.4@sha256:f63c39a8a6f28ec20ada2ddf5861f3b1fb7b6a1ef1a8a8d1d537ff684ee3f9bd
   connectorSubtype: api
   connectorType: source
   definitionId: 1c5d8316-ed42-4473-8fbc-2626f03f070c
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-linear
   githubIssueLabel: source-linear
   icon: icon.svg

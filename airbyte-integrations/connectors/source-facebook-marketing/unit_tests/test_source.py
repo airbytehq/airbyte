@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
     Status,
     SyncMode,
 )
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 
 from .utils import command_check
 
@@ -183,6 +184,33 @@ class TestSourceFacebookMarketing:
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
+
+    def test_deprecated_dma_breakdown_removed_from_spec(self, fb_marketing):
+        # Meta replaced `dma` with `comscore_market` (oncall #12940). `dma` must no longer be a
+        # selectable breakdown, so a Custom Insights config still using it is rejected by the CDK's
+        # config-vs-spec validation. `comscore_market` remains available as the replacement.
+        spec = fb_marketing.spec(None).connectionSpecification
+        breakdowns_enum = spec["properties"]["custom_insights"]["items"]["properties"]["breakdowns"]["items"]["enum"]
+        assert "dma" not in breakdowns_enum
+        assert "comscore_market" in breakdowns_enum
+
+    def test_dma_breakdown_config_rejected_with_config_error(self, config, fb_marketing):
+        """Validate the actual error users see when their saved config still references dma."""
+        config["custom_insights"] = [
+            {
+                "name": "test_dma_stream",
+                "fields": ["account_id"],
+                "breakdowns": ["dma"],
+                "action_breakdowns": ["action_type"],
+            },
+        ]
+        source_spec = fb_marketing.spec(None)
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            check_config_against_spec_or_exit(config, source_spec)
+
+        assert exc_info.value.failure_type.value == "config_error"
+        assert "dma" in exc_info.value.message
+        assert "Config validation error" in exc_info.value.message
 
     def test_read_missing_stream(self, config, api, logger_mock, fb_marketing):
         catalog = ConfiguredAirbyteCatalog(
