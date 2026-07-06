@@ -303,51 +303,23 @@ class TwilioConferencesStateMigration(StateMigration):
 
 class TwilioConferenceParticipantsStateMigration(StateMigration):
     """
-    Add `conference_status: "in-progress"` to the `parent_slice` of each
-    conference_participants partition after adding the `ListPartitionRouter`
-    to the conferences parent stream.
+    Migrate `conference_participants` state to only contain `in-progress` partitions.
 
-    Only `in-progress` is needed because the Twilio Participants API only
-    returns data for active (non-completed) conferences.
+    The Twilio Participants API only returns data for active (non-completed)
+    conferences, so the parent stream only fetches `Status=in-progress`.
 
-    Initial:
-      {
-        "states": [
-          {
-            "partition": {
-              "subresource_uris": { "participants": "/2010-04-01/.../Participants.json" },
-              "parent_slice": {
-                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
-                "parent_slice": {}
-              }
-            },
-            "cursor": { "date_created": "2022-11-01T00:00:00Z" }
-          }
-        ]
-      }
-
-    Final:
-      {
-        "states": [
-          {
-            "partition": {
-              "subresource_uris": { "participants": "/2010-04-01/.../Participants.json" },
-              "parent_slice": {
-                "conference_status": "in-progress",
-                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
-                "parent_slice": {}
-              }
-            },
-            "cursor": { "date_created": "2022-11-01T00:00:00Z" }
-          }
-        ]
-      }
+    This migration handles two cases:
+    - Old state without `conference_status` in `parent_slice`: adds `"in-progress"`
+    - State with `conference_status: "completed"` partitions: removes them
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         new_states: list[dict[str, Any]] = []
         for state in stream_state.get("states", []):
             parent_slice = state.get("partition", {}).get("parent_slice", {})
+            existing_status = parent_slice.get("conference_status")
+            if existing_status == "completed":
+                continue
             new_parent_slice = copy.deepcopy(parent_slice)
             new_parent_slice["conference_status"] = "in-progress"
             new_partition = copy.deepcopy(state["partition"])
@@ -356,8 +328,11 @@ class TwilioConferenceParticipantsStateMigration(StateMigration):
         return {"states": new_states}
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if stream_state and any(
-            "conference_status" not in state.get("partition", {}).get("parent_slice", {}) for state in stream_state.get("states", [])
-        ):
-            return True
+        if not stream_state:
+            return False
+        for state in stream_state.get("states", []):
+            parent_slice = state.get("partition", {}).get("parent_slice", {})
+            status = parent_slice.get("conference_status")
+            if status is None or status == "completed":
+                return True
         return False

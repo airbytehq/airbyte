@@ -865,6 +865,26 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
                     },
                 ]
             },
+            {"states": []},
+            True,
+            id="completed_partitions_are_removed",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "in-progress",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
             None,
             False,
             id="already_migrated_no_op",
