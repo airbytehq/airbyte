@@ -1030,6 +1030,13 @@ definitions:
             - http_codes: [422]
               action: IGNORE
               error_message: "Skipping side conversations for this ticket because the Zendesk API returned an unprocessable entity error. This typically means the ticket type does not support side conversations. Other tickets will continue to sync normally."
+            - error_message_contains: "You do not have access"
+              action: IGNORE
+              error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
+            - http_codes: [403, 404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The endpoint returned an error indicating a configuration issue. Please ensure that your account has the necessary access level and that the endpoint is available. Error message: {{ response.get('error') }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
