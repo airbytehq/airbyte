@@ -69,6 +69,10 @@ For more details, please read [How to find your API key](https://api.freshservic
 
 Your Freshservice domain is the subdomain of your Freshservice account URL. For example, if you access Freshservice at `https://your-company.freshservice.com`, then your domain name is `your-company.freshservice.com`.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Reference
 
 This connector uses the [Freshservice REST API v2](https://api.freshservice.com/). All API requests must use HTTPS.
@@ -80,6 +84,11 @@ This connector uses the [Freshservice REST API v2](https://api.freshservice.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.4.60 | 2026-06-30 | [81068](https://github.com/airbytehq/airbyte/pull/81068) | Update dependencies |
+| 1.4.59 | 2026-06-23 | [80458](https://github.com/airbytehq/airbyte/pull/80458) | Update dependencies |
+| 1.4.58 | 2026-06-16 | [79876](https://github.com/airbytehq/airbyte/pull/79876) | Update dependencies |
+| 1.4.57 | 2026-06-09 | [79316](https://github.com/airbytehq/airbyte/pull/79316) | Update dependencies |
+| 1.4.56 | 2026-06-02 | [78718](https://github.com/airbytehq/airbyte/pull/78718) | Update dependencies |
 | 1.4.55 | 2026-04-28 | [77256](https://github.com/airbytehq/airbyte/pull/77256) | Update dependencies |
 | 1.4.54 | 2026-04-21 | [76612](https://github.com/airbytehq/airbyte/pull/76612) | Update dependencies |
 | 1.4.53 | 2026-03-31 | [75664](https://github.com/airbytehq/airbyte/pull/75664) | Update dependencies |

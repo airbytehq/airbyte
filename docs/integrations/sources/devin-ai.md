@@ -90,6 +90,10 @@ The `session_messages` stream is a substream of `sessions`: for each session ret
 | `org_id` | string | Yes | | Your Devin organization ID. Uses the `org_` prefix. |
 | `start_date` | string (ISO 8601, UTC) | No | (no filter) | Optional lower bound on `created_at` for the `sessions`, `sessions_insights`, and `session_messages` streams. Sessions created before this instant are excluded. Format: `YYYY-MM-DDTHH:MM:SSZ`. Example: `2026-01-01T00:00:00Z`. |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -97,6 +101,10 @@ The `session_messages` stream is a substream of `sessions`: for each session ret
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.5 | 2026-06-23 | [80426](https://github.com/airbytehq/airbyte/pull/80426) | Update dependencies |
+| 0.2.4 | 2026-06-16 | [79827](https://github.com/airbytehq/airbyte/pull/79827) | Update dependencies |
+| 0.2.3 | 2026-06-09 | [79281](https://github.com/airbytehq/airbyte/pull/79281) | Update dependencies |
+| 0.2.2 | 2026-06-02 | [78663](https://github.com/airbytehq/airbyte/pull/78663) | Update dependencies |
 | 0.2.1 | 2026-04-28 | [77201](https://github.com/airbytehq/airbyte/pull/77201) | Update dependencies |
 | 0.2.0 | 2026-04-22 | [76475](https://github.com/airbytehq/airbyte/pull/76475) | Add `sessions_insights` stream for analytics (message counts, session size, AI-generated classification); add optional `start_date` config to filter `sessions`, `sessions_insights`, and `session_messages` by creation time |
 | 0.1.1 | 2026-04-21 | [76504](https://github.com/airbytehq/airbyte/pull/76504) | Update dependencies |

@@ -154,6 +154,9 @@ Airbyte supports three network connectivity options for connecting to Oracle:
 
 3. **TLS Encrypted (verify certificate)**: Uses the TLS protocol with certificate verification for maximum security. Requires you to provide the server's SSL certificate in PEM format in the `SSL PEM file` field. The certificate must be valid and trusted.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

@@ -5,9 +5,10 @@ The Intercom agent connector is a Python package that equips AI agents to intera
 Intercom is a customer messaging platform that enables businesses to communicate with
 customers through chat, email, and in-app messaging. This connector provides access
 to core Intercom entities including contacts, conversations, companies, teams,
-admins, tags, and segments for customer support analytics and insights. It also supports
-creating and updating contacts, creating notes, creating internal articles, creating
-and updating companies, and creating tags.
+admins, tags, and segments for customer support analytics and insights. It supports
+creating, updating, and deleting contacts and companies; creating and deleting tags;
+creating, updating, and deleting conversations; creating notes; and creating, updating,
+and deleting internal articles.
 
 
 ## Example prompts
@@ -27,20 +28,25 @@ The Intercom connector is optimized to handle prompts like these.
 - Create an internal article titled 'Onboarding Guide' with instructions for new team members
 - Create a company named 'Acme Corp' with company_id 'acme-001'
 - Create a tag named 'VIP Customer'
+- Create a conversation from contact \{id\} saying 'I need help with my account'
 - Update the name of contact \{id\} to 'John Updated'
 - Add a note to contact \{id\} saying 'Followed up on support request'
 - Show me conversations from the last week
 - List conversations assigned to team \{team_id\}
 - Show me open conversations
+- Delete contact \{id\}
+- Delete company \{id\}
+- Delete tag \{id\}
+- Delete conversation \{id\}
+- Delete internal article \{id\}
+- Update conversation \{id\} to mark it as read
+- Update internal article \{id\} with a new title
 
 ## Unsupported prompts
 
 The Intercom connector isn't currently able to handle prompts like these.
 
 - Send a message to a customer
-- Delete a conversation
-- Delete a contact
-- Delete a company
 - Assign a conversation to an admin
 
 ## Entities and actions
@@ -49,32 +55,81 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get), [Context Store Search](./REFERENCE.md#conversations-context-store-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Conversations | [List](./REFERENCE.md#conversations-list), [Create](./REFERENCE.md#conversations-create), [Get](./REFERENCE.md#conversations-get), [Update](./REFERENCE.md#conversations-update), [Delete](./REFERENCE.md#conversations-delete), [Context Store Search](./REFERENCE.md#conversations-context-store-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Delete](./REFERENCE.md#companies-delete), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
 | Admins | [List](./REFERENCE.md#admins-list), [Get](./REFERENCE.md#admins-get) |
-| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get) |
+| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get), [Delete](./REFERENCE.md#tags-delete) |
 | Notes | [Create](./REFERENCE.md#notes-create) |
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get) |
-| Internal Articles | [Create](./REFERENCE.md#internal-articles-create) |
+| Internal Articles | [Create](./REFERENCE.md#internal-articles-create), [Update](./REFERENCE.md#internal-articles-update), [Delete](./REFERENCE.md#internal-articles-delete) |
 
 
 ## Intercom API docs
 
 See the official [Intercom API reference](https://developers.intercom.com/docs/references/rest-api/api.intercom.io).
 
-## SDK installation
+## Interfaces
+
+Use the Intercom connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -264,7 +319,7 @@ async def intercom_execute(entity: str, action: str, params: dict | None = None)
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
@@ -362,6 +417,10 @@ async def intercom_execute(entity: str, action: str, params: dict | None = None)
 ## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 

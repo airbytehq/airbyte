@@ -510,6 +510,93 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="CompanyCreateParams"></a>
+
+`CompanyCreateParams(**data: Any)`
+:   Parameters for creating a new company
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.CompanyCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="CompanyCreateParamsProperties"></a>
+
+`CompanyCreateParamsProperties(**data: Any)`
+:   Company properties to set
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `annualrevenue: str | None`
+    :   Annual revenue
+
+    `city: str | None`
+    :   Company city
+
+    `country: str | None`
+    :   Company country
+
+    `description: str | None`
+    :   Company description
+
+    `domain: str | None`
+    :   Company domain name (e.g., example.com)
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this company
+
+    `industry: str | None`
+    :   Company industry
+
+    `lifecyclestage: str | None`
+    :   Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   Company name (required)
+
+    `numberofemployees: str | None`
+    :   Number of employees
+
+    `phone: str | None`
+    :   Company phone number
+
+    `state: str | None`
+    :   Company state/region
+
+    `website: str | None`
+    :   Company website URL
+
+    `zip: str | None`
+    :   Company postal/zip code
+
 <a id="CompanyProperties"></a>
 
 `CompanyProperties(**data: Any)`
@@ -545,6 +632,93 @@ Classes
 
     `name: str | None`
     :   The type of the None singleton.
+
+<a id="CompanyUpdateParams"></a>
+
+`CompanyUpdateParams(**data: Any)`
+:   Parameters for updating an existing company. Only provided properties will be updated.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.CompanyUpdateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="CompanyUpdateParamsProperties"></a>
+
+`CompanyUpdateParamsProperties(**data: Any)`
+:   Company properties to update
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `annualrevenue: str | None`
+    :   Annual revenue
+
+    `city: str | None`
+    :   Company city
+
+    `country: str | None`
+    :   Company country
+
+    `description: str | None`
+    :   Company description
+
+    `domain: str | None`
+    :   Company domain name (e.g., example.com)
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this company
+
+    `industry: str | None`
+    :   Company industry
+
+    `lifecyclestage: str | None`
+    :   Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Company name
+
+    `numberofemployees: str | None`
+    :   Number of employees
+
+    `phone: str | None`
+    :   Company phone number
+
+    `state: str | None`
+    :   Company state/region
+
+    `website: str | None`
+    :   Company website URL
+
+    `zip: str | None`
+    :   Company postal/zip code
 
 <a id="Contact"></a>
 
@@ -597,6 +771,78 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="ContactCreateParams"></a>
+
+`ContactCreateParams(**data: Any)`
+:   Parameters for creating a new contact
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.ContactCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="ContactCreateParamsProperties"></a>
+
+`ContactCreateParamsProperties(**data: Any)`
+:   Contact properties to set
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `company: str | None`
+    :   Company name associated with the contact
+
+    `email: str`
+    :   Contact email address (required, used as unique identifier)
+
+    `firstname: str | None`
+    :   Contact first name
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this contact
+
+    `jobtitle: str | None`
+    :   Contact job title
+
+    `lastname: str | None`
+    :   Contact last name
+
+    `lifecyclestage: str | None`
+    :   Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   Contact phone number
+
+    `website: str | None`
+    :   Contact website URL
+
 <a id="ContactProperties"></a>
 
 `ContactProperties(**data: Any)`
@@ -635,6 +881,78 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactUpdateParams"></a>
+
+`ContactUpdateParams(**data: Any)`
+:   Parameters for updating an existing contact. Only provided properties will be updated.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.ContactUpdateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="ContactUpdateParamsProperties"></a>
+
+`ContactUpdateParamsProperties(**data: Any)`
+:   Contact properties to update
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `company: str | None`
+    :   Company name associated with the contact
+
+    `email: str | None`
+    :   Contact email address
+
+    `firstname: str | None`
+    :   Contact first name
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this contact
+
+    `jobtitle: str | None`
+    :   Contact job title
+
+    `lastname: str | None`
+    :   Contact last name
+
+    `lifecyclestage: str | None`
+    :   Lifecycle stage (e.g., subscriber, lead, marketingqualifiedlead, salesqualifiedlead, opportunity, customer, evangelist, other)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   Contact phone number
+
+    `website: str | None`
+    :   Contact website URL
 
 <a id="ContactsApiSearchResultMeta"></a>
 
@@ -837,6 +1155,75 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="DealCreateParams"></a>
+
+`DealCreateParams(**data: Any)`
+:   Parameters for creating a new deal
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.DealCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="DealCreateParamsProperties"></a>
+
+`DealCreateParamsProperties(**data: Any)`
+:   Deal properties to set
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Deal amount
+
+    `closedate: str | None`
+    :   Expected close date (ISO 8601 format, e.g., 2024-12-31T00:00:00.000Z)
+
+    `dealname: str`
+    :   Deal name (required)
+
+    `dealstage: str | None`
+    :   Deal stage ID (e.g., appointmentscheduled, qualifiedtobuy, presentationscheduled, decisionmakerboughtin, contractsent, closedwon, closedlost)
+
+    `dealtype: str | None`
+    :   Deal type (e.g., newbusiness, existingbusiness)
+
+    `description: str | None`
+    :   Deal description
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this deal
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `pipeline: str | None`
+    :   Deal pipeline ID (defaults to the default pipeline)
+
 <a id="DealProperties"></a>
 
 `DealProperties(**data: Any)`
@@ -881,6 +1268,75 @@ Classes
 
     `pipeline: str | None`
     :   The type of the None singleton.
+
+<a id="DealUpdateParams"></a>
+
+`DealUpdateParams(**data: Any)`
+:   Parameters for updating an existing deal. Only provided properties will be updated.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.DealUpdateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="DealUpdateParamsProperties"></a>
+
+`DealUpdateParamsProperties(**data: Any)`
+:   Deal properties to update
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Deal amount
+
+    `closedate: str | None`
+    :   Expected close date (ISO 8601 format, e.g., 2024-12-31T00:00:00.000Z)
+
+    `dealname: str | None`
+    :   Deal name
+
+    `dealstage: str | None`
+    :   Deal stage ID (e.g., appointmentscheduled, qualifiedtobuy, presentationscheduled, decisionmakerboughtin, contractsent, closedwon, closedlost)
+
+    `dealtype: str | None`
+    :   Deal type (e.g., newbusiness, existingbusiness)
+
+    `description: str | None`
+    :   Deal description
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this deal
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `pipeline: str | None`
+    :   Deal pipeline ID
 
 <a id="DealsApiSearchResultMeta"></a>
 
@@ -2142,6 +2598,72 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="TicketCreateParams"></a>
+
+`TicketCreateParams(**data: Any)`
+:   Parameters for creating a new support ticket
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.TicketCreateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="TicketCreateParamsProperties"></a>
+
+`TicketCreateParamsProperties(**data: Any)`
+:   Ticket properties to set
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content: str | None`
+    :   Ticket description/content
+
+    `hs_pipeline: str`
+    :   Ticket pipeline ID (required, use '0' for default pipeline)
+
+    `hs_pipeline_stage: str`
+    :   Pipeline stage ID (required, e.g., '1' for New in the default pipeline)
+
+    `hs_ticket_category: str | None`
+    :   Ticket category
+
+    `hs_ticket_priority: str | None`
+    :   Ticket priority (e.g., LOW, MEDIUM, HIGH)
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this ticket
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   Ticket subject line (required)
+
 <a id="TicketProperties"></a>
 
 `TicketProperties(**data: Any)`
@@ -2189,6 +2711,72 @@ Classes
 
     `subject: str | None`
     :   The type of the None singleton.
+
+<a id="TicketUpdateParams"></a>
+
+`TicketUpdateParams(**data: Any)`
+:   Parameters for updating an existing ticket. Only provided properties will be updated.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: airbyte_agent_sdk.connectors.hubspot.models.TicketUpdateParamsProperties`
+    :   The type of the None singleton.
+
+<a id="TicketUpdateParamsProperties"></a>
+
+`TicketUpdateParamsProperties(**data: Any)`
+:   Ticket properties to update
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content: str | None`
+    :   Ticket description/content
+
+    `hs_pipeline: str | None`
+    :   Ticket pipeline ID
+
+    `hs_pipeline_stage: str | None`
+    :   Pipeline stage ID
+
+    `hs_ticket_category: str | None`
+    :   Ticket category
+
+    `hs_ticket_priority: str | None`
+    :   Ticket priority (e.g., LOW, MEDIUM, HIGH)
+
+    `hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner to assign to this ticket
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `subject: str | None`
+    :   Ticket subject line
 
 <a id="TicketsApiSearchResultMeta"></a>
 

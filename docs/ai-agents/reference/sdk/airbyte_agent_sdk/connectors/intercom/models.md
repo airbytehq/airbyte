@@ -789,6 +789,36 @@ Classes
     `website: str | None`
     :   The type of the None singleton.
 
+<a id="CompanyDeletedResponse"></a>
+
+`CompanyDeletedResponse(**data: Any)`
+:   Response from deleting a company
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `deleted: bool | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   The type of the None singleton.
+
 <a id="CompanyPlan"></a>
 
 `CompanyPlan(**data: Any)`
@@ -1177,6 +1207,39 @@ Classes
     :   The type of the None singleton.
 
     `unsubscribed_from_emails: bool | None`
+    :   The type of the None singleton.
+
+<a id="ContactDeletedResponse"></a>
+
+`ContactDeletedResponse(**data: Any)`
+:   Response from deleting a contact
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `deleted: bool | None`
+    :   The type of the None singleton.
+
+    `external_id: str | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ContactNotes"></a>
@@ -1734,6 +1797,99 @@ Classes
     `type_: str | None`
     :   The type of the None singleton.
 
+<a id="ConversationCreateParams"></a>
+
+`ConversationCreateParams(**data: Any)`
+:   ConversationCreateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `attachment_urls: list[str] | None`
+    :   The type of the None singleton.
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `created_at: int | None`
+    :   The type of the None singleton.
+
+    `from_: airbyte_agent_sdk.connectors.intercom.models.ConversationCreateParamsFrom`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `subject: str | None`
+    :   The type of the None singleton.
+
+<a id="ConversationCreateParamsFrom"></a>
+
+`ConversationCreateParamsFrom(**data: Any)`
+:   The contact (user or lead) initiating the conversation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   The identifier for the contact as given by Intercom (a 24 character UUID)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str`
+    :   The type of the contact (lead, user, or contact)
+
+<a id="ConversationDeletedResponse"></a>
+
+`ConversationDeletedResponse(**data: Any)`
+:   Response from deleting a conversation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `deleted: bool | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   The type of the None singleton.
+
 <a id="ConversationPart"></a>
 
 `ConversationPart(**data: Any)`
@@ -2035,6 +2191,33 @@ Classes
     :   The type of the None singleton.
 
     `type_: str | None`
+    :   The type of the None singleton.
+
+<a id="ConversationUpdateParams"></a>
+
+`ConversationUpdateParams(**data: Any)`
+:   ConversationUpdateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `custom_attributes: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `read: bool | None`
     :   The type of the None singleton.
 
 <a id="ConversationsList"></a>
@@ -2841,6 +3024,69 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="InternalArticleDeletedResponse"></a>
+
+`InternalArticleDeletedResponse(**data: Any)`
+:   Response from deleting an internal article
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `deleted: bool | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   The type of the None singleton.
+
+<a id="InternalArticleUpdateParams"></a>
+
+`InternalArticleUpdateParams(**data: Any)`
+:   InternalArticleUpdateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author_id: int | None`
+    :   The type of the None singleton.
+
+    `body: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `owner_id: int | None`
+    :   The type of the None singleton.
+
+    `title: str | None`
+    :   The type of the None singleton.
+
 <a id="Location"></a>
 
 `Location(**data: Any)`
@@ -2875,6 +3121,48 @@ Classes
     :   The type of the None singleton.
 
     `region: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+<a id="Message"></a>
+
+`Message(**data: Any)`
+:   Message object returned when creating a conversation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: str | None`
+    :   The type of the None singleton.
+
+    `conversation_id: str | None`
+    :   The type of the None singleton.
+
+    `created_at: int | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `message_type: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `subject: str | None`
     :   The type of the None singleton.
 
     `type_: str | None`
@@ -3253,6 +3541,27 @@ Classes
     :   The type of the None singleton.
 
     `name: str`
+    :   The type of the None singleton.
+
+<a id="TagDeletedResponse"></a>
+
+`TagDeletedResponse(**data: Any)`
+:   Response from deleting a tag (Intercom returns an empty body)
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
     :   The type of the None singleton.
 
 <a id="TagReference"></a>

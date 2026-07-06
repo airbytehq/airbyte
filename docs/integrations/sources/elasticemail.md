@@ -25,6 +25,10 @@ Docs : https://elasticemail.com/developers/api-documentation/rest-api
 | statistics |  | DefaultPaginator | ✅ |  ❌  |
 | templates |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,11 @@ Docs : https://elasticemail.com/developers/api-documentation/rest-api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.55 | 2026-06-30 | [81062](https://github.com/airbytehq/airbyte/pull/81062) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80444](https://github.com/airbytehq/airbyte/pull/80444) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [79838](https://github.com/airbytehq/airbyte/pull/79838) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79326](https://github.com/airbytehq/airbyte/pull/79326) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78688](https://github.com/airbytehq/airbyte/pull/78688) | Update dependencies |
 | 0.0.50 | 2026-04-28 | [77209](https://github.com/airbytehq/airbyte/pull/77209) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76602](https://github.com/airbytehq/airbyte/pull/76602) | Update dependencies |
 | 0.0.48 | 2026-03-17 | [74469](https://github.com/airbytehq/airbyte/pull/74469) | Update dependencies |
