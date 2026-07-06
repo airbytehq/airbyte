@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 import responses
 from source_github import constants
+from source_github.components import RepositoryListResolver
 from source_github.source import SourceGithub
 
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
@@ -20,7 +21,7 @@ from .utils import command_check
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
     config = {"access_token": "test_token", "repository": repo_line}
-    source = SourceGithub(config=config)
+    source = SourceGithub()
     logger_mock = MagicMock()
     return source.check(logger_mock, config)
 
@@ -51,7 +52,7 @@ def test_source_will_continue_sync_on_stream_failure():
     ),
 )
 def test_check_start_date(config, expected, rate_limit_mock_response, requests_mock):
-    requests_mock.get("https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "test_full_name"})
+    requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "test_full_name"})
     source = SourceGithub()
     status, _ = source.check_connection(logger=logging.getLogger("airbyte"), config=config)
     assert status == expected
@@ -102,8 +103,8 @@ def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests
     status = check_source("airbyte/test airbyte/test2 airbytehq/* org/*")
     assert not status.message
     assert status.status == Status.SUCCEEDED
-    # Two requests for repos and two for organization
-    assert requests_mock.call_count == 5
+    # Two requests for explicit repos and two for org wildcards
+    assert requests_mock.call_count == 4
 
 
 def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
@@ -113,12 +114,12 @@ def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
     status = check_source("airbytehq/*")
     assert not status.message
     assert status.status == Status.SUCCEEDED
-    # One request to check organization
-    assert requests_mock.call_count == 2
+    # One request to resolve organization repos
+    assert requests_mock.call_count == 1
 
 
 @responses.activate
-def test_get_org_repositories(requests_mock):
+def test_get_resolved_repositories(requests_mock):
     requests_mock.get(
         "https://api.github.com/repos/airbytehq/integration-test",
         json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
@@ -127,15 +128,20 @@ def test_get_org_repositories(requests_mock):
     requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
         json=[
-            {"full_name": "docker/docker-py", "updated_at": "2020-01-01T00:00:00Z"},
-            {"full_name": "docker/compose", "updated_at": "2020-01-01T00:00:00Z"},
+            {"full_name": "docker/docker-py", "owner": {"login": "docker"}},
+            {"full_name": "docker/compose", "owner": {"login": "docker"}},
         ],
     )
 
-    config = {"repositories": ["airbytehq/integration-test", "docker/*"]}
+    config = {"credentials": {"access_token": "test_token"}, "repositories": ["airbytehq/integration-test", "docker/*"]}
     source = SourceGithub()
     config = source._ensure_default_values(config)
-    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
+    config = source._validate_repositories(config)
+    resolver = RepositoryListResolver(parameters={})
+    resolver.transform(config)
+
+    organisations = config["_resolved_organizations"]
+    repositories = config["_resolved_repositories"]
 
     assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
     assert set(organisations) == {"airbytehq", "docker"}
@@ -143,7 +149,8 @@ def test_get_org_repositories(requests_mock):
 
 @responses.activate
 def test_organization_or_repo_available(monkeypatch, rate_limit_mock_response):
-    monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False, None)))
+    monkeypatch.setattr(SourceGithub, "_get_resolved_repositories", MagicMock(return_value=([], [], None)))
+    monkeypatch.setattr(RepositoryListResolver, "transform", MagicMock())
     source = SourceGithub()
     with pytest.raises(Exception) as exc_info:
         config = {"access_token": "test_token", "repository": ""}
@@ -200,7 +207,8 @@ def test_check_config_repository():
 
 @responses.activate
 def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_response):
-    monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False, None)))
+    monkeypatch.setattr(SourceGithub, "_get_resolved_repositories", MagicMock(return_value=([], [], None)))
+    monkeypatch.setattr(RepositoryListResolver, "transform", MagicMock())
     with pytest.raises(AirbyteTracedException) as e:
         SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
     assert str(e.value) == (
@@ -227,6 +235,8 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
     assert constants.DEFAULT_PAGE_SIZE != constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
 
     for stream in streams:
+        if not hasattr(stream, "page_size"):
+            continue
         if stream.large_stream:
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
         else:
@@ -248,24 +258,22 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
     ),
 )
 def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
-    requests_mock.get("https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
+    requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "default_branch": "default_branch"})
     requests_mock.get(
-        "https://api.github.com/repos/airbyte/test?per_page=100",
-        json={"full_name": "airbyte/test", "default_branch": "default_branch"},
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbyte/test/branches?per_page=100",
+        "https://api.github.com/repos/airbyte/test/branches",
         json=[{"repository": "airbyte/test", "name": "name"}],
     )
     source = SourceGithub()
     streams = source.streams(config=config)
-    # projects stream that uses start date
-    project_stream = streams[4]
+    # Find a Python stream that accepts start_date to verify config propagation
+    python_streams_with_start_date = [s for s in streams if hasattr(s, "_start_date")]
     assert len(streams) == expected
+    assert len(python_streams_with_start_date) > 0
+    sample_stream = python_streams_with_start_date[0]
     if config.get("start_date"):
-        assert project_stream._start_date == "2021-08-27T00:00:46Z"
+        assert sample_stream._start_date == "2021-08-27T00:00:46Z"
     else:
-        assert not project_stream._start_date
+        assert not sample_stream._start_date
 
 
 @pytest.mark.parametrize(

@@ -159,13 +159,10 @@ class GithubStreamABC(HttpStream, ABC):
                     )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
                 api_message = (e._exception.response.json() or {}).get("message", "")
-                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
-                if isinstance(self, Repositories):
-                    raise e
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                elif isinstance(self, (Organizations, Teams, Users)):
+                if isinstance(self, (Organizations, Teams, Users)):
                     error_msg = (
                         f"Skipping `{self.name}` for organization `{organisation}`: "
                         f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
@@ -496,30 +493,6 @@ class Organizations(GithubStreamABC):
         record["organization"] = stream_slice["organization"]
         return record
 
-
-class Repositories(SemiIncrementalMixin, Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
-    """
-
-    is_sorted = "desc"
-    stream_base_params = {
-        "sort": "updated",
-        "direction": "desc",
-    }
-
-    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
-        self._pattern = re.compile(pattern) if pattern else pattern
-        super().__init__(*args, **kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            record = self.transform(record=record, stream_slice=stream_slice)
-            if not self._pattern or self._pattern.match(record["full_name"]):
-                yield record
 
 
 class Tags(GithubStream):

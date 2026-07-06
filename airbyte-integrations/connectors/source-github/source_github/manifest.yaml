@@ -1,6 +1,88 @@
 version: "6.45.1"
 type: DeclarativeSource
+
+definitions:
+  requester_base:
+    type: HttpRequester
+    url_base: "{{ config.get('api_url', 'https://api.github.com') }}"
+    authenticator:
+      type: TokenPoolAuthenticator
+      tokens: "{{ config.get('credentials', {}).get('personal_access_token', config.get('credentials', {}).get('access_token', config.get('access_token', ''))) }}"
+      token_separator: ","
+      auth_method: "token"
+      header: "Authorization"
+      rotation_strategy:
+        type: RateLimitAwareRotation
+        ratelimit_remaining_header: "x-ratelimit-remaining"
+        ratelimit_reset_header: "x-ratelimit-reset"
+        max_wait_seconds: 7200
+    request_headers:
+      User-Agent: "PostmanRuntime/7.28.0"
+
+  page_link_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: "page"
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 100
+      start_from_page: 1
+
+  repositories_stream:
+    type: DeclarativeStream
+    name: repositories
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "orgs/{{ stream_partition.organization }}/repos"
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+          sort: "updated"
+          direction: "desc"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ config.get('_repository_pattern', '') == ''
+               or record['full_name'] is regex_match(config['_repository_pattern']) }}
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config.get('_resolved_organizations', []) }}"
+        cursor_field: "organization"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["organization"]
+            value: "{{ stream_partition.organization }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_github/schemas/repositories.json"
+
+streams:
+  - $ref: "#/definitions/repositories_stream"
+
 check:
   type: CheckStream
   stream_names: []
-streams: []
