@@ -48,7 +48,7 @@ Classes
     :   Returns a list of users associated with ad accounts
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying by account URN
             accounts: Account URN, e.g. urn:li:sponsoredAccount:123456
             count: Number of items per page
             start: Offset for pagination
@@ -112,11 +112,11 @@ Classes
         Returns:
             Account
 
-    `list(self, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta]`
+    `list(self, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], AccountsListResultMeta]`
     :   Returns a list of ad accounts the authenticated user has access to
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad accounts
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -199,7 +199,7 @@ Classes
         
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad analytics
             pivot: Pivot dimension for analytics grouping
             time_granularity: Time granularity for analytics data
             date_range: Date range in LinkedIn format, e.g. (start:(year:2024,month:1,day:1),end:(year:2024,month:12,day:31))
@@ -285,7 +285,7 @@ Classes
         
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad analytics
             pivot: Pivot dimension for analytics grouping
             time_granularity: Time granularity for analytics data
             date_range: Date range in LinkedIn format, e.g. (start:(year:2024,month:1,day:1),end:(year:2024,month:12,day:31))
@@ -353,7 +353,7 @@ Classes
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying campaign groups
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -427,12 +427,12 @@ Classes
         Returns:
             Campaign
 
-    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]`
+    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CampaignsListResultMeta]`
     :   Returns a list of campaigns for an ad account
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying campaigns
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -499,7 +499,7 @@ Classes
     :   Returns a list of conversion rules for an ad account
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying conversions by account
             account: Account URN, e.g. urn:li:sponsoredAccount:123456
             count: Number of items per page
             start: Offset for pagination
@@ -563,12 +563,12 @@ Classes
         Returns:
             Creative
 
-    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Creative], CreativesListResultMeta]`
+    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CreativesListResultMeta]`
     :   Returns a list of creatives for an ad account
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying creatives
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
