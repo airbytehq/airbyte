@@ -101,6 +101,16 @@ Classes
         Returns:
             Company
 
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.CompanyDeletedResponse`
+    :   Permanently delete a company by ID
+        
+        Args:
+            id: The unique identifier of the company to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            CompanyDeletedResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Company`
     :   Get a single company by ID
         
@@ -244,6 +254,16 @@ Classes
         Returns:
             Contact
 
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.ContactDeletedResponse`
+    :   Permanently delete a contact by ID
+        
+        Args:
+            id: The unique identifier of the contact to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            ContactDeletedResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Contact`
     :   Get a single contact by ID
         
@@ -350,6 +370,30 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, from_: ConversationsCreateParamsFrom, body: str, subject: str | None = None, attachment_urls: list[str] | None = None, created_at: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Message`
+    :   Create a new conversation initiated by a contact (user or lead)
+        
+        Args:
+            from_: The contact (user or lead) initiating the conversation
+            body: The content of the initial message in the conversation
+            subject: The subject line of the conversation (optional)
+            attachment_urls: A list of URLs of attached files (max 10)
+            created_at: Optional timestamp for the conversation creation (Unix)
+            **kwargs: Additional parameters
+        
+        Returns:
+            Message
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.ConversationDeletedResponse`
+    :   Permanently delete a conversation by ID
+        
+        Args:
+            id: Conversation ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            ConversationDeletedResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Conversation`
     :   Get a single conversation by ID
         
@@ -370,6 +414,18 @@ Classes
         
         Returns:
             ConversationsListResult
+
+    `update(self, read: bool | None = None, custom_attributes: dict[str, Any] | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Conversation`
+    :   Update conversation attributes such as custom_attributes or read status
+        
+        Args:
+            read: Mark the conversation as read or unread
+            custom_attributes: Custom attributes to set on the conversation
+            id: Conversation ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Conversation
 
 <a id="IntercomConnector"></a>
 
@@ -510,7 +566,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -567,6 +623,30 @@ Classes
             body: The content of the article in HTML
             owner_id: The ID of the owner of the article
             author_id: The ID of the author of the article
+            **kwargs: Additional parameters
+        
+        Returns:
+            InternalArticle
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.InternalArticleDeletedResponse`
+    :   Permanently delete an internal article by ID
+        
+        Args:
+            id: Internal article ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            InternalArticleDeletedResponse
+
+    `update(self, title: str | None = None, body: str | None = None, author_id: int | None = None, owner_id: int | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.InternalArticle`
+    :   Update an existing internal article by ID
+        
+        Args:
+            title: The title of the article
+            body: The content of the article in HTML
+            author_id: The ID of the author of the article
+            owner_id: The ID of the owner of the article
+            id: Internal article ID
             **kwargs: Additional parameters
         
         Returns:
@@ -640,6 +720,16 @@ Classes
         
         Returns:
             Tag
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.TagDeletedResponse`
+    :   Permanently delete a tag by ID. This removes the tag from all contacts, companies, and conversations.
+        
+        Args:
+            id: The unique identifier of the tag to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            TagDeletedResponse
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Tag`
     :   Get a single tag by ID

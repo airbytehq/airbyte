@@ -188,8 +188,12 @@ const config: Config = {
           // multi-instance sidebars (e.g. sidebar-platform.js) use this same
           // pattern, so this makes ai-agents breadcrumbs consistent with them.
           // See https://github.com/facebook/docusaurus/issues/6953.
+          // Filter out the README (used as the category link) and
+          // standalone landing pages that should not appear in navigation.
+          const hiddenDocIds = new Set(["README", "slack-app"]);
           const itemsWithoutReadme = processedItems.filter(
-            (item: any) => !(item.type === "doc" && item.id === "README"),
+            (item: any) =>
+              !(item.type === "doc" && hiddenDocIds.has(item.id)),
           );
 
           return [
@@ -308,7 +312,7 @@ const config: Config = {
         depth: 4,
         content: {
           includePages: true,
-          excludeRoutes: ["./api-docs/**"],
+          excludeRoutes: ["./api-docs/**", "./ai-agents/slack-app"],
         },
       } satisfies LLmPluginOptions,
     ],
