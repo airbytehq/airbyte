@@ -80,6 +80,7 @@ class TestDestinationHuggingFaceDatasetsWrite(unittest.TestCase):
 
         # Create mock messages
         from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
+
         messages = [
             AirbyteMessage(
                 type=Type.RECORD,
@@ -87,7 +88,7 @@ class TestDestinationHuggingFaceDatasetsWrite(unittest.TestCase):
                     data={"col1": "value1", "col2": 123},
                     stream="test_stream",
                     emitted_at=0,
-                )
+                ),
             ),
             AirbyteMessage(type=Type.STATE, state={"checkpoint": 1}),
         ]

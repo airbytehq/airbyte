@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Run function for the Hugging Face Datasets source connector."""
 
 import sys

@@ -20,9 +20,7 @@ class TestDestinationHuggingFaceBucketsCheck(unittest.TestCase):
         self.destination = DestinationHuggingFaceBuckets()
 
     @patch("destination_hugging_face_buckets.destination.HfFileSystem")
-    def test_check_connection_success(
-        self, mock_fs
-    ):
+    def test_check_connection_success(self, mock_fs):
         """Test successful connection check."""
         mock_fs.return_value = MemoryFileSystem(skip_instance_cache=True)
 
@@ -55,15 +53,14 @@ class TestDestinationHuggingFaceBucketsWrite(unittest.TestCase):
         self.destination = DestinationHuggingFaceBuckets()
 
     @patch("destination_hugging_face_buckets.destination.HfFileSystem")
-    def test_write(
-        self, mock_fs
-    ):
+    def test_write(self, mock_fs):
         """Test successful connection check."""
         mock_fs_instance = MemoryFileSystem(skip_instance_cache=True)
         mock_fs.return_value = mock_fs_instance
 
         # Create mock messages
         from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
+
         messages = [
             AirbyteMessage(
                 type=Type.RECORD,
@@ -71,7 +68,7 @@ class TestDestinationHuggingFaceBucketsWrite(unittest.TestCase):
                     data={"col1": "value1", "col2": 123},
                     stream="test_stream",
                     emitted_at=0,
-                )
+                ),
             ),
             AirbyteMessage(type=Type.STATE, state={"checkpoint": 1}),
         ]

@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Unit tests for the Hugging Face Datasets source connector."""
 
 import logging
@@ -67,14 +69,12 @@ class TestSourceHuggingFaceDatasetsDiscover:
 
     def test_discover_creates_streams(self, source, config, logger):
         """Test that discover creates streams for each config and split."""
-        with patch("datasets.get_dataset_config_names") as mock_get_configs, \
-             patch("datasets.get_dataset_split_names") as mock_get_splits:
-            
+        with patch("datasets.get_dataset_config_names") as mock_get_configs, patch("datasets.get_dataset_split_names") as mock_get_splits:
             mock_get_configs.return_value = ["default"]
             mock_get_splits.return_value = ["train", "test"]
-            
+
             catalog = source.discover(logger, config)
-            
+
             assert len(catalog.streams) == 2
             assert any("squad" in s.name for s in catalog.streams)
 
@@ -90,14 +90,15 @@ class TestSourceHuggingFaceDatasetsRead:
             {"id": "2", "context": "Another context"},
         ]
 
-        with patch("datasets.get_dataset_config_names") as mock_get_configs, \
-             patch("datasets.get_dataset_split_names") as mock_get_splits, \
-             patch("datasets.load_dataset") as mock_load_dataset:
-            
+        with (
+            patch("datasets.get_dataset_config_names") as mock_get_configs,
+            patch("datasets.get_dataset_split_names") as mock_get_splits,
+            patch("datasets.load_dataset") as mock_load_dataset,
+        ):
             mock_get_configs.return_value = ["default"]
             mock_get_splits.return_value = ["train"]
             mock_load_dataset.return_value = mock_dataset
-            
+
             # Create a simple catalog with required sync_mode and destination_sync_mode
             stream = AirbyteStream(
                 name="squad__default__train",
@@ -105,13 +106,15 @@ class TestSourceHuggingFaceDatasetsRead:
                 supported_sync_modes=[SyncMode.full_refresh],
             )
             catalog = ConfiguredAirbyteCatalog(
-                streams=[ConfiguredAirbyteStream(
-                    stream=stream,
-                    sync_mode=SyncMode.full_refresh,
-                    destination_sync_mode=DestinationSyncMode.append,
-                )]
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=stream,
+                        sync_mode=SyncMode.full_refresh,
+                        destination_sync_mode=DestinationSyncMode.append,
+                    )
+                ]
             )
-            
+
             messages = list(source.read(logger, config, catalog))
             records = [m for m in messages if m.type == Type.RECORD]
             assert len(records) == 2

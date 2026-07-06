@@ -3,7 +3,7 @@ name = "airbyte-source-hugging-face-datasets"
 version = "0.0.1"
 description = "Airbyte Source for Hugging Face Datasets using the datasets library"
 readme = "README.md"
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10,<3.14"
 license = {text = "ELv2"}
 
 dependencies = [

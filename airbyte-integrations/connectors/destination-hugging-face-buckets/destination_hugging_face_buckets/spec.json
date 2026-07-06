@@ -13,9 +13,7 @@
         "title": "Destination Path",
         "type": "string",
         "description": "The path to the Hugging Face Bucket where data will be written. Format: hf://buckets/{username}/{bucket}/{path}/. For example: hf://buckets/lhoestq/b/",
-        "examples": [
-          "hf://buckets/lhoestq/b/"
-        ],
+        "examples": ["hf://buckets/lhoestq/b/"],
         "order": 0
       },
       "file_format": {
