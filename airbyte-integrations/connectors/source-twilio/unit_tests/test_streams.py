@@ -648,6 +648,98 @@ class TestTwilioNestedStream:
                 "states": [
                     {
                         "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="multiple_partitions_each_duplicated_with_own_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                ]
+            },
+            True,
+            id="partition_without_cursor_gets_empty_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
                             "conference_status": "completed",
                             "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                             "parent_slice": {},
@@ -721,6 +813,125 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
             },
             True,
             id="single_partition_adds_conference_status_to_parent_slice",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC456/Conferences/CF2/Participants.json"},
+                            "parent_slice": {
+                                "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "completed",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "in-progress",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC456/Conferences/CF2/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "completed",
+                                "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC456/Conferences/CF2/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "in-progress",
+                                "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="multiple_partitions_each_duplicated_with_own_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "completed",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
+                            "parent_slice": {
+                                "conference_status": "in-progress",
+                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                                "parent_slice": {},
+                            },
+                        },
+                        "cursor": {},
+                    },
+                ]
+            },
+            True,
+            id="partition_without_cursor_gets_empty_cursor",
         ),
         pytest.param(
             {
