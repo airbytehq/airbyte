@@ -799,6 +799,7 @@ definitions:
     name: geo_performance
     primary_key:
       - customer.id
+      - ad_group.id
       - geographic_view.country_criterion_id
       - geographic_view.location_type
       - segments.date
