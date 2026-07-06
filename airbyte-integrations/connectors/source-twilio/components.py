@@ -303,8 +303,12 @@ class TwilioConferencesStateMigration(StateMigration):
 
 class TwilioConferenceParticipantsStateMigration(StateMigration):
     """
-    Add `conference_status` to the `parent_slice` of each conference_participants
-    partition after adding the `ListPartitionRouter` to the conferences parent stream.
+    Add `conference_status: "in-progress"` to the `parent_slice` of each
+    conference_participants partition after adding the `ListPartitionRouter`
+    to the conferences parent stream.
+
+    Only `in-progress` is needed because the Twilio Participants API only
+    returns data for active (non-completed) conferences.
 
     Initial:
       {
@@ -329,17 +333,6 @@ class TwilioConferenceParticipantsStateMigration(StateMigration):
             "partition": {
               "subresource_uris": { "participants": "/2010-04-01/.../Participants.json" },
               "parent_slice": {
-                "conference_status": "completed",
-                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
-                "parent_slice": {}
-              }
-            },
-            "cursor": { "date_created": "2022-11-01T00:00:00Z" }
-          },
-          {
-            "partition": {
-              "subresource_uris": { "participants": "/2010-04-01/.../Participants.json" },
-              "parent_slice": {
                 "conference_status": "in-progress",
                 "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                 "parent_slice": {}
@@ -355,12 +348,11 @@ class TwilioConferenceParticipantsStateMigration(StateMigration):
         new_states: list[dict[str, Any]] = []
         for state in stream_state.get("states", []):
             parent_slice = state.get("partition", {}).get("parent_slice", {})
-            for status in _CONFERENCE_STATUSES:
-                new_parent_slice = copy.deepcopy(parent_slice)
-                new_parent_slice["conference_status"] = status
-                new_partition = copy.deepcopy(state["partition"])
-                new_partition["parent_slice"] = new_parent_slice
-                new_states.append({"partition": new_partition, "cursor": copy.deepcopy(state.get("cursor", {}))})
+            new_parent_slice = copy.deepcopy(parent_slice)
+            new_parent_slice["conference_status"] = "in-progress"
+            new_partition = copy.deepcopy(state["partition"])
+            new_partition["parent_slice"] = new_parent_slice
+            new_states.append({"partition": new_partition, "cursor": copy.deepcopy(state.get("cursor", {}))})
         return {"states": new_states}
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:

@@ -298,7 +298,7 @@ class TestIncrementalTwilioStream:
 
 class TestConferenceParticipantsStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
-    def test_conference_participants_returns_records_from_both_status_partitions(self, requests_mock):
+    def test_conference_participants_only_requests_in_progress_conferences(self, requests_mock):
         accounts_json = {
             "accounts": [
                 {
@@ -312,33 +312,11 @@ class TestConferenceParticipantsStream:
         }
         requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
 
-        def _match_status_completed(req):
-            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
-            return q.get("Status") == ["completed"]
-
         def _match_status_in_progress(req):
             q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
             return q.get("Status") == ["in-progress"]
 
-        requests_mock.get(
-            f"{BASE}/Accounts/AC123/Conferences.json",
-            json={
-                "conferences": [
-                    {
-                        "sid": "CF1",
-                        "account_sid": "AC123",
-                        "date_created": "2022-11-15T10:00:00Z",
-                        "status": "completed",
-                        "subresource_uris": {
-                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json",
-                        },
-                    }
-                ]
-            },
-            status_code=200,
-            additional_matcher=_match_status_completed,
-        )
-        requests_mock.get(
+        conferences_matcher = requests_mock.get(
             f"{BASE}/Accounts/AC123/Conferences.json",
             json={
                 "conferences": [
@@ -355,24 +333,6 @@ class TestConferenceParticipantsStream:
             },
             status_code=200,
             additional_matcher=_match_status_in_progress,
-        )
-
-        # Participants for completed conference CF1
-        requests_mock.get(
-            f"{BASE}/Accounts/AC123/Conferences/CF1/Participants.json",
-            json={
-                "participants": [
-                    {
-                        "call_sid": "CA1",
-                        "conference_sid": "CF1",
-                        "account_sid": "AC123",
-                        "date_created": "2022-11-15T10:01:00Z",
-                        "date_updated": "2022-11-15T10:05:00Z",
-                        "status": "complete",
-                    }
-                ]
-            },
-            status_code=200,
         )
 
         # Participants for in-progress conference CF2
@@ -396,9 +356,9 @@ class TestConferenceParticipantsStream:
         cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
         records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
 
-        assert len(records) == 2
-        conference_sids = {r.record.data["conference_sid"] for r in records}
-        assert conference_sids == {"CF1", "CF2"}
+        assert conferences_matcher.called, "Should request conferences with Status=in-progress"
+        assert len(records) == 1
+        assert records[0].record.data["conference_sid"] == "CF2"
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_conference_participants_empty_parent_returns_no_records(self, requests_mock):
@@ -791,17 +751,6 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
                         "partition": {
                             "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
                             "parent_slice": {
-                                "conference_status": "completed",
-                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
-                                "parent_slice": {},
-                            },
-                        },
-                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
-                    },
-                    {
-                        "partition": {
-                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
-                            "parent_slice": {
                                 "conference_status": "in-progress",
                                 "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                                 "parent_slice": {},
@@ -845,34 +794,12 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
                         "partition": {
                             "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
                             "parent_slice": {
-                                "conference_status": "completed",
-                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
-                                "parent_slice": {},
-                            },
-                        },
-                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
-                    },
-                    {
-                        "partition": {
-                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
-                            "parent_slice": {
                                 "conference_status": "in-progress",
                                 "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                                 "parent_slice": {},
                             },
                         },
                         "cursor": {"date_created": "2022-10-01T00:00:00Z"},
-                    },
-                    {
-                        "partition": {
-                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC456/Conferences/CF2/Participants.json"},
-                            "parent_slice": {
-                                "conference_status": "completed",
-                                "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
-                                "parent_slice": {},
-                            },
-                        },
-                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
                     },
                     {
                         "partition": {
@@ -906,17 +833,6 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
             },
             {
                 "states": [
-                    {
-                        "partition": {
-                            "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},
-                            "parent_slice": {
-                                "conference_status": "completed",
-                                "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
-                                "parent_slice": {},
-                            },
-                        },
-                        "cursor": {},
-                    },
                     {
                         "partition": {
                             "subresource_uris": {"participants": "/2010-04-01/Accounts/AC123/Conferences/CF1/Participants.json"},

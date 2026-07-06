@@ -343,7 +343,17 @@ definitions:
             stream:
               $ref: "#/definitions/conferences_stream"
               retriever:
-                $ref: "#/definitions/conferences_stream/retriever"
+                $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+                partition_router:
+                  - type: ListPartitionRouter
+                    values:
+                      - "in-progress"
+                    cursor_field: conference_status
+                    request_option:
+                      type: RequestOption
+                      field_name: Status
+                      inject_into: request_parameter
+                  - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
                 record_selector:
                   $ref: "#/definitions/base_stream/retriever/record_selector"
                   record_filter:
