@@ -118,12 +118,9 @@ class RepositoryListResolver(ConfigTransformation):
         unchecked_repos = unchecked_repos - repositories
         if unchecked_repos:
             for repo_name in unchecked_repos:
-                repo_data = self._validate_repo(repo_name, tokens[token_index % len(tokens)])
-                if repo_data:
-                    repositories.add(repo_data["full_name"])
-                    org_login = (repo_data.get("organization") or {}).get("login")
-                    if org_login:
-                        organizations.add(org_login)
+                repositories.add(repo_name)
+                org_part = repo_name.split("/")[0]
+                organizations.add(org_part)
 
         return sorted(organizations), sorted(repositories), pattern
 
@@ -154,21 +151,6 @@ class RepositoryListResolver(ConfigTransformation):
             params = {}  # URL already contains params for next page
 
         return all_repos
-
-    def _validate_repo(self, repo_name: str, token: str) -> Optional[Mapping[str, Any]]:
-        """Validate a single explicit repository by calling GET /repos/{owner}/{repo}."""
-        url = f"{self._api_url}/repos/{repo_name}"
-        headers = self._build_headers(token)
-
-        response = requests.get(url, headers=headers, timeout=30)
-        if response.status_code == 404:
-            logger.warning("Repository '%s' not found (HTTP 404). Skipping.", repo_name)
-            return None
-        if response.status_code == 403:
-            logger.warning("Access denied for repository '%s' (HTTP 403). Skipping.", repo_name)
-            return None
-        response.raise_for_status()
-        return response.json()
 
     @staticmethod
     def _build_headers(token: str) -> Mapping[str, str]:

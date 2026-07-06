@@ -3,7 +3,6 @@
 #
 
 import pytest
-import responses
 from source_github.components import RepositoryListResolver
 
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -51,17 +50,8 @@ def test_transform_raises_on_no_tokens():
         resolver.transform(config)
 
 
-@responses.activate
 def test_transform_explicit_repos():
-    responses.get(
-        "https://api.github.com/repos/airbytehq/airbyte",
-        json={"full_name": "airbytehq/airbyte", "organization": {"login": "airbytehq"}},
-    )
-    responses.get(
-        "https://api.github.com/repos/airbytehq/cdk",
-        json={"full_name": "airbytehq/cdk", "organization": {"login": "airbytehq"}},
-    )
-
+    """Explicit repos are trusted without HTTP validation; orgs derived from name."""
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
@@ -74,9 +64,8 @@ def test_transform_explicit_repos():
     assert config["_repository_pattern"] == ""
 
 
-@responses.activate
-def test_transform_wildcard_orgs():
-    responses.get(
+def test_transform_wildcard_orgs(requests_mock):
+    requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
         json=[
             {"full_name": "docker/docker-py", "owner": {"login": "docker"}},
@@ -96,13 +85,8 @@ def test_transform_wildcard_orgs():
     assert config["_repository_pattern"] == "(docker/.*)"
 
 
-@responses.activate
-def test_transform_mixed_explicit_and_wildcard():
-    responses.get(
-        "https://api.github.com/repos/airbytehq/airbyte",
-        json={"full_name": "airbytehq/airbyte", "organization": {"login": "airbytehq"}},
-    )
-    responses.get(
+def test_transform_mixed_explicit_and_wildcard(requests_mock):
+    requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
         json=[
             {"full_name": "docker/docker-py", "owner": {"login": "docker"}},
@@ -121,9 +105,8 @@ def test_transform_mixed_explicit_and_wildcard():
     assert set(config["_resolved_organizations"]) == {"airbytehq", "docker"}
 
 
-@responses.activate
-def test_transform_wildcard_pattern_filtering():
-    responses.get(
+def test_transform_wildcard_pattern_filtering(requests_mock):
+    requests_mock.get(
         "https://api.github.com/orgs/org/repos",
         json=[
             {"full_name": "org/source-github", "owner": {"login": "org"}},
@@ -143,14 +126,8 @@ def test_transform_wildcard_pattern_filtering():
     assert "org/destination-postgres" not in config["_resolved_repositories"]
 
 
-@responses.activate
-def test_transform_skip_404_repo():
-    responses.get(
-        "https://api.github.com/repos/org/missing-repo",
-        json={"message": "Not Found"},
-        status=404,
-    )
-
+def test_transform_explicit_repos_trusted():
+    """Explicit repos are added without HTTP validation; even non-existent repos are trusted."""
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
@@ -158,16 +135,15 @@ def test_transform_skip_404_repo():
     }
     resolver.transform(config)
 
-    assert config["_resolved_repositories"] == []
-    assert config["_resolved_organizations"] == []
+    assert config["_resolved_repositories"] == ["org/missing-repo"]
+    assert config["_resolved_organizations"] == ["org"]
 
 
-@responses.activate
-def test_transform_skip_404_org():
-    responses.get(
+def test_transform_skip_404_org(requests_mock):
+    requests_mock.get(
         "https://api.github.com/orgs/missing-org/repos",
         json={"message": "Not Found"},
-        status=404,
+        status_code=404,
     )
 
     resolver = RepositoryListResolver(parameters={})
@@ -181,13 +157,8 @@ def test_transform_skip_404_org():
     assert config["_resolved_organizations"] == []
 
 
-@responses.activate
 def test_transform_custom_api_url():
-    responses.get(
-        "https://github.example.com/api/v3/repos/org/repo",
-        json={"full_name": "org/repo", "organization": {"login": "org"}},
-    )
-
+    """Custom API URL is stored but explicit repos don't need HTTP calls."""
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
@@ -199,17 +170,8 @@ def test_transform_custom_api_url():
     assert config["_resolved_repositories"] == ["org/repo"]
 
 
-@responses.activate
 def test_transform_legacy_repository_field():
-    responses.get(
-        "https://api.github.com/repos/org/repo1",
-        json={"full_name": "org/repo1", "organization": {"login": "org"}},
-    )
-    responses.get(
-        "https://api.github.com/repos/org/repo2",
-        json={"full_name": "org/repo2", "organization": {"login": "org"}},
-    )
-
+    """Legacy space-delimited `repository` field is parsed without HTTP calls."""
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
@@ -220,17 +182,16 @@ def test_transform_legacy_repository_field():
     assert set(config["_resolved_repositories"]) == {"org/repo1", "org/repo2"}
 
 
-@responses.activate
-def test_transform_pagination():
+def test_transform_pagination(requests_mock):
     page1 = [{"full_name": f"org/repo{i}", "owner": {"login": "org"}} for i in range(100)]
     page2 = [{"full_name": "org/repo100", "owner": {"login": "org"}}]
 
-    responses.get(
+    requests_mock.get(
         "https://api.github.com/orgs/org/repos",
         json=page1,
         headers={"Link": '<https://api.github.com/orgs/org/repos?page=2>; rel="next"'},
     )
-    responses.get(
+    requests_mock.get(
         "https://api.github.com/orgs/org/repos?page=2",
         json=page2,
     )

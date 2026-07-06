@@ -82,29 +82,23 @@ def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_m
 
 
 def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
-    mocked_request = requests_mock.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte"})
-
     status = check_source("airbytehq/airbyte airbytehq/airbyte airbytehq/airbyte")
     assert not status.message
     assert status.status == Status.SUCCEEDED
-    # Only one request since 3 repos have same name
-    assert mocked_request.call_count == 1
+    # Explicit repos are trusted without HTTP calls
+    assert requests_mock.call_count == 0
 
 
 def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests_mock):
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
-    requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "organization": {"login": "airbyte"}})
-    requests_mock.get(
-        "https://api.github.com/repos/airbyte/test2", json={"full_name": "airbyte/test2", "organization": {"login": "airbyte"}}
-    )
     requests_mock.get("https://api.github.com/orgs/airbytehq/repos", json=repos)
     requests_mock.get("https://api.github.com/orgs/org/repos", json=repos)
 
     status = check_source("airbyte/test airbyte/test2 airbytehq/* org/*")
     assert not status.message
     assert status.status == Status.SUCCEEDED
-    # Two requests for explicit repos and two for org wildcards
-    assert requests_mock.call_count == 4
+    # Only two requests for org wildcards; explicit repos are trusted without HTTP calls
+    assert requests_mock.call_count == 2
 
 
 def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
@@ -120,11 +114,7 @@ def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
 
 @responses.activate
 def test_get_resolved_repositories(requests_mock):
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/integration-test",
-        json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
-    )
-
+    # Only wildcard orgs need HTTP calls; explicit repos are trusted directly.
     requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
         json=[
