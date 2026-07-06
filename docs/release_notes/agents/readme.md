@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## July 6, 2026
+
+Connectors
+
+- When you query Google Ads campaigns, you now get each campaign's start and end dates. The Google Ads connector was also updated to a newer version of the Google Ads API, so your Google Ads data keeps flowing reliably.
+
 ## July 3, 2026
 
 Web app
