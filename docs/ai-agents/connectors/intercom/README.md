@@ -5,9 +5,10 @@ The Intercom agent connector is a Python package that equips AI agents to intera
 Intercom is a customer messaging platform that enables businesses to communicate with
 customers through chat, email, and in-app messaging. This connector provides access
 to core Intercom entities including contacts, conversations, companies, teams,
-admins, tags, and segments for customer support analytics and insights. It also supports
-creating and updating contacts, creating notes, creating internal articles, creating
-and updating companies, and creating tags.
+admins, tags, and segments for customer support analytics and insights. It supports
+creating, updating, and deleting contacts and companies; creating and deleting tags;
+creating, updating, and deleting conversations; creating notes; and creating, updating,
+and deleting internal articles.
 
 
 ## Example prompts
@@ -27,20 +28,25 @@ The Intercom connector is optimized to handle prompts like these.
 - Create an internal article titled 'Onboarding Guide' with instructions for new team members
 - Create a company named 'Acme Corp' with company_id 'acme-001'
 - Create a tag named 'VIP Customer'
+- Create a conversation from contact \{id\} saying 'I need help with my account'
 - Update the name of contact \{id\} to 'John Updated'
 - Add a note to contact \{id\} saying 'Followed up on support request'
 - Show me conversations from the last week
 - List conversations assigned to team \{team_id\}
 - Show me open conversations
+- Delete contact \{id\}
+- Delete company \{id\}
+- Delete tag \{id\}
+- Delete conversation \{id\}
+- Delete internal article \{id\}
+- Update conversation \{id\} to mark it as read
+- Update internal article \{id\} with a new title
 
 ## Unsupported prompts
 
 The Intercom connector isn't currently able to handle prompts like these.
 
 - Send a message to a customer
-- Delete a conversation
-- Delete a contact
-- Delete a company
 - Assign a conversation to an admin
 
 ## Entities and actions
@@ -49,15 +55,15 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get), [Context Store Search](./REFERENCE.md#conversations-context-store-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Conversations | [List](./REFERENCE.md#conversations-list), [Create](./REFERENCE.md#conversations-create), [Get](./REFERENCE.md#conversations-get), [Update](./REFERENCE.md#conversations-update), [Delete](./REFERENCE.md#conversations-delete), [Context Store Search](./REFERENCE.md#conversations-context-store-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Delete](./REFERENCE.md#companies-delete), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
 | Admins | [List](./REFERENCE.md#admins-list), [Get](./REFERENCE.md#admins-get) |
-| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get) |
+| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get), [Delete](./REFERENCE.md#tags-delete) |
 | Notes | [Create](./REFERENCE.md#notes-create) |
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get) |
-| Internal Articles | [Create](./REFERENCE.md#internal-articles-create) |
+| Internal Articles | [Create](./REFERENCE.md#internal-articles-create), [Update](./REFERENCE.md#internal-articles-update), [Delete](./REFERENCE.md#internal-articles-delete) |
 
 
 ## Intercom API docs
