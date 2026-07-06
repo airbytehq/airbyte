@@ -139,6 +139,7 @@ The Zendesk Support source connector supports the following streams:
 - [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
 - [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Incremental\)
+- [Side Conversations](https://developer.zendesk.com/api-reference/ticketing/side_conversations/side_conversation/) \(Incremental\)
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
 - [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) \(Incremental\)
@@ -232,10 +233,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.4.2 | 2026-07-06 | [81427](https://github.com/airbytehq/airbyte/pull/81427) | Remove hardcoded `expires_in` from the OAuth token refresh request so Zendesk no longer forces a 48-hour token expiry |
-| 5.4.1 | 2026-07-02 | [81210](https://github.com/airbytehq/airbyte/pull/81210) | Fixed `side_conversations` stream: added millisecond-precision timestamp parsing for cursor field and added error handler to skip tickets returning HTTP 422 |
+| 5.4.1 | 2026-07-06 | [81210](https://github.com/airbytehq/airbyte/pull/81210) | Fixed `side_conversations` stream: added millisecond-precision timestamp parsing for cursor field and added error handler to skip tickets returning HTTP 422 |
 | 5.4.0 | 2026-07-02 | [81403](https://github.com/airbytehq/airbyte/pull/81403) | Added `ticket_events` stream for Zendesk Incremental Ticket Event Export API |
 | 5.3.1 | 2026-06-30 | [81305](https://github.com/airbytehq/airbyte/pull/81305) | Update dependencies |
-| 5.3.0 | 2026-06-10 | [79640](https://github.com/airbytehq/airbyte/pull/79640) | Added `side_conversations` stream to retrieve Side Conversations from tickets |
+| 5.3.0 | 2026-06-27 | [79640](https://github.com/airbytehq/airbyte/pull/79640) | Added `side_conversations` stream to retrieve Side Conversations from tickets |
 | 5.2.12 | 2026-06-23 | [80725](https://github.com/airbytehq/airbyte/pull/80725) | Update dependencies |
 | 5.2.11 | 2026-06-16 | [80108](https://github.com/airbytehq/airbyte/pull/80108) | Update dependencies |
 | 5.2.10 | 2026-06-12 | [79668](https://github.com/airbytehq/airbyte/pull/79668) | Gracefully skip streams when Zendesk returns permission-denied error instead of failing the entire sync |
