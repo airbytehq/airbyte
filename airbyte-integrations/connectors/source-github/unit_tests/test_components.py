@@ -3,7 +3,7 @@
 #
 
 import pytest
-from source_github.components import RepositoryListResolver
+from source_github.components import OrganizationListStateMigration, RepositoryListResolver
 
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -205,3 +205,68 @@ def test_transform_pagination(requests_mock):
 
     assert len(config["_resolved_repositories"]) == 101
     assert "org/repo100" in config["_resolved_repositories"]
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_should_migrate,expected_migrated",
+    [
+        pytest.param(
+            {"airbytehq": {"updated_at": "2022-01-01T00:00:00Z"}},
+            True,
+            {
+                "states": [
+                    {
+                        "partition": {"organization": "airbytehq"},
+                        "cursor": {"updated_at": "2022-01-01T00:00:00Z"},
+                    }
+                ]
+            },
+            id="single_org_legacy_state",
+        ),
+        pytest.param(
+            {
+                "airbytehq": {"updated_at": "2022-01-01T00:00:00Z"},
+                "docker": {"updated_at": "2023-06-15T12:30:00Z"},
+            },
+            True,
+            {
+                "states": [
+                    {
+                        "partition": {"organization": "airbytehq"},
+                        "cursor": {"updated_at": "2022-01-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {"organization": "docker"},
+                        "cursor": {"updated_at": "2023-06-15T12:30:00Z"},
+                    },
+                ]
+            },
+            id="multiple_orgs_legacy_state",
+        ),
+        pytest.param({}, False, None, id="empty_state"),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {"organization": "airbytehq"},
+                        "cursor": {"updated_at": "2022-01-01T00:00:00Z"},
+                    }
+                ]
+            },
+            False,
+            None,
+            id="already_migrated_state",
+        ),
+        pytest.param(
+            {"airbytehq": {"created_at": "2022-01-01T00:00:00Z"}},
+            False,
+            None,
+            id="unexpected_cursor_field",
+        ),
+    ],
+)
+def test_organization_list_state_migration(stream_state, expected_should_migrate, expected_migrated):
+    migration = OrganizationListStateMigration()
+    assert migration.should_migrate(stream_state) == expected_should_migrate
+    if expected_should_migrate:
+        assert migration.migrate(stream_state) == expected_migrated

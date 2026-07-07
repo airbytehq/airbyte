@@ -10,6 +10,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Set, Tuple
 import requests
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import ConfigTransformation
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -159,4 +160,45 @@ class RepositoryListResolver(ConfigTransformation):
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
             "User-Agent": "PostmanRuntime/7.28.0",
+        }
+
+
+class OrganizationListStateMigration(StateMigration):
+    """
+    Migrates the legacy organization-keyed state to the per-partition format
+    used by a `ListPartitionRouter` over organizations.
+
+    Legacy:
+      {
+        "airbytehq": { "updated_at": "2022-01-01T00:00:00Z" }
+      }
+
+    Per-partition:
+      {
+        "states": [
+          {
+            "partition": { "organization": "airbytehq" },
+            "cursor": { "updated_at": "2022-01-01T00:00:00Z" }
+          }
+        ]
+      }
+    """
+
+    cursor_field = "updated_at"
+    partition_field = "organization"
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or "states" in stream_state:
+            return False
+        return all(isinstance(value, Mapping) and self.cursor_field in value for value in stream_state.values())
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "states": [
+                {
+                    "partition": {self.partition_field: partition_key},
+                    "cursor": {self.cursor_field: partition_state[self.cursor_field]},
+                }
+                for partition_key, partition_state in stream_state.items()
+            ]
         }

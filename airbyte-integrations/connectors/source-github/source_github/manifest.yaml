@@ -89,6 +89,9 @@ definitions:
         datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_github.components.OrganizationListStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
