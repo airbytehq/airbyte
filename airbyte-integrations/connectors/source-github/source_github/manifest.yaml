@@ -6,16 +6,29 @@ definitions:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.github.com') }}"
     authenticator:
-      type: TokenPoolAuthenticator
+      type: RateLimitedMultipleTokenAuthenticator
       tokens: "{{ config.get('credentials', {}).get('personal_access_token', config.get('credentials', {}).get('access_token', config.get('access_token', ''))) }}"
-      token_separator: ","
+      token_delimiter: ","
       auth_method: "token"
       header: "Authorization"
-      rotation_strategy:
-        type: RateLimitAwareRotation
-        ratelimit_remaining_header: "x-ratelimit-remaining"
-        ratelimit_reset_header: "x-ratelimit-reset"
-        max_wait_seconds: 7200
+      max_wait_time: "PT2H"
+      quota_status_source:
+        type: QuotaStatusSource
+        url: "{{ config.get('api_url', 'https://api.github.com') }}/rate_limit"
+      quotas:
+        - type: TokenQuota
+          name: rest
+          remaining_path: ["resources", "core", "remaining"]
+          reset_path: ["resources", "core", "reset"]
+          limit_path: ["resources", "core", "limit"]
+        - type: TokenQuota
+          name: graphql
+          remaining_path: ["resources", "graphql", "remaining"]
+          reset_path: ["resources", "graphql", "reset"]
+          limit_path: ["resources", "graphql", "limit"]
+          matchers:
+            - type: HttpRequestRegexMatcher
+              url_path_pattern: "/graphql"
     request_headers:
       User-Agent: "PostmanRuntime/7.28.0"
 
@@ -53,7 +66,7 @@ definitions:
           type: RecordFilter
           condition: >-
             {{ config.get('_repository_pattern', '') == ''
-               or record['full_name'] is regex_match(config['_repository_pattern']) }}
+               or record['full_name'] | regex_search(config['_repository_pattern']) }}
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
