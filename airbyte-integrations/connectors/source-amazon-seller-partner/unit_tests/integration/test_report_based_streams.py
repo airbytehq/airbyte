@@ -633,6 +633,20 @@ class TestIncremental:
         "stream_name, cursor_field, state_cursor_value, create_report_request_body, download_response_stream_name",
         [
             pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "queryEndDate",
+                "2023-01-15T00:00:00Z",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-15T00:00:00Z",
+                    "dataEndTime": "2023-01-16T00:00:00Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"asinGranularity": "PARENT"},
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                id="sales_and_traffic_asin_aggregate",
+            ),
+            pytest.param(
                 "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH",
                 "queryEndDate",
                 "2023-01-15T00:00:00Z",

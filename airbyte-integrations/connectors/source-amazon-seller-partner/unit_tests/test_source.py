@@ -5,8 +5,10 @@
 
 import logging
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pytest
+import yaml
 from freezegun import freeze_time
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
@@ -549,3 +551,46 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         first_slice["start_time"] == expected_start_base
     ), f"Stream '{stream_name}': Expected start time {expected_start_base}, got {first_slice['start_time']}"
     assert last_slice["end_time"] == expected_end, f"Stream '{stream_name}': Expected end time {expected_end}, got {last_slice['end_time']}"
+
+
+# --- Lookback window manifest-level tests ---
+
+
+def _load_manifest():
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    with open(manifest_path, "r") as f:
+        return yaml.safe_load(f)
+
+
+@pytest.mark.parametrize(
+    "stream_key, should_have_lookback",
+    [
+        pytest.param("get_sales_and_traffic_report", False, id="asin_aggregate_no_lookback"),
+        pytest.param("get_sales_and_traffic_report_by_date", True, id="by_date_has_lookback"),
+        pytest.param("get_sales_and_traffic_report_by_month", False, id="by_month_no_lookback"),
+    ],
+)
+def test_manifest_lookback_window_on_sales_and_traffic_streams(stream_key, should_have_lookback):
+    """
+    GET_SALES_AND_TRAFFIC_REPORT extracts salesAndTrafficByAsin which aggregates
+    across the full date range (dateGranularity defaults to TOTAL). A lookback
+    window causes cross-midnight slices that produce inflated multi-day sums,
+    corrupting destination data. This stream must NOT have a lookback_window.
+
+    GET_SALES_AND_TRAFFIC_REPORT_BY_DATE extracts salesAndTrafficByDate (per-day
+    records) and safely supports lookback.
+
+    GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH uses monthly granularity and must NOT
+    have a lookback_window.
+    """
+    manifest = _load_manifest()
+    incremental_sync = manifest["definitions"]["streams"][stream_key]["incremental_sync"]
+    has_lookback = "lookback_window" in incremental_sync
+
+    if should_have_lookback:
+        assert has_lookback, f"Stream '{stream_key}' should have a lookback_window (it extracts per-day records)"
+    else:
+        assert not has_lookback, (
+            f"Stream '{stream_key}' must NOT have a lookback_window "
+            f"(it aggregates across the date range, causing data corruption with cross-midnight slices)"
+        )
