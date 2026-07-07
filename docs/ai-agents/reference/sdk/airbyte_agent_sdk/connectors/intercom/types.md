@@ -214,6 +214,20 @@ Classes
     `website: str`
     :   The type of the None singleton.
 
+<a id="CompaniesDeleteParams"></a>
+
+`CompaniesDeleteParams(*args, **kwargs)`
+:   Parameters for companies.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="CompaniesEqCondition"></a>
 
 `CompaniesEqCondition(*args, **kwargs)`
@@ -1022,6 +1036,20 @@ Classes
     :   The type of the None singleton.
 
     `unsubscribed_from_emails: bool`
+    :   The type of the None singleton.
+
+<a id="ContactsDeleteParams"></a>
+
+`ContactsDeleteParams(*args, **kwargs)`
+:   Parameters for contacts.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -2171,6 +2199,63 @@ Classes
     `contains: airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="ConversationsCreateParams"></a>
+
+`ConversationsCreateParams(*args, **kwargs)`
+:   Parameters for conversations.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `attachment_urls: list[str]`
+    :   The type of the None singleton.
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `created_at: int`
+    :   The type of the None singleton.
+
+    `from_: airbyte_agent_sdk.connectors.intercom.types.ConversationsCreateParamsFrom`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+<a id="ConversationsCreateParamsFrom"></a>
+
+`ConversationsCreateParamsFrom(*args, **kwargs)`
+:   The contact (user or lead) initiating the conversation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="ConversationsDeleteParams"></a>
+
+`ConversationsDeleteParams(*args, **kwargs)`
+:   Parameters for conversations.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="ConversationsEqCondition"></a>
 
 `ConversationsEqCondition(*args, **kwargs)`
@@ -2851,6 +2936,26 @@ Classes
     `waiting_since: str`
     :   Timestamp since waiting for a response
 
+<a id="ConversationsUpdateParams"></a>
+
+`ConversationsUpdateParams(*args, **kwargs)`
+:   Parameters for conversations.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `custom_attributes: dict[str, typing.Any]`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `read: bool`
+    :   The type of the None singleton.
+
 <a id="InternalArticlesCreateParams"></a>
 
 `InternalArticlesCreateParams(*args, **kwargs)`
@@ -2866,6 +2971,46 @@ Classes
     :   The type of the None singleton.
 
     `body: str`
+    :   The type of the None singleton.
+
+    `owner_id: int`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="InternalArticlesDeleteParams"></a>
+
+`InternalArticlesDeleteParams(*args, **kwargs)`
+:   Parameters for internal_articles.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="InternalArticlesUpdateParams"></a>
+
+`InternalArticlesUpdateParams(*args, **kwargs)`
+:   Parameters for internal_articles.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author_id: int`
+    :   The type of the None singleton.
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `id: str`
     :   The type of the None singleton.
 
     `owner_id: int`
@@ -2934,6 +3079,20 @@ Classes
     ### Class variables
 
     `name: str`
+    :   The type of the None singleton.
+
+<a id="TagsDeleteParams"></a>
+
+`TagsDeleteParams(*args, **kwargs)`
+:   Parameters for tags.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="TagsGetParams"></a>
