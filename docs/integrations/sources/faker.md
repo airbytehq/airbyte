@@ -47,6 +47,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.2.1 | 2026-07-07 | [0](https://github.com/airbytehq/airbyte/pull/0) | Add human-readable byte formatter helper |
 | 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |
 | 7.2.0-rc.1 | 2026-06-09 | [79331](https://github.com/airbytehq/airbyte/pull/79331) | Progressive rollout e2e test |
 | 7.1.1 | 2026-05-13 | [78075](https://github.com/airbytehq/airbyte/pull/78075) | Re-release to verify PyPI README publishing |
