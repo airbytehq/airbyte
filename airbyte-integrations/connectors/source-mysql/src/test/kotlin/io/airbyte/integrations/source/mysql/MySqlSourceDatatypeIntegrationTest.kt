@@ -247,11 +247,11 @@ class MySqlSourceDatatypeIntegrationTest {
                     id = StreamIdentifier.Companion.from(descriptor),
                     columns =
                         listOf(
-                            Field("k", IntFieldType),
-                            Field("v", LocalDateTimeFieldType),
-                            Field("w", LocalDateTimeFieldType),
-                            Field("y", LocalDateTimeFieldType),
-                            Field("x", LocalDateTimeFieldType),
+                            EmittedField("k", IntFieldType),
+                            EmittedField("v", LocalDateTimeFieldType),
+                            EmittedField("w", LocalDateTimeFieldType),
+                            EmittedField("y", LocalDateTimeFieldType),
+                            EmittedField("x", LocalDateTimeFieldType),
                         ),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
@@ -360,9 +360,9 @@ class MySqlSourceDatatypeIntegrationTest {
                     id = StreamIdentifier.Companion.from(descriptor),
                     columns =
                         listOf(
-                            Field("k", IntFieldType),
-                            Field("v", LocalDateFieldType),
-                            Field("w", LocalDateFieldType),
+                            EmittedField("k", IntFieldType),
+                            EmittedField("v", LocalDateFieldType),
+                            EmittedField("w", LocalDateFieldType),
                         ),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
@@ -461,9 +461,9 @@ class MySqlSourceDatatypeIntegrationTest {
                     id = StreamIdentifier.Companion.from(descriptor),
                     columns =
                         listOf(
-                            Field("k", IntFieldType),
-                            Field("v", OffsetDateTimeFieldType),
-                            Field("w", OffsetDateTimeFieldType),
+                            EmittedField("k", IntFieldType),
+                            EmittedField("v", OffsetDateTimeFieldType),
+                            EmittedField("w", OffsetDateTimeFieldType),
                         ),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
@@ -563,8 +563,8 @@ class MySqlSourceDatatypeIntegrationTest {
                     id = StreamIdentifier.Companion.from(descriptor),
                     columns =
                         listOf(
-                            Field("k", IntFieldType),
-                            Field("v", LocalTimeFieldType),
+                            EmittedField("k", IntFieldType),
+                            EmittedField("v", LocalTimeFieldType),
                         ),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
