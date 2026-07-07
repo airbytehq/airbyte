@@ -325,6 +325,11 @@ class ZendeskSupportRequestBuilder:
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)
 
     @classmethod
+    def ticket_events_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /incremental/ticket_events.json endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)
+
+    @classmethod
     def ticket_metric_events_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the /incremental/ticket_metric_events endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_metric_events").with_authenticator(authenticator)
