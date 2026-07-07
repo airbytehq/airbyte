@@ -242,7 +242,9 @@ CONFIG_ERRORS = [
     (
         "error_400_invalid_oauth_access_token_cannot_parse",
         "The access token for this connection is invalid or corrupted. "
-        "Please re-authenticate your Facebook connection in Airbyte. "
+        "This may be caused by browser autofill overwriting the OAuth token with saved credentials. "
+        "Please re-authenticate your Facebook connection by clicking 'Authenticate your account' and saving the configuration. "
+        "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating for details. "
         "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
         "remove the Airbyte app, and then re-authenticate again.",
         {
