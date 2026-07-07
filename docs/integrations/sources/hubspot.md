@@ -158,7 +158,22 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 ### Experimental streams
 
-No experimental streams are currently available. The **Enable experimental streams** toggle is visible in the connector configuration but does not gate any streams at this time.
+Enable the **Enable experimental streams** toggle to sync the Web Analytics streams. These read HubSpot's [Events API](https://developers.hubspot.com/docs/api/events/web-analytics) (`/events/event-occurrences/2026-03`) and emit web analytics events (page views and form submissions) for each parent object:
+
+- `contacts_web_analytics`
+- `companies_web_analytics`
+- `deals_web_analytics`
+- `tickets_web_analytics`
+- `engagements_calls_web_analytics`
+- `engagements_emails_web_analytics`
+- `engagements_meetings_web_analytics`
+- `engagements_notes_web_analytics`
+- `engagements_tasks_web_analytics`
+- `goals_web_analytics`
+- `line_items_web_analytics`
+- `products_web_analytics`
+
+These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only)). They begin syncing from the configured **Start date** with fresh state.
 
 </FieldAnchor>
 
