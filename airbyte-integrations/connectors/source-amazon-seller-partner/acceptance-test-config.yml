@@ -117,6 +117,10 @@ acceptance_tests:
             bypass_reason: "Orders API is extremely rate-limited (1 req/60s). Reading from test account hangs CI for hours."
           - name: OrderItems
             bypass_reason: "OrderItems API requires per-order calls at 1 req/180s (N+1 pattern). Reading from test account hangs CI for hours."
+          - name: FbaInboundShipments
+            bypass_reason: "Data cannot be seeded in the test account; Fulfillment Inbound API data is not available in the sandbox used for CI."
+          - name: FbaInboundShipmentItems
+            bypass_reason: "Data cannot be seeded in the test account; Fulfillment Inbound API data is not available in the sandbox used for CI."
   incremental:
     tests:
       - config_path: "secrets/config.json"
