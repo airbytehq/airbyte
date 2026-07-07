@@ -1,4 +1,6 @@
 .pg_discover.jsonl
 .mongo_discover.jsonl
+.faker_discover.jsonl
 pg_source_catalog.json
 mongo_source_catalog.json
+faker_source_catalog.json
