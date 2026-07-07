@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 7.2.0-rc.2
+  dockerImageTag: 8.0.0
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   externalDocumentationUrls:
@@ -38,6 +38,9 @@ data:
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
+      8.0.0:
+        message: The `always_updated` configuration field has been removed from the connection spec. Syncs now always refresh `updated_at` values.
+        upgradeDeadline: "2026-08-01"
       4.0.0:
         message: This is a breaking change message
         upgradeDeadline: "2023-07-19"
