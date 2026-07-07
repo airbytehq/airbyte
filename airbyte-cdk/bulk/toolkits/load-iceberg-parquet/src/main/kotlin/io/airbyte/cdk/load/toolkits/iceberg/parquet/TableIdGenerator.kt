@@ -25,5 +25,10 @@ class SimpleTableIdGenerator(private val configNamespace: String? = "") : TableI
 }
 
 // iceberg namespace+name must both be nonnull.
+// A dotted namespace (e.g. "operational.lims.inventory.bronze") is a multi-level
+// Iceberg namespace; split it so each dot-segment becomes its own level. REST
+// catalogs (Lakekeeper, Polaris) reject a single namespace part containing '.'.
+// A dotless name splits to a one-element array, so single-level names are
+// unaffected.
 fun tableIdOf(namespace: String, name: String): TableIdentifier =
-    TableIdentifier.of(Namespace.of(namespace), name)
+    TableIdentifier.of(Namespace.of(*namespace.split(".").toTypedArray()), name)
