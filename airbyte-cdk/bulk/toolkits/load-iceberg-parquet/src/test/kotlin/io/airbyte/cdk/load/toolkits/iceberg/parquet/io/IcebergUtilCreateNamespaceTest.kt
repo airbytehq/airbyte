@@ -17,8 +17,7 @@ import org.apache.iceberg.catalog.SupportsNamespaces
 import org.junit.jupiter.api.Test
 
 /** Combined Catalog + SupportsNamespaces interface for mocking. */
-private interface NamespaceCatalog :
-    org.apache.iceberg.catalog.Catalog, SupportsNamespaces
+private interface NamespaceCatalog : org.apache.iceberg.catalog.Catalog, SupportsNamespaces
 
 class IcebergUtilCreateNamespaceTest {
 
