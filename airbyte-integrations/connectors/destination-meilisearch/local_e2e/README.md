@@ -5,14 +5,16 @@ Airbyte **source** connector's `read` output is piped straight into this destina
 `write`, against real databases.
 
 ```
-Faker     ──▶ airbyte/source-faker      ──┐
-Postgres  ──▶ airbyte/source-postgres   ──┼── stdin ──▶ destination-meilisearch ──▶ Meilisearch v1.48
-MongoDB   ──▶ airbyte/source-mongodb-v2 ──┘
+Faker          ──▶ airbyte/source-faker         ──┐
+Postgres       ──▶ airbyte/source-postgres      ──┤
+MongoDB        ──▶ airbyte/source-mongodb-v2    ──┼── stdin ──▶ destination-meilisearch ──▶ Meilisearch v1.48
+Elasticsearch  ──▶ airbyte/source-elasticsearch ──┤
+Kafka/Redpanda ──▶ airbyte/source-kafka         ──┘
 ```
 
 ## What it covers
 
-All three document-id modes of the connector go through a real pipeline:
+All three document-id modes and all three sync modes of the connector go through real pipelines:
 
 | Step | Verifies |
 | --- | --- |
@@ -21,6 +23,11 @@ All three document-id modes of the connector go through a real pipeline:
 | Postgres mutate + re-sync | primary-key **upsert**: updated fields replace in place, no duplicates — for both natural and hashed ids |
 | MongoDB sync (`customers`) | `_id` (ObjectId hex) as primary key, search |
 | MongoDB re-sync | `_id`-based dedup, stable count |
+| Elasticsearch sync (`articles`) | the **ES → Meilisearch migration** path: `overwrite` mode (the ES source exposes no primary key), nested `_source` documents, search; re-migration stays duplicate-free |
+| Kafka sync (`events` topic) | streaming JSON messages; the source nests payloads under `value`, so dedup runs on the **nested key** `value.event_id` → deterministic hash; a full topic re-read plus 5 new events lands exactly +5 |
+
+Kafka source configs are generated with a fresh consumer group per run — committed
+offsets would otherwise make re-runs read nothing.
 
 Source catalogs are generated from each source's own `discover` output, like the platform does.
 
