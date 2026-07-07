@@ -38,6 +38,14 @@ def schemas_are_valid():
         jsonschema.Draft7Validator.check_schema(schema)
 
 
+def test_default_records_per_slice_matches_spec():
+    source = SourceFaker()
+    streams = source.streams({"count": 1})
+
+    for stream in streams:
+        assert stream.records_per_slice == 1000, "default records_per_slice should match the spec default"
+
+
 def test_source_streams():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
