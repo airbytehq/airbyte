@@ -682,6 +682,18 @@ definitions:
                       - "null"
                       - string
 
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Per GitHub docs, secondary rate limits allow no more than 900 points per
+        # minute for REST API endpoints (GET/HEAD/OPTIONS requests cost 1 point).
+        # https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits
+        - limit: 900
+          interval: PT1M
+      matchers: []
+
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"
