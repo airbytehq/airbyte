@@ -41,12 +41,11 @@ class CapacityReportingBlockingQueueTest {
 
         val started = CountDownLatch(1)
         val completed = CountDownLatch(1)
-        val producer =
-            Thread {
-                started.countDown()
-                queue.put("bbbbbb")
-                completed.countDown()
-            }
+        val producer = Thread {
+            started.countDown()
+            queue.put("bbbbbb")
+            completed.countDown()
+        }
         producer.start()
         started.await()
 
@@ -91,11 +90,10 @@ class CapacityReportingBlockingQueueTest {
         queue.put("b")
 
         val completed = CountDownLatch(1)
-        val producer =
-            Thread {
-                queue.put("c")
-                completed.countDown()
-            }
+        val producer = Thread {
+            queue.put("c")
+            completed.countDown()
+        }
         producer.start()
 
         Assertions.assertFalse(
