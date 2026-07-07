@@ -62,7 +62,7 @@ vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)",
 type = "git"
 url = "https://github.com/airbytehq/airbyte-python-cdk.git"
 reference = "devin/1783347505-rate-limited-multiple-token-authenticator"
-resolved_reference = "5fd898f2c06c66e263998f7bcab015e1f0a036e1"
+resolved_reference = "f300579593c108453c454426097e011c94c2a699"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
