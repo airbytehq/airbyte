@@ -77,6 +77,30 @@ db.customers.insertMany([
 ]);' >/dev/null
 ok "MongoDB seeded (4 customers)"
 
+say "Seeding Elasticsearch (articles) and Kafka/Redpanda (events topic)"
+curl -s -X PUT "http://localhost:59200/articles" -H 'Content-Type: application/json' \
+  -d '{"mappings":{"properties":{"title":{"type":"text"},"body":{"type":"text"},"author":{"properties":{"name":{"type":"keyword"},"team":{"type":"keyword"}}},"tags":{"type":"keyword"}}}}' >/dev/null
+curl -s -X POST "http://localhost:59200/_bulk" -H 'Content-Type: application/x-ndjson' --data-binary '@-' >/dev/null <<'EOF'
+{"index":{"_index":"articles","_id":"art-1"}}
+{"title":"Getting started with Meilisearch","body":"A practical guide to instant search.","author":{"name":"Ada","team":"docs"},"tags":["search","guide"]}
+{"index":{"_index":"articles","_id":"art-2"}}
+{"title":"Why typo tolerance matters","body":"Users make typos. Your search should not care.","author":{"name":"Grace","team":"engineering"},"tags":["search","ux"]}
+{"index":{"_index":"articles","_id":"art-3"}}
+{"title":"Migrating from Elasticsearch","body":"Moving an index without downtime.","author":{"name":"Alan","team":"engineering"},"tags":["migration"]}
+{"index":{"_index":"articles","_id":"art-4"}}
+{"title":"Faceted navigation patterns","body":"Filters and facets for ecommerce.","author":{"name":"Margaret","team":"design"},"tags":["facets","ecommerce"]}
+{"index":{"_index":"articles","_id":"art-5"}}
+{"title":"Ranking rules explained","body":"How result ordering is decided.","author":{"name":"Linus","team":"engineering"},"tags":["ranking","search"]}
+EOF
+curl -s "http://localhost:59200/articles/_refresh" >/dev/null
+ok "Elasticsearch seeded (5 articles)"
+
+docker exec meili-dest-e2e-redpanda-1 rpk topic create events -X brokers=localhost:9092 >/dev/null 2>&1 || true
+for i in $(seq 1 20); do
+  echo "{\"event_id\": $i, \"type\": \"page_view\", \"page\": \"/docs/page-$i\", \"user\": \"user-$((i % 5))\", \"ts\": \"2026-07-07T10:00:$(printf %02d $i)Z\"}"
+done | docker exec -i meili-dest-e2e-redpanda-1 rpk topic produce events -X brokers=localhost:9092 >/dev/null
+ok "Kafka topic seeded (20 events)"
+
 say "Generating source catalogs from 'discover' (like the Airbyte platform does)"
 docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-postgres:latest \
   discover --config /cfg/pg_source_config.json 2>/dev/null > "$CFG/.pg_discover.jsonl"
@@ -84,6 +108,39 @@ docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-mongodb-v2:la
   discover --config /cfg/mongo_source_config.json 2>/dev/null > "$CFG/.mongo_discover.jsonl"
 docker run --rm -v "$CFG":/cfg airbyte/source-faker:latest \
   discover --config /cfg/faker_source_config.json 2>/dev/null > "$CFG/.faker_discover.jsonl"
+docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-elasticsearch:latest \
+  discover --config /cfg/es_source_config.json 2>/dev/null > "$CFG/.es_discover.jsonl"
+# Kafka configs are generated with per-run consumer groups so every sync reads
+# the topic from the beginning (committed offsets would otherwise make re-runs empty).
+python3 - "$CFG" <<'EOF'
+import json, sys, time
+cfg = sys.argv[1]
+base = {
+    "bootstrap_servers": "redpanda:9092",
+    "subscription": {"subscription_type": "subscribe", "topic_pattern": "events"},
+    "protocol": {"security_protocol": "PLAINTEXT"},
+    "MessageFormat": {"deserialization_type": "JSON"},
+    "test_topic": "events",
+    "client_id": "airbyte-e2e-client",
+    "client_dns_lookup": "use_all_dns_ips",
+    "enable_auto_commit": False,
+    "auto_commit_interval_ms": 5000,
+    "retry_backoff_ms": 100,
+    "request_timeout_ms": 30000,
+    "receive_buffer_bytes": 32768,
+    "max_poll_records": 500,
+    "polling_time": 3000,
+    "auto_offset_reset": "earliest",
+    "repeated_calls": 3,
+    "max_records_process": 100000,
+}
+run_id = int(time.time())
+for n in (1, 2):
+    with open(f"{cfg}/kafka_source_config_{n}.json", "w") as f:
+        json.dump({**base, "group_id": f"airbyte-e2e-{run_id}-{n}"}, f, indent=2)
+EOF
+docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-kafka:latest \
+  discover --config /cfg/kafka_source_config_1.json 2>/dev/null > "$CFG/.kafka_discover.jsonl"
 python3 - "$CFG" <<'EOF'
 import json, sys
 cfg = sys.argv[1]
@@ -117,6 +174,18 @@ with open(f"{cfg}/faker_source_catalog.json", "w") as f:
     json.dump({"streams": [
         {"stream": faker[n], "sync_mode": "full_refresh", "destination_sync_mode": "append", "primary_key": [["id"]]}
         for n in ("users", "products", "purchases")
+    ]}, f, indent=2)
+
+es = catalog_from(f"{cfg}/.es_discover.jsonl")
+with open(f"{cfg}/es_source_catalog.json", "w") as f:
+    json.dump({"streams": [
+        {"stream": es["articles"], "sync_mode": "full_refresh", "destination_sync_mode": "overwrite", "primary_key": []}
+    ]}, f, indent=2)
+
+kafka = catalog_from(f"{cfg}/.kafka_discover.jsonl")
+with open(f"{cfg}/kafka_source_catalog.json", "w") as f:
+    json.dump({"streams": [
+        {"stream": kafka["events"], "sync_mode": "full_refresh", "destination_sync_mode": "append", "primary_key": []}
     ]}, f, indent=2)
 print("  catalogs written")
 EOF
@@ -176,6 +245,27 @@ assert_eq "search 'enterprise' hit count" "2" "$hits"
 say "Sync 4: MongoDB re-sync, verify _id-based dedup"
 run_sync airbyte/source-mongodb-v2:latest mongo_source_config.json mongo_source_catalog.json dest_catalog_mongo.json >/dev/null
 assert_eq "customers count after re-sync (no dupes)" "4" "$(meili '/indexes/customers/documents?limit=0' | json "d['total']")"
+
+say "Sync 5: Elasticsearch (articles) -> Meilisearch [overwrite, ES migration]"
+run_sync airbyte/source-elasticsearch:latest es_source_config.json es_source_catalog.json dest_catalog_es.json >/dev/null
+assert_eq "articles document count" "5" "$(meili '/indexes/articles/documents?limit=0' | json "d['total']")"
+hit=$(curl -s -H "$AUTH" -H 'Content-Type: application/json' "$MEILI_URL/indexes/articles/search" \
+  -d '{"q":"typo"}' | json "d['hits'][0]['title'] if d['hits'] else 'NO HIT'")
+assert_eq "search 'typo' over migrated ES docs" "Why typo tolerance matters" "$hit"
+run_sync airbyte/source-elasticsearch:latest es_source_config.json es_source_catalog.json dest_catalog_es.json >/dev/null
+assert_eq "articles count after re-migration (overwrite, no dupes)" "5" \
+  "$(meili '/indexes/articles/documents?limit=0' | json "d['total']")"
+
+say "Sync 6: Kafka (events topic) -> Meilisearch [append_dedup on nested event_id]"
+run_sync airbyte/source-kafka:latest kafka_source_config_1.json kafka_source_catalog.json dest_catalog_kafka.json >/dev/null
+assert_eq "events index primaryKey (nested key -> hash)" "_ab_pk" "$(meili /indexes/events | json "d['primaryKey']")"
+assert_eq "events document count" "20" "$(meili '/indexes/events/documents?limit=0' | json "d['total']")"
+for i in 21 22 23 24 25; do
+  echo "{\"event_id\": $i, \"type\": \"click\", \"page\": \"/pricing\", \"user\": \"user-$((i % 5))\", \"ts\": \"2026-07-07T11:00:$i Z\"}"
+done | docker exec -i meili-dest-e2e-redpanda-1 rpk topic produce events -X brokers=localhost:9092 >/dev/null
+run_sync airbyte/source-kafka:latest kafka_source_config_2.json kafka_source_catalog.json dest_catalog_kafka.json >/dev/null
+assert_eq "events count after full re-read (+5 new, hash dedup)" "25" \
+  "$(meili '/indexes/events/documents?limit=0' | json "d['total']")"
 
 # --------------------------------------------------------------------------
 say "Result: $PASS passed, $FAIL failed"

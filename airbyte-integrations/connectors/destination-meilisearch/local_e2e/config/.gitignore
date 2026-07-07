@@ -1,6 +1,12 @@
 .pg_discover.jsonl
 .mongo_discover.jsonl
 .faker_discover.jsonl
+.es_discover.jsonl
+.kafka_discover.jsonl
 pg_source_catalog.json
 mongo_source_catalog.json
 faker_source_catalog.json
+es_source_catalog.json
+kafka_source_catalog.json
+kafka_source_config_1.json
+kafka_source_config_2.json
