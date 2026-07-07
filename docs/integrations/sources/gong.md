@@ -38,7 +38,7 @@ You can authenticate to Gong using one of two methods:
 
 <FieldAnchor field="start_date">
 
-- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call.
+- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call. Without a start date, the initial sync fetches your entire call history, which can be large. Set a start date to limit how far back the first sync reaches.
 
 </FieldAnchor>
 
@@ -91,7 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.2.9 | 2026-06-30 | [80750](https://github.com/airbytehq/airbyte/pull/80750) | Remove 90-day default lookback window; when `start_date` is not configured the connector now syncs all available data from the earliest recorded call, matching the Gong API default and the spec description |
+| 1.2.9 | 2026-07-07 | [80750](https://github.com/airbytehq/airbyte/pull/80750) | Remove 90-day default lookback window; when `start_date` is not configured the connector now syncs all available data from the earliest recorded call, matching the Gong API default and the spec description |
 | 1.2.8 | 2026-06-30 | [81076](https://github.com/airbytehq/airbyte/pull/81076) | Update dependencies |
 | 1.2.7 | 2026-06-23 | [80481](https://github.com/airbytehq/airbyte/pull/80481) | Update dependencies |
 | 1.2.6 | 2026-06-16 | [79879](https://github.com/airbytehq/airbyte/pull/79879) | Update dependencies |
