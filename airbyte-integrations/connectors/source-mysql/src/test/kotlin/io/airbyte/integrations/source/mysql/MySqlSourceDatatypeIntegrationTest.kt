@@ -9,7 +9,7 @@ import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.DiscoveredStream
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -103,8 +103,8 @@ class MySqlSourceDatatypeIntegrationTest {
                     id = StreamIdentifier.Companion.from(descriptor),
                     columns =
                         listOf(
-                            Field("k", IntFieldType),
-                            Field("v", ShortFieldType),
+                            EmittedField("k", IntFieldType),
+                            EmittedField("v", ShortFieldType),
                         ),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )

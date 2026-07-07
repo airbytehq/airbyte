@@ -67,6 +67,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.34 | 2026-07-07 | [80954](https://github.com/airbytehq/airbyte/pull/80954) | Update dependencies |
+| 0.7.33 | 2026-07-02 | [81393](https://github.com/airbytehq/airbyte/pull/81393) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 0.7.32 | 2026-06-23 | [78601](https://github.com/airbytehq/airbyte/pull/78601) | Update dependencies |
 | 0.7.31 | 2026-04-28 | [72688](https://github.com/airbytehq/airbyte/pull/72688) | Update dependencies |
 | 0.7.30 | 2026-03-31 | [75406](https://github.com/airbytehq/airbyte/pull/75406) | Upgrade CDK to v7.14.0 and use weight-based rate limiting for Dashboard REST API streams |
