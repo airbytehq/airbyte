@@ -395,6 +395,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.53 | 2026-07-07 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Pick up Load CDK 1.0.16: normalize table location with a trailing slash before deleting prefixes, fixing 403 AccessDenied errors with STS-scoped REST catalog credentials (e.g. Lakekeeper). |
 | 0.3.52 | 2026-06-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-10 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apacher Iceberg dependencies. |
 | 0.3.50 | 2026-06-03 | [79112](https://github.com/airbytehq/airbyte/pull/79112) | Use unique staging branches and clean them up after each sync. |
