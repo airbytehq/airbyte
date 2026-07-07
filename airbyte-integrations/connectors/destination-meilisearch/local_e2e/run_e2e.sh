@@ -82,6 +82,8 @@ docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-postgres:late
   discover --config /cfg/pg_source_config.json 2>/dev/null > "$CFG/.pg_discover.jsonl"
 docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-mongodb-v2:latest \
   discover --config /cfg/mongo_source_config.json 2>/dev/null > "$CFG/.mongo_discover.jsonl"
+docker run --rm -v "$CFG":/cfg airbyte/source-faker:latest \
+  discover --config /cfg/faker_source_config.json 2>/dev/null > "$CFG/.faker_discover.jsonl"
 python3 - "$CFG" <<'EOF'
 import json, sys
 cfg = sys.argv[1]
@@ -96,10 +98,11 @@ def catalog_from(path):
     raise SystemExit(f"no CATALOG message in {path}")
 
 pg = catalog_from(f"{cfg}/.pg_discover.jsonl")
+pg_pks = {"users": [["id"]], "products": [["id"]], "order_items": [["order_id"], ["product_id"]]}
 with open(f"{cfg}/pg_source_catalog.json", "w") as f:
     json.dump({"streams": [
-        {"stream": pg[n], "sync_mode": "full_refresh", "destination_sync_mode": "append", "primary_key": [["id"]]}
-        for n in ("users", "products")
+        {"stream": pg[n], "sync_mode": "full_refresh", "destination_sync_mode": "append", "primary_key": pk}
+        for n, pk in pg_pks.items()
     ]}, f, indent=2)
 
 mongo = catalog_from(f"{cfg}/.mongo_discover.jsonl")
@@ -108,29 +111,59 @@ with open(f"{cfg}/mongo_source_catalog.json", "w") as f:
         {"stream": mongo["customers"], "sync_mode": "full_refresh", "destination_sync_mode": "append",
          "primary_key": [["_id"]]}
     ]}, f, indent=2)
+
+faker = catalog_from(f"{cfg}/.faker_discover.jsonl")
+with open(f"{cfg}/faker_source_catalog.json", "w") as f:
+    json.dump({"streams": [
+        {"stream": faker[n], "sync_mode": "full_refresh", "destination_sync_mode": "append", "primary_key": [["id"]]}
+        for n in ("users", "products", "purchases")
+    ]}, f, indent=2)
 print("  catalogs written")
 EOF
 
 # --------------------------------------------------------------------------
-say "Sync 1: Postgres (users, products) -> Meilisearch [append_dedup, natural PK]"
+say "Sync 0: Faker (10k users, 100 products, purchases) -> volume/batching test"
+states=$(run_sync airbyte/source-faker:latest faker_source_config.json faker_source_catalog.json dest_catalog_faker.json)
+ok "sync completed ($states state checkpoints)"
+
+assert_eq "faker users count (10 batch flushes)" "10000" "$(meili '/indexes/users/documents?limit=0' | json "d['total']")"
+assert_eq "faker products count" "100" "$(meili '/indexes/products/documents?limit=0' | json "d['total']")"
+assert_eq "purchases index primaryKey (append mode -> synthetic)" "_ab_pk" "$(meili /indexes/purchases | json "d['primaryKey']")"
+purchases=$(meili '/indexes/purchases/documents?limit=0' | json "d['total']")
+if [ "$purchases" -gt 0 ]; then ok "purchases synced via random _ab_pk ($purchases docs)"; else bad "purchases empty"; fi
+# Faker stream names collide with the Postgres tables on purpose-neutral names;
+# clear them so the Postgres phase starts from clean indexes.
+for idx in users products purchases; do
+  curl -s -X DELETE -H "$AUTH" "$MEILI_URL/indexes/$idx" >/dev/null
+done
+ok "faker indexes cleared for the Postgres phase"
+
+say "Sync 1: Postgres (users, products, order_items) -> Meilisearch [append_dedup]"
 states=$(run_sync airbyte/source-postgres:latest pg_source_config.json pg_source_catalog.json dest_catalog_pg.json)
 ok "sync completed ($states state checkpoints)"
 
 assert_eq "users index primaryKey" "id" "$(meili /indexes/users | json "d['primaryKey']")"
 assert_eq "users document count" "5" "$(meili '/indexes/users/documents?limit=0' | json "d['total']")"
 assert_eq "products document count" "6" "$(meili '/indexes/products/documents?limit=0' | json "d['total']")"
+assert_eq "order_items primaryKey (composite -> hash)" "_ab_pk" "$(meili /indexes/order_items | json "d['primaryKey']")"
+assert_eq "order_items document count" "8" "$(meili '/indexes/order_items/documents?limit=0' | json "d['total']")"
 hit=$(curl -s -H "$AUTH" -H 'Content-Type: application/json' "$MEILI_URL/indexes/products/search" \
   -d '{"q":"keyboard"}' | json "d['hits'][0]['title'] if d['hits'] else 'NO HIT'")
 assert_eq "full-text search 'keyboard'" "Mechanical Keyboard" "$hit"
 
-say "Sync 2: mutate Postgres, re-sync, verify upsert (no duplicates)"
+say "Sync 2: mutate Postgres, re-sync, verify upserts (no duplicates)"
 docker exec meili-dest-e2e-postgres-1 psql -q -U postgres -d sales -c \
   "UPDATE users SET city='Paris' WHERE id=1;
-   INSERT INTO users (name,email,city,signup_date) VALUES ('Barbara Liskov','barbara@example.com','Cambridge MA','2024-06-01');"
+   INSERT INTO users (name,email,city,signup_date) VALUES ('Barbara Liskov','barbara@example.com','Cambridge MA','2024-06-01');
+   UPDATE order_items SET quantity=99 WHERE order_id=1 AND product_id=1;"
 run_sync airbyte/source-postgres:latest pg_source_config.json pg_source_catalog.json dest_catalog_pg.json >/dev/null
 assert_eq "user 1 city updated in place" "Paris" "$(meili /indexes/users/documents/1 | json "d['city']")"
 assert_eq "users count after upsert (+1 new, no dupes)" "6" "$(meili '/indexes/users/documents?limit=0' | json "d['total']")"
 assert_eq "products count unchanged" "6" "$(meili '/indexes/products/documents?limit=0' | json "d['total']")"
+assert_eq "order_items count unchanged (hash id is stable)" "8" \
+  "$(meili '/indexes/order_items/documents?limit=0' | json "d['total']")"
+assert_eq "order_items (1,1) quantity updated via hash upsert" "99" \
+  "$(meili '/indexes/order_items/documents?limit=100' | json "[x for x in d['results'] if x['order_id']==1 and x['product_id']==1][0]['quantity']")"
 
 say "Sync 3: MongoDB (customers) -> Meilisearch [append_dedup on _id]"
 run_sync airbyte/source-mongodb-v2:latest mongo_source_config.json mongo_source_catalog.json dest_catalog_mongo.json >/dev/null
