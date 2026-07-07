@@ -5,17 +5,20 @@ Airbyte **source** connector's `read` output is piped straight into this destina
 `write`, against real databases.
 
 ```
-Postgres  ──▶ airbyte/source-postgres   ──┐
-                                          ├── stdin ──▶ destination-meilisearch ──▶ Meilisearch v1.48
+Faker     ──▶ airbyte/source-faker      ──┐
+Postgres  ──▶ airbyte/source-postgres   ──┼── stdin ──▶ destination-meilisearch ──▶ Meilisearch v1.48
 MongoDB   ──▶ airbyte/source-mongodb-v2 ──┘
 ```
 
 ## What it covers
 
+All three document-id modes of the connector go through a real pipeline:
+
 | Step | Verifies |
 | --- | --- |
-| Postgres sync (`users`, `products`) | index auto-creation, natural `id` primary key, counts, full-text search |
-| Postgres mutate + re-sync | primary-key **upsert**: updated fields replace in place, no duplicates |
+| Faker sync (10k users, products, purchases) | **volume batching** (10+ flushes), nested documents, `purchases` in plain `append` mode → random `_ab_pk` |
+| Postgres sync (`users`, `products`, `order_items`) | index auto-creation, natural `id` primary key, **composite PK → deterministic `_ab_pk` hash**, counts, full-text search |
+| Postgres mutate + re-sync | primary-key **upsert**: updated fields replace in place, no duplicates — for both natural and hashed ids |
 | MongoDB sync (`customers`) | `_id` (ObjectId hex) as primary key, search |
 | MongoDB re-sync | `_id`-based dedup, stable count |
 
