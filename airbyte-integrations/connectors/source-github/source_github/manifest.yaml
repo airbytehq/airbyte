@@ -4,17 +4,17 @@ type: DeclarativeSource
 definitions:
   requester_base:
     type: HttpRequester
-    url_base: "{{ config.get('api_url', 'https://api.github.com') }}"
+    url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
     authenticator:
       type: RateLimitedMultipleTokenAuthenticator
       tokens: "{{ config.get('credentials', {}).get('personal_access_token', config.get('credentials', {}).get('access_token', config.get('access_token', ''))) }}"
       token_delimiter: ","
       auth_method: "token"
       header: "Authorization"
-      max_wait_time: "PT2H"
+      max_wait_time: "PT{{ config.get('max_waiting_time', 120) }}M"
       quota_status_source:
         type: QuotaStatusSource
-        url: "{{ config.get('api_url', 'https://api.github.com') }}/rate_limit"
+        url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
       quotas:
         - type: TokenQuota
           name: rest
