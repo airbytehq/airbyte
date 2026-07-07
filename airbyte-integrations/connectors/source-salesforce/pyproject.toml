@@ -17,7 +17,7 @@ include = "source_salesforce"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "7.23.2.post5.dev28883051842"
+airbyte-cdk = "7.23.2.post6.dev28898105720"
 pendulum = "^3.0.0"
 
 [tool.poetry.scripts]
