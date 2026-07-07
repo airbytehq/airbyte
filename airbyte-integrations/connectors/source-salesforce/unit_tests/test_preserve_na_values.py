@@ -4,7 +4,6 @@
 
 import source_salesforce.streams as streams_module
 from conftest import generate_stream
-
 from source_salesforce.streams import BulkDatetimeStreamSlicer
 
 
