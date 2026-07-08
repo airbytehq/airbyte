@@ -69,7 +69,11 @@ Airbyte automatically charges the credit card on file at the end of each month's
 
 ### Review your subscription
 
-The Subscription section shows the subscription plan you have enrolled in. Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to inquire about larger plans, new features, or custom discounts.
+The Subscription section shows the subscription plan you have enrolled in.
+
+If you're on Standard and eligible for self-serve Plus, you can upgrade from the Billing page. Plus includes everything in Standard and adds [15-minute sync schedules](/platform/using-airbyte/core-concepts/sync-schedules) and [mappings](/platform/using-airbyte/mappings). Airbyte applies Plus after checkout is complete.
+
+Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to inquire about Pro, Enterprise Flex, new features, or custom discounts.
 
 ### Review your account balance
 
