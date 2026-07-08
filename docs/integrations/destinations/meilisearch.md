@@ -64,7 +64,7 @@ the MeiliSearch docs.
 
 | Version | Date       | Pull Request                                              | Subject                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
-| 2.0.0 | 2026-06-28 | [#TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Rebuild: primary-key upsert and dedup, partial (merge) updates, configurable batch size, modern CDK. Un-archive. |
+| 2.0.0 | 2026-06-28 | [81503](https://github.com/airbytehq/airbyte/pull/81503) | Rebuild: primary-key upsert and dedup, partial (merge) updates, configurable batch size, modern CDK. Un-archive. |
 | 1.0.25 | 2025-05-10 | [59837](https://github.com/airbytehq/airbyte/pull/59837) | Update dependencies |
 | 1.0.24 | 2025-05-03 | [59302](https://github.com/airbytehq/airbyte/pull/59302) | Update dependencies |
 | 1.0.23 | 2025-04-26 | [58742](https://github.com/airbytehq/airbyte/pull/58742) | Update dependencies |
