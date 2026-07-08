@@ -72,9 +72,10 @@ Click the edit (pencil) icon next to a workspace to open its settings. You can:
 
 - **Rename** the workspace and change its **color**.
 - **Manage members**: add any active organization member, or remove a member you added earlier. Administrators always appear as members and can't be removed. Search by name or email to find people.
-- **Copy the workspace ID** for use in API calls.
 
 Click **Save** to apply your changes. The Context Store region is fixed and can't be edited.
+
+To grab a workspace's ID for use in API calls, open the picker and use the **Copy workspace ID** control on the workspace's row. You don't need to open the edit dialog to do this.
 
 ### Delete a workspace
 
@@ -84,7 +85,7 @@ Historical [session](../../admin/sessions.md) and [tool call](../../admin/tool-c
 
 ### Programmatic access
 
-Workspace management is also available through the API. The SDK `Workspace` class covers day-to-day operations like listing connectors and executing operations.
+Workspace management is also available through the [API](../../interfaces/api/workspaces). The [SDK `Workspace` class](../../interfaces/sdk/workspaces) covers day-to-day operations like listing connectors and executing operations.
 
 - [Manage workspaces (API)](../../interfaces/api/workspaces): List, update, and delete workspaces.
 - [Manage workspaces (SDK)](../../interfaces/sdk/workspaces): Target a workspace, list connectors, and execute operations.
