@@ -73,9 +73,7 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
-10. **Max Waiting Time (Optional)** - Maximum time in minutes to wait when the connector is rate-limited by the GitHub API. Defaults to 10 minutes. Valid range: 1 to 60 minutes.
-
-9. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
+10. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. Valid values are 1 to 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
 
 ### For Airbyte Open Source:
 
@@ -165,7 +163,8 @@ This connector outputs the following incremental streams:
 
    Consider this behavior when using these incremental streams, because it may affect your API call limits.
 
-4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+4. For some large streams, setting a `start_date` very far in the past can cause GitHub to return errors instead of records. The connector logs a `WARN` message in this case. If you encounter this, try setting a more recent `start_date`.
+
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
 - `assignees`
@@ -218,15 +217,26 @@ Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/e
 
 The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
 
+#### GraphQL page size and 502/504 errors
+
+The connector uses the GitHub GraphQL API for `pull_request_stats`, `reviews`, `pull_request_comment_reactions`, `issue_reactions`, `projects_v2`, and `releases`. GitHub limits GraphQL queries by point cost and by the amount of work needed to return a page of results.
+
+Starting in version 2.1.28, the `releases` stream requests fewer records per page by default, because repositories with long release notes can return HTTP 504 Gateway Timeout when a single GraphQL page asks for too many releases. If a GraphQL stream still fails with HTTP 502 or 504 errors, lower the **Page size for large streams** option (where your Airbyte deployment exposes it). Smaller pages are cheaper for GitHub to process, but increase total sync time because the connector makes more requests.
+
 #### Permissions and scopes
 
-If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
+If you use the OAuth authentication method, the OAuth 2.0 application requests these [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, and **workflow**. For a [personal access token](https://github.com/settings/tokens), select the scopes manually.
 
-Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
+At a minimum, your token needs the `repo` scope. To sync streams that read organization, project, user, or workflow data, also grant `read:org`, `read:project`, `read:user`, and `workflow`. The OAuth flow already requests this set.
 
-- For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
-- Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
-- To sync the Projects stream, the repository must have the Projects feature enabled.
+Some streams have additional requirements:
+
+- **Collaborators**: The user who generates the personal access token must be a collaborator on the repository. To become a collaborator, they must be invited by an owner. If a repository has no collaborators, no records are synced. Read more about access permissions in [GitHub's documentation](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
+- **Teams**, **TeamMembers**, **TeamMemberships**: Only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories owned by personal accounts don't have access to teams. The connector returns no records for these streams in that case.
+- **Issues**, **IssueComments**, **IssueEvents**, **IssueLabels**, **IssueMilestones**, **IssueReactions**, **IssueTimelineEvents**: The repository must have the **Issues** feature enabled. If Issues is disabled on a repository, GitHub returns HTTP 410, and the connector skips that repository for these streams without failing the sync.
+- **Projects (Classic)**, **ProjectColumns**, **ProjectCards**: The repository must have the **Projects (classic)** feature enabled. If GitHub Projects (classic) is disabled, GitHub returns HTTP 410, and the connector skips that repository for these streams without failing the sync.
+
+If your organization enforces [SAML single sign-on (SSO)](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/about-authentication-with-saml-single-sign-on), you must also [authorize your personal access token for SSO](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on) before it can read data from that organization. A token that has the right scopes but isn't SSO-authorized returns HTTP 403 errors, and the connector can't sync those streams. OAuth credentials issued through the Cloud authentication flow handle this for you.
 
 ### Troubleshooting
 
@@ -246,13 +256,13 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 2.1.34 | 2026-06-30 | [81084](https://github.com/airbytehq/airbyte/pull/81084) | Update dependencies |
 | 2.1.33 | 2026-06-23 | [80440](https://github.com/airbytehq/airbyte/pull/80440) | Update dependencies |
 | 2.1.32 | 2026-06-16 | [79802](https://github.com/airbytehq/airbyte/pull/79802) | Update dependencies |
-| 2.1.31 | 2026-06-08 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
+| 2.1.31 | 2026-06-12 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
 | 2.1.30 | 2026-06-09 | [79312](https://github.com/airbytehq/airbyte/pull/79312) | Update dependencies |
 | 2.1.29 | 2026-06-02 | [78702](https://github.com/airbytehq/airbyte/pull/78702) | Update dependencies |
-| 2.1.28 | 2026-05-07 | [77847](https://github.com/airbytehq/airbyte/pull/77847) | Reduce GraphQL `releases` query cost (mark as large stream), bound page-size halving at 1, and improve 504 Gateway Timeout error messages |
-| 2.1.27 | 2026-05-02 | [77685](https://github.com/airbytehq/airbyte/pull/77685) | Make `parse_response` and error-handler helpers defensive against unexpected response shapes (HTML error pages, malformed JSON, missing keys) |
-| 2.1.26 | 2026-05-02 | [77681](https://github.com/airbytehq/airbyte/pull/77681) | Treat 410 "Issues/Projects disabled" responses as skip-the-slice instead of failing the stream |
-| 2.1.25 | 2026-05-01 | [77690](https://github.com/airbytehq/airbyte/pull/77690) | Replaced placeholder and raw-passthrough error messages with actionable text including HTTP status codes, affected resources, and likely causes |
+| 2.1.28 | 2026-05-11 | [77847](https://github.com/airbytehq/airbyte/pull/77847) | Use the large-stream page size for `releases`, keep GraphQL page-size retries at or above 1, and improve HTTP 504 Gateway Timeout messages |
+| 2.1.27 | 2026-05-03 | [77685](https://github.com/airbytehq/airbyte/pull/77685) | Make `parse_response` and error-handler helpers defensive against unexpected response shapes (non-JSON bodies, malformed JSON, missing keys) |
+| 2.1.26 | 2026-05-02 | [77681](https://github.com/airbytehq/airbyte/pull/77681) | Skip stream slices when GitHub returns HTTP 410 with a "feature is disabled" message (for example, when Issues or Projects are disabled on a repository) instead of failing the stream |
+| 2.1.25 | 2026-05-02 | [77690](https://github.com/airbytehq/airbyte/pull/77690) | Replace placeholder error messages with actionable text that includes HTTP status codes, affected streams, and likely causes (such as missing scopes or SAML SSO authorization) |
 | 2.1.24 | 2026-04-28 | [77238](https://github.com/airbytehq/airbyte/pull/77238) | Update dependencies |
 | 2.1.23 | 2026-04-22 | [76922](https://github.com/airbytehq/airbyte/pull/76922) | Handle `None` response in `read_records` error handler so transport-layer failures (connection errors, timeouts) surface as transient errors instead of `AttributeError` |
 | 2.1.22 | 2026-04-22 | [74758](https://github.com/airbytehq/airbyte/pull/74758) | Fix rate limit sleep blocking heartbeat; classify rate limit errors as transient; increase default max_waiting_time to 120 minutes to cover GitHub's hourly rate limit window |
@@ -262,13 +272,13 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 2.1.18 | 2026-04-07 | [76124](https://github.com/airbytehq/airbyte/pull/76124) | Fix silent error swallowing in exception handlers for ContributorActivity, GithubStreamABC, and Releases streams |
 | 2.1.17 | 2026-04-07 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
 | 2.1.16 | 2026-04-03 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
-| 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
+| 2.1.15 | 2026-04-01 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
 | 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
 | 2.1.11 | 2026-02-24 | [73785](https://github.com/airbytehq/airbyte/pull/73785) | Update dependencies |
 | 2.1.10 | 2026-02-10 | [73061](https://github.com/airbytehq/airbyte/pull/73061) | Update dependencies |
-| 2.1.9 | 2026-01-27 | [72375](https://github.com/airbytehq/airbyte/pull/72375) | Update dependencies |
+| 2.1.9 | 2026-02-06 | [72375](https://github.com/airbytehq/airbyte/pull/72375) | Update dependencies |
 | 2.1.8 | 2026-01-20 | [71986](https://github.com/airbytehq/airbyte/pull/71986) | Update dependencies |
 | 2.1.7 | 2026-01-14 | [71400](https://github.com/airbytehq/airbyte/pull/71400) | Update dependencies |
 | 2.1.6 | 2025-12-18 | [70729](https://github.com/airbytehq/airbyte/pull/70729) | Update dependencies |
