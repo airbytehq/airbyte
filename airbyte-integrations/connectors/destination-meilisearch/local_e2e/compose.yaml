@@ -22,7 +22,8 @@ services:
     ports:
       - "57017:27017"
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -36,7 +37,11 @@ services:
       xpack.security.enabled: "false"
       ES_JAVA_OPTS: "-Xms512m -Xmx512m"
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(yellow|green)\"'"]
+      test:
+        [
+          "CMD-SHELL",
+          'curl -s http://localhost:9200/_cluster/health | grep -qE ''"status":"(yellow|green)"''',
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -57,7 +62,11 @@ services:
     ports:
       - "59092:9092"
     healthcheck:
-      test: ["CMD-SHELL", "rpk cluster info -X brokers=localhost:9092 >/dev/null 2>&1"]
+      test:
+        [
+          "CMD-SHELL",
+          "rpk cluster info -X brokers=localhost:9092 >/dev/null 2>&1",
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -69,7 +78,11 @@ services:
     environment:
       MEILI_MASTER_KEY: e2eMasterKey
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:7700/health | grep -q available"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s http://localhost:7700/health | grep -q available",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10

@@ -4,4 +4,5 @@
 
 from .destination import DestinationMeilisearch
 
+
 __all__ = ["DestinationMeilisearch"]
