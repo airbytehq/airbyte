@@ -1,1 +1,6 @@
-{"host": "http://localhost:7770", "api_key": "e2eMasterKey", "batch_size": 1000, "update_method": "replace"}
+{
+  "host": "http://localhost:7770",
+  "api_key": "e2eMasterKey",
+  "batch_size": 1000,
+  "update_method": "replace"
+}

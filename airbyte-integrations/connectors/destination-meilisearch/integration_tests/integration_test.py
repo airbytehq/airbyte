@@ -7,6 +7,9 @@ import logging
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_meilisearch.destination import DestinationMeilisearch, get_client
+from meilisearch import Client
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,9 +22,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from meilisearch import Client
 
-from destination_meilisearch.destination import DestinationMeilisearch, get_client
 
 INDEX = "movies"
 
@@ -74,9 +75,7 @@ def test_check_valid_config(config: Mapping[str, Any]):
 
 
 def test_check_invalid_config():
-    outcome = DestinationMeilisearch().check(
-        logging.getLogger("airbyte"), {"host": "http://localhost:1", "api_key": "nope"}
-    )
+    outcome = DestinationMeilisearch().check(logging.getLogger("airbyte"), {"host": "http://localhost:1", "api_key": "nope"})
     assert outcome.status == Status.FAILED
 
 
@@ -90,7 +89,9 @@ def test_append_dedup_uses_natural_key_and_upserts(config: Mapping[str, Any], cl
 
 def test_merge_preserves_untouched_fields(config: Mapping[str, Any], client: Client):
     destination = DestinationMeilisearch()
-    list(destination.write(config, _catalog(DestinationSyncMode.append_dedup), [_record({"id": 2, "title": "keep", "year": 1999}), _state()]))
+    list(
+        destination.write(config, _catalog(DestinationSyncMode.append_dedup), [_record({"id": 2, "title": "keep", "year": 1999}), _state()])
+    )
 
     merge_config = {**config, "update_method": "merge"}
     list(destination.write(merge_config, _catalog(DestinationSyncMode.append_dedup), [_record({"id": 2, "title": "updated"}), _state()]))
