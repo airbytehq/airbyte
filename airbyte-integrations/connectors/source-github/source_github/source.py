@@ -7,6 +7,7 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
 from airbyte_cdk.models import (
+    AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteStateMessage,
@@ -18,7 +19,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.components import RepositoryListResolver
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
@@ -90,31 +90,48 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         catalog: ConfiguredAirbyteCatalog,
         state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
-        """Route manifest streams to ConcurrentDeclarativeSource and Python streams to AbstractSource.
+        """Route manifest streams to `ConcurrentDeclarativeSource` and Python streams to `AbstractSource`.
 
-        CDK v7 removed the _group_streams mechanism that CDK v6 had. This override
-        replicates that behavior: DeclarativeStream objects are read concurrently,
-        while regular Python Stream objects are read through AbstractSource.read().
-        As streams are migrated from Python to manifest, they will automatically
-        move from the synchronous to the concurrent path.
+        CDK v7 removed the `_group_streams` mechanism that CDK v6 had. This override
+        replicates that behavior: manifest-backed `AbstractStream` objects are read
+        concurrently, while regular Python `Stream` objects are read through
+        `AbstractSource.read()`.
+
+        The config is validated and transformed up front so that manifest streams
+        (e.g. the repositories stream's `ListPartitionRouter`) see the resolved
+        organizations/repositories injected by `RepositoryListResolver`. As streams are
+        migrated from Python to the manifest, they automatically move from the
+        synchronous to the concurrent path.
         """
-        all_streams = self.streams(config=self._config or config)
-        concurrent_streams = []
-        concurrent_stream_names: set[str] = set()
+        effective_config = self._validate_and_transform_config(self._config or config)
+        # Manifest stream components interpolate from self._config, not the passed config arg.
+        if isinstance(self._config, dict):
+            self._config.update(effective_config)
+        concurrent_streams = super().streams(config=effective_config)
+        concurrent_stream_names = {stream.name for stream in concurrent_streams}
 
-        for stream in all_streams:
-            if isinstance(stream, AbstractStream):
-                concurrent_streams.append(stream)
-                concurrent_stream_names.add(stream.name)
-
-        if concurrent_streams:
-            selected = self._select_streams(streams=concurrent_streams, configured_catalog=catalog)
+        concurrent_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name in concurrent_stream_names])
+        if concurrent_catalog.streams:
+            selected = self._select_streams(streams=concurrent_streams, configured_catalog=concurrent_catalog)
             if selected:
                 yield from self._concurrent_source.read(selected)
 
         synchronous_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name not in concurrent_stream_names])
         if synchronous_catalog.streams:
             yield from AbstractSource.read(self, logger, config, synchronous_catalog, state)
+
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        """Return the union of Python `Stream` objects and manifest-backed streams.
+
+        `ConcurrentDeclarativeSource.discover()` only reports manifest streams, so this
+        override adds the Python streams from `SourceGithub.streams()`. As streams move
+        into the manifest they leave the Python list and are reported via
+        `super().streams()`, keeping the discovered catalog complete throughout the migration.
+        """
+        effective_config = self._config or config
+        streams = [stream.as_airbyte_stream() for stream in self.streams(config=effective_config)]
+        streams += [stream.as_airbyte_stream() for stream in super().streams(config=effective_config)]
+        return AirbyteCatalog(streams=streams)
 
     @staticmethod
     def _get_resolved_repositories(
@@ -279,9 +296,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         if hasattr(self, "_config") and isinstance(self._config, dict):
             self._config.update(config)
 
-        # Get manifest-defined streams (e.g. Repositories) from the declarative parent
-        manifest_streams = list(YamlDeclarativeSource.streams(self, config))
-
         python_streams = [
             IssueTimelineEvents(**repository_args),
             Assignees(**repository_args),
@@ -323,4 +337,4 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]
 
-        return manifest_streams + python_streams
+        return python_streams

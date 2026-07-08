@@ -14,6 +14,7 @@ from .config import ConfigBuilder
 from .helpers import given_tickets
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import (
+    ErrorResponseBuilder,
     SideConversationsRecordBuilder,
     SideConversationsResponseBuilder,
 )
@@ -142,3 +143,74 @@ class TestSideConversationsStreamIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "new-record"
+
+    @HttpMocker()
+    def test_given_millisecond_timestamps_when_read_incremental_then_cursor_is_parsed_correctly(self, http_mocker):
+        """Test that records with millisecond-precision timestamps (e.g. 2025-01-25T18:06:33.677Z)
+        are correctly parsed by the cursor and not silently skipped."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        start_date = string_to_datetime(self._config["start_date"])
+
+        tickets_record_builder = given_tickets(http_mocker, start_date, api_token_authenticator)
+        ticket = tickets_record_builder.build()
+
+        # Use millisecond-precision timestamp format matching real Zendesk API responses
+        millis_timestamp = start_date.add(timedelta(days=5)).strftime("%Y-%m-%dT%H:%M:%S.677Z")
+        record_with_millis = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("millis-record")
+            .with_field(FieldPath("updated_at"), millis_timestamp)
+        )
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
+            SideConversationsResponseBuilder.side_conversations_response().with_record(record_with_millis).build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.incremental, self._config)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "millis-record"
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestSideConversationsErrorHandling(TestCase):
+    """Test error handling for side_conversations stream.
+
+    The side_conversations stream has an IGNORE error handler for 422 responses,
+    since some tickets return 422 Unprocessable Entity when they don't support
+    side conversations.
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_START_DATE)
+            .build()
+        )
+
+    def _get_authenticator(self, config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_422_error_when_read_then_ignore_and_continue(self, http_mocker):
+        """Test that 422 errors are gracefully ignored without failing the sync."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        start_date = string_to_datetime(self._config["start_date"])
+
+        tickets_record_builder = given_tickets(http_mocker, start_date, api_token_authenticator)
+        ticket = tickets_record_builder.build()
+
+        # Mock 422 error response for the side conversations endpoint
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
+            ErrorResponseBuilder.response_with_status(422).with_error_message("Unknown").build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.full_refresh, self._config)
+
+        # Verify no records returned (error was ignored, not retried endlessly)
+        assert len(output.records) == 0
