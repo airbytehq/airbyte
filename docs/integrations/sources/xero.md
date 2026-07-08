@@ -125,6 +125,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 2.2.0 | 2026-07-08 | [81522](https://github.com/airbytehq/airbyte/pull/81522) | Pace requests under Xero's rate limits (API budget), honor `Retry-After` on 429s, and use a lightweight connection check |
 | 2.1.6 | 2026-06-30 | [79089](https://github.com/airbytehq/airbyte/pull/79089) | Update dependencies |
 | 2.1.5 | 2026-02-25 | [71340](https://github.com/airbytehq/airbyte/pull/71340) | Resolve the generator returned from JsonDecoder into dictionary |
 | 2.1.4 | 2025-03-01 | [55142](https://github.com/airbytehq/airbyte/pull/55142) | Update dependencies |
