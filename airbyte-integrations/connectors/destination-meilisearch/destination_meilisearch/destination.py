@@ -29,6 +29,7 @@ from destination_meilisearch.writer import (
     MeiliWriter,
 )
 
+
 logger = getLogger("airbyte")
 
 DEFAULT_BATCH_SIZE = 1000
@@ -187,9 +188,7 @@ class DestinationMeilisearch(Destination):
             task = client.index(index_name).add_documents([{"id": doc_id, "title": "Airbyte connection check"}], "id")
             result = client.wait_for_task(task.task_uid, 60_000, 200)
             if result.status != "succeeded":
-                return AirbyteConnectionStatus(
-                    status=Status.FAILED, message=f"Write check failed: task status '{result.status}'"
-                )
+                return AirbyteConnectionStatus(status=Status.FAILED, message=f"Write check failed: task status '{result.status}'")
 
             # Read
             client.index(index_name).get_document(doc_id)

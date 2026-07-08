@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from meilisearch import Client
 
+
 logger = getLogger("airbyte")
 
 # Synthetic primary-key field injected into documents when the stream's natural
@@ -86,9 +87,7 @@ class MeiliWriter:
         if self.primary_key not in data:
             raise ValueError(f"Record for index '{self.index_name}' is missing primary key field '{self.primary_key}'")
         value = data[self.primary_key]
-        if isinstance(value, bool) or not (
-            isinstance(value, int) or (isinstance(value, str) and VALID_STRING_ID.fullmatch(value))
-        ):
+        if isinstance(value, bool) or not (isinstance(value, int) or (isinstance(value, str) and VALID_STRING_ID.fullmatch(value))):
             raise ValueError(
                 f"Primary key '{self.primary_key}'={value!r} for index '{self.index_name}' is not a valid "
                 f"Meilisearch document id (must be an integer or a string of only [a-zA-Z0-9_-])"

@@ -5,6 +5,15 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from destination_meilisearch.destination import DestinationMeilisearch, resolve_primary_key, sanitize_index_name
+from destination_meilisearch.writer import (
+    ID_HASH,
+    ID_NATURAL,
+    ID_RANDOM,
+    INTERNAL_PK_FIELD,
+    MeiliWriter,
+)
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStateMessage,
@@ -13,15 +22,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     StreamDescriptor,
     Type,
-)
-
-from destination_meilisearch.destination import DestinationMeilisearch, resolve_primary_key, sanitize_index_name
-from destination_meilisearch.writer import (
-    ID_HASH,
-    ID_NATURAL,
-    ID_RANDOM,
-    INTERNAL_PK_FIELD,
-    MeiliWriter,
 )
 
 
