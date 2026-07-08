@@ -1,7 +1,10 @@
 name: "Hydra: Auto-merge (AI-gated)"
 # Triggered via the /ai-ready slash command or called from other workflows.
-# Kicks off a Devin AI session with structured output to evaluate whether
-# the PR is safe to auto-merge, then evaluates the result deterministically:
+# Kicks off a Devin AI session using the `hydra_automerge_eval` playbook
+# (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
+# playbook carries the analysis prompt and the structured output schema; this
+# workflow only supplies the PR to analyze and evaluates the result
+# deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
@@ -231,96 +234,16 @@ jobs:
           wait-for-stopped-status: "true"
           wait-minutes-max: "10"
           structured-output-required: "true"
+          # The analysis prompt and structured output schema live in the
+          # `hydra_automerge_eval` playbook in airbytehq/ai-skills. Launching a
+          # session with the macro attaches the schema automatically.
+          playbook-macro: "!hydra_automerge_eval"
           tags: |
             auto-merge-eval
             hyd-ready
           prompt-text: |
-            Analyze this pull request and classify it by filling out the structured output schema:
+            Evaluate this pull request for auto-merge:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
-
-            Review the PR diff, changed files, and PR comments. Each field in the schema has a description explaining exactly what to check and when to set pass to true or false.
-
-            Important:
-            - For change_scope, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
-            - Be precise and conservative: when in doubt, set pass to false.
-            - Do NOT create any files, branches, or PRs. Do NOT write any code. Only analyze.
-          structured-output-schema: |
-            type: object
-            properties:
-              preconditions:
-                type: object
-                description: "Safety and readiness checks for the PR."
-                properties:
-                  no_breaking_changes:
-                    type: object
-                    description: "Set pass to true ONLY if the PR does not introduce any breaking changes. A breaking change includes: major version bumps, removed or renamed public APIs, changed function signatures, removed configuration options, backward-incompatible schema changes, or anything that would require downstream consumers to modify their code or configuration."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  ai_review_passed:
-                    type: object
-                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] OR airbyte-support-bot containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. Either author is valid — the AI review playbook posts as airbyte-support-bot so the PR-owning Devin session recognizes it as an external comment. If no such comment exists from either author, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                required: [no_breaking_changes, ai_review_passed]
-              change_scope:
-                type: object
-                description: "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else."
-                properties:
-                  docs_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if every file changed in the PR is a documentation file (markdown, rst, mdx, or files under docs/ directories). If even one non-documentation file is changed, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  comment_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if the entire diff consists exclusively of code comment additions, removals, or modifications (e.g. Python # comments, Java/Kotlin // or /* */ comments, YAML # comments). No functional code, imports, or logic may be added, removed, or changed. If any non-comment line is modified, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  dependency_version_bump:
-                    type: object
-                    description: "Set pass to true if the PR is a dependency version bump with no functional code changes. Allowed files: dependency manifests (pyproject.toml, setup.py, build.gradle, package.json), lockfiles (poetry.lock, package-lock.json, yarn.lock), connector version metadata (metadata.yaml version/dockerImageTag fields), and changelog entries (docs/integrations/**/*.md). Set pass to false ONLY if the PR also modifies source code, test files, or other functional files beyond the categories listed above."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  metadata_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if every file changed in the PR is a connector metadata file such as metadata.yaml, icon.svg, or similar non-code connector configuration files. If any source code, test, or documentation file is changed, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  net_new_stream_addition:
-                    type: object
-                    description: "Set pass to true ONLY if the PR exclusively adds net-new streams to an existing connector without modifying any existing streams or core connector logic. Allowed changes: new stream class definitions, new stream registrations, new tests for the new streams, new or updated documentation/changelogs for the new streams, version bumps in metadata.yaml, new or updated schema files for the new streams, and trivial updates to existing tests that are a direct mechanical consequence of adding the new stream (e.g. incrementing an expected stream count assertion). Set pass to false if any existing stream definition, existing schema, or core connector logic (e.g. auth, base classes, shared utilities) is modified, or if existing tests are changed in ways beyond trivial count updates."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change, net_new_stream_addition]
-            required: [preconditions, change_scope]
 
       - name: Check for structured output
         if: steps.devin.outputs.session-id
