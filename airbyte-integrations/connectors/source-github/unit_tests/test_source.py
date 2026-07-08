@@ -295,7 +295,7 @@ def test_user_friendly_message(error_message, expected_user_friendly_message):
 
 
 _MANIFEST_WITH_STREAM = {
-    "version": "6.45.1",
+    "version": "7.12.0",
     "type": "DeclarativeSource",
     "check": {"type": "CheckStream", "stream_names": []},
     "streams": [
