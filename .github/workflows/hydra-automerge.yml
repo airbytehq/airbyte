@@ -1,6 +1,6 @@
 name: "Hydra: Auto-merge (AI-gated)"
 # Triggered via the /ai-ready slash command or called from other workflows.
-# Kicks off a Devin AI session using the `pr_automerge_analysis` playbook
+# Kicks off a Devin AI session using the `pr_scope_analysis` playbook
 # (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
 # playbook carries the analysis prompt and the structured output schema; this
 # workflow only supplies the PR to analyze and evaluates the result
@@ -235,9 +235,9 @@ jobs:
           wait-minutes-max: "10"
           structured-output-required: "true"
           # The analysis prompt and structured output schema live in the
-          # `pr_automerge_analysis` playbook in airbytehq/ai-skills. Launching a
+          # `pr_scope_analysis` playbook in airbytehq/ai-skills. Launching a
           # session with the macro attaches the schema automatically.
-          playbook-macro: "!pr_automerge_analysis"
+          playbook-macro: "!pr_scope_analysis"
           tags: |
             auto-merge-eval
             hyd-ready
