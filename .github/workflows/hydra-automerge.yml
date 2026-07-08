@@ -242,7 +242,7 @@ jobs:
             auto-merge-eval
             hyd-ready
           prompt-text: |
-            Evaluate this pull request for auto-merge:
+            Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
 
       - name: Check for structured output
