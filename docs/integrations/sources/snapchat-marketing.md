@@ -159,6 +159,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.41 | 2026-06-30 | [81242](https://github.com/airbytehq/airbyte/pull/81242) | Update dependencies |
+| 1.5.40 | 2026-06-23 | [80650](https://github.com/airbytehq/airbyte/pull/80650) | Update dependencies |
 | 1.5.39 | 2026-06-17 | [80208](https://github.com/airbytehq/airbyte/pull/80208) | Fix OAuth re-authentication failure caused by masked client_id/client_secret in consent URL |
 | 1.5.38 | 2026-06-16 | [80030](https://github.com/airbytehq/airbyte/pull/80030) | Update dependencies |
 | 1.5.37 | 2026-06-09 | [79506](https://github.com/airbytehq/airbyte/pull/79506) | Update dependencies |

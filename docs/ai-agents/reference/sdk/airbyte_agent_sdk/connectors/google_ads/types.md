@@ -3483,6 +3483,9 @@ Classes
     `campaign_campaign_budget: Any`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: Any`
+    :   Campaign end date
+
     `campaign_id: Any`
     :   Campaign ID
 
@@ -3509,6 +3512,9 @@ Classes
 
     `campaign_serving_status: Any`
     :   Campaign serving status
+
+    `campaign_start_date_time: Any`
+    :   Campaign start date
 
     `campaign_status: Any`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -3670,6 +3676,9 @@ Classes
     `campaign_campaign_budget: list[str]`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: list[str]`
+    :   Campaign end date
+
     `campaign_id: list[int]`
     :   Campaign ID
 
@@ -3696,6 +3705,9 @@ Classes
 
     `campaign_serving_status: list[str]`
     :   Campaign serving status
+
+    `campaign_start_date_time: list[str]`
+    :   Campaign start date
 
     `campaign_status: list[str]`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -3902,6 +3914,9 @@ Classes
     `campaign_campaign_budget: str | None`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: str | None`
+    :   Campaign end date
+
     `campaign_id: int | None`
     :   Campaign ID
 
@@ -3928,6 +3943,9 @@ Classes
 
     `campaign_serving_status: str | None`
     :   Campaign serving status
+
+    `campaign_start_date_time: str | None`
+    :   Campaign start date
 
     `campaign_status: str | None`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -4014,6 +4032,9 @@ Classes
     `campaign_campaign_budget: Literal['asc', 'desc']`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: Literal['asc', 'desc']`
+    :   Campaign end date
+
     `campaign_id: Literal['asc', 'desc']`
     :   Campaign ID
 
@@ -4040,6 +4061,9 @@ Classes
 
     `campaign_serving_status: Literal['asc', 'desc']`
     :   Campaign serving status
+
+    `campaign_start_date_time: Literal['asc', 'desc']`
+    :   Campaign start date
 
     `campaign_status: Literal['asc', 'desc']`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -4109,6 +4133,9 @@ Classes
     `campaign_campaign_budget: str`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: str`
+    :   Campaign end date
+
     `campaign_id: str`
     :   Campaign ID
 
@@ -4135,6 +4162,9 @@ Classes
 
     `campaign_serving_status: str`
     :   Campaign serving status
+
+    `campaign_start_date_time: str`
+    :   Campaign start date
 
     `campaign_status: str`
     :   Campaign status (ENABLED, PAUSED, REMOVED)

@@ -425,4 +425,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 1.0.24
+**Connector version:** 1.2.0

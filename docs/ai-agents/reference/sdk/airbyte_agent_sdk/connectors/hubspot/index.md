@@ -138,9 +138,14 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CallsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CompaniesSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[DealsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[EmailsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[MeetingsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[NotesSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]
 
     ### Class variables
@@ -153,6 +158,24 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsSearchResult"></a>
+
+`CallsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 <a id="CompaniesSearchResult"></a>
 
@@ -208,6 +231,78 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="EmailsSearchResult"></a>
+
+`EmailsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MeetingsSearchResult"></a>
+
+`MeetingsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="NotesSearchResult"></a>
+
+`NotesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TasksSearchResult"></a>
+
+`TasksSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="TicketsSearchResult"></a>
 
 `TicketsSearchResult(**data: Any)`
@@ -225,6 +320,72 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallsSearchData"></a>
+
+`CallsSearchData(**data: Any)`
+:   Search result data for calls entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the call has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the call was created
+
+    `id: str | None`
+    :   Unique identifier for the call record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the call
+
+    `properties_hs_call_body: str | None`
+    :   Description or notes about the call
+
+    `properties_hs_call_direction: str | None`
+    :   Direction of the call (INBOUND or OUTBOUND)
+
+    `properties_hs_call_duration: str | None`
+    :   Duration of the call in milliseconds
+
+    `properties_hs_call_status: str | None`
+    :   Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER)
+
+    `properties_hs_call_title: str | None`
+    :   Title or subject of the call
+
+    `properties_hs_createdate: str | None`
+    :   Date the call was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the call
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the call activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the call owner
+
+    `updated_at: str | None`
+    :   Timestamp when the call record was last modified
 
 <a id="CompaniesSearchData"></a>
 
@@ -418,6 +579,69 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
 
+<a id="EmailsSearchData"></a>
+
+`EmailsSearchData(**data: Any)`
+:   Search result data for emails entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the email has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the email was created
+
+    `id: str | None`
+    :   Unique identifier for the email record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the email
+
+    `properties_hs_createdate: str | None`
+    :   Date the email was created
+
+    `properties_hs_email_direction: str | None`
+    :   Direction of the email (EMAIL, INCOMING_EMAIL, FORWARDED_EMAIL)
+
+    `properties_hs_email_status: str | None`
+    :   Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT)
+
+    `properties_hs_email_subject: str | None`
+    :   Subject line of the email
+
+    `properties_hs_email_text: str | None`
+    :   Plain text body of the email
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the email
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the email activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the email owner
+
+    `updated_at: str | None`
+    :   Timestamp when the email record was last modified
+
 <a id="HubspotConnector"></a>
 
 `HubspotConnector(auth_config: HubspotAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
@@ -557,7 +781,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'api_search', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'api_search', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -623,6 +847,195 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MeetingsSearchData"></a>
+
+`MeetingsSearchData(**data: Any)`
+:   Search result data for meetings entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the meeting has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the meeting was created
+
+    `id: str | None`
+    :   Unique identifier for the meeting record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the meeting
+
+    `properties_hs_createdate: str | None`
+    :   Date the meeting was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the meeting
+
+    `properties_hs_meeting_body: str | None`
+    :   Description or notes about the meeting
+
+    `properties_hs_meeting_end_time: str | None`
+    :   End time of the meeting
+
+    `properties_hs_meeting_location: str | None`
+    :   Location of the meeting
+
+    `properties_hs_meeting_outcome: str | None`
+    :   Outcome of the meeting (e.g., SCHEDULED, COMPLETED, NO_SHOW, CANCELED)
+
+    `properties_hs_meeting_start_time: str | None`
+    :   Start time of the meeting
+
+    `properties_hs_meeting_title: str | None`
+    :   Title of the meeting
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the meeting activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the meeting owner
+
+    `updated_at: str | None`
+    :   Timestamp when the meeting record was last modified
+
+<a id="NotesSearchData"></a>
+
+`NotesSearchData(**data: Any)`
+:   Search result data for notes entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the note has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the note was created
+
+    `id: str | None`
+    :   Unique identifier for the note record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the note
+
+    `properties_hs_createdate: str | None`
+    :   Date the note was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the note
+
+    `properties_hs_note_body: str | None`
+    :   The body content of the note (supports HTML)
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the note activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the note owner
+
+    `updated_at: str | None`
+    :   Timestamp when the note record was last modified
+
+<a id="TasksSearchData"></a>
+
+`TasksSearchData(**data: Any)`
+:   Search result data for tasks entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the task has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the task was created
+
+    `id: str | None`
+    :   Unique identifier for the task record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the task
+
+    `properties_hs_createdate: str | None`
+    :   Date the task was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the task
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_task_body: str | None`
+    :   Description or notes for the task
+
+    `properties_hs_task_priority: str | None`
+    :   Priority of the task (LOW, MEDIUM, HIGH)
+
+    `properties_hs_task_status: str | None`
+    :   Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED)
+
+    `properties_hs_task_subject: str | None`
+    :   Subject or title of the task
+
+    `properties_hs_task_type: str | None`
+    :   Type of the task (TODO, CALL, EMAIL)
+
+    `properties_hs_timestamp: str | None`
+    :   Due date / timestamp for the task
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the task owner
+
+    `updated_at: str | None`
+    :   Timestamp when the task record was last modified
 
 <a id="TicketsSearchData"></a>
 
