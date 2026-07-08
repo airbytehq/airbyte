@@ -23,6 +23,7 @@ Airbyte logs sessions for work initiated in the web app. Work initiated through 
 The Sessions table lists the most recent sessions first. Each row represents one session, and the columns describe what the agent did and how much work it took.
 
 - **Source**: A descriptive name for the session. For automations, this is the automation's name. For chats, this is the chat's title.
+- **Workspace**: The workspace the session ran in. If that workspace has since been deleted, this shows an em dash (—). On Free and Individual plans, every session runs in the `default` workspace.
 - **Type**: Whether the session is a [Chat](#chat), an [Automation](#automation), or an **Automation Builder Chat**.
 - **Status**: Notes Active or Deleted. Active chats are resumable.
 - **Connectors**: The connectors the agent used during the session. Hover over a connector icon to see its name.
@@ -35,7 +36,9 @@ The Sessions table lists the most recent sessions first. Each row represents one
   - Click the **View** icon to open the session and see its messages and tool calls.
   - Click the **Chat** icon to jump to the chat or automation the session belongs to.
 
-Use the **Type**, **Status**, and **Connectors** filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors.
+Use the filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors. On the [Team and Custom plans](./billing.md#team), a **Workspace** filter also scopes the list to one or more workspaces.
+
+Administrators see sessions from every workspace in the organization. Members see sessions from the workspaces they belong to. On Free and Individual plans there is only the `default` workspace, so this distinction doesn't apply.
 
 ## Session types {#session-types}
 

@@ -27,7 +27,14 @@ Administrators can add connectors from the web app.
 
 ## Workspaces
 
-On the [Team and Custom plans](../../admin/billing.md#team), a workspace picker appears in the sidebar. Use it to switch between workspaces, create new ones, and see which workspace is currently active. Chats and connectors are scoped to the active workspace. See [Workspaces](../../concepts/architecture/workspaces) for details.
+On the [Team and Custom plans](../../admin/billing.md#team), a workspace picker appears at the top of the sidebar. Each workspace has a name and a color swatch, and the picker shows which workspace is currently active. Chats and connectors are scoped to the active workspace.
+
+- **Switch workspaces**: Open the picker and select another workspace. Airbyte navigates to that workspace and shows a confirmation toast.
+- **Create a workspace** (administrators only): Click **New workspace**, enter a name, and pick a color. The Context Store region is fixed to the United States. Airbyte switches you to the new workspace and adds you as a member.
+- **Edit a workspace** (administrators only): Hover a workspace and click the edit icon to rename it, change its color, manage members, or copy its ID.
+- **Delete a workspace** (administrators only): Hover a workspace and click the delete icon, then type the name to confirm.
+
+The `default` workspace can't be renamed, recolored, or deleted, and everyone in the organization can access it. See [Workspaces](../../concepts/architecture/workspaces) for details.
 
 ## Related administration
 

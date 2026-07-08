@@ -56,12 +56,12 @@ Removing a user revokes their access to the organization immediately. To cancel 
 
 ## Workspace membership
 
-On the Team plan, administrators control which workspaces each member can access.
+On the Team and Custom plans, administrators control which workspaces each member can access.
 
-- **Administrators** can see and manage all workspaces in the organization.
-- **Members** can be assigned to specific workspaces by an administrator.
+- **Administrators** can see and manage every workspace in the organization, and always keep access to all of them.
+- **Members** can be added to specific workspaces by an administrator, and see only the workspaces they belong to.
 
-Administrators can manage workspace membership from the workspace members page. For details on workspace structure, see [Workspaces](../concepts/architecture/workspaces.md).
+Everyone in the organization can access the `default` workspace. Administrators manage membership for other workspaces from the workspace picker in the sidebar: open a workspace's edit dialog and add or remove members there. For details on workspace structure and management, see [Workspaces](../concepts/architecture/workspaces.md).
 
 ## Related topics
 
