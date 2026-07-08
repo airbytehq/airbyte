@@ -344,19 +344,15 @@ definitions:
               $ref: "#/definitions/conferences_stream"
               # Only fetch in-progress conferences because the Twilio Participants API
               # does not return data for completed conferences (participants are only
-              # available while the conference is active).
+              # available while the conference is active). Status is injected as a static
+              # request parameter rather than a ListPartitionRouter so the parent partition
+              # key matches previous versions and no state migration is needed.
               retriever:
                 $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
-                partition_router:
-                  - type: ListPartitionRouter
-                    values:
-                      - "in-progress"
-                    cursor_field: conference_status
-                    request_option:
-                      type: RequestOption
-                      field_name: Status
-                      inject_into: request_parameter
-                  - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
+                requester:
+                  $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/requester"
+                  request_parameters:
+                    Status: "in-progress"
                 record_selector:
                   $ref: "#/definitions/base_stream/retriever/record_selector"
                   record_filter:
@@ -364,9 +360,6 @@ definitions:
                     condition: "{{ parameters.get('subresource_uri_key') or parameters.get('data_field') or parameters['name'] in record.get('subresource_uris', {}) }}"
             parent_key: subresource_uris
             partition_field: subresource_uris
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_declarative_manifest.components.TwilioConferenceParticipantsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
