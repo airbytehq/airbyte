@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## July 8, 2026
+
+Connectors
+
+- You can now create, update, and delete notes, calls, emails, meetings, and tasks with the HubSpot connector, so your agents can log and manage CRM engagement activity such as adding a note to a contact or logging a call.
+
 ## July 3, 2026
 
 Web app
