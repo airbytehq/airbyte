@@ -39,5 +39,9 @@ class ConfigBuilder:
         self._config["refresh_token"] = refresh_token
         return self
 
+    def preserve_na_values(self, preserve_na_values: bool) -> "ConfigBuilder":
+        self._config["preserve_na_values"] = preserve_na_values
+        return self
+
     def build(self) -> Mapping[str, Any]:
         return self._config
