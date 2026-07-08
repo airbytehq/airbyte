@@ -107,7 +107,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
-10. Click **Set up source** and wait for the tests to complete.
+10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -125,7 +126,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
 9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
-10. Click **Set up source** and wait for the tests to complete.
+10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
@@ -274,6 +276,17 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 | PT1H   | 1 hour     |
 | PT2H   | 2 hours    |
 | P1D    | 1 day      |
+
+### Preserving "NA" string values {#preserving-na-string-values}
+
+When extracting data through the Bulk API, the connector downloads results as CSV. By default, literal strings such as `NA`, `N/A`, `NULL`, `None`, `NaN`, `null` and `#N/A` are interpreted as missing values and synced as `null`. This can cause data correctness issues when such a string is a legitimate value — for example, a picklist where `NA` means "North America".
+
+**Symptoms:**
+
+- A field that contains `NA`/`N/A` (or similar) in Salesforce is `null` in the destination
+- Only affects streams synced via the Bulk API (see [Usage of the BULK API vs REST API](#usage-of-the-bulk-api-vs-rest-api)); REST-synced streams are unaffected
+
+**Solution:** Enable the **Preserve "NA" and similar string values** option in the connector configuration (config field `preserve_na_values`). When enabled, these strings are kept as-is; empty cells are still synced as `null`. The option is **off by default** to preserve the connector's historical behavior. After enabling it, run a refresh of the affected stream(s) to backfill the corrected values.
 
 </details>
 
