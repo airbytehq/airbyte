@@ -31,6 +31,8 @@ acceptance_tests:
             bypass_reason: "Airbyte sandbox account does not have data for this stream"
           - name: lead_form_responses
             bypass_reason: "Airbyte sandbox account does not have data for this stream"
+          - name: videos
+            bypass_reason: "Airbyte sandbox account does not have data for this stream"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: true
