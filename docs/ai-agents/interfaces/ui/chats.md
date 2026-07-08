@@ -25,6 +25,8 @@ Suggestions are starting points, not fixed templates. The agent treats the text 
 
 Every chat you start is saved. To return to a chat, open the sidebar and click the chat under **Recent Chats**. The sidebar shows your five most recent chats by default. Click **Show more** to expand the list, or open the Sessions page from Settings to browse every chat and automation run in your organization.
 
+On the [Team and Custom plans](../../admin/billing.md#team), **Recent Chats** lists only the chats in the workspace you're currently viewing. To see chats from another workspace, switch to it in the workspace picker. Opening a chat that lives in a different workspace switches you to that workspace automatically.
+
 When you reopen a chat, the full history loads in place and you can continue the conversation by sending another message. Older messages stay available. Scroll up or click **Load older messages** to page through the history.
 
 Only the person who started a chat can send messages in it. If another member of your organization opens the chat (for example, via a link to its URL), they see the full conversation in read-only mode and can't post new messages.
