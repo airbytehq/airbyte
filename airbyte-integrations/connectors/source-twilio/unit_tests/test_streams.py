@@ -584,7 +584,7 @@ class TestTwilioNestedStream:
                 "states": [
                     {
                         "partition": {
-                            "conference_status": "completed",
+                            "conference_status": "init",
                             "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                             "parent_slice": {},
                         },
@@ -598,10 +598,18 @@ class TestTwilioNestedStream:
                         },
                         "cursor": {"date_created": "2022-11-01T00:00:00Z"},
                     },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
                 ]
             },
             True,
-            id="single_partition_duplicated_for_both_statuses",
+            id="single_partition_duplicated_for_all_statuses",
         ),
         pytest.param(
             {
@@ -626,7 +634,7 @@ class TestTwilioNestedStream:
                 "states": [
                     {
                         "partition": {
-                            "conference_status": "completed",
+                            "conference_status": "init",
                             "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                             "parent_slice": {},
                         },
@@ -643,6 +651,14 @@ class TestTwilioNestedStream:
                     {
                         "partition": {
                             "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "init",
                             "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
                             "parent_slice": {},
                         },
@@ -651,6 +667,14 @@ class TestTwilioNestedStream:
                     {
                         "partition": {
                             "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
                             "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
                             "parent_slice": {},
                         },
@@ -676,7 +700,7 @@ class TestTwilioNestedStream:
                 "states": [
                     {
                         "partition": {
-                            "conference_status": "completed",
+                            "conference_status": "init",
                             "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                             "parent_slice": {},
                         },
@@ -685,6 +709,14 @@ class TestTwilioNestedStream:
                     {
                         "partition": {
                             "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
                             "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
                             "parent_slice": {},
                         },

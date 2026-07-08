@@ -154,7 +154,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.0.7 | 2026-07-03 | [80330](https://github.com/airbytehq/airbyte/pull/80330) | Add `Status` filter to `conferences` and `conference_participants` streams to retrieve both completed and in-progress conferences after Twilio's July 2026 API default change |
+| 1.0.7 | 2026-07-03 | [80330](https://github.com/airbytehq/airbyte/pull/80330) | Add `Status` filter to `conferences` and `conference_participants` streams to retrieve conferences in all statuses (`init`, `in-progress`, `completed`) after Twilio's July 2026 API default change |
 | 1.0.6 | 2026-06-30 | [81294](https://github.com/airbytehq/airbyte/pull/81294) | Update dependencies |
 | 1.0.5 | 2026-06-23 | [80703](https://github.com/airbytehq/airbyte/pull/80703) | Update dependencies |
 | 1.0.4 | 2026-06-22 | [80282](https://github.com/airbytehq/airbyte/pull/80282) | Fix `messages` and `recordings` incremental state getting stuck near the start date by aligning `cursor_granularity` with the second-precision `datetime_format`. |

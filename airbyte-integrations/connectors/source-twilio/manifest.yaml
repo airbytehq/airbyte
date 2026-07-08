@@ -375,8 +375,9 @@ definitions:
       partition_router:
         - type: ListPartitionRouter
           values:
-            - "completed"
+            - "init"
             - "in-progress"
+            - "completed"
           cursor_field: conference_status
           request_option:
             type: RequestOption

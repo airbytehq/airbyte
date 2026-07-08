@@ -242,13 +242,14 @@ class TwilioMessageMediaStateMigration(StateMigration):
         return False
 
 
-_CONFERENCE_STATUSES = ("completed", "in-progress")
+_CONFERENCE_STATUSES = ("init", "in-progress", "completed")
 
 
 class TwilioConferencesStateMigration(StateMigration):
     """
-    Duplicate each conferences partition for both `completed` and `in-progress`
-    status values after adding the `ListPartitionRouter` for the Status filter.
+    Duplicate each conferences partition for every conference status value
+    (`init`, `in-progress`, `completed`) after adding the `ListPartitionRouter`
+    for the Status filter.
 
     Initial:
       {
@@ -268,7 +269,7 @@ class TwilioConferencesStateMigration(StateMigration):
         "states": [
           {
             "partition": {
-              "conference_status": "completed",
+              "conference_status": "init",
               "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
               "parent_slice": {}
             },
@@ -277,6 +278,14 @@ class TwilioConferencesStateMigration(StateMigration):
           {
             "partition": {
               "conference_status": "in-progress",
+              "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+              "parent_slice": {}
+            },
+            "cursor": { "date_created": "2022-11-01T00:00:00Z" }
+          },
+          {
+            "partition": {
+              "conference_status": "completed",
               "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
               "parent_slice": {}
             },
