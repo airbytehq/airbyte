@@ -4,7 +4,7 @@ The Hubspot agent connector is a Python package that equips AI agents to interac
 
 HubSpot is a CRM platform that provides tools for marketing, sales, customer service,
 and content management. This connector provides access to contacts, companies, deals,
-tickets, and custom objects for customer relationship management and sales analytics.
+tickets, notes, calls, emails, meetings, tasks, and custom objects for customer relationship management and sales analytics.
 
 
 ## Example prompts
@@ -21,6 +21,18 @@ The Hubspot connector is optimized to handle prompts like these.
 - Create a new company called 'Acme Corp' with domain acme.com
 - Create a support ticket with subject 'Login issue' and priority HIGH
 - Update the contact email for a specific contact
+- Add a note to contact 12345 saying 'Discussed pricing options'
+- List recent notes in my CRM
+- Get the details of a specific note
+- Delete a note from HubSpot
+- Log a call with contact 12345 about pricing discussion
+- List recent calls in my CRM
+- Create an email record for outreach to a contact
+- List recent emails in my CRM
+- Schedule a meeting with a contact for next Tuesday
+- List recent meetings in my CRM
+- Create a follow-up task for a deal
+- List tasks in my CRM
 - Show me all deals from Acme Corp this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
 - Search for contacts in the marketing department at HubSpot
@@ -35,8 +47,6 @@ The Hubspot connector isn't currently able to handle prompts like these.
 
 - Delete a contact from HubSpot
 - Delete a deal record
-- Schedule a follow-up task for this deal
-- Send an email to all contacts in the sales pipeline
 
 ## Entities and actions
 
@@ -48,6 +58,11 @@ This connector supports the following entities and actions. For more details, se
 | Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [API Search](./REFERENCE.md#companies-api_search), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
 | Deals | [List](./REFERENCE.md#deals-list), [Create](./REFERENCE.md#deals-create), [Get](./REFERENCE.md#deals-get), [Update](./REFERENCE.md#deals-update), [API Search](./REFERENCE.md#deals-api_search), [Context Store Search](./REFERENCE.md#deals-context-store-search) |
 | Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [API Search](./REFERENCE.md#tickets-api_search), [Context Store Search](./REFERENCE.md#tickets-context-store-search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [Context Store Search](./REFERENCE.md#notes-context-store-search) |
+| Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Update](./REFERENCE.md#calls-update), [Delete](./REFERENCE.md#calls-delete), [Context Store Search](./REFERENCE.md#calls-context-store-search) |
+| Emails | [List](./REFERENCE.md#emails-list), [Create](./REFERENCE.md#emails-create), [Get](./REFERENCE.md#emails-get), [Update](./REFERENCE.md#emails-update), [Delete](./REFERENCE.md#emails-delete), [Context Store Search](./REFERENCE.md#emails-context-store-search) |
+| Meetings | [List](./REFERENCE.md#meetings-list), [Create](./REFERENCE.md#meetings-create), [Get](./REFERENCE.md#meetings-get), [Update](./REFERENCE.md#meetings-update), [Delete](./REFERENCE.md#meetings-delete), [Context Store Search](./REFERENCE.md#meetings-context-store-search) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
 
