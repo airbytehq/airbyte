@@ -235,9 +235,9 @@ jobs:
           wait-minutes-max: "10"
           structured-output-required: "true"
           # The analysis prompt and structured output schema live in the
-          # `hydra_automerge_eval` playbook in airbytehq/ai-skills. Launching a
+          # `pr_automerge_analysis` playbook in airbytehq/ai-skills. Launching a
           # session with the macro attaches the schema automatically.
-          playbook-macro: "!hydra_automerge_eval"
+          playbook-macro: "!pr_automerge_analysis"
           tags: |
             auto-merge-eval
             hyd-ready
