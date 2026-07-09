@@ -74,7 +74,28 @@ internal class IcebergTableCleanerTest {
         )
 
         verify(exactly = 1) { catalog.dropTable(tableIdentifier, true) }
-        verify(exactly = 1) { fileIo.deletePrefix(tableLocation) }
+        verify(exactly = 1) { fileIo.deletePrefix("table/location/") }
+    }
+
+    @Test
+    fun testClearingTableWithPrefixAlreadyHasTrailingSlash() {
+        val catalog: Catalog = mockk { every { dropTable(any(), true) } returns true }
+        val icebergUtil: IcebergUtil = mockk()
+        val tableIdentifier: TableIdentifier = mockk()
+        val fileIo: FileIOWithPrefixSupport = mockk { every { deletePrefix(any()) } returns Unit }
+        val tableLocation = "table/location/"
+
+        val cleaner = IcebergTableCleaner(icebergUtil)
+
+        cleaner.clearTable(
+            catalog = catalog,
+            identifier = tableIdentifier,
+            io = fileIo,
+            tableLocation = tableLocation
+        )
+
+        verify(exactly = 1) { catalog.dropTable(tableIdentifier, true) }
+        verify(exactly = 1) { fileIo.deletePrefix("table/location/") }
     }
 
     @Test
