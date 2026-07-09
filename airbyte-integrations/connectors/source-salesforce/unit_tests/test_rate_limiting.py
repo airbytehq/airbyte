@@ -96,10 +96,18 @@ class SalesforceErrorHandlerTest(TestCase):
         with pytest.raises(BulkNotSupportedException):
             self._error_handler.interpret_response(response)
 
-    def test_given_limit_exceeded_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(self) -> None:
+    def test_given_limit_exceeded_on_job_creation_when_interpret_response_then_return_transient_error(self) -> None:
         response = self._create_response("POST", self._url_for_job_creation(), 400, [{"errorCode": "LIMIT_EXCEEDED", "message": _ANY}])
-        with pytest.raises(BulkNotSupportedException):
-            self._error_handler.interpret_response(response)
+        error_resolution = self._error_handler.interpret_response(response)
+        assert error_resolution.response_action == ResponseAction.FAIL
+        assert error_resolution.failure_type == FailureType.transient_error
+
+    def test_given_limit_exceeded_with_stream_name_when_interpret_response_then_message_includes_stream_name(self) -> None:
+        stream_name = "ContentDocumentLink"
+        error_handler = SalesforceErrorHandler(stream_name=stream_name)
+        response = self._create_response("POST", self._url_for_job_creation(), 400, [{"errorCode": "LIMIT_EXCEEDED", "message": _ANY}])
+        error_resolution = error_handler.interpret_response(response)
+        assert stream_name in error_resolution.error_message
 
     def test_given_query_not_supported_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(self) -> None:
         response = self._create_response(
