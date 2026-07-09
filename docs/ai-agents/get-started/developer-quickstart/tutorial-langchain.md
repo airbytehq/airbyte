@@ -75,7 +75,9 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
    ```python title="agent.py"
    from dotenv import load_dotenv
    from langchain.agents import create_agent
-   from langchain_core.tools import StructuredTool
+   from langchain.agents.middleware import wrap_tool_call
+   from langchain_core.messages import ToolMessage
+   from langchain_core.tools import StructuredTool, ToolException
    from langchain_openai import ChatOpenAI
    from airbyte_agent_sdk import build_connector_tools, connect
    ```
@@ -84,7 +86,10 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
    - `load_dotenv`: Load environment variables from your `.env` file.
    - `create_agent`: LangChain's function for creating an agent that can call tools.
+   - `wrap_tool_call`: LangChain middleware helper for intercepting tool calls. You'll use it to feed tool errors back to the model.
+   - `ToolMessage`: LangChain's message type for returning a tool result (or error) to the model.
    - `StructuredTool`: LangChain's wrapper for turning a function into a tool.
+   - `ToolException`: The error type the Agent SDK raises when a tool call fails.
    - `ChatOpenAI`: LangChain's OpenAI chat model integration.
    - `connect`: The Agent SDK entry point. One call returns a typed connector bound to your workspace.
    - `build_connector_tools`: Turns a connector into ready-to-bind agent tools that inspect the connector and read its skill docs before executing.
@@ -161,9 +166,24 @@ lc_tools = [
 ]
 ```
 
-Passing `framework="langchain"` makes runtime errors surface as LangChain tool errors so the agent can retry. `StructuredTool.from_function` reads each tool's name, docstring, and signature to build the tool schema.
+Passing `framework="langchain"` makes runtime errors surface as LangChain `ToolException`s. `StructuredTool.from_function` reads each tool's name, docstring, and signature to build the tool schema.
 
 Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). LangChain serializes the tool result for the model, so you can reason about both the records and the pagination state.
+
+### Surface tool errors back to the model
+
+When the agent calls a tool with invalid arguments—for example, guessing a `read_skill_docs` section id—the SDK raises a `ToolException` whose message carries the correction (such as the valid section outline). LangChain 1.x's `create_agent` re-raises tool exceptions by default, which ends the run before the agent can act on the correction. Add a small middleware that returns the error to the model as a `ToolMessage` instead, so the agent can read it and retry:
+
+```python title="agent.py"
+@wrap_tool_call
+async def surface_tool_errors(request, handler):
+    try:
+        return await handler(request)
+    except ToolException as exc:
+        return ToolMessage(content=str(exc), tool_call_id=request.tool_call["id"])
+```
+
+You'll pass this middleware to `create_agent` in the next step. The `async` form is required because the connector tools are async coroutines.
 
 ### Define the agent
 
@@ -175,6 +195,7 @@ llm = ChatOpenAI(model="gpt-4o")
 agent = create_agent(
     model=llm,
     tools=lc_tools,
+    middleware=[surface_tool_errors],
     system_prompt=(
         "You are a helpful assistant that can access GitHub data. Before your first "
         "execute call, inspect the connector and read its skill docs to learn the "
