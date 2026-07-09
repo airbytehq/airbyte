@@ -1,22 +1,20 @@
 name: "Airbyte CodeQL config"
 
-# Dedicated CodeQL configuration, distinct from the analysis workflow in
-# .github/workflows/codeql.yml. Keeping query selection and path scoping
-# here (rather than inline in the workflow) makes it easy to tune what
-# CodeQL analyzes without editing the workflow.
-
-# Extend the default query set with the security-and-quality suite.
 queries:
   - uses: security-and-quality
 
-# Skip code that is low-value for security analysis and inflates
-# analysis time / memory: test sources, generated code, and build
-# outputs. For the compiled Java/Kotlin analysis these filters apply to
-# the location of the extracted source files.
+# Compiled languages are scoped by their build steps. These filters primarily
+# reduce interpreted-language indexing of tests and local build outputs.
 paths-ignore:
+  - "**/.gradle/**"
+  - "**/.venv/**"
+  - "**/build/**"
+  - "**/integration_tests/**"
+  - "**/node_modules/**"
   - "**/src/test/**"
   - "**/src/testFixtures/**"
   - "**/src/integrationTest/**"
   - "**/src/test-integration/**"
-  - "**/build/**"
-  - "**/.gradle/**"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/unit_tests/**"
