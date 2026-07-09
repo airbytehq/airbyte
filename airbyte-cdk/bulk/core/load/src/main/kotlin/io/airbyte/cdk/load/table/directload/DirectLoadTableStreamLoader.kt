@@ -42,7 +42,7 @@ class DirectLoadTableAppendStreamLoader(
                 stream,
                 realTableName,
                 columnNameMapping,
-                replace = true
+                replace = false
             )
         } else {
             schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
@@ -114,7 +114,7 @@ class DirectLoadTableDedupStreamLoader(
                 stream,
                 realTableName,
                 columnNameMapping,
-                replace = true,
+                replace = false,
             )
         }
         tableOperationsClient.upsertTable(
