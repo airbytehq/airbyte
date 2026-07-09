@@ -114,7 +114,7 @@ class DirectLoadTableDedupStreamLoader(
                 stream,
                 realTableName,
                 columnNameMapping,
-                replace = true,
+                replace = false,
             )
         }
         tableOperationsClient.upsertTable(
@@ -199,7 +199,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     stream,
                     realTableName,
                     columnNameMapping,
-                    replace = false,
+                    replace = true,
                 )
                 isWritingToTemporaryTable = false
             } else if (
