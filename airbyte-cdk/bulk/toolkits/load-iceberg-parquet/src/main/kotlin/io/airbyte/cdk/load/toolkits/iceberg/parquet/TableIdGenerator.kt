@@ -25,5 +25,7 @@ class SimpleTableIdGenerator(private val configNamespace: String? = "") : TableI
 }
 
 // iceberg namespace+name must both be nonnull.
+// Split dotted namespaces into multi-level Iceberg namespaces (e.g. "a.b.c" ->
+// Namespace.of("a","b","c")).
 fun tableIdOf(namespace: String, name: String): TableIdentifier =
-    TableIdentifier.of(Namespace.of(namespace), name)
+    TableIdentifier.of(Namespace.of(*namespace.split(".").toTypedArray()), name)

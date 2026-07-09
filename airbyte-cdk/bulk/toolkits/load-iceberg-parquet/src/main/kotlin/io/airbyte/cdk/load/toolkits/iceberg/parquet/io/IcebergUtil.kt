@@ -40,6 +40,7 @@ import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.exceptions.AlreadyExistsException
@@ -79,25 +80,25 @@ class IcebergUtil(
         return CatalogUtil.buildIcebergCatalog(catalogName, properties, Configuration())
     }
 
-    /** Create the namespace if it doesn't already exist. */
+    /** Create the namespace (and any missing parent levels) if it doesn't already exist. */
     fun createNamespace(streamDescriptor: DestinationStream.Descriptor, catalog: Catalog) {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
-        synchronized(tableIdentifier.namespace()) {
-            if (
-                catalog is SupportsNamespaces &&
-                    !catalog.namespaceExists(tableIdentifier.namespace())
-            ) {
-                try {
-                    catalog.createNamespace(tableIdentifier.namespace())
-                    logger.info { "Created namespace '${tableIdentifier.namespace()}'." }
-                } catch (e: AlreadyExistsException) {
-                    // This exception occurs when multiple threads attempt to write to the same
-                    // namespace in parallel.
-                    // One thread may create the namespace successfully, causing the other threads
-                    // to encounter this exception
-                    // when they also try to create the namespace.
-                    logger.info {
-                        "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
+        val namespace = tableIdentifier.namespace()
+        if (catalog !is SupportsNamespaces) return
+
+        // For multi-level namespaces, create each ancestor before the leaf.
+        val levels = namespace.levels()
+        for (depth in 1..levels.size) {
+            val ancestor = Namespace.of(*levels.copyOfRange(0, depth))
+            synchronized(ancestor) {
+                if (!catalog.namespaceExists(ancestor)) {
+                    try {
+                        catalog.createNamespace(ancestor)
+                        logger.info { "Created namespace '$ancestor'." }
+                    } catch (e: AlreadyExistsException) {
+                        logger.info {
+                            "Namespace '$ancestor' was likely created by another thread during parallel operations."
+                        }
                     }
                 }
             }
