@@ -24,7 +24,7 @@ For API-first use cases, create a connector with OAuth credentials directly.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | No | Your Gong OAuth2 Access Token. |
+| `access_token` | `str` | Yes | Your Gong OAuth2 Access Token. |
 | `refresh_token` | `str` | Yes | Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens. |
 | `client_id` | `str` | No | Your Gong OAuth App Client ID. |
 | `client_secret` | `str` | No | Your Gong OAuth App Client Secret. |
@@ -329,7 +329,7 @@ In open source mode, provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | No | Your Gong OAuth2 Access Token. |
+| `access_token` | `str` | Yes | Your Gong OAuth2 Access Token. |
 | `refresh_token` | `str` | Yes | Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens. |
 | `client_id` | `str` | No | Your Gong OAuth App Client ID. |
 | `client_secret` | `str` | No | Your Gong OAuth App Client Secret. |
