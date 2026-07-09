@@ -1015,7 +1015,10 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                             )
                     ),
                 importType =
-                    Dedupe(primaryKey = listOf(listOf("id"), listOf("org_id")), cursor = emptyList())
+                    Dedupe(
+                        primaryKey = listOf(listOf("id"), listOf("org_id")),
+                        cursor = emptyList()
+                    )
             )
 
         val sql =
