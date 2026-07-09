@@ -7,6 +7,7 @@ import logging
 import time
 from typing import Any, List, Mapping, Optional, Tuple
 
+import jwt
 import requests  # type: ignore[import]
 from requests import adapters as request_adapters
 from requests.exceptions import RequestException  # type: ignore[import]
@@ -299,12 +300,18 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
+        auth_type: str = "Client",
+        private_key: str = None,
+        username: str = None,
         **kwargs: Any,
     ) -> None:
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
         self.client_secret = client_secret
+        self.auth_type = auth_type
+        self.private_key = private_key
+        self.username = username
         self.access_token = None
         self.instance_url = ""
         self.session = requests.Session()
@@ -371,11 +378,36 @@ class Salesforce:
 
     def login(self):
         login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
+        if self.auth_type == "JWT":
+            self._login_jwt(login_url)
+        else:
+            self._login_refresh_token(login_url)
+
+    def _login_refresh_token(self, login_url: str):
         login_body = {
             "grant_type": "refresh_token",
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "refresh_token": self.refresh_token,
+        }
+        resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        auth = resp.json()
+        self.access_token = auth["access_token"]
+        self.instance_url = auth["instance_url"]
+
+    def _login_jwt(self, login_url: str):
+        now = int(time.time())
+        audience = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com"
+        payload = {
+            "iss": self.client_id,
+            "sub": self.username,
+            "aud": audience,
+            "exp": now + 300,
+        }
+        assertion = jwt.encode(payload, self.private_key, algorithm="RS256")
+        login_body = {
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "assertion": assertion,
         }
         resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
         auth = resp.json()
