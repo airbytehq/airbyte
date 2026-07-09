@@ -3,10 +3,32 @@ name: "CodeQL"
 on:
   push:
     branches: [master]
+    paths:
+      - "**/*.gradle"
+      - "**/*.gradle.kts"
+      - "**/*.java"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.kt"
+      - "**/*.kts"
+      - "**/*.py"
+      - "**/*.ts"
+      - "**/*.tsx"
+      - ".github/actions/**/action.yml"
+      - ".github/actions/**/action.yaml"
+      - ".github/codeql/**"
+      - ".github/workflows/codeql.yml"
+      - "buildSrc/**"
+      - "gradle/**"
+      - "gradle.properties"
+      - "settings.gradle"
+      - "settings.gradle.kts"
   pull_request:
     branches: [master]
   schedule:
+    # Run weekly on Monday at 00:00 Pacific Time
     - cron: "0 0 * * 1"
+      timezone: "America/Los_Angeles"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -27,7 +49,7 @@ jobs:
     steps:
       - name: Checkout repository
         if: github.event_name == 'push'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Detect changed ecosystems
         id: changes
@@ -78,7 +100,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install Java environment
         uses: ./.github/actions/install-java-environment
@@ -120,7 +142,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
@@ -146,7 +168,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
@@ -172,7 +194,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
