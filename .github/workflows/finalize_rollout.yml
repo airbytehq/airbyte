@@ -150,9 +150,7 @@ jobs:
 
           # A finalize PR is needed whenever we are promoting and the repo
           # metadata is still on a release candidate: the PR bumps the repo
-          # from the -rc tag to the GA stem (e.g. 7.2.0-rc.2 -> 7.2.0). The
-          # marker VERSION (from GCS) is a separate concern and must not gate
-          # PR creation.
+          # from the -rc tag to the GA stem (e.g. 7.2.0-rc.2 -> 7.2.0).
           NEEDS_PR="false"
           if [[ "${ACTION}" == "promote" && "${CURRENT_VERSION}" == *-rc.* ]]; then
             NEEDS_PR="true"
