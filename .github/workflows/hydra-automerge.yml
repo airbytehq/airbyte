@@ -233,7 +233,6 @@ jobs:
           max-acu-limit: "2"
           wait-for-stopped-status: "true"
           wait-minutes-max: "10"
-          structured-output-required: "true"
           # The analysis prompt and structured output schema live in the
           # `pr_scope_analysis` playbook in airbytehq/ai-skills. Launching a
           # session with the macro attaches the schema automatically.
