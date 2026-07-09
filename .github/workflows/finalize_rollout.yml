@@ -148,14 +148,14 @@ jobs:
           # Get repo version to decide if a PR is needed
           CURRENT_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${{ github.workspace }}")"
 
-          # Determine if we need a finalize PR (only when repo version is RC
-          # AND matches the version being promoted)
+          # A finalize PR is needed whenever we are promoting and the repo
+          # metadata is still on a release candidate: the PR bumps the repo
+          # from the -rc tag to the GA stem (e.g. 7.2.0-rc.2 -> 7.2.0). The
+          # marker VERSION (from GCS) is a separate concern and must not gate
+          # PR creation.
           NEEDS_PR="false"
           if [[ "${ACTION}" == "promote" && "${CURRENT_VERSION}" == *-rc.* ]]; then
-            RC_BASE="${CURRENT_VERSION%%-rc.*}"
-            if [[ "${RC_BASE}" == "${VERSION}" ]]; then
-              NEEDS_PR="true"
-            fi
+            NEEDS_PR="true"
           fi
 
           # Emit all outputs with tee so they appear in logs
