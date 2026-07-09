@@ -142,7 +142,7 @@ jobs:
           echo "$CONNECTORS" | while IFS= read -r connector; do
             [ -z "$connector" ] && continue
             echo "--- Enabling autopilot rollouts for $connector ---"
-            airbyte-ops local connector enable-autopilot \
+            airbyte-ops local connector rollouts enable \
               --name "$connector" \
               --repo-path "$GITHUB_WORKSPACE" \
               --strategy "$STRATEGY"
