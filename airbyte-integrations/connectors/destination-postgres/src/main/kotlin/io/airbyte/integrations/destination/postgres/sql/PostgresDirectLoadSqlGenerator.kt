@@ -51,7 +51,11 @@ class PostgresDirectLoadSqlGenerator(
          * `bigint`), which aborts the whole sync. This routes each incompatible pair through a cast
          * that PostgreSQL accepts.
          */
-        internal fun buildUsingClause(quotedName: String, oldType: String, newType: String): String =
+        internal fun buildUsingClause(
+            quotedName: String,
+            oldType: String,
+            newType: String
+        ): String =
             when {
                 // Converting to jsonb from any type.
                 newType == "jsonb" -> "USING to_jsonb($quotedName)"
