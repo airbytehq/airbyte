@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from pathlib import Path
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
@@ -36,6 +39,14 @@ def schemas_are_valid():
 
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
+
+
+def test_spec_does_not_include_always_updated():
+    spec_path = Path(__file__).resolve().parent.parent / "source_faker" / "spec.json"
+    spec = json.loads(spec_path.read_text())
+    properties = spec["connectionSpecification"]["properties"]
+
+    assert "always_updated" not in properties, "always_updated field should be removed from the spec"
 
 
 def test_source_streams():
