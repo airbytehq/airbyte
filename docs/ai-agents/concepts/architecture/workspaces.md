@@ -34,7 +34,7 @@ The UUID is the durable identifier. The name is a convenience for routing, but i
 
 There are two ways to create a workspace:
 
-- **Web app** ([Team and Custom plans](../../admin/billing.md#team)): Only administrators can create workspaces. Open the workspace picker in the sidebar, click **New workspace**, enter a name, pick a color, and click **Create**. Airbyte switches you to the new workspace and adds you as a member automatically.
+- **Web app** ([Team and Custom plans](../../admin/billing.md#team)): Any organization member can create a workspace. Open the workspace picker in the sidebar, click **New workspace**, enter a name, pick a color, and click **Create**. Airbyte switches you to the new workspace and adds you as a member automatically. Whoever creates a workspace can also manage it (see [Manage workspaces](#manage-workspaces)).
 - **API**: The first time you mint a [scoped token](../../interfaces/api/authentication#scoped-token) against a new `workspace_name`, Airbyte creates the workspace for you. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
 
 ## Workspace properties
@@ -64,7 +64,7 @@ Chats and connectors are shared within a workspace: any member of a workspace ca
 
 ## Manage workspaces
 
-Administrators manage workspaces from the workspace picker in the sidebar. Open the picker, hover a workspace, and use the edit or delete controls. Non-administrators don't see these controls, and the `default` workspace can't be edited or deleted.
+You can manage a workspace from the workspace picker in the sidebar if you created it or you're an organization administrator. Open the picker, hover a workspace, and use the edit or delete controls. These controls only appear on workspaces you can manage, and the `default` workspace can't be edited or deleted.
 
 ### Edit a workspace
 
