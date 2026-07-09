@@ -342,17 +342,25 @@ definitions:
           - type: ParentStreamConfig
             stream:
               $ref: "#/definitions/conferences_stream"
-              # Only fetch in-progress conferences because the Twilio Participants API
-              # does not return data for completed conferences (participants are only
-              # available while the conference is active). Status is injected as a static
-              # request parameter rather than a ListPartitionRouter so the parent partition
-              # key matches previous versions and no state migration is needed.
+              # Only fetch active (init and in-progress) conferences because the Twilio
+              # Participants API does not return data for completed conferences
+              # (participants are only available while the conference is active).
+              # The child partitions are keyed by `subresource_uris`, so the parent-side
+              # ListPartitionRouter does not change the child partition key and no state
+              # migration is needed.
               retriever:
                 $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
-                requester:
-                  $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/requester"
-                  request_parameters:
-                    Status: "in-progress"
+                partition_router:
+                  - type: ListPartitionRouter
+                    values:
+                      - "init"
+                      - "in-progress"
+                    cursor_field: conference_status
+                    request_option:
+                      type: RequestOption
+                      field_name: Status
+                      inject_into: request_parameter
+                  - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
                 record_selector:
                   $ref: "#/definitions/base_stream/retriever/record_selector"
                   record_filter:

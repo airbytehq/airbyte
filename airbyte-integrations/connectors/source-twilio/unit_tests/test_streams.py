@@ -298,7 +298,7 @@ class TestIncrementalTwilioStream:
 
 class TestConferenceParticipantsStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
-    def test_conference_participants_only_requests_in_progress_conferences(self, requests_mock):
+    def test_conference_participants_only_requests_active_conferences(self, requests_mock):
         accounts_json = {
             "accounts": [
                 {
@@ -312,9 +312,15 @@ class TestConferenceParticipantsStream:
         }
         requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
 
-        def _match_status_in_progress(req):
+        requested_statuses = []
+
+        def _match_active_status(req):
             q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
-            return q.get("Status") == ["in-progress"]
+            status = q.get("Status")
+            if status in (["init"], ["in-progress"]):
+                requested_statuses.extend(status)
+                return True
+            return False
 
         conferences_matcher = requests_mock.get(
             f"{BASE}/Accounts/AC123/Conferences.json",
@@ -332,7 +338,7 @@ class TestConferenceParticipantsStream:
                 ]
             },
             status_code=200,
-            additional_matcher=_match_status_in_progress,
+            additional_matcher=_match_active_status,
         )
 
         # Participants for in-progress conference CF2
@@ -356,8 +362,9 @@ class TestConferenceParticipantsStream:
         cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
         records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
 
-        assert conferences_matcher.called, "Should request conferences with Status=in-progress"
-        assert len(records) == 1
+        assert conferences_matcher.called, "Should request conferences with an active Status filter"
+        assert set(requested_statuses) == {"init", "in-progress"}, "Should request both init and in-progress conferences"
+        assert len(records) >= 1
         assert records[0].record.data["conference_sid"] == "CF2"
 
     @freeze_time("2022-11-16 12:03:11+00:00")
