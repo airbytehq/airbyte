@@ -174,8 +174,9 @@ A plan for teams with higher usage needs.
 - 10,000 AOs per month.
 - Overage AOs are available.
 - Context Store refreshes hourly.
-- Multiple workspaces.
-- Single sign-on and SAML.
+- [Multiple workspaces](../concepts/architecture/workspaces.md).
+- [Single sign-on and SAML](./sso.md).
+- [Multiple users](./users.md).
 - Standard human support, in addition to AI and community support.
 
 ### Custom

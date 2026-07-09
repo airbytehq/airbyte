@@ -22,7 +22,9 @@ Adding a connector is a one-time setup step per workspace. You don't need to pic
 
 ## Workspaces and connectors
 
-A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace and a `Test Environment` workspace, and you can create more. Use workspaces to separate credentials that shouldn't mix. For example, separate production data from sandbox data, or one customer's credentials from another customer's.
+A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace, and on the [Team and Custom plans](../../admin/billing.md#team) administrators can create more. Use workspaces to separate credentials that shouldn't mix. For example, separate production data from sandbox data, or one customer's credentials from another customer's.
+
+Connectors are shared within a workspace. Any user with access to the workspace can use a connector in chats, and can edit or delete it. Keep this in mind when you add credentials to a shared workspace.
 
 A workspace can hold as many connectors as you need:
 
