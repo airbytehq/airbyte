@@ -253,9 +253,17 @@ internal class RedshiftAirbyteClientTest {
     fun `countTable returns null on missing table`() = runTest {
         every { sqlGenerator.countTable(testTable) } returns "COUNT SQL"
         every { mockStatement.executeQuery("COUNT SQL") } throws
-            SQLException("relation does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist")
 
         assertNull(client.countTable(testTable))
+    }
+
+    @Test
+    fun `countTable rethrows non-table-not-found SQLException`() = runTest {
+        every { sqlGenerator.countTable(testTable) } returns "COUNT SQL"
+        every { mockStatement.executeQuery("COUNT SQL") } throws SQLException("Connection reset")
+
+        assertThrows<SQLException> { client.countTable(testTable) }
     }
 
     @Test
@@ -295,9 +303,18 @@ internal class RedshiftAirbyteClientTest {
     fun `isTableNotEmpty returns null on missing table`() = runTest {
         every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
         every { mockStatement.executeQuery("IS NOT EMPTY SQL") } throws
-            SQLException("relation does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist")
 
         assertNull(client.isTableNotEmpty(testTable))
+    }
+
+    @Test
+    fun `isTableNotEmpty rethrows non-table-not-found SQLException`() = runTest {
+        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
+        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } throws
+            SQLException("Connection reset")
+
+        assertThrows<SQLException> { client.isTableNotEmpty(testTable) }
     }
 
     @Test
@@ -333,12 +350,20 @@ internal class RedshiftAirbyteClientTest {
     }
 
     @Test
-    fun `getGenerationId returns 0 on exception`() = runTest {
+    fun `getGenerationId returns 0 on missing table`() = runTest {
         every { sqlGenerator.getGenerationId(testTable) } returns "GEN ID SQL"
         every { mockStatement.executeQuery("GEN ID SQL") } throws
-            SQLException("table does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist")
 
         assertEquals(0L, client.getGenerationId(testTable))
+    }
+
+    @Test
+    fun `getGenerationId rethrows non-table-not-found SQLException`() = runTest {
+        every { sqlGenerator.getGenerationId(testTable) } returns "GEN ID SQL"
+        every { mockStatement.executeQuery("GEN ID SQL") } throws SQLException("Connection reset")
+
+        assertThrows<SQLException> { client.getGenerationId(testTable) }
     }
 
     // ================================================================

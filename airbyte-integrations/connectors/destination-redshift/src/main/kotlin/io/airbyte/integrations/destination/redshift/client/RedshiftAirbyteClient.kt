@@ -108,11 +108,7 @@ class RedshiftAirbyteClient(
                 }
             }
         } catch (e: SQLException) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. " +
-                    "Count returning null to signal a missing table."
-            }
-            null
+            if (!isTableNotFoundException(e)) throw e else null
         }
 
     /**
@@ -127,11 +123,7 @@ class RedshiftAirbyteClient(
                 rs.next() && rs.getBoolean("not_empty")
             }
         } catch (e: SQLException) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. " +
-                    "Returning null to signal a missing table."
-            }
-            null
+            if (!isTableNotFoundException(e)) throw e else null
         }
 
     override suspend fun getGenerationId(tableName: TableName): Long =
@@ -145,8 +137,7 @@ class RedshiftAirbyteClient(
                 }
             }
         } catch (e: SQLException) {
-            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
-            0L
+            if (!isTableNotFoundException(e)) throw e else 0L
         }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
@@ -393,6 +384,9 @@ class RedshiftAirbyteClient(
             throw e
         }
     }
+
+    private fun isTableNotFoundException(e: SQLException): Boolean =
+        e.message?.contains("does not exist") == true
 
     /** Executes a SQL query and processes the [ResultSet] with the given [resultProcessor]. */
     private fun <T> executeQuery(query: String, resultProcessor: (ResultSet) -> T): T {
