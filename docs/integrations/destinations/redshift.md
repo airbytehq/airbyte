@@ -275,6 +275,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.3 | 2026-07-09 | [81552](https://github.com/airbytehq/airbyte/pull/81552) | fix(destination-redshift): narrow SQLException handling to only treat table-not-found as missing |
 | 4.0.2 | 2026-06-05 | [79161](https://github.com/airbytehq/airbyte/pull/79161) | fix(destination-redshift): validate nested string sizes within SUPER columns to prevent COPY error 1224 |
 | 4.0.1 | 2026-06-04 | [79135](https://github.com/airbytehq/airbyte/pull/79135) | fix(destination-redshift): resolve sslmode/sslfactory conflict in jdbc_url_params |
 | 4.0.0 | 2026-06-02 | [79095](https://github.com/airbytehq/airbyte/pull/79095) | Full rewrite using direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.2.7, AWS SDK v2 2.31.1 |
