@@ -260,3 +260,5 @@ static def getKotlinCompilerArgs() {
         return ["-Xdebug"]
     }
 }
+
+// codeql fork-runner test (dummy, do not merge)
