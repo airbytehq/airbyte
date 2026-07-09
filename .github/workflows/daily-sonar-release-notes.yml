@@ -27,3 +27,44 @@ jobs:
             area/documentation
             team/documentation
             sonar-release-notes
+
+  retry:
+    name: "Retry: Generate Airbyte Agents release notes"
+    needs: generate-release-notes
+    if: ${{ always() && needs.generate-release-notes.result != 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Trigger Devin session (retry)
+        uses: aaronsteers/devin-action@main
+        with:
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          playbook-macro: "!sonar_release_notes"
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          tags: |
+            area/documentation
+            team/documentation
+            sonar-release-notes
+
+  notify-failure:
+    name: Notify Slack on failure
+    needs: [generate-release-notes, retry]
+    if: ${{ always() && needs.generate-release-notes.result != 'success' && needs.retry.result != 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Post failure alert to Slack
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C032Y32T065
+            text: "Daily Sonar Release Notes workflow failed after 2 attempts"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":warning: *Daily Sonar Release Notes* failed after 2 attempts.\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>"
