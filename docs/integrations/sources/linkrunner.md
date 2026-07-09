@@ -18,6 +18,10 @@ Linkrunner is a Mobile Measurement Partner (MMP) that helps track user journeys 
 | campaigns | display_id | DefaultPaginator | ✅ |  ❌  |
 | attributed_users |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,11 @@ Linkrunner is a Mobile Measurement Partner (MMP) that helps track user journeys 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2026-06-30 | [81142](https://github.com/airbytehq/airbyte/pull/81142) | Update dependencies |
+| 0.0.10 | 2026-06-23 | [80567](https://github.com/airbytehq/airbyte/pull/80567) | Update dependencies |
+| 0.0.9 | 2026-06-16 | [79929](https://github.com/airbytehq/airbyte/pull/79929) | Update dependencies |
+| 0.0.8 | 2026-06-09 | [79420](https://github.com/airbytehq/airbyte/pull/79420) | Update dependencies |
+| 0.0.7 | 2026-06-02 | [78799](https://github.com/airbytehq/airbyte/pull/78799) | Update dependencies |
 | 0.0.6 | 2026-04-28 | [77294](https://github.com/airbytehq/airbyte/pull/77294) | Update dependencies |
 | 0.0.5 | 2026-04-21 | [76676](https://github.com/airbytehq/airbyte/pull/76676) | Update dependencies |
 | 0.0.4 | 2026-03-31 | [75709](https://github.com/airbytehq/airbyte/pull/75709) | Update dependencies |

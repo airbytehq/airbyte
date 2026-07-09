@@ -3483,7 +3483,7 @@ Classes
     `campaign_campaign_budget: Any`
     :   Campaign budget resource name
 
-    `campaign_end_date: Any`
+    `campaign_end_date_time: Any`
     :   Campaign end date
 
     `campaign_id: Any`
@@ -3513,7 +3513,7 @@ Classes
     `campaign_serving_status: Any`
     :   Campaign serving status
 
-    `campaign_start_date: Any`
+    `campaign_start_date_time: Any`
     :   Campaign start date
 
     `campaign_status: Any`
@@ -3676,7 +3676,7 @@ Classes
     `campaign_campaign_budget: list[str]`
     :   Campaign budget resource name
 
-    `campaign_end_date: list[str]`
+    `campaign_end_date_time: list[str]`
     :   Campaign end date
 
     `campaign_id: list[int]`
@@ -3706,7 +3706,7 @@ Classes
     `campaign_serving_status: list[str]`
     :   Campaign serving status
 
-    `campaign_start_date: list[str]`
+    `campaign_start_date_time: list[str]`
     :   Campaign start date
 
     `campaign_status: list[str]`
@@ -3914,7 +3914,7 @@ Classes
     `campaign_campaign_budget: str | None`
     :   Campaign budget resource name
 
-    `campaign_end_date: str | None`
+    `campaign_end_date_time: str | None`
     :   Campaign end date
 
     `campaign_id: int | None`
@@ -3944,7 +3944,7 @@ Classes
     `campaign_serving_status: str | None`
     :   Campaign serving status
 
-    `campaign_start_date: str | None`
+    `campaign_start_date_time: str | None`
     :   Campaign start date
 
     `campaign_status: str | None`
@@ -4032,7 +4032,7 @@ Classes
     `campaign_campaign_budget: Literal['asc', 'desc']`
     :   Campaign budget resource name
 
-    `campaign_end_date: Literal['asc', 'desc']`
+    `campaign_end_date_time: Literal['asc', 'desc']`
     :   Campaign end date
 
     `campaign_id: Literal['asc', 'desc']`
@@ -4062,7 +4062,7 @@ Classes
     `campaign_serving_status: Literal['asc', 'desc']`
     :   Campaign serving status
 
-    `campaign_start_date: Literal['asc', 'desc']`
+    `campaign_start_date_time: Literal['asc', 'desc']`
     :   Campaign start date
 
     `campaign_status: Literal['asc', 'desc']`
@@ -4133,7 +4133,7 @@ Classes
     `campaign_campaign_budget: str`
     :   Campaign budget resource name
 
-    `campaign_end_date: str`
+    `campaign_end_date_time: str`
     :   Campaign end date
 
     `campaign_id: str`
@@ -4163,7 +4163,7 @@ Classes
     `campaign_serving_status: str`
     :   Campaign serving status
 
-    `campaign_start_date: str`
+    `campaign_start_date_time: str`
     :   Campaign start date
 
     `campaign_status: str`

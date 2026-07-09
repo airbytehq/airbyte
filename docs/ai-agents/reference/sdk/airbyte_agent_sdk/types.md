@@ -285,6 +285,12 @@ Classes
     `base_url: str`
     :   The type of the None singleton.
 
+    `context_store: airbyte_agent_sdk.schema.extensions.CacheConfig | None`
+    :   The type of the None singleton.
+
+    `enrichment_configs: dict[str, list[airbyte_agent_sdk.schema.extensions.EnrichmentConfig]]`
+    :   The type of the None singleton.
+
     `entities: list[airbyte_agent_sdk.types.EntityDefinition]`
     :   The type of the None singleton.
 
@@ -313,6 +319,9 @@ Classes
     :   The type of the None singleton.
 
     `search_field_paths: dict[str, list[str]] | None`
+    :   The type of the None singleton.
+
+    `semantic_search_fields: dict[str, dict[str, airbyte_agent_sdk.schema.extensions.SemanticSearchConfig]]`
     :   The type of the None singleton.
 
     `server_variable_defaults: dict[str, str]`

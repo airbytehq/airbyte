@@ -137,7 +137,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -235,6 +235,10 @@ Google Cloud Storage (GCS) supports following file formats:
  - unstructured document format
  - excel
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -242,6 +246,13 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.21 | 2026-07-07 | [81441](https://github.com/airbytehq/airbyte/pull/81441) | Update dependencies |
+| 0.10.20 | 2026-06-30 | [81081](https://github.com/airbytehq/airbyte/pull/81081) | Update dependencies |
+| 0.10.19 | 2026-06-22 | [74242](https://github.com/airbytehq/airbyte/pull/74242) | Handle GCS objects with `Content-Encoding: gzip` that fail on ranged/chunked downloads through OAuth/Client auth |
+| 0.10.18 | 2026-06-23 | [80443](https://github.com/airbytehq/airbyte/pull/80443) | Update dependencies |
+| 0.10.17 | 2026-06-16 | [79871](https://github.com/airbytehq/airbyte/pull/79871) | Update dependencies |
+| 0.10.16 | 2026-06-09 | [79336](https://github.com/airbytehq/airbyte/pull/79336) | Update dependencies |
+| 0.10.15 | 2026-06-02 | [78684](https://github.com/airbytehq/airbyte/pull/78684) | Update dependencies |
 | 0.10.14 | 2026-04-27 | [77033](https://github.com/airbytehq/airbyte/pull/77033) | Add `sanitize_signed_urls` option to strip Service Account credentials from `_ab_source_file_url` signed URL query parameters |
 | 0.10.13 | 2026-04-28 | [77257](https://github.com/airbytehq/airbyte/pull/77257) | Update dependencies |
 | 0.10.12 | 2026-04-21 | [76591](https://github.com/airbytehq/airbyte/pull/76591) | Update dependencies |

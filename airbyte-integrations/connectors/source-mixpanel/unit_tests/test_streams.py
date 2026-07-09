@@ -558,32 +558,8 @@ def test_annotations_stream(requests_mock, annotations_response, config_raw):
     assert records_length == 2
 
 
-@pytest.fixture
-def revenue_response():
-    return setup_response(
-        200,
-        {
-            "computed_at": "2021-07-03T12:43:48.889421+00:00",
-            "results": {
-                "$overall": {"amount": 0.0, "count": 124, "paid_count": 0},
-                "2021-06-01": {"amount": 0.0, "count": 124, "paid_count": 0},
-                "2021-06-02": {"amount": 0.0, "count": 124, "paid_count": 0},
-            },
-            "session_id": "162...",
-            "status": "ok",
-        },
-    )
-
-
-def test_revenue_stream(requests_mock, revenue_response, config_raw):
-    stream = init_stream("revenue", config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", revenue_response)
-    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-25", "end_time": "2021-07-25"})
-    # read records for single slice
-    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-    records = list(records)
-
-    assert len(records) == 2
+def test_revenue_stream_removed(config_raw):
+    assert init_stream("revenue", config=config_raw) is None
 
 
 @pytest.fixture

@@ -121,6 +121,10 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 - When using OAuth 2.0, the connector requests the `youtube.force-ssl` scope, which provides read and write access to YouTube resources. This scope is required even though the connector only reads data.
 - The connector does not support service account authentication because the YouTube Data API does not support this method for most operations.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -128,6 +132,11 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.59 | 2026-06-30 | [81317](https://github.com/airbytehq/airbyte/pull/81317) | Update dependencies |
+| 0.0.58 | 2026-06-23 | [80730](https://github.com/airbytehq/airbyte/pull/80730) | Update dependencies |
+| 0.0.57 | 2026-06-16 | [80123](https://github.com/airbytehq/airbyte/pull/80123) | Update dependencies |
+| 0.0.56 | 2026-06-09 | [79580](https://github.com/airbytehq/airbyte/pull/79580) | Update dependencies |
+| 0.0.55 | 2026-06-02 | [79000](https://github.com/airbytehq/airbyte/pull/79000) | Update dependencies |
 | 0.0.54 | 2026-04-28 | [77496](https://github.com/airbytehq/airbyte/pull/77496) | Update dependencies |
 | 0.0.53 | 2026-04-21 | [76818](https://github.com/airbytehq/airbyte/pull/76818) | Update dependencies |
 | 0.0.52 | 2026-04-08 | [75185](https://github.com/airbytehq/airbyte/pull/75185) | Replace connector icon with updated YouTube logo |

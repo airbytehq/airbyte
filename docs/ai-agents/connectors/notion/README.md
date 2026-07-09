@@ -3,10 +3,10 @@
 The Notion agent connector is a Python package that equips AI agents to interact with Notion through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Notion is an all-in-one workspace for notes, docs, wikis, projects, and collaboration.
-This connector provides read access to Notion workspaces including users, pages, data sources,
+This connector provides read and write access to Notion workspaces including users, pages, data sources,
 blocks, and comments through the Notion REST API (version 2025-09-03). It enables querying
-workspace structure, page content, data source schemas, and collaboration data for productivity
-analysis and content management insights.
+workspace structure, page content, data source schemas, and collaboration data, as well as
+creating and updating pages, appending and updating blocks, and creating comments.
 
 
 ## Example prompts
@@ -21,6 +21,13 @@ The Notion connector is optimized to handle prompts like these.
 - Show me comments on a specific page
 - What is the schema of a specific data source?
 - Who are the bot users in my workspace?
+- Create a new page titled 'Meeting Notes' under page X
+- Update the icon of page X to a rocket emoji
+- Add a paragraph block saying 'Hello World' to page X
+- Mark the to-do block as completed
+- Add a comment to page X saying 'Looks good!'
+- Archive page X
+- Update the title of data source X to 'Project Tracker'
 - Find pages created in the last week
 - List data sources that have been recently edited
 - Show me all archived pages
@@ -29,10 +36,10 @@ The Notion connector is optimized to handle prompts like these.
 
 The Notion connector isn't currently able to handle prompts like these.
 
-- Create a new page in Notion
-- Update a data source property
-- Delete a block
-- Add a comment to a page
+- Delete a page permanently
+- Delete a block permanently
+- Delete a comment
+- Create a new user
 
 ## Entities and actions
 
@@ -41,27 +48,76 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
-| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Context Store Search](./REFERENCE.md#data-sources-context-store-search) |
-| Blocks | [List](./REFERENCE.md#blocks-list), [Get](./REFERENCE.md#blocks-get), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
-| Comments | [List](./REFERENCE.md#comments-list), [Context Store Search](./REFERENCE.md#comments-context-store-search) |
+| Pages | [List](./REFERENCE.md#pages-list), [Create](./REFERENCE.md#pages-create), [Get](./REFERENCE.md#pages-get), [Update](./REFERENCE.md#pages-update), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
+| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Update](./REFERENCE.md#data-sources-update), [Context Store Search](./REFERENCE.md#data-sources-context-store-search) |
+| Blocks | [List](./REFERENCE.md#blocks-list), [Create](./REFERENCE.md#blocks-create), [Get](./REFERENCE.md#blocks-get), [Update](./REFERENCE.md#blocks-update), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
+| Comments | [List](./REFERENCE.md#comments-list), [Create](./REFERENCE.md#comments-create), [Context Store Search](./REFERENCE.md#comments-context-store-search) |
 
 
 ## Notion API docs
 
 See the official [Notion API reference](https://developers.notion.com/reference/intro).
 
-## SDK installation
+## Interfaces
+
+Use the Notion connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -251,7 +307,7 @@ async def notion_execute(entity: str, action: str, params: dict | None = None):
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
-### Open source
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
@@ -349,6 +405,10 @@ async def notion_execute(entity: str, action: str, params: dict | None = None):
 ## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 

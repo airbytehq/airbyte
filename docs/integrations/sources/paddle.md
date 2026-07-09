@@ -27,6 +27,10 @@ API Reference: https://developer.paddle.com/api-reference/overview
 | subscriptions | id | DefaultPaginator | ✅ |  ✅  |
 | transactions | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -34,6 +38,11 @@ API Reference: https://developer.paddle.com/api-reference/overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.22 | 2026-06-30 | [81187](https://github.com/airbytehq/airbyte/pull/81187) | Update dependencies |
+| 0.2.21 | 2026-06-23 | [80605](https://github.com/airbytehq/airbyte/pull/80605) | Update dependencies |
+| 0.2.20 | 2026-06-16 | [79985](https://github.com/airbytehq/airbyte/pull/79985) | Update dependencies |
+| 0.2.19 | 2026-06-09 | [79450](https://github.com/airbytehq/airbyte/pull/79450) | Update dependencies |
+| 0.2.18 | 2026-06-02 | [78916](https://github.com/airbytehq/airbyte/pull/78916) | Update dependencies |
 | 0.2.17 | 2026-04-28 | [77336](https://github.com/airbytehq/airbyte/pull/77336) | Update dependencies |
 | 0.2.16 | 2026-04-21 | [76702](https://github.com/airbytehq/airbyte/pull/76702) | Update dependencies |
 | 0.2.15 | 2026-03-17 | [74984](https://github.com/airbytehq/airbyte/pull/74984) | Update dependencies |

@@ -52,6 +52,7 @@ ignore_patterns=(
   '.coveragerc'
   'poe_tasks.toml'
   'airbyte-integrations/connectors/[^/]+/README.md'
+  'airbyte-integrations/connectors/[^/]+/CONTRIBUTING.md'
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"

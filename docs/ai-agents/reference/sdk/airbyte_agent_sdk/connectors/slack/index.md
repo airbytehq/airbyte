@@ -554,7 +554,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -566,6 +566,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -609,8 +612,11 @@ Classes
 
     ### Class variables
 
-    `include_archived_channels: bool`
+    `include_archived_channels: bool | None`
     :   Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members.
+
+    `include_private_channels: bool | None`
+    :   Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated.
 
     `join_channels: bool`
     :   Whether to automatically join public channels to sync messages.
@@ -624,7 +630,7 @@ Classes
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
 
-    `threads_ignore_no_replies: bool`
+    `threads_ignore_no_replies: bool | None`
     :   When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.
 
 <a id="ThreadsSearchData"></a>

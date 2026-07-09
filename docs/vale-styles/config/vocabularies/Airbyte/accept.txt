@@ -109,6 +109,11 @@ FastMCP
 Supabase
 Lovable
 Deno
+Claude
+Claude Code
+ChatGPT
+Codex
+skills.sh
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
@@ -166,3 +171,6 @@ expirations
 httpx
 [Aa]uto-?create(s|d)?
 async
+Automations
+enum
+uv

@@ -2,6 +2,11 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/ai-agents/interfaces/ui/automations",
+      "destination": "/ai-agents/interfaces/ui",
+      "statusCode": 308
+    },
+    {
       "source": "/release_notes/v-2.1",
       "destination": "/release_notes/self-managed/v-2.1",
       "statusCode": 301
@@ -214,6 +219,26 @@
     {
       "source": "/platform/using-airbyte/pyairbyte/getting-started",
       "destination": "/developers/pyairbyte",
+      "statusCode": 301
+    },
+    {
+      "source": "/developers/mcp-servers",
+      "destination": "/community/mcp-servers",
+      "statusCode": 301
+    },
+    {
+      "source": "/developers/mcp-servers/airbyte-knowledge-mcp",
+      "destination": "/community/mcp-servers/airbyte-knowledge-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/developers/mcp-servers/pyairbyte-mcp",
+      "destination": "/community/mcp-servers/replication-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/mcp-servers/pyairbyte-mcp",
+      "destination": "/community/mcp-servers/replication-mcp",
       "statusCode": 301
     },
     {

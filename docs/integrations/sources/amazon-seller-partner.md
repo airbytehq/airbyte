@@ -38,7 +38,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 ## Supported regions
 
-The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
 
 Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
 
@@ -82,8 +82,10 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `24` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
-15. Click `Set up source`.
+14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
+16. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
+17. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -107,8 +109,10 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `24` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
-13. Click `Set up source`.
+12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
+14. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
+15. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -160,7 +164,8 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Suppressed Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Unshipped Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
 - [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
-- [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Forecasting Report (Fresh)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Forecasting Report (Retail)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
 - [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
@@ -173,6 +178,35 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+
+### Stream availability by account type
+
+The connector automatically shows only the streams compatible with your configured **Account Type** (Seller or Vendor). Amazon SP-API treats these as distinct account types — a single set of credentials is associated with either a Seller Central or Vendor Central account.
+
+**Seller accounts** have access to:
+
+- Orders
+- Order Items
+- Financial Events
+- Financial Event Groups
+- All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
+- All Brand Analytics streams
+
+**Vendor accounts** have access to:
+
+- Vendor Orders
+- Vendor Order Status
+- Vendor Direct Fulfillment Shipping
+- Vendor Forecasting Report (Fresh)
+- Vendor Forecasting Report (Retail)
+- Vendor Sales Report
+- Vendor Inventory Report
+- All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
+- All Brand Analytics streams
+
+If you previously had streams from the wrong account type configured, they will be automatically removed from your connection's catalog after upgrading to version 5.7.10 or later. You may see a schema change notification prompting you to accept the updated catalog.
+
+For more information about Amazon SP-API roles and permissions, see the [Amazon SP-API Role Mappings documentation](https://developer-docs.amazon.com/sp-api/docs/role-mappings).
 
 <HideInUI>
 
@@ -279,12 +313,13 @@ Depending on actual rate limits the Amazon Seller Partner source connector can r
 
 We recommend next steps to overcome the rate limits issue:
 
-1. **Enable report reuse** by setting **Max Done Report Age (Hours)** (`max_done_report_age_hours`) to a value between `1` and `24` (e.g., `24`). This is highly recommended if your connection faces rate limit issues. When enabled, the connector reuses recently completed reports instead of creating new ones, significantly reducing the number of `createReport` API calls and helping avoid both 429 rate limit errors and FATAL cooldown errors. This field is available in the connector UI.
+1. **Enable report reuse** by setting **Max Done Report Age (Hours)** (`max_done_report_age_hours`) to a value between `1` and `72` (e.g., `24`). This is highly recommended if your connection faces rate limit issues. When enabled, the connector reuses recently completed reports instead of creating new ones, significantly reducing the number of `createReport` API calls and helping avoid both 429 rate limit errors and FATAL cooldown errors. This field is available in the connector UI.
 2. **Reduce 429 retry attempts** by lowering **Report Creation 429 Max Retries** (`creation_requester_429_max_retries`) from the default of `5`. Each retry uses exponential backoff, but repeated retries consume rate limit budget that could be used by other streams. Set this via the connector config API. Set to `0` to skip 429 retries entirely and let the next sync attempt the request instead.
-3. **Adjust the FATAL report retry wait time** by setting **Failed Report Retry Wait Time** (`failed_retry_wait_time_in_seconds`). When a report returns FATAL status due to Amazon's per-report-type cooldown, the connector defers retry for this duration. Default is `1800` (30 minutes). If rate-limited report creation triggers FATAL responses, increasing this value gives Amazon more time to clear the cooldown. For daily FBA reports, set to `14400` (4 hours). Set this via the connector config API.
-4. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1 hour it's recommended to set lower value for `Period In Days` setting.
-5. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state cursor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
-6. Set syncs to run every 24 hours.
+3. **Stop sync on rate limit** by enabling **Stop Sync When Report Streams Are Rate Limited** (`stop_sync_on_rate_limit`). When enabled, the source stops retrying immediately once the rate limit retry budget is exhausted and fails with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment (such as reducing the number of report streams or increasing the sync interval).
+4. **Adjust the FATAL report retry wait time** by setting **Failed Report Retry Wait Time** (`failed_retry_wait_time_in_seconds`). When a report returns FATAL status due to Amazon's per-report-type cooldown, the connector defers retry for this duration. Default is `1800` (30 minutes). If rate-limited report creation triggers FATAL responses, increasing this value gives Amazon more time to clear the cooldown. For daily FBA reports, set to `14400` (4 hours). Set this via the connector config API.
+5. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1 hour it's recommended to set lower value for `Period In Days` setting.
+6. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state cursor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
+7. Set syncs to run every 24 hours.
 
 This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
 
@@ -302,7 +337,7 @@ The connector handles this automatically by deferring retry of FATAL reports. Wh
 **Tuning options** (set via connector config API, hidden from UI):
 
 - **Failed Report Retry Wait Time** (`failed_retry_wait_time_in_seconds`): Time in seconds to wait before retrying a FATAL report. Default is `1800` (30 minutes), which covers the most common cooldown. Range: `1`–`14400`. Increase this value to `14400` (4 hours) if you see repeated FATAL errors on daily FBA reports.
-- **Max Done Report Age (Hours)** (`max_done_report_age_hours`): When set to a value between `1` and `24`, the connector reuses recently completed reports instead of creating new ones, reducing the chance of triggering the cooldown in the first place.
+- **Max Done Report Age (Hours)** (`max_done_report_age_hours`): When set to a value between `1` and `72`, the connector reuses recently completed reports instead of creating new ones, reducing the chance of triggering the cooldown in the first place.
 
 ### Report creation failing with 429 rate limit errors
 
@@ -311,7 +346,7 @@ When the connector creates report requests, the Amazon SP-API may return HTTP 42
 **Tuning options:**
 
 - **Report Creation 429 Max Retries** (`creation_requester_429_max_retries`, hidden from UI): Maximum number of retry attempts for 429 errors during report creation. Default is `5`. Reduce this value to avoid exhausting rate limits on retrying requests. Set to `0` to disable 429 retries entirely. Set this via the connector config API.
-- **Max Done Report Age (Hours)** (`max_done_report_age_hours`, available in the UI): When set to a value between `1` and `24`, the connector reuses recently completed reports instead of creating new ones. This reduces the number of `createReport` API calls and helps avoid hitting rate limits.
+- **Max Done Report Age (Hours)** (`max_done_report_age_hours`, available in the UI): When set to a value between `1` and `72`, the connector reuses recently completed reports instead of creating new ones. This reduces the number of `createReport` API calls and helps avoid hitting rate limits.
 
 ### ListFinancialEvents stream incompatible with deduplication on BigQuery
 
@@ -346,6 +381,10 @@ Lower the **Financial Events Max Results Per Page** setting in your connector co
 
 You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -353,6 +392,15 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.0 | 2026-06-25 | [80845](https://github.com/airbytehq/airbyte/pull/80845) | Add three missing vendor report streams: GET_VENDOR_TRAFFIC_REPORT, GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT, and GET_VENDOR_REAL_TIME_INVENTORY_REPORT |
+| 5.7.12 | 2026-07-07 | [80820](https://github.com/airbytehq/airbyte/pull/80820) | Add Ireland (IE) marketplace support |
+| 5.7.11 | 2026-07-07 | [77151](https://github.com/airbytehq/airbyte/pull/77151) | Update dependencies |
+| 5.7.10 | 2026-06-24 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only and seller-only streams behind account type using ConditionalStreams; use CheckDynamicStream so connectivity check works for both Seller and Vendor accounts. Added documentation for stream availability by account type. |
+| 5.7.9 | 2026-06-17 | [75470](https://github.com/airbytehq/airbyte/pull/75470) | Fix GzipXmlDecoder error handling that caused AttributeError on malformed XML responses |
+| 5.7.8 | 2026-06-16 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
+| 5.7.7 | 2026-05-26 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
+| 5.7.6 | 2026-05-20 | [78285](https://github.com/airbytehq/airbyte/pull/78285) | Promoted release candidate to GA |
+| 5.7.6-rc.4 | 2026-05-13 | [78037](https://github.com/airbytehq/airbyte/pull/78037) | Make failed report retry wait time and report creation 429 max retries visible in the source configuration |
 | 5.7.6-rc.3 | 2026-05-11 | [77837](https://github.com/airbytehq/airbyte/pull/77837) | Add configurable cooldown-aware deferred retry for FATAL reports and dedicated 429 error handler with backoff on report creation |
 | 5.7.6-rc.2 | 2026-05-06 | [77800](https://github.com/airbytehq/airbyte/pull/77800) | Skip FATAL reports when checking for existing reports to prevent infinite retry loops |
 | 5.7.6-rc.1 | 2026-04-28 | [76093](https://github.com/airbytehq/airbyte/pull/76093) | Check for existing reports before creating new ones to avoid hitting Amazon SP-API rate limits |

@@ -73,6 +73,11 @@ on:
         required: false
         default: false
         type: boolean
+      registry-refresh-only:
+        description: "Registry Refresh Only. Generate and publish registry metadata artifacts. Skips connector image/package publishing."
+        required: false
+        default: false
+        type: boolean
 jobs:
   publish_options:
     name: Resolve options for connector publishing
@@ -111,6 +116,9 @@ jobs:
             if [[ "${{ github.event_name }}" == "push" ]]; then
               # On merge to master, use exact version (no suffix)
               SEMVER_SUFFIX="none"
+            elif [[ "${{ inputs.registry-refresh-only || 'false' }}" == "true" ]]; then
+              # Registry refresh-only publishes use the exact version already declared in metadata.yaml.
+              SEMVER_SUFFIX="none"
             else
               # On manual trigger, use preview suffix
               SEMVER_SUFFIX="preview"
@@ -118,6 +126,29 @@ jobs:
           fi
 
           echo "with-semver-suffix=$SEMVER_SUFFIX" | tee -a $GITHUB_OUTPUT
+      - name: Validate registry-refresh-only options
+        if: >
+          inputs.registry-refresh-only == true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+            echo "registry-refresh-only publishes are only supported from workflow_dispatch."
+            exit 1
+          fi
+          CONNECTOR_COUNT=$(echo '${{ steps.list-connectors-manual.outputs.connectors-to-publish }}' | jq '.connector | length')
+          if [[ "$CONNECTOR_COUNT" -eq 0 ]]; then
+            echo "registry-refresh-only publishes require at least one connector."
+            exit 1
+          fi
+          if [[ "$CONNECTOR_COUNT" -gt 1 ]]; then
+            echo "registry-refresh-only publishes currently support exactly one connector."
+            exit 1
+          fi
+          if [[ "${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}" != "none" ]]; then
+            echo "registry-refresh-only publishes must use with-semver-suffix=none or default."
+            exit 1
+          fi
       - name: Resolve publish-java-tars
         id: resolve-publish-java-tars
         shell: bash
@@ -138,6 +169,10 @@ jobs:
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
       # dry-run mode skips all uploads but runs all logic
       dry-run: ${{ inputs.dry-run || 'false' }}
+      # registry-refresh-only skips connector image/package publishing but still publishes registry artifacts
+      registry-refresh-only: ${{ inputs.registry-refresh-only || 'false' }}
+      # registry-refresh-only is validated to exactly one connector, so this is safe to pass to scoped registry compile.
+      registry-refresh-connector-name: ${{ fromJson(steps.list-connectors-manual.outputs.connectors-to-publish || '{"connector":[""]}').connector[0] }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -285,9 +320,35 @@ jobs:
               ;;
           esac
 
+      # --- Release block check ---
+      # If a block-release.yaml marker exists for this connector, skip all
+      # build and publish steps with a WARNING. Other connectors in the
+      # same matrix run are unaffected.
+      # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
+      - name: Check for release block
+        id: check-release-block
+        if: needs.publish_options.outputs.with-semver-suffix == 'none'
+        shell: bash
+        run: |
+          BLOCK_FILE="airbyte-integrations/connectors/${{ matrix.connector }}/block-release.yaml"
+          if [[ -f "$BLOCK_FILE" ]]; then
+            REASON=$(cat "$BLOCK_FILE" | head -1 | sed 's/^reason: *//' | tr -d '"')
+            echo "::warning::⚠️ Release BLOCKED for ${{ matrix.connector }}: ${REASON}"
+            echo "::warning::Skipping all publish steps. Remove block-release.yaml to unblock."
+            echo "blocked=true" >> $GITHUB_OUTPUT
+            cat "$BLOCK_FILE"
+          else
+            echo "blocked=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'python' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.with-semver-suffix == 'none' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -295,14 +356,13 @@ jobs:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
-      - name: "[DRY-RUN] Skip Publish to Python Registry"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
-        run: |
-          echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
-
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
@@ -311,7 +371,11 @@ jobs:
 
       - name: "[DRY-RUN] Build JVM connectors images (no publish)"
         id: build-JVM-connectors-images-dry-run
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.dry-run == 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
@@ -321,7 +385,12 @@ jobs:
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run != 'true'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.publish-java-tars == 'true' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
@@ -331,13 +400,21 @@ jobs:
         continue-on-error: true
 
       - name: "[DRY-RUN] Skip Publish JVM connectors tar file"
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run == 'true'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.publish-java-tars == 'true' &&
+          needs.publish_options.outputs.dry-run == 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         run: |
           echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
 
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
-        if: steps.connector-metadata.outputs.connector-language != 'java'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language != 'java' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
@@ -349,8 +426,19 @@ jobs:
 
       # --- Registry artifact generation and publishing ---
 
+      - name: Pull existing connector image for registry refresh
+        if: >
+          needs.publish_options.outputs.registry-refresh-only == 'true'
+        shell: bash
+        run: |
+          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
+          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          docker pull "${DOCKER_IMAGE}"
+
       - name: Enable progressive rollout for RC builds
-        if: needs.publish_options.outputs.with-semver-suffix == 'rc'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          needs.publish_options.outputs.with-semver-suffix == 'rc'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           echo "Enabling progressive rollout for RC build..."
@@ -369,7 +457,9 @@ jobs:
       # bump it in-place before generating artifacts. This is ephemeral — not committed.
       # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/604
       - name: Ephemeral version bump for pre-release
-        if: needs.publish_options.outputs.with-semver-suffix == 'preview'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          needs.publish_options.outputs.with-semver-suffix == 'preview'
         run: |
           echo "Bumping metadata.yaml version to ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
           airbyte-ops local connector bump-version \
@@ -382,6 +472,8 @@ jobs:
       # --- Registry artifact generation and publishing ---
       - name: Generate Registry Artifacts
         id: generate-registry-artifacts
+        if: >
+          steps.check-release-block.outputs.blocked != 'true'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -408,7 +500,10 @@ jobs:
 
       - name: Publish Registry Artifacts
         id: publish-registry-artifacts
-        if: needs.publish_options.outputs.dry-run != 'true' && steps.generate-registry-artifacts.outcome == 'success'
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          steps.generate-registry-artifacts.outcome == 'success'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -423,34 +518,12 @@ jobs:
             --store "${REGISTRY_STORE}" \
             --with-validate
 
-      # Create the release_candidate/ metadata marker in GCS so the
-      # platform knows an RC is active for this connector.  The marker
-      # is read by the compile step and injected into the compiled
-      # registry JSON as `releases.releaseCandidates`.
-      #
-      # Condition: the on-disk metadata.yaml version must contain
-      # "-rc." (path 1: RC version committed to master).  The
-      # `--with-semver-suffix rc` path (path 2) uses a different
-      # suffix format and is handled separately (used for -preview).
-      - name: Create RC metadata marker
-        if: >-
-          needs.publish_options.outputs.dry-run != 'true'
-          && steps.publish-registry-artifacts.outcome == 'success'
-          && contains(steps.resolve-docker-image-tag.outputs.docker-image-tag, '-rc.')
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          REGISTRY_STORE: "coral:prod"
-        run: |
-          echo "Creating RC metadata marker for ${{ matrix.connector }}"
-          airbyte-ops \
-            registry progressive-rollout create \
-            --name "${{ matrix.connector }}" \
-            --store "${REGISTRY_STORE}"
-
       - name: Build success notification context
         id: success-context
-        if: success() && needs.publish_options.outputs.dry-run != 'true'
+        if: >
+          success() &&
+          steps.check-release-block.outputs.blocked != 'true' &&
+          needs.publish_options.outputs.dry-run != 'true'
         run: |
           CONNECTOR="${{ matrix.connector }}"
           DOCKER_TAG="${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
@@ -469,6 +542,10 @@ jobs:
           else
             RELEASE_TYPE="Pre-release"
             EMOJI="🔵"
+          fi
+          if [[ "${{ needs.publish_options.outputs.registry-refresh-only }}" == "true" ]]; then
+            RELEASE_TYPE="Registry refresh-only artifact"
+            EMOJI="🟡"
           fi
 
           # Build URLs for hyperlinks
@@ -491,7 +568,11 @@ jobs:
           echo "pr-text=$PR_TEXT" >> $GITHUB_OUTPUT
 
       - name: Notify Slack on connector publish success
-        if: success() && needs.publish_options.outputs.dry-run != 'true' && steps.success-context.outcome == 'success'
+        if: >
+          success() &&
+          steps.check-release-block.outputs.blocked != 'true' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          steps.success-context.outcome == 'success'
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
           payload: |
@@ -510,6 +591,8 @@ jobs:
     uses: ./.github/workflows/generate-connector-registries.yml
     with:
       pr: ${{ inputs.pr }}
+      force: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' }}
+      connector-name: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' && needs.publish_options.outputs.registry-refresh-connector-name || '' }}
     secrets: inherit
 
   notify-failure-slack-channel:

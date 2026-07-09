@@ -61,6 +61,10 @@ The MailGun source connector supports the following [sync modes](https://docs.ai
 
 MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_reference.html) has v3 at present and v4 is at development. The connector as default uses v3.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -68,6 +72,11 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.3.55 | 2026-06-30 | [81150](https://github.com/airbytehq/airbyte/pull/81150) | Update dependencies |
+| 0.3.54 | 2026-06-23 | [80534](https://github.com/airbytehq/airbyte/pull/80534) | Update dependencies |
+| 0.3.53 | 2026-06-16 | [79944](https://github.com/airbytehq/airbyte/pull/79944) | Update dependencies |
+| 0.3.52 | 2026-06-09 | [79403](https://github.com/airbytehq/airbyte/pull/79403) | Update dependencies |
+| 0.3.51 | 2026-06-02 | [78820](https://github.com/airbytehq/airbyte/pull/78820) | Update dependencies |
 | 0.3.50 | 2026-04-28 | [77312](https://github.com/airbytehq/airbyte/pull/77312) | Update dependencies |
 | 0.3.49 | 2026-04-21 | [75838](https://github.com/airbytehq/airbyte/pull/75838) | Update dependencies |
 | 0.3.48 | 2026-03-24 | [74584](https://github.com/airbytehq/airbyte/pull/74584) | Update dependencies |

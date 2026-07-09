@@ -56,11 +56,7 @@ object S3DataLakeTestUtil {
         config: S3DataLakeConfiguration,
         awsAssumeRoleCredentials: AwsAssumeRoleCredentials?
     ): Catalog {
-        val icebergUtil =
-            IcebergUtil(
-                SimpleTableIdGenerator(),
-                AirbyteValueCoercer(useFastTimestampParsing = true)
-            )
+        val icebergUtil = IcebergUtil(SimpleTableIdGenerator(), AirbyteValueCoercer())
         val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, awsAssumeRoleCredentials)
         val props = s3DataLakeUtil.toCatalogProperties(config)
         return icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)

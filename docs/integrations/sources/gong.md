@@ -9,9 +9,8 @@ This page contains the setup guide and reference information for the [Gong](http
 ## Prerequisites
 
 - A Gong account with technical administrator permissions
-- For API Key authentication: an access key and access key secret generated from the Gong API settings
 - For OAuth 2.0 authentication: the following API scopes must be granted: `api:calls:read:basic`, `api:calls:read:extensive`, `api:calls:read:transcript`, `api:users:read`, `api:stats:scorecards`, `api:stats:interaction`, `api:settings:scorecards:read`
-- For API Key authentication: the API key must have the same scopes listed above granted in the Gong API settings
+- For API Key authentication: an access key and access key secret generated from the Gong API settings, with the same scopes listed above
 
 ## Setup guide
 
@@ -39,7 +38,13 @@ You can authenticate to Gong using one of two methods:
 
 <FieldAnchor field="start_date">
 
-- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector fetches data from the last 90 days.
+- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call. Without a start date, the initial sync fetches your entire call history, which can be large. Set a start date to limit how far back the first sync reaches.
+
+</FieldAnchor>
+
+<FieldAnchor field="num_workers">
+
+- **Number of Concurrent Threads** (optional). Controls how many streams are synced in parallel. Higher values can speed up syncs but increase API rate-limit usage. The default of 4 is tuned to stay within Gong's standard 3 requests-per-second limit. Valid range: 1–10.
 
 </FieldAnchor>
 
@@ -61,7 +66,7 @@ This source syncs the following streams:
 | [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
 | [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps. Private calls are excluded. |
 | [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences. Transcripts for private calls are excluded. |
-| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, and media. Private calls are excluded. |
+| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, media, and CRM context. Private calls are excluded. |
 | [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
 | [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
 
@@ -75,6 +80,10 @@ The Gong connector should not run into Gong API limitations under normal usage. 
 
 The call transcripts stream fetches transcripts one call at a time as a substream of the calls stream. On the initial sync for accounts with a large number of calls, this may take longer than a bulk-fetch approach. Subsequent incremental syncs only fetch transcripts for new calls.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -82,14 +91,21 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.2.1 | 2026-05-07 | [77858](https://github.com/airbytehq/airbyte/pull/77858) | Expose num_workers config field for user-configurable concurrency |
+| 1.2.9 | 2026-07-07 | [80750](https://github.com/airbytehq/airbyte/pull/80750) | Remove 90-day default lookback window; when `start_date` is not configured the connector now syncs all available data from the earliest recorded call, matching the Gong API default and the spec description |
+| 1.2.8 | 2026-06-30 | [81076](https://github.com/airbytehq/airbyte/pull/81076) | Update dependencies |
+| 1.2.7 | 2026-06-23 | [80481](https://github.com/airbytehq/airbyte/pull/80481) | Update dependencies |
+| 1.2.6 | 2026-06-16 | [79879](https://github.com/airbytehq/airbyte/pull/79879) | Update dependencies |
+| 1.2.5 | 2026-06-10 | [78521](https://github.com/airbytehq/airbyte/pull/78521) | Send OAuth refresh `grant_type` and `refresh_token` as URL query parameters to match Gong's documented refresh endpoint shape |
+| 1.2.4 | 2026-06-10 | [78476](https://github.com/airbytehq/airbyte/pull/78476) | Add `context: Extended` and `contextTiming` to `extensiveCalls` request body so Gong returns context fields |
+| 1.2.3 | 2026-06-09 | [79338](https://github.com/airbytehq/airbyte/pull/79338) | Update dependencies |
+| 1.2.2 | 2026-06-02 | [77254](https://github.com/airbytehq/airbyte/pull/77254) | Update dependencies |
+| 1.2.1 | 2026-05-11 | [77858](https://github.com/airbytehq/airbyte/pull/77858) | Expose num_workers config field for user-configurable concurrency |
 | 1.2.0 | 2026-05-07 | [77859](https://github.com/airbytehq/airbyte/pull/77859) | Promoted release candidate to GA |
-| 1.2.0-rc.3 | 2026-05-05 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Revert default_concurrency from 5 to 4 based on Phase 2 results |
-| 1.2.0-rc.2 | 2026-04-28 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Increase default_concurrency from 4 to 5 based on Phase 1 health check results |
+| 1.2.0-rc.3 | 2026-05-05 | [77785](https://github.com/airbytehq/airbyte/pull/77785) | Revert default_concurrency from 5 to 4 based on Phase 2 results |
+| 1.2.0-rc.2 | 2026-04-28 | [77549](https://github.com/airbytehq/airbyte/pull/77549) | Increase default_concurrency from 4 to 5 based on Phase 1 health check results |
 | 1.2.0-rc.1 | 2026-04-27 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Add concurrency support with default_concurrency=4; enable progressive rollout |
 | 1.1.1 | 2026-04-21 | [76593](https://github.com/airbytehq/airbyte/pull/76593) | Update dependencies |
 | 1.1.0 | 2026-04-20 | [76454](https://github.com/airbytehq/airbyte/pull/76454) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |
-| 1.1.0 | 2026-04-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |
 | 1.0.1 | 2026-04-10 | [76229](https://github.com/airbytehq/airbyte/pull/76229) | Set deadlineAction to auto_upgrade for 1.0.0 breaking change |
 | 1.0.0 | 2026-03-30 | [75248](https://github.com/airbytehq/airbyte/pull/75248) | Fix schema bugs in `extensiveCalls` stream: define `context` as array type and widen `value` field to accept string, number, boolean, object, and array types. This is a breaking change for users syncing the `extensiveCalls` stream. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations). |
 | 0.6.3 | 2026-03-27 | [75195](https://github.com/airbytehq/airbyte/pull/75195) | Migrate OAuth scope to scopes object array for granular scopes support |
