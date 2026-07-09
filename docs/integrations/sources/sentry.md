@@ -70,6 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.29 | 2026-06-18 | [80190](https://github.com/airbytehq/airbyte/pull/80190) | Surface a clear config error (instead of a generic 403) when the token lacks required scopes, failing only the affected stream |
 | 0.9.28 | 2026-07-06 | [80190](https://github.com/airbytehq/airbyte/pull/80190) | Fix projects stream to use org-scoped endpoint (Sentry deprecated non-org-scoped `/projects/`) |
 | 0.9.27 | 2026-06-30 | [81219](https://github.com/airbytehq/airbyte/pull/81219) | Update dependencies |
 | 0.9.26 | 2026-06-23 | [80622](https://github.com/airbytehq/airbyte/pull/80622) | Update dependencies |

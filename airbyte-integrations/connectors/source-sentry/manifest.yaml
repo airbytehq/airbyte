@@ -251,6 +251,28 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"auth_token\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Sentry returned 403 Forbidden for this stream. This stream failed as a
+            configuration error while the other streams continue syncing. The most
+            likely cause is that the
+            authentication token is missing a required scope: the projects stream
+            needs "org:read", releases needs one of
+            "project:read"/"project:releases"/"project:write", events and
+            project_detail need "project:read", and issues needs "event:read".
+            Other possible causes are that the token owner's Sentry member role is
+            too low, the configured organization or project is outside the token's
+            access, or the organization enforces SSO or two-factor authentication
+            that the token does not satisfy. Grant the required scope to the token
+            (or reconnect with a sufficiently scoped token) and retry.
+            Required scopes reported by Sentry: {{ headers.get('www-authenticate', 'n/a') }}.
+            Sentry response: {{ response }}.
 
 streams:
   - $ref: "#/definitions/streams/events"
