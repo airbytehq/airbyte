@@ -150,9 +150,11 @@ jobs:
 
           # A finalize PR is needed whenever we are promoting and the repo
           # metadata is still on a release candidate: the PR bumps the repo
-          # from the -rc tag to the GA stem (e.g. 7.2.0-rc.2 -> 7.2.0).
+          # from the -rc tag to the GA stem (e.g. 7.2.0-rc.2 -> 7.2.0). Gate on
+          # the version being finalized matching the repo's current rc tag, so a
+          # divergent version never bumps the wrong release.
           NEEDS_PR="false"
-          if [[ "${ACTION}" == "promote" && "${CURRENT_VERSION}" == *-rc.* ]]; then
+          if [[ "${ACTION}" == "promote" && "${CURRENT_VERSION}" == *-rc.* && "${VERSION}" == "${CURRENT_VERSION}" ]]; then
             NEEDS_PR="true"
           fi
 
