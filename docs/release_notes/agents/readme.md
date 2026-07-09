@@ -1,5 +1,18 @@
 # Airbyte Agents release notes
 
+## July 8, 2026
+
+Web app
+
+- When you create or edit a workspace, you no longer need to choose a Context Store region. That field has been removed to simplify workspace setup.
+- Connector setup and configuration forms have a refreshed, more consistent appearance.
+- The floating support button no longer appears while you're on a workspace chat page, reducing clutter in the chat view.
+
+Connectors
+
+- Fixed an issue where the Gong connector could lose access and stop syncing when its authorization token was rotated. Gong connections now stay authenticated reliably.
+- The Slack connector now requests fewer permissions when you connect it, since direct message and channel-invite permissions that weren't used have been removed.
+
 ## July 3, 2026
 
 Web app
