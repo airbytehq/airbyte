@@ -119,9 +119,7 @@ def given_tickets(
     """
     Tickets requests setup
     """
-    tickets_record_builder = TicketsRecordBuilder.tickets_record().with_field(
-        FieldPath("generated_timestamp"), int(start_date.timestamp())
-    )
+    tickets_record_builder = TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), int(start_date.timestamp()))
     http_mocker.get(
         ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
         .with_start_time(int(start_date.timestamp()))
