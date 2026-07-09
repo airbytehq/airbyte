@@ -94,6 +94,11 @@ class CheckpointManager(
     private val globalCheckpoints = ConcurrentSkipListMap<CheckpointKey, GlobalCheckpointHolder>()
     private val lastCheckpointKeyEmitted =
         ConcurrentHashMap<DestinationStream.Descriptor, CheckpointKey>()
+    // Tracks the distinct (context, counts) combinations we've already surfaced via `log.info`.
+    // Downstream count mismatches typically repeat every second while `awaitAllCheckpointsFlushed`
+    // busy-waits, so without throttling the user log would be flooded with identical lines.
+    private val loggedMismatchKeys: MutableSet<String> =
+        java.util.concurrent.ConcurrentHashMap.newKeySet()
 
     init {
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
@@ -196,14 +201,24 @@ class CheckpointManager(
             }
         if (!socketMode) return allCommitted
         if (!allCommitted) return false
-        val total =
-            catalog.streams.sumOf {
-                syncManager
-                    .getStreamManager(it.mappedDescriptor)
-                    .committedCount(key.checkpointId)
-                    .records
-            }
-        return total == sourceReportedCount!!.recordCount
+        // In socket mode, the source-reported record count covers every record the source emitted
+        // for this checkpoint. The destination accounts for each of those records as either
+        // `records` (committed) or `rejectedRecords` (surfaced to the DLQ), so both must be
+        // included in the comparison. Excluding `rejectedRecords` causes
+        // `awaitAllCheckpointsFlushed` to loop forever whenever any record is rejected (see
+        // airbytehq/oncall#12017).
+        val totals = aggregateCommittedForCheckpoint(key.checkpointId)
+        val destinationAccountedFor = totals.records + totals.rejectedRecords
+        val sourceExpected = sourceReportedCount!!.recordCount
+        if (destinationAccountedFor != sourceExpected) {
+            logCountMismatch(
+                context = "global checkpoint $key",
+                sourceExpected = sourceExpected,
+                totals = totals,
+            )
+            return false
+        }
+        return true
     }
 
     private fun checkSnapshotStreams(
@@ -211,22 +226,69 @@ class CheckpointManager(
     ): Boolean {
         val snapshot = entry.value.checkpointMessage.value as GlobalSnapshotCheckpoint
         var committedFromPartitions = 0L
+        var rejectedFromPartitions = 0L
         val allPersisted =
             snapshot.streamCheckpoints.all { (descriptor, innerKey) ->
                 val manager = syncManager.getStreamManager(descriptor)
-                committedFromPartitions += manager.committedCount(innerKey.checkpointId).records
+                val committed = manager.committedCount(innerKey.checkpointId)
+                committedFromPartitions += committed.records
+                rejectedFromPartitions += committed.rejectedRecords
                 manager.areRecordsPersistedForCheckpoint(innerKey.checkpointId)
             }
 
         val expected = snapshot.sourceStats!!.recordCount
         if (!allPersisted) return false
-        return if (committedFromPartitions == expected) {
+        val partitionsAccountedFor = committedFromPartitions + rejectedFromPartitions
+        return if (partitionsAccountedFor == expected) {
             true
         } else {
             checkGlobalStreams(
                 snapshot.checkpointKey!!,
-                CheckpointMessage.Stats(recordCount = expected - committedFromPartitions)
+                CheckpointMessage.Stats(recordCount = expected - partitionsAccountedFor)
             )
+        }
+    }
+
+    private fun aggregateCommittedForCheckpoint(checkpointId: CheckpointId): CheckpointValue {
+        var records = 0L
+        var bytes = 0L
+        var rejected = 0L
+        catalog.streams.forEach { stream ->
+            val value =
+                syncManager.getStreamManager(stream.mappedDescriptor).committedCount(checkpointId)
+            records += value.records
+            bytes += value.serializedBytes
+            rejected += value.rejectedRecords
+        }
+        return CheckpointValue(
+            records = records,
+            serializedBytes = bytes,
+            rejectedRecords = rejected,
+        )
+    }
+
+    private fun logCountMismatch(
+        context: String,
+        sourceExpected: Long,
+        totals: CheckpointValue,
+    ) {
+        // Throttle to avoid swamping logs when the hang loop retries every second. Logging at
+        // INFO the first time and then DEBUG afterwards still gives support engineers a single
+        // diagnostic line per stuck checkpoint without filling the log with duplicates.
+        val mismatchKey = "$context|${totals.records}|${totals.rejectedRecords}|$sourceExpected"
+        if (loggedMismatchKeys.add(mismatchKey)) {
+            log.info {
+                "Checkpoint count mismatch on $context: sourceReportedCount=$sourceExpected, " +
+                    "destinationCommittedRecords=${totals.records}, " +
+                    "destinationRejectedRecords=${totals.rejectedRecords}, " +
+                    "destinationTotal=${totals.records + totals.rejectedRecords}"
+            }
+        } else {
+            log.debug {
+                "Checkpoint count mismatch (repeat) on $context: sourceReportedCount=$sourceExpected, " +
+                    "destinationCommittedRecords=${totals.records}, " +
+                    "destinationRejectedRecords=${totals.rejectedRecords}"
+            }
         }
     }
 
@@ -340,10 +402,18 @@ class CheckpointManager(
                     manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
                 if (persisted) {
                     val delta = manager.committedCount(nextCheckpointKey.checkpointId)
-                    if (
-                        socketMode && delta.records != nextMessage.value.sourceStats!!.recordCount
-                    ) {
-                        return
+                    if (socketMode) {
+                        val sourceExpected = nextMessage.value.sourceStats!!.recordCount
+                        val destinationAccountedFor = delta.records + delta.rejectedRecords
+                        if (destinationAccountedFor != sourceExpected) {
+                            logCountMismatch(
+                                context =
+                                    "stream checkpoint ${stream.mappedDescriptor} $nextCheckpointKey",
+                                sourceExpected = sourceExpected,
+                                totals = delta,
+                            )
+                            return
+                        }
                     }
                     val aggregate = committedCount.increment(stream.mappedDescriptor, delta)
 
