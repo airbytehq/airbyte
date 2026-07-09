@@ -299,6 +299,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.14  | 2026-07-09 | [PRNUMBER](https://github.com/airbytehq/airbyte/pull/PRNUMBER)   | Fix schema-evolution sync failures by using safe casts for incompatible column type changes (e.g. jsonb→numeric, boolean→integer).                                                                                                                                                                  |
 | 3.0.13  | 2026-04-16 | [76409](https://github.com/airbytehq/airbyte/pull/76409)   | Upgrade CDK to 1.0.9.                                                                                                                                                                  |
 | 3.0.12  | 2026-03-25 | | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert |
 | 3.0.11  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |

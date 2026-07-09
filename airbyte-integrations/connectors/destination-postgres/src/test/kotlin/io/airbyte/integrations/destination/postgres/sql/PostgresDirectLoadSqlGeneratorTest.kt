@@ -971,6 +971,124 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
+    fun testMatchSchemasModifyColumnFromJsonbToNumericGuardsNonScalars() {
+        // Reproduces oncall #10713: a naive `USING "col"::decimal` aborts the sync with
+        // "cannot cast jsonb object to type numeric" when the jsonb column holds object/array
+        // values. The generated clause must extract the scalar and null out non-scalar values.
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToModify =
+            mapOf(
+                "column_e" to
+                    ColumnTypeChange(
+                        originalType = ColumnType("jsonb", true),
+                        newType = ColumnType("decimal", true)
+                    )
+            )
+
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                emptyMap(),
+                emptyMap(),
+                columnsToModify,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
+
+        assert(sql.contains("ALTER COLUMN \"column_e\" TYPE decimal"))
+        assert(!sql.contains("USING \"column_e\"::decimal"))
+        assert(
+            sql.contains(
+                "USING CASE WHEN jsonb_typeof(\"column_e\") IN ('object', 'array') " +
+                    "THEN NULL ELSE (\"column_e\" #>> '{}')::decimal END"
+            )
+        )
+    }
+
+    @Test
+    fun testMatchSchemasModifyColumnFromBooleanToBigint() {
+        // PostgreSQL has no direct boolean->bigint cast; route through int.
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToModify =
+            mapOf(
+                "column_f" to
+                    ColumnTypeChange(
+                        originalType = ColumnType("boolean", true),
+                        newType = ColumnType("bigint", true)
+                    )
+            )
+
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                emptyMap(),
+                emptyMap(),
+                columnsToModify,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
+
+        assert(sql.contains("ALTER COLUMN \"column_f\" TYPE bigint"))
+        assert(sql.contains("USING \"column_f\"::int::bigint"))
+    }
+
+    @Test
+    fun testMatchSchemasModifyColumnFromNumericToBoolean() {
+        // PostgreSQL has no direct numeric/bigint->boolean cast; treat non-zero as true.
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToModify =
+            mapOf(
+                "column_g" to
+                    ColumnTypeChange(
+                        originalType = ColumnType("bigint", true),
+                        newType = ColumnType("boolean", true)
+                    )
+            )
+
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                emptyMap(),
+                emptyMap(),
+                columnsToModify,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
+
+        assert(sql.contains("ALTER COLUMN \"column_g\" TYPE boolean"))
+        assert(sql.contains("USING (\"column_g\" <> 0)"))
+    }
+
+    @Test
+    fun testBuildUsingClauseCoversConversions() {
+        // jsonb -> text extraction (unchanged behavior)
+        assert(
+            PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "jsonb", "varchar") ==
+                "USING \"c\" #>> '{}'"
+        )
+        // to jsonb (unchanged behavior)
+        assert(
+            PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "varchar", "jsonb") ==
+                "USING to_jsonb(\"c\")"
+        )
+        // standard cast still applies for compatible pairs
+        assert(
+            PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "bigint", "decimal") ==
+                "USING \"c\"::decimal"
+        )
+        assert(
+            PostgresDirectLoadSqlGenerator.buildUsingClause("\"c\"", "varchar", "bigint") ==
+                "USING \"c\"::bigint"
+        )
+    }
+
+    @Test
     fun testMatchSchemasCombinedOperations() {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = mapOf("new_col" to ColumnType("bigint", true))
