@@ -30,7 +30,10 @@ concurrency:
 jobs:
   analyze:
     name: Analyze Java/Kotlin
-    runs-on: ubuntu-latest
+    # Use the custom larger runner (more memory) to avoid OOM while
+    # building and analyzing the full JVM codebase. Same runner type as
+    # the JVM connector CI pipeline.
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 120
     permissions:
       security-events: write
