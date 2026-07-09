@@ -80,6 +80,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
         ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("products", "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("projects", "projects", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("tickets", "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("workflows", "", {"updatedAt": 1675121674226}),
@@ -705,6 +706,7 @@ def test_cast_record_fields_if_needed(
         ("owners", "crm.objects.owners.read", "https://api.hubapi.com/crm/v3/owners", "GET"),
         ("owners_archived", "crm.objects.owners.read", "https://api.hubapi.com/crm/v3/owners", "GET"),
         ("products", "e-commerce", "https://api.hubapi.com/crm/v3/objects/product", "GET"),
+        ("projects", "crm.objects.projects.read", "https://api.hubapi.com/crm/objects/2026-03/projects", "GET"),
         ("subscription_changes", "content", "https://api.hubapi.com/email/public/v1/subscriptions/timeline", "GET"),
         (
             "ticket_pipelines",
