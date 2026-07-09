@@ -23,7 +23,7 @@ For Airbyte Open Source, set up your application to get a **Client ID**, **Clien
 
 :::note
 
-The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
+Microsoft refresh tokens are valid for 90 days and rotate each time they're used. Airbyte saves the rotated refresh token whenever it refreshes the access token, so a connection that syncs at least once every 90 days stays authenticated without re-authorizing. If a connection doesn't sync for more than 90 days, the refresh token expires and you must repeat the authorization process to get a new one. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
 
 :::
 
@@ -283,6 +283,10 @@ For example, if you select a report with daily aggregation, the report will cont
 
 A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Report aggregated using an hourly window.
 
+## Upgrading
+
+For information on breaking changes and migration steps, see the [Bing Ads Migration Guide](./bing-ads-migrations.md).
+
 ## Limitations and troubleshooting
 
 <details>
@@ -317,6 +321,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.1 | 2026-07-08 | [79625](https://github.com/airbytehq/airbyte/pull/79625) | Add refresh_token_updater to persist rotated Microsoft OAuth refresh tokens; remove non-standard OAuth refresh params |
+| 3.0.0 | 2026-05-12 | [78031](https://github.com/airbytehq/airbyte/pull/78031) | Breaking: include every attribute (dimension) column in the primary keys of all report streams to prevent silent row collapse at the destination during incremental append+dedup. A stream reset is required for the affected report streams after upgrading. |
 | 2.23.17 | 2026-05-29 | [78518](https://github.com/airbytehq/airbyte/pull/78518) | Add num_workers config for user-adjustable concurrency |
 | 2.23.17-rc.2 | 2026-05-27 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Revert concurrency to 10, add num_workers config and HTTP API budget |
 | 2.23.17-rc.1 | 2026-05-26 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Enable progressive rollout for concurrency tuning |

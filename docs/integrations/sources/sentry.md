@@ -70,6 +70,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.27 | 2026-06-30 | [81219](https://github.com/airbytehq/airbyte/pull/81219) | Update dependencies |
+| 0.9.26 | 2026-06-23 | [80622](https://github.com/airbytehq/airbyte/pull/80622) | Update dependencies |
+| 0.9.25 | 2026-06-16 | [80036](https://github.com/airbytehq/airbyte/pull/80036) | Update dependencies |
 | 0.9.24 | 2026-06-09 | [79482](https://github.com/airbytehq/airbyte/pull/79482) | Update dependencies |
 | 0.9.23 | 2026-06-02 | [78975](https://github.com/airbytehq/airbyte/pull/78975) | Update dependencies |
 | 0.9.22 | 2026-06-01 | [78537](https://github.com/airbytehq/airbyte/pull/78537) | Add user-configurable `num_workers` concurrency setting (default 5, tested optimal at 7) |

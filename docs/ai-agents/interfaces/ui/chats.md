@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Chats
 
-A Chat is a conversation between you and an Airbyte agent in the web app. You send a prompt, the agent decides which connectors to use and which tool calls to make, and it replies with an answer grounded in your data. Chats are the fastest way to explore data, get a one-off answer, or prototype an idea before turning it into a reusable [Automation](./automations).
+A Chat is a conversation between you and an Airbyte agent in the web app. You send a prompt, the agent decides which connectors to use and which tool calls to make, and it replies with an answer grounded in your data. Chats are the fastest way to explore data, get a one-off answer, or prototype an idea.
 
 To open Chats, click **New chat** in the left sidebar, or click an existing chat under **Recent Chats**.
 
@@ -23,7 +23,7 @@ Suggestions are starting points, not fixed templates. The agent treats the text 
 
 ## Resume an old chat
 
-Every chat you start is saved. To return to a chat, open the sidebar and click the chat under **Recent Chats**. The sidebar shows your five most recent chats by default. Click **Show more** to expand the list, or open the Sessions page from Settings to browse every chat and automation run in your organization.
+Every chat you start is saved. To return to a chat, open the sidebar and click the chat under **Recent Chats**. The sidebar shows your five most recent chats by default. Click **Show more** to expand the list, or open the Sessions page from Settings to browse every chat in your organization.
 
 On the [Team and Custom plans](../../admin/billing.md#team), **Recent Chats** lists only the chats in the workspace you're currently viewing. To see chats from another workspace, switch to it in the workspace picker. Opening a chat that lives in a different workspace switches you to that workspace automatically.
 
@@ -56,9 +56,6 @@ Chats are best for interactive, one-off work where you want to iterate with the 
 - **Summarizing and reporting**: Generate on-demand summaries, such as "What deals closed this quarter?" or "Which accounts have the most open support tickets?"
 - **Cross-system questions**: Ask questions that span multiple connectors. For example, match Salesforce accounts to HubSpot contacts or Zendesk tickets.
 - **Drafting content**: Use replies as a starting point for emails, follow-ups, status updates, or internal notes.
-- **Prototyping an Automation**: Iterate on a prompt in Chat until the agent reliably returns what you want, then convert the chat into an [Automation](./automations) so it can run on a schedule.
-
-If you want the same work to happen repeatedly on a schedule, use an Automation instead.
 
 ## Tips for effective conversations
 
@@ -68,10 +65,4 @@ If you want the same work to happen repeatedly on a schedule, use an Automation 
 - **Check tool calls when something looks off**: Expand a tool call in the conversation to see which connector the agent used, which entity it queried, and whether the call succeeded. This is the fastest way to diagnose unexpected results.
 - **Give feedback on replies**: Use the thumbs-up or thumbs-down buttons on any assistant message. Feedback helps Airbyte improve agent quality and helps you remember which replies you trusted.
 
-## Convert a chat to an automation
 
-As your chat develops, you may want to turn it into something that can run repeatedly. These are called Automations.
-
-To convert a chat, click **Automate this** at the top of the chat. Airbyte takes the prompt and tools you've been iterating on, converts the existing chat session into a new Automation seeded with those settings, and opens it in the [Automation Builder](./automations#the-automation-builder) so you can add a trigger, fine-tune the prompt, and run it.
-
-Converting a chat replaces it: the original chat is turned into the Automation and no longer appears as a chat. If you want to keep exploring the same question as a chat after converting, start a new chat. The resulting Automation starts in draft, so it doesn't run until you configure a trigger and enable it. See [Automations](./automations) for the full builder workflow.

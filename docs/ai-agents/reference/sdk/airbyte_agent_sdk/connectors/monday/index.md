@@ -814,29 +814,8 @@ Classes
     `email: str | None`
     :   User's email address
 
-    `enabled: bool | None`
-    :   Whether the user account is enabled
-
     `id: str | None`
     :   Unique user identifier
-
-    `is_admin: bool | None`
-    :   Whether the user is an admin
-
-    `is_guest: bool | None`
-    :   Whether the user is a guest
-
-    `is_pending: bool | None`
-    :   Whether the user is pending
-
-    `is_verified: bool | None`
-    :   Whether the user is verified
-
-    `is_view_only: bool | None`
-    :   Whether the user is view-only
-
-    `join_date: str | None`
-    :   When the user joined
 
     `location: str | None`
     :   User's location
@@ -853,21 +832,6 @@ Classes
     `phone: str | None`
     :   User's phone number
 
-    `photo_original: str | None`
-    :   URL to original size photo
-
-    `photo_small: str | None`
-    :   URL to small photo
-
-    `photo_thumb: str | None`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: str | None`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: str | None`
-    :   URL to tiny photo
-
     `time_zone_identifier: str | None`
     :   User's timezone identifier
 
@@ -877,8 +841,8 @@ Classes
     `url: str | None`
     :   User's Monday.com profile URL
 
-    `utc_hours_diff: int | None`
-    :   UTC hours difference for the user's timezone
+    `utc_hours_diff: float | None`
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="WorkspacesSearchData"></a>
 

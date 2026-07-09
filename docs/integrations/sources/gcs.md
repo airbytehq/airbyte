@@ -246,6 +246,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.21 | 2026-07-07 | [81441](https://github.com/airbytehq/airbyte/pull/81441) | Update dependencies |
+| 0.10.20 | 2026-06-30 | [81081](https://github.com/airbytehq/airbyte/pull/81081) | Update dependencies |
+| 0.10.19 | 2026-06-22 | [74242](https://github.com/airbytehq/airbyte/pull/74242) | Handle GCS objects with `Content-Encoding: gzip` that fail on ranged/chunked downloads through OAuth/Client auth |
+| 0.10.18 | 2026-06-23 | [80443](https://github.com/airbytehq/airbyte/pull/80443) | Update dependencies |
+| 0.10.17 | 2026-06-16 | [79871](https://github.com/airbytehq/airbyte/pull/79871) | Update dependencies |
 | 0.10.16 | 2026-06-09 | [79336](https://github.com/airbytehq/airbyte/pull/79336) | Update dependencies |
 | 0.10.15 | 2026-06-02 | [78684](https://github.com/airbytehq/airbyte/pull/78684) | Update dependencies |
 | 0.10.14 | 2026-04-27 | [77033](https://github.com/airbytehq/airbyte/pull/77033) | Add `sanitize_signed_urls` option to strip Service Account credentials from `_ab_source_file_url` signed URL query parameters |

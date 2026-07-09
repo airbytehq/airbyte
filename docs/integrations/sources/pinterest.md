@@ -65,7 +65,10 @@ validates your connection using the `user_account_analytics` stream, which requi
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
 9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
-10. Click **Set up source**.
+10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
+    connector makes during a sync. The default is 2. Higher values speed up syncs but increase
+    rate-limit pressure. If you encounter rate-limit errors, reduce this value.
+11. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -92,7 +95,10 @@ validates your connection using the `user_account_analytics` stream, which requi
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
 9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
-10. Click **Set up source**.
+10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
+    connector makes during a sync. The default is 2. Higher values speed up syncs but increase
+    rate-limit pressure. If you encounter rate-limit errors, reduce this value.
+11. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -214,9 +220,15 @@ For more detailed information and guidelines on creating custom reports, please 
 
 The connector is restricted by the Pinterest
 [rate limits](https://developers.pinterest.com/docs/reference/rate-limits/). The Pinterest API
-enforces rate limits per endpoint category. For example, analytics endpoints allow 300 requests per
-minute with standard access, while general read endpoints allow 1,000 requests per minute. For
-details, see the [Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
+enforces rate limits per endpoint category. For example, the `ads_analytics` category allows 300
+requests per minute with standard access, while `ads_read` and `org_read` categories allow 1,000
+requests per minute. For details, see the
+[Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
+
+When the connector encounters a rate-limit response, it automatically waits using the
+`X-RateLimit-Reset` header and retries the request. You can reduce the **Number of concurrent
+workers** setting (default: 2, range: 1–40) to lower rate-limit pressure at the cost of slower
+syncs.
 
 ## IP allow list
 
@@ -229,6 +241,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.5 | 2026-06-30 | [81182](https://github.com/airbytehq/airbyte/pull/81182) | Update dependencies |
+| 2.2.4 | 2026-06-23 | [80579](https://github.com/airbytehq/airbyte/pull/80579) | Update dependencies |
+| 2.2.3 | 2026-06-16 | [79987](https://github.com/airbytehq/airbyte/pull/79987) | Update dependencies |
+| 2.2.2 | 2026-06-15 | [79693](https://github.com/airbytehq/airbyte/pull/79693) | Handle Pinterest rate limits during report download target refresh and reduce default concurrency. |
 | 2.2.1 | 2026-06-10 | [78496](https://github.com/airbytehq/airbyte/pull/78496) | Refresh Pinterest async report download URLs immediately before fetching reports. |
 | 2.2.0 | 2026-06-10 | [79655](https://github.com/airbytehq/airbyte/pull/79655) | Promotes to stable release. |
 | 2.2.0-rc.1 | 2026-06-09 | [78320](https://github.com/airbytehq/airbyte/pull/78320) | Added optional custom report status filters so archived campaigns, ad groups, and ads can be included in Pinterest analytics reports. |

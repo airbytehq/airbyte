@@ -22,39 +22,31 @@ Airbyte logs sessions for work initiated in the web app. Work initiated through 
 
 The Sessions table lists the most recent sessions first. Each row represents one session, and the columns describe what the agent did and how much work it took.
 
-- **Source**: A descriptive name for the session. For automations, this is the automation's name. For chats, this is the chat's title.
+- **Source**: A descriptive name for the session, typically the chat's title.
 - **Workspace**: The workspace the session ran in. If that workspace has since been deleted, this shows an em dash (—). On Free and Individual plans, every session runs in the `default` workspace.
-- **Type**: Whether the session is a [Chat](#chat), an [Automation](#automation), or an **Automation Builder Chat**.
+- **Type**: Whether the session is a [Chat](#chat).
 - **Status**: Notes Active or Deleted. Active chats are resumable.
 - **Connectors**: The connectors the agent used during the session. Hover over a connector icon to see its name.
-- **Messages**: The number of messages exchanged in the session. Automation sessions typically have fewer messages than chat sessions, since they don't involve a back-and-forth with a user.
+- **Messages**: The number of messages exchanged in the session.
 - **Tool Calls**: The number of tool calls the agent made during the session. Drill into [tool calls](./tool-calls.md) to see individual calls.
 - **Input Tokens**: The total tokens the agent received as input, across every turn in the session.
 - **Output Tokens**: The total tokens the agent produced, across every turn in the session.
 - **Date**: When the session last updated. Sessions that are still running show the most recent activity time. Dates display in your browser's local [time zone](../concepts/time-zones).
 - **Actions**: Per-row buttons to review or resume the session.
   - Click the **View** icon to open the session and see its messages and tool calls.
-  - Click the **Chat** icon to jump to the chat or automation the session belongs to.
+  - Click the **Chat** icon to jump to the chat the session belongs to.
 
-Use the filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors. On the [Team and Custom plans](./billing.md#team), a **Workspace** filter also scopes the list to one or more workspaces.
+Use the **Status**, **Connectors**, and **Workspace** filters above the table to narrow the list. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors. On the [Team and Custom plans](./billing.md#team), the **Workspace** filter scopes the list to one or more workspaces.
 
 Administrators see sessions from every workspace in the organization. Members see sessions from the workspaces they belong to. On Free and Individual plans there is only the `default` workspace, so this distinction doesn't apply.
 
 ## Session types {#session-types}
 
-Airbyte counts three kinds of work as sessions. Each is billed as AOs against your plan.
+Chat sessions are billed as AOs against your plan.
 
 ### Chat {#chat}
 
 A Chat session is a conversation you have with an agent in the web app. You send prompts, the agent responds, and the agent may call tools to answer you. Chat sessions continue until you stop chatting, and you can return to them later to keep the conversation going.
-
-Chats you hold inside the Automation Builder, while designing or editing an automation, are also Chat sessions. Airbyte tracks them separately in the Usage panel as **Automation Builder Chat** so you can see how much of your usage comes from building automations versus general chatting.
-
-### Automation {#automation}
-
-An Automation session is one run of an automation. The session starts when you start a manual run or when scheduled, and ends when the automation finishes. Automations don't have a user in the loop, so their sessions are typically a sequence of tool calls and internal reasoning rather than a back-and-forth conversation.
-
-Each run of an automation is its own session. If the same automation runs on a schedule, each scheduled run appears as a separate row in the Sessions table.
 
 ### Work that isn't counted as a session
 
@@ -70,8 +62,7 @@ These tool calls still consume AOs and appear in your [Usage panel](./billing.md
 
 Click the **View** icon in a session's row to open the session history. The session history is read-only and shows the full conversation exactly as it happened.
 
-- For a Chat session, you see the messages exchanged between you and the agent, along with the tool calls the agent made in each turn.
-- For an Automation session, you see the automation's run in chronological order. Since automations don't have a user in the loop, you mostly see the agent's reasoning and the tool calls it made.
+For a Chat session, you see the messages exchanged between you and the agent, along with the tool calls the agent made in each turn.
 
 Click a tool call to expand it and see the function name, the connector it targeted, the type of call (Search or Direct), and the arguments the agent passed.
 
@@ -79,6 +70,6 @@ To keep chatting with the agent from where a Chat session left off, click **Cont
 
 ## Access previous sessions
 
-To open the Sessions page, click **Settings** > **Sessions** in the left navigation of your workspace. The page lists sessions across every automation and chat in your workspace. Sessions never expire, so you can review work from any point in your workspace's history.
+To open the Sessions page, click **Settings** > **Sessions** in the left navigation of your workspace. The page lists sessions across every chat in your workspace. Sessions never expire, so you can review work from any point in your workspace's history.
 
-If you want to see usage without opening individual sessions, the [Usage panel](./billing.md#monitor-usage) on the Billing page summarizes AOs and tool calls across sessions and non-session sources. Rows for Chat, Automation, and Automation Builder Chat link back to the originating session.
+If you want to see usage without opening individual sessions, the [Usage panel](./billing.md#monitor-usage) on the Billing page summarizes AOs and tool calls across sessions and non-session sources. Rows for Chat link back to the originating session.

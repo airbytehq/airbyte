@@ -11,10 +11,7 @@ definitions:
   authenticator:
     type: OAuthAuthenticator
     refresh_request_body:
-      environment: "production"
-      oauth_scope: "msads.manage"
       scope: "https://ads.microsoft.com/msads.manage offline_access"
-      tenant: "{{ config['tenant_id'] }}"
     token_refresh_endpoint:
       'https://login.microsoftonline.com/{{ config["tenant_id"]
       }}/oauth2/v2.0/token'
@@ -22,6 +19,14 @@ definitions:
     client_id: '{{ config["client_id"] }}'
     client_secret: '{{ config["client_secret"] }}'
     refresh_token: '{{ config["refresh_token"] }}'
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      access_token_config_path:
+        - access_token
+      refresh_token_config_path:
+        - refresh_token
+      token_expiry_date_config_path:
+        - token_expiry_date
   users_stream:
     type: DeclarativeStream
     name: users
@@ -556,140 +561,254 @@ definitions:
       - Type: LegacyToPerPartitionStateMigration
 
   report_primary_keys:
+    # Primary keys must include every ATTRIBUTE (dimension) column the stream requests.
+    # Microsoft's reporting API returns one row per unique combination of all requested
+    # attribute columns; if the PK is narrower than that set, the destination silently
+    # collapses rows that differ only on a requested-but-not-in-PK attribute during
+    # incremental append+dedup. See https://github.com/airbytehq/oncall/issues/12253.
+    # Metrics, *Name fields functionally dependent on IDs, and *Status point-in-time
+    # state fields are intentionally excluded.
     base_report_primary_keys:
       - TimePeriod
-      - Network
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - BaseCampaignId
+      - CurrencyCode
+      - AdDistribution
       - DeviceType
+      - Language
+      - Network
+      - CampaignType
+      - AdGroupType
+      - TrackingTemplate
+      - CustomParameters
+      - AdGroupLabels
+      - FinalUrlSuffix
     age_gender_audience:
+      - TimePeriod
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - BaseCampaignId
+      - AdDistribution
       - AgeGroup
       - Gender
-      - TimePeriod
-      - AccountId
-      - CampaignId
       - Language
-      - AdDistribution
+      - Goal
+      - GoalType
     campaign_performance:
+      - TimePeriod
       - AccountId
       - CampaignId
-      - TimePeriod
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Network
       - DeliveredMatchType
-      - DeviceOS
-      - TopVsOther
       - BidMatchType
+      - TopVsOther
+      - CampaignType
+      - CampaignLabels
+      - BudgetName
+      - CustomParameters
     ad_group_performance:
+      - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
-      - TimePeriod
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
+      - Language
       - Network
       - DeliveredMatchType
-      - DeviceOS
-      - TopVsOther
       - BidMatchType
-      - Language
+      - TopVsOther
+      - CampaignType
+      - AdGroupType
+      - CustomParameters
+      - FinalUrlSuffix
     keyword_performance_report:
+      - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
-      - KeywordId
       - AdId
-      - TimePeriod
+      - KeywordId
+      - Keyword
+      - BaseCampaignId
       - CurrencyCode
-      - DeliveredMatchType
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Language
       - Network
-      - DeviceOS
-      - TopVsOther
+      - DeliveredMatchType
       - BidMatchType
+      - TopVsOther
+      - AdType
+      - KeywordLabels
+      - BidStrategyType
+      - Goal
+      - GoalType
+      - FinalUrl
+      - FinalMobileUrl
+      - FinalAppUrl
+      - FinalUrlSuffix
+      - DestinationUrl
+      - TrackingTemplate
+      - CustomParameters
     geographic_performance_report: None
     campaign_impression_performance: None
     product_dimension_performance: None
     audience_performance:
-      - AudienceId
       - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
+      - BaseCampaignId
+      - AudienceId
+      - AssociationId
+      - AudienceType
+      - AssociationLevel
+      - TargetingSetting
+      - Goal
+      - GoalType
     goals_and_funnels:
-      - GoalId
       - TimePeriod
       - AccountId
       - CampaignId
+      - AdGroupId
+      - KeywordId
+      - Keyword
+      - GoalId
+      - Goal
+      - GoalType
       - DeviceType
       - DeviceOS
-      - AdGroupId
     account_impression_performance: None
     user_location_performance:
+      - TimePeriod
       - AccountId
-      - AdGroupId
       - CampaignId
-      - DeliveredMatchType
-      - DeviceOS
-      - DeviceType
-      - Language
+      - AdGroupId
+      - AssetGroupId
       - LocationId
       - QueryIntentLocationId
-      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - DeviceOS
+      - Language
+      - Network
+      - DeliveredMatchType
+      - BidMatchType
       - TopVsOther
+      - CampaignType
+      - Country
+      - State
+      - MetroArea
+      - City
+      - County
+      - PostalCode
+      - Neighborhood
+      - QueryIntentCountry
+      - QueryIntentState
+      - QueryIntentCity
+      - QueryIntentCounty
+      - QueryIntentPostalCode
+      - QueryIntentNeighborhood
+      - QueryIntentDMA
+      - ProximityTargetLocation
+      - Radius
+      - Goal
+      - GoalType
     budget_summary:
       - Date
+      - AccountId
+      - CampaignId
     account_performance_report:
-      - AccountId
       - TimePeriod
+      - AccountId
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Network
       - DeliveredMatchType
-      - DeviceOS
-      - TopVsOther
       - BidMatchType
+      - TopVsOther
     ad_performance_report:
+      - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
       - AdId
-      - TimePeriod
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Language
       - Network
-      - DeviceOS
+      - DeliveredMatchType
+      - BidMatchType
       - TopVsOther
+      - CampaignType
+      - DestinationUrl
+      - FinalAppUrl
+      - AdDescription
+      - AdDescription2
+      - CustomParameters
+    search_query_performance:
+      - TimePeriod
+      - CustomerId
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - AdId
+      - AdGroupCriterionId
+      - KeywordId
+      - Keyword
+      - SearchQuery
+      - AdType
+      - CampaignType
+      - Language
+      - Network
+      - DeviceType
+      - DeviceOS
       - BidMatchType
       - DeliveredMatchType
-    search_query_performance:
-      - SearchQuery
-      - Keyword
-      - TimePeriod
-      - AccountId
-      - CampaignId
-      - Language
-      - DeliveredMatchType
-      - DeviceType
-      - DeviceOS
       - TopVsOther
+      - DestinationUrl
+      - Goal
+      - GoalType
     product_search_query_performance:
-      - AccountId
       - TimePeriod
+      - CustomerId
+      - AccountId
       - CampaignId
-      - AdId
       - AdGroupId
+      - AdId
+      - AdGroupCriterionId
+      - MerchantProductId
+      - AssetGroupId
       - SearchQuery
-      - DeviceType
-      - DeviceOS
+      - Title
+      - ProductGroup
+      - PartitionType
+      - CampaignType
       - Language
       - Network
+      - DeviceType
+      - DeviceOS
+      - ClickTypeId
+      - ClickType
+      - DestinationUrl
+      - Goal
+      - GoalType
 
   report_columns:
     age_gender_audience:
@@ -3738,6 +3857,916 @@ definitions:
         value: |
           {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
 
+    age_gender_audience_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BaseCampaignId
+        value: "{{ record.get('BaseCampaignId') if record.get('BaseCampaignId') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AgeGroup
+        value: "{{ record.get('AgeGroup') if record.get('AgeGroup') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Gender
+        value: "{{ record.get('Gender') if record.get('Gender') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ record.get('Goal') if record.get('Goal') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ record.get('GoalType') if record.get('GoalType') is not none else '' }}"
+    campaign_performance_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CurrencyCode
+        value: "{{ record.get('CurrencyCode') if record.get('CurrencyCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeliveredMatchType
+        value: "{{ record.get('DeliveredMatchType') if record.get('DeliveredMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidMatchType
+        value: "{{ record.get('BidMatchType') if record.get('BidMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TopVsOther
+        value: "{{ record.get('TopVsOther') if record.get('TopVsOther') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignType
+        value: "{{ record.get('CampaignType') if record.get('CampaignType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignLabels
+        value: "{{ record.get('CampaignLabels') if record.get('CampaignLabels') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BudgetName
+        value: "{{ record.get('BudgetName') if record.get('BudgetName') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CustomParameters
+        value: "{{ record.get('CustomParameters') if record.get('CustomParameters') is not none else '' }}"
+    ad_group_performance_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CurrencyCode
+        value: "{{ record.get('CurrencyCode') if record.get('CurrencyCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeliveredMatchType
+        value: "{{ record.get('DeliveredMatchType') if record.get('DeliveredMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidMatchType
+        value: "{{ record.get('BidMatchType') if record.get('BidMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TopVsOther
+        value: "{{ record.get('TopVsOther') if record.get('TopVsOther') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignType
+        value: "{{ record.get('CampaignType') if record.get('CampaignType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupType
+        value: "{{ record.get('AdGroupType') if record.get('AdGroupType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CustomParameters
+        value: "{{ record.get('CustomParameters') if record.get('CustomParameters') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - FinalUrlSuffix
+        value: "{{ record.get('FinalUrlSuffix') if record.get('FinalUrlSuffix') is not none else '' }}"
+    keyword_performance_report_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdId
+        value: "{{ record.get('AdId') if record.get('AdId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - KeywordId
+        value: "{{ record.get('KeywordId') if record.get('KeywordId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - BaseCampaignId
+        value: "{{ record.get('BaseCampaignId') if record.get('BaseCampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Keyword
+        value: "{{ record.get('Keyword') if record.get('Keyword') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CurrencyCode
+        value: "{{ record.get('CurrencyCode') if record.get('CurrencyCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeliveredMatchType
+        value: "{{ record.get('DeliveredMatchType') if record.get('DeliveredMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidMatchType
+        value: "{{ record.get('BidMatchType') if record.get('BidMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TopVsOther
+        value: "{{ record.get('TopVsOther') if record.get('TopVsOther') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdType
+        value: "{{ record.get('AdType') if record.get('AdType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - KeywordLabels
+        value: "{{ record.get('KeywordLabels') if record.get('KeywordLabels') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidStrategyType
+        value: "{{ record.get('BidStrategyType') if record.get('BidStrategyType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ record.get('Goal') if record.get('Goal') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ record.get('GoalType') if record.get('GoalType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - FinalUrl
+        value: "{{ record.get('FinalUrl') if record.get('FinalUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - FinalMobileUrl
+        value: "{{ record.get('FinalMobileUrl') if record.get('FinalMobileUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - FinalAppUrl
+        value: "{{ record.get('FinalAppUrl') if record.get('FinalAppUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - FinalUrlSuffix
+        value: "{{ record.get('FinalUrlSuffix') if record.get('FinalUrlSuffix') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DestinationUrl
+        value: "{{ record.get('DestinationUrl') if record.get('DestinationUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TrackingTemplate
+        value: "{{ record.get('TrackingTemplate') if record.get('TrackingTemplate') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CustomParameters
+        value: "{{ record.get('CustomParameters') if record.get('CustomParameters') is not none else '' }}"
+    audience_performance_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - BaseCampaignId
+        value: "{{ record.get('BaseCampaignId') if record.get('BaseCampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AudienceId
+        value: "{{ record.get('AudienceId') if record.get('AudienceId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AssociationId
+        value: "{{ record.get('AssociationId') if record.get('AssociationId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AudienceType
+        value: "{{ record.get('AudienceType') if record.get('AudienceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AssociationLevel
+        value: "{{ record.get('AssociationLevel') if record.get('AssociationLevel') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TargetingSetting
+        value: "{{ record.get('TargetingSetting') if record.get('TargetingSetting') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ record.get('Goal') if record.get('Goal') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ record.get('GoalType') if record.get('GoalType') is not none else '' }}"
+    goals_and_funnels_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - KeywordId
+        value: "{{ record.get('KeywordId') if record.get('KeywordId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalId
+        value: "{{ record.get('GoalId') if record.get('GoalId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Keyword
+        value: "{{ record.get('Keyword') if record.get('Keyword') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ record.get('Goal') if record.get('Goal') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ record.get('GoalType') if record.get('GoalType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+    user_location_performance_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AssetGroupId
+        value: "{{ record.get('AssetGroupId') if record.get('AssetGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - LocationId
+        value: "{{ record.get('LocationId') if record.get('LocationId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentLocationId
+        value: "{{ record.get('QueryIntentLocationId') if record.get('QueryIntentLocationId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - Radius
+        value: "{{ record.get('Radius') if record.get('Radius') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CurrencyCode
+        value: "{{ record.get('CurrencyCode') if record.get('CurrencyCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeliveredMatchType
+        value: "{{ record.get('DeliveredMatchType') if record.get('DeliveredMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidMatchType
+        value: "{{ record.get('BidMatchType') if record.get('BidMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TopVsOther
+        value: "{{ record.get('TopVsOther') if record.get('TopVsOther') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignType
+        value: "{{ record.get('CampaignType') if record.get('CampaignType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Country
+        value: "{{ record.get('Country') if record.get('Country') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - State
+        value: "{{ record.get('State') if record.get('State') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - MetroArea
+        value: "{{ record.get('MetroArea') if record.get('MetroArea') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - City
+        value: "{{ record.get('City') if record.get('City') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - County
+        value: "{{ record.get('County') if record.get('County') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - PostalCode
+        value: "{{ record.get('PostalCode') if record.get('PostalCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Neighborhood
+        value: "{{ record.get('Neighborhood') if record.get('Neighborhood') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentCountry
+        value: "{{ record.get('QueryIntentCountry') if record.get('QueryIntentCountry') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentState
+        value: "{{ record.get('QueryIntentState') if record.get('QueryIntentState') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentCity
+        value: "{{ record.get('QueryIntentCity') if record.get('QueryIntentCity') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentCounty
+        value: "{{ record.get('QueryIntentCounty') if record.get('QueryIntentCounty') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentPostalCode
+        value: "{{ record.get('QueryIntentPostalCode') if record.get('QueryIntentPostalCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentNeighborhood
+        value: "{{ record.get('QueryIntentNeighborhood') if record.get('QueryIntentNeighborhood') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - QueryIntentDMA
+        value: "{{ record.get('QueryIntentDMA') if record.get('QueryIntentDMA') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - ProximityTargetLocation
+        value: "{{ record.get('ProximityTargetLocation') if record.get('ProximityTargetLocation') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ record.get('Goal') if record.get('Goal') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ record.get('GoalType') if record.get('GoalType') is not none else '' }}"
+    budget_summary_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - Date
+        value: "{{ record.get('Date') if record.get('Date') is not none else '' }}"
+    account_performance_report_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CurrencyCode
+        value: "{{ record.get('CurrencyCode') if record.get('CurrencyCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeliveredMatchType
+        value: "{{ record.get('DeliveredMatchType') if record.get('DeliveredMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidMatchType
+        value: "{{ record.get('BidMatchType') if record.get('BidMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TopVsOther
+        value: "{{ record.get('TopVsOther') if record.get('TopVsOther') is not none else '' }}"
+    ad_performance_report_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdId
+        value: "{{ record.get('AdId') if record.get('AdId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CurrencyCode
+        value: "{{ record.get('CurrencyCode') if record.get('CurrencyCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeliveredMatchType
+        value: "{{ record.get('DeliveredMatchType') if record.get('DeliveredMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidMatchType
+        value: "{{ record.get('BidMatchType') if record.get('BidMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TopVsOther
+        value: "{{ record.get('TopVsOther') if record.get('TopVsOther') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignType
+        value: "{{ record.get('CampaignType') if record.get('CampaignType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DestinationUrl
+        value: "{{ record.get('DestinationUrl') if record.get('DestinationUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - FinalAppUrl
+        value: "{{ record.get('FinalAppUrl') if record.get('FinalAppUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDescription
+        value: "{{ record.get('AdDescription') if record.get('AdDescription') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDescription2
+        value: "{{ record.get('AdDescription2') if record.get('AdDescription2') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CustomParameters
+        value: "{{ record.get('CustomParameters') if record.get('CustomParameters') is not none else '' }}"
+    search_query_performance_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - CustomerId
+        value: "{{ record.get('CustomerId') if record.get('CustomerId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdId
+        value: "{{ record.get('AdId') if record.get('AdId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - KeywordId
+        value: "{{ record.get('KeywordId') if record.get('KeywordId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupCriterionId
+        value: "{{ record.get('AdGroupCriterionId') if record.get('AdGroupCriterionId') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Keyword
+        value: "{{ record.get('Keyword') if record.get('Keyword') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - SearchQuery
+        value: "{{ record.get('SearchQuery') if record.get('SearchQuery') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdType
+        value: "{{ record.get('AdType') if record.get('AdType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignType
+        value: "{{ record.get('CampaignType') if record.get('CampaignType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - BidMatchType
+        value: "{{ record.get('BidMatchType') if record.get('BidMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeliveredMatchType
+        value: "{{ record.get('DeliveredMatchType') if record.get('DeliveredMatchType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TopVsOther
+        value: "{{ record.get('TopVsOther') if record.get('TopVsOther') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DestinationUrl
+        value: "{{ record.get('DestinationUrl') if record.get('DestinationUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ record.get('Goal') if record.get('Goal') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ record.get('GoalType') if record.get('GoalType') is not none else '' }}"
+    product_search_query_performance_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - CustomerId
+        value: "{{ record.get('CustomerId') if record.get('CustomerId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdId
+        value: "{{ record.get('AdId') if record.get('AdId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AssetGroupId
+        value: "{{ record.get('AssetGroupId') if record.get('AssetGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupCriterionId
+        value: "{{ record.get('AdGroupCriterionId') if record.get('AdGroupCriterionId') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - MerchantProductId
+        value: "{{ record.get('MerchantProductId') if record.get('MerchantProductId') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - SearchQuery
+        value: "{{ record.get('SearchQuery') if record.get('SearchQuery') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Title
+        value: "{{ record.get('Title') if record.get('Title') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - ProductGroup
+        value: "{{ record.get('ProductGroup') if record.get('ProductGroup') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - PartitionType
+        value: "{{ record.get('PartitionType') if record.get('PartitionType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignType
+        value: "{{ record.get('CampaignType') if record.get('CampaignType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceOS
+        value: "{{ record.get('DeviceOS') if record.get('DeviceOS') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - ClickTypeId
+        value: "{{ record.get('ClickTypeId') if record.get('ClickTypeId') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - ClickType
+        value: "{{ record.get('ClickType') if record.get('ClickType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DestinationUrl
+        value: "{{ record.get('DestinationUrl') if record.get('DestinationUrl') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ record.get('Goal') if record.get('Goal') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ record.get('GoalType') if record.get('GoalType') is not none else '' }}"
+    base_report_pk_coalesce_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: "{{ record.get('AccountId') if record.get('AccountId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignId
+        value: "{{ record.get('CampaignId') if record.get('CampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupId
+        value: "{{ record.get('AdGroupId') if record.get('AdGroupId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - BaseCampaignId
+        value: "{{ record.get('BaseCampaignId') if record.get('BaseCampaignId') is not none else 0 }}"
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        value: "{{ record.get('TimePeriod') if record.get('TimePeriod') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CurrencyCode
+        value: "{{ record.get('CurrencyCode') if record.get('CurrencyCode') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdDistribution
+        value: "{{ record.get('AdDistribution') if record.get('AdDistribution') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - DeviceType
+        value: "{{ record.get('DeviceType') if record.get('DeviceType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Language
+        value: "{{ record.get('Language') if record.get('Language') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - Network
+        value: "{{ record.get('Network') if record.get('Network') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CampaignType
+        value: "{{ record.get('CampaignType') if record.get('CampaignType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupType
+        value: "{{ record.get('AdGroupType') if record.get('AdGroupType') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - TrackingTemplate
+        value: "{{ record.get('TrackingTemplate') if record.get('TrackingTemplate') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - CustomParameters
+        value: "{{ record.get('CustomParameters') if record.get('CustomParameters') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - AdGroupLabels
+        value: "{{ record.get('AdGroupLabels') if record.get('AdGroupLabels') is not none else '' }}"
+      - type: AddedFieldDefinition
+        path:
+          - FinalUrlSuffix
+        value: "{{ record.get('FinalUrlSuffix') if record.get('FinalUrlSuffix') is not none else '' }}"
+
 dynamic_streams:
   # Report streams
   - type: DynamicDeclarativeStream
@@ -3769,6 +4798,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/age_gender_audience_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: age_gender_audience_report_daily
@@ -3788,6 +4820,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/age_gender_audience_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/age_gender_audience_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: age_gender_audience_report_weekly
@@ -3807,6 +4842,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/age_gender_audience_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/age_gender_audience_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: age_gender_audience_report_monthly
@@ -3826,6 +4864,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/age_gender_audience_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/age_gender_audience_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Campaign Performance Reports
@@ -3852,6 +4893,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/campaign_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: campaign_performance_report_daily
@@ -3874,6 +4918,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/campaign_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: campaign_performance_report_weekly
@@ -3896,6 +4943,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/campaign_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: campaign_performance_report_monthly
@@ -3918,6 +4968,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/campaign_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: ad_group_performance_report_hourly
@@ -3940,6 +4993,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: ad_group_performance_report_daily
@@ -3959,6 +5015,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: ad_group_performance_report_weekly
@@ -3978,6 +5037,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: ad_group_performance_report_monthly
@@ -3997,6 +5059,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Keyword Performance Reports
@@ -4020,6 +5085,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/keyword_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/keyword_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: keyword_performance_report_daily
@@ -4039,6 +5107,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/keyword_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/keyword_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: keyword_performance_report_weekly
@@ -4058,6 +5129,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/keyword_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/keyword_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: keyword_performance_report_monthly
@@ -4077,6 +5151,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/keyword_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/keyword_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Geographic Performance Reports
@@ -4180,6 +5257,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_impression_performance_report_hourly_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/base_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: ad_group_impression_performance_report_daily
@@ -4199,6 +5279,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_impression_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/base_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: ad_group_impression_performance_report_weekly
@@ -4218,6 +5301,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_impression_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/base_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: ad_group_impression_performance_report_monthly
@@ -4237,6 +5323,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_impression_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/base_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Campaign Impression Performance Reports
@@ -4432,6 +5521,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: audience_performance_report_daily
@@ -4451,6 +5543,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/audience_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: audience_performance_report_weekly
@@ -4470,6 +5565,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/audience_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: audience_performance_report_monthly
@@ -4489,6 +5587,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/audience_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Goals and Funnels Reports
@@ -4511,6 +5612,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/goals_and_funnels_pk_coalesce_transformations"
           - name: goals_and_funnels_report_daily
             parameters:
               report_aggregation: Daily
@@ -4524,6 +5628,10 @@ dynamic_streams:
               type: InlineSchemaLoader
               schema:
                 $ref: "#/schemas/goals_and_funnels_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/goals_and_funnels_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: goals_and_funnels_report_weekly
@@ -4539,6 +5647,10 @@ dynamic_streams:
               type: InlineSchemaLoader
               schema:
                 $ref: "#/schemas/goals_and_funnels_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/goals_and_funnels_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: goals_and_funnels_report_monthly
@@ -4554,6 +5666,10 @@ dynamic_streams:
               type: InlineSchemaLoader
               schema:
                 $ref: "#/schemas/goals_and_funnels_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/goals_and_funnels_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Account Impression Performance Reports
@@ -4668,6 +5784,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/user_location_performance_pk_coalesce_transformations"
           - name: user_location_performance_report_daily
             parameters:
               report_aggregation: Daily
@@ -4687,6 +5806,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/user_location_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/user_location_performance_pk_coalesce_transformations"
           - name: user_location_performance_report_weekly
             parameters:
               report_aggregation: Weekly
@@ -4706,6 +5828,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/user_location_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/user_location_performance_pk_coalesce_transformations"
           - name: user_location_performance_report_monthly
             parameters:
               report_aggregation: Monthly
@@ -4725,6 +5850,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/user_location_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/user_location_performance_pk_coalesce_transformations"
           ## Budget Summary Report
           - name: budget_summary_report
             parameters:
@@ -4743,6 +5871,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/budget_summary_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/budget_summary_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_budget_summary_report_datetime_cursor"
           ## Account Performance Reports
@@ -4769,6 +5900,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: account_performance_report_daily
@@ -4791,6 +5925,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: account_performance_report_weekly
@@ -4813,6 +5950,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: account_performance_report_monthly
@@ -4835,6 +5975,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Ad Performance Reports
@@ -4865,6 +6008,9 @@ dynamic_streams:
                 field_pointers:
                   - ["TopImpressionRatePercent"]
                   - ["AbsoluteTopImpressionRatePercent"]
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: ad_performance_report_daily
@@ -4890,6 +6036,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: ad_performance_report_weekly
@@ -4915,6 +6064,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           - name: ad_performance_report_monthly
@@ -4940,6 +6092,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_pk_coalesce_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
           ## Search Query Performance Reports
@@ -4965,6 +6120,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_pk_coalesce_transformations"
           - name: search_query_performance_report_daily
             parameters:
               report_aggregation: Daily
@@ -4984,6 +6142,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_pk_coalesce_transformations"
           - name: search_query_performance_report_weekly
             parameters:
               report_aggregation: Weekly
@@ -5003,6 +6164,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_pk_coalesce_transformations"
           - name: search_query_performance_report_monthly
             parameters:
               report_aggregation: Monthly
@@ -5022,6 +6186,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_pk_coalesce_transformations"
           - name: product_search_query_performance_report_hourly
             parameters:
               report_aggregation: Hourly
@@ -5044,6 +6211,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/product_search_query_performance_pk_coalesce_transformations"
           - name: product_search_query_performance_report_daily
             parameters:
               report_aggregation: Daily
@@ -5063,6 +6233,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/product_search_query_performance_pk_coalesce_transformations"
           - name: product_search_query_performance_report_weekly
             parameters:
               report_aggregation: Weekly
@@ -5082,6 +6255,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/product_search_query_performance_pk_coalesce_transformations"
           - name: product_search_query_performance_report_monthly
             parameters:
               report_aggregation: Monthly
@@ -5101,6 +6277,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/search_query_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/product_search_query_performance_pk_coalesce_transformations"
       components_mapping:
         - type: ComponentMappingDefinition
           create_or_update: true
@@ -6551,55 +7730,35 @@ schemas:
     properties:
       AccountId:
         description: Unique identifier for the Bing Ads account
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: Time period for the report
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CurrencyCode:
         description: Currency code used for reporting
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: Type of ad distribution (search, content, both)
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: Type of device used
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: Type of network (search, audience)
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: Type of match in ad delivery
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: Operating system of the device
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Performance comparison between top and other ad positions
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: Type of bidding match (exact, phrase, broad)
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: Name of the Bing Ads account
         type:
@@ -6747,58 +7906,38 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier for the Bing Ads account
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period for the report data
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CurrencyCode:
         description: The currency code used for monetary values
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description:
           The distribution network for the ad (search partners, audience network,
           etc.)
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: The type of device on which the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network on which the ad appeared (e.g., Bing, AOL)
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The match type for the delivered ad
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device on which the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Indicates whether the ad appeared at the top or other positions
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The match type for which the bid was set
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the Bing Ads account
         type:
@@ -6948,29 +8087,19 @@ schemas:
     properties:
       AccountId:
         description: The unique ID of the account to which the ad belongs
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: The unique ID of the campaign to which the ad belongs
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: The ID of the ad group to which the ad belongs
-        type:
-          - "null"
-          - integer
+        type: integer
       AdId:
         description: The unique ID of the ad
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period for the report data
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       AbsoluteTopImpressionRatePercent:
         description: The percentage of times your ad is shown in the absolute
@@ -6986,53 +8115,35 @@ schemas:
           - number
       CurrencyCode:
         description: The currency code used for monetary values
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The distribution network where the ad was shown
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description:
           The type of device where the ad was displayed (Desktop, Mobile,
           Tablet)
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: The language targeting of the ad
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network where the ad was displayed (Bing, Syndicated
           search partners)
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: The comparison between showing at the top or other positions
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The match type of the keyword that triggered the ad
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The match type of the keyword that was matched to deliver
           the ad
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the account to which the ad belongs
         type:
@@ -7045,9 +8156,7 @@ schemas:
           - string
       CampaignType:
         description: The type of campaign (Search, Display, etc.)
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupName:
         description: The name of the ad group to which the ad belongs
         type:
@@ -7080,9 +8189,7 @@ schemas:
           - number
       DestinationUrl:
         description: The URL where the user is directed when clicking the ad
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assist conversions generated
         type:
@@ -7100,24 +8207,16 @@ schemas:
           - number
       CustomParameters:
         description: Custom parameters passed in the ad URL
-        type:
-          - "null"
-          - string
+        type: string
       FinalAppUrl:
         description: The final URL for specific apps in the ad
-        type:
-          - "null"
-          - string
+        type: string
       AdDescription:
         description: The description text of the ad
-        type:
-          - "null"
-          - string
+        type: string
       AdDescription2:
         description: The second description line of the ad
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The total number of view-through conversions
         type:
@@ -7210,80 +8309,52 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier for the account to which the ad belongs
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: The unique identifier for the campaign to which the ad belongs
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: The unique identifier for the ad group to which the ad belongs
-        type:
-          - "null"
-          - integer
+        type: integer
       AdId:
         description: The unique identifier for the ad
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period to which the data corresponds
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CurrencyCode:
         description: The currency code used for monetary values
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The distribution channel for the ad (e.g., Search, Audience
           Network)
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description:
           The type of device on which the ad was displayed (e.g., Desktop,
           Mobile)
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: The language targeting of the ad
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network where the ad was displayed (e.g., Bing, AOL)
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device on which the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: The performance comparison of top positions vs. other positions
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The type of keyword match (e.g., Broad, Phrase, Exact) for
           the bid
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The type of keyword match for which the ad has been delivered
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the account to which the ad belongs
         type:
@@ -7296,9 +8367,7 @@ schemas:
           - string
       CampaignType:
         description: The type of the campaign (e.g., Search, Audience Network)
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupName:
         description: The name of the ad group to which the ad belongs
         type:
@@ -7331,9 +8400,7 @@ schemas:
           - number
       DestinationUrl:
         description: The destination URL of the ad
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assists (when an ad indirectly results in a
           conversion)
@@ -7352,24 +8419,16 @@ schemas:
           - number
       CustomParameters:
         description: Any custom parameters set for the ad
-        type:
-          - "null"
-          - string
+        type: string
       FinalAppUrl:
         description: The final URL shown in the ad for app installations
-        type:
-          - "null"
-          - string
+        type: string
       AdDescription:
         description: The text of the first description line in the ad
-        type:
-          - "null"
-          - string
+        type: string
       AdDescription2:
         description: The text of the second description line in the ad
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The total number of view-through conversions
         type:
@@ -7512,24 +8571,16 @@ schemas:
     properties:
       AccountId:
         description: The ID of the Bing Ads account.
-        type:
-          - "null"
-          - integer
+        type: integer
       AgeGroup:
         description: The age group of the audience targeted by the ad campaign.
-        type:
-          - "null"
-          - string
+        type: string
       Gender:
         description: The gender of the audience targeted by the ad campaign.
-        type:
-          - "null"
-          - string
+        type: string
       TimePeriod:
         description: The time period for which the data is reported.
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       AllConversions:
         description: The total number of conversions.
@@ -7553,9 +8604,7 @@ schemas:
           - string
       CampaignId:
         description: The ID of the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -7563,14 +8612,10 @@ schemas:
           - string
       AdGroupId:
         description: The ID of the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdDistribution:
         description: The type of ad distribution, such as search or content network.
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The number of times the ad was displayed.
         type:
@@ -7608,9 +8653,7 @@ schemas:
           - integer
       Language:
         description: The language used in targeting the audience.
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         description: The status of the Bing Ads account.
         type:
@@ -7628,9 +8671,7 @@ schemas:
           - string
       BaseCampaignId:
         description: The ID of the base campaign.
-        type:
-          - "null"
-          - string
+        type: string
       AllRevenue:
         description: The total revenue generated from all conversions.
         type:
@@ -7643,14 +8684,10 @@ schemas:
           - integer
       Goal:
         description: The goal set for the ad campaign.
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: The type of goal set for the ad campaign.
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description:
           The percentage of times your ad was shown at the absolute top of the
@@ -7690,24 +8727,16 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier of the account to which the data belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       AgeGroup:
         description: The age group of the audience targeted by the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       Gender:
         description: The gender of the audience targeted by the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       TimePeriod:
         description: The specific date and time period for the collected data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       AllConversions:
@@ -7732,9 +8761,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier of the campaign to which the data belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group to which the data belongs.
         type:
@@ -7742,16 +8769,12 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier of the ad group to which the data belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdDistribution:
         description:
           The distribution network where the ad was displayed (search, display,
           etc.).
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of times the ad was displayed to users.
         type:
@@ -7793,9 +8816,7 @@ schemas:
           - integer
       Language:
         description: The language targeting setting for the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         description: The status of the account (active, paused, etc.).
         type:
@@ -7813,9 +8834,7 @@ schemas:
           - string
       BaseCampaignId:
         description: The unique identifier of the base campaign to which the data belongs.
-        type:
-          - "null"
-          - string
+        type: string
       AllRevenue:
         description: Total revenue generated from all types of conversions.
         type:
@@ -7830,14 +8849,10 @@ schemas:
           - integer
       Goal:
         description: The objective or goal set for the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: The type of goal set for the campaign (e.g., clicks, conversions).
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description:
           The percentage of times that your ad is shown at the top of the page,
@@ -7879,60 +8894,38 @@ schemas:
     properties:
       AccountId:
         description: The unique ID of the account to which the campaign belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: The unique ID of the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period for which the data is reported.
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CurrencyCode:
         description: The currency code used for monetary values.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The distribution channels where the ads were displayed.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: The type of device where the ad was displayed (e.g., mobile, desktop).
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The advertising network where the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The type of match used for delivering ads.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device where the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Comparison of the ad position with top vs. other placements.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The type of bid matching used for the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the account to which the campaign belongs.
         type:
@@ -7945,9 +8938,7 @@ schemas:
           - string
       CampaignType:
         description: The type/category of the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       CampaignStatus:
         description: The status of the campaign.
         type:
@@ -7955,9 +8946,7 @@ schemas:
           - string
       CampaignLabels:
         description: Any labels associated with the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: Total number of times the ad was displayed.
         type:
@@ -8030,9 +9019,7 @@ schemas:
           - number
       CustomParameters:
         description: Any custom parameters associated with the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: Number of view-through conversions generated by the ad.
         type:
@@ -8165,9 +9152,7 @@ schemas:
           - number
       BudgetName:
         description: The name of the budget associated with the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       BudgetStatus:
         description: The status of the budget associated with the campaign.
         type:
@@ -8185,61 +9170,39 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier for the Bing Ads account.
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: Unique identifier for the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period covered by the reported data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CurrencyCode:
         description: Currency used for monetary values.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: "Where the ads were displayed, e.g., search, audience network, native, etc."
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: "Type of device where the ad was displayed, e.g., mobile, desktop, etc."
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: Network where the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: Type of the match for delivered ads.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: Operating system of the device where the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Performance comparison between top and other ad positions.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: "The type of bid match used, e.g., exact, broad, etc."
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the Bing Ads account.
         type:
@@ -8252,9 +9215,7 @@ schemas:
           - string
       CampaignType:
         description: "Type of the campaign, e.g., search, shopping, etc."
-        type:
-          - "null"
-          - string
+        type: string
       CampaignStatus:
         description: "Status of the campaign, e.g., active, paused, etc."
         type:
@@ -8262,9 +9223,7 @@ schemas:
           - string
       CampaignLabels:
         description: Labels associated with the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: Total number of impressions.
         type:
@@ -8337,9 +9296,7 @@ schemas:
           - number
       CustomParameters:
         description: Custom parameters associated with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: Number of view-through conversions recorded.
         type:
@@ -8452,9 +9409,7 @@ schemas:
           - number
       BudgetName:
         description: Name of the budget associated with the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       BudgetStatus:
         description: "Status of the budget, e.g., active, paused, etc."
         type:
@@ -8472,70 +9427,44 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier for the Bing Ads account.
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: The unique identifier for the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: The unique identifier for the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period for the data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CurrencyCode:
         description: The currency code used for the data.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The distribution network where the ad was shown.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: The type of device where the ad was shown.
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network where the ad was shown.
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The match type when ads are shown.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device.
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: The performance in top positions versus other positions.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The match type of the bid.
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: The language used in the ad.
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the Bing Ads account.
         type:
@@ -8548,9 +9477,7 @@ schemas:
           - string
       CampaignType:
         description: "The type of campaign, like search or shopping."
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -8558,9 +9485,7 @@ schemas:
           - string
       AdGroupType:
         description: "The type of ad group, like product ads or audience ads."
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of impressions.
         type:
@@ -8633,14 +9558,10 @@ schemas:
           - number
       CustomParameters:
         description: Any custom parameters associated with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       FinalUrlSuffix:
         description: The suffix added to the final URL.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The number of view-through conversions recorded.
         type:
@@ -8748,71 +9669,45 @@ schemas:
     properties:
       AccountId:
         description: Unique identifier for the account where the ad group belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: Unique identifier for the campaign where the ad group belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: Unique identifier for the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: Date and time when the data was recorded.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CurrencyCode:
         description: Currency code used for reporting.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The types of distribution networks where the ad was shown.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: Type of device where the ad was shown.
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: Type of advertising network where the ad was shown.
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: Type of match bid used for the keyword delivered with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: Operating system of the device where the ad was shown.
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Performance comparison of top ad placements versus other placements.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: Type of match bid used for the keyword triggering the ad.
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: Language settings targeting for the ad.
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: Name of the account where the ad group belongs.
         type:
@@ -8825,9 +9720,7 @@ schemas:
           - string
       CampaignType:
         description: Type of the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupName:
         description: Name of the ad group.
         type:
@@ -8835,9 +9728,7 @@ schemas:
           - string
       AdGroupType:
         description: Type of the ad group.
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: Number of times the ad was shown.
         type:
@@ -8910,14 +9801,10 @@ schemas:
           - number
       CustomParameters:
         description: Custom parameters associated with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       FinalUrlSuffix:
         description: Suffix added to the final URL for tracking purposes.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: Number of view-through conversions attributed to the ad.
         type:
@@ -9223,86 +10110,54 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier for the Bing Ads account.
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: The unique identifier for the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: The unique identifier for the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       KeywordId:
         description: The unique identifier for the keyword.
-        type:
-          - "null"
-          - integer
+        type: integer
       Keyword:
         description: The keyword for the ad.
-        type:
-          - "null"
-          - string
+        type: string
       AdId:
         description: The unique identifier for the ad.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period the data represents.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CurrencyCode:
         description: The currency code.
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The match type that generated the impression.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The ad distribution type.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: The type of device.
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: The language of the ads.
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network where the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The device operating system.
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Indicates if the ad was displayed on the top or other positions.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The match type for which the bid applies.
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the Bing Ads account.
         type:
@@ -9395,14 +10250,10 @@ schemas:
           - number
       CustomParameters:
         description: Custom parameters associated with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       FinalAppUrl:
         description: The final app URL.
-        type:
-          - "null"
-          - string
+        type: string
       Mainline1Bid:
         description: The bid for the mainline position 1.
         type:
@@ -9420,9 +10271,7 @@ schemas:
           - number
       FinalUrlSuffix:
         description: The final URL suffix.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The total number of view-through conversions.
         type:
@@ -9521,57 +10370,37 @@ schemas:
           - "null"
           - string
       TrackingTemplate:
-        type:
-          - "null"
-          - string
+        type: string
       BidStrategyType:
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         type:
           - "null"
           - string
       FinalUrl:
-        type:
-          - "null"
-          - string
+        type: string
       AdType:
-        type:
-          - "null"
-          - string
+        type: string
       KeywordLabels:
-        type:
-          - "null"
-          - string
+        type: string
       FinalMobileUrl:
-        type:
-          - "null"
-          - string
+        type: string
       Goal:
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         type:
           - "null"
           - number
       BaseCampaignId:
-        type:
-          - "null"
-          - integer
+        type: integer
       AccountNumber:
         type:
           - "null"
           - string
       DestinationUrl:
-        type:
-          - "null"
-          - string
+        type: string
 
   keyword_performance_report_daily:
     $schema: http://json-schema.org/draft-07/schema#
@@ -9579,85 +10408,53 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier of the Bing Ads account
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: The unique identifier of the campaign
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: The unique identifier of the ad group
-        type:
-          - "null"
-          - integer
+        type: integer
       KeywordId:
         description: The unique identifier of the keyword
-        type:
-          - "null"
-          - integer
+        type: integer
       Keyword:
         description: The keyword for the performance data
-        type:
-          - "null"
-          - string
+        type: string
       AdId:
         description: The unique identifier of the ad
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The date for which the performance data is reported
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CurrencyCode:
         description: Currency code used
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: Match type of the delivered ad
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The ad distribution mechanism for the keyword
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: Type of device
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: Language used in the ad or campaign
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: Network where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: Operating system of the device
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Comparison of top vs. other ad placements
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: Match type of the bid
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the Bing Ads account
         type:
@@ -9770,14 +10567,10 @@ schemas:
           - number
       CustomParameters:
         description: Custom parameters used
-        type:
-          - "null"
-          - string
+        type: string
       FinalAppUrl:
         description: Final URL linking to the app
-        type:
-          - "null"
-          - string
+        type: string
       Mainline1Bid:
         description: Bid required for mainline placement 1
         type:
@@ -9795,9 +10588,7 @@ schemas:
           - number
       FinalUrlSuffix:
         description: Additional URL suffix
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: Number of view-through conversions
         type:
@@ -9896,57 +10687,37 @@ schemas:
           - "null"
           - string
       TrackingTemplate:
-        type:
-          - "null"
-          - string
+        type: string
       BidStrategyType:
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         type:
           - "null"
           - string
       FinalUrl:
-        type:
-          - "null"
-          - string
+        type: string
       AdType:
-        type:
-          - "null"
-          - string
+        type: string
       KeywordLabels:
-        type:
-          - "null"
-          - string
+        type: string
       FinalMobileUrl:
-        type:
-          - "null"
-          - string
+        type: string
       Goal:
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         type:
           - "null"
           - number
       BaseCampaignId:
-        type:
-          - "null"
-          - integer
+        type: integer
       AccountNumber:
         type:
           - "null"
           - string
       DestinationUrl:
-        type:
-          - "null"
-          - string
+        type: string
 
   keyword_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
@@ -9954,85 +10725,53 @@ schemas:
     properties:
       AccountId:
         description: The unique identifier for the account to which the data belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: The unique identifier for the campaign to which the keyword belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: The unique identifier for the ad group to which the keyword belongs.
-        type:
-          - "null"
-          - integer
+        type: integer
       KeywordId:
         description: The unique identifier for the keyword being reported.
-        type:
-          - "null"
-          - integer
+        type: integer
       Keyword:
         description: The keyword that triggered the ad and is being reported.
-        type:
-          - "null"
-          - string
+        type: string
       AdId:
         description: The unique identifier for the ad responsible for the keyword's performance.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period for which the performance data is reported.
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CurrencyCode:
         description: The currency code used for monetary values in the data.
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The match type that delivered the keyword's ad.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The type of ad distribution for the performance data.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: The type of device on which the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: The language targeting for the keyword's ad.
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network where the ad was displayed (e.g., search, display).
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device on which the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: The comparison between the top ad positions and other ad positions.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The match type used for the keyword's bid.
-        type:
-          - "null"
-          - string
+        type: string
       AccountName:
         description: The name of the account to which the data belongs.
         type:
@@ -10129,14 +10868,10 @@ schemas:
           - number
       CustomParameters:
         description: Any custom parameters associated with the keyword.
-        type:
-          - "null"
-          - string
+        type: string
       FinalAppUrl:
         description: The final URL for the app download destination.
-        type:
-          - "null"
-          - string
+        type: string
       Mainline1Bid:
         description: The bid needed to appear in the first mainline position.
         type:
@@ -10154,9 +10889,7 @@ schemas:
           - number
       FinalUrlSuffix:
         description: The suffix added to the final URL for tracking purposes.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The total number of view-through conversions for the keyword.
         type:
@@ -10255,57 +10988,37 @@ schemas:
           - "null"
           - string
       TrackingTemplate:
-        type:
-          - "null"
-          - string
+        type: string
       BidStrategyType:
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         type:
           - "null"
           - string
       FinalUrl:
-        type:
-          - "null"
-          - string
+        type: string
       AdType:
-        type:
-          - "null"
-          - string
+        type: string
       KeywordLabels:
-        type:
-          - "null"
-          - string
+        type: string
       FinalMobileUrl:
-        type:
-          - "null"
-          - string
+        type: string
       Goal:
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         type:
           - "null"
           - number
       BaseCampaignId:
-        type:
-          - "null"
-          - integer
+        type: integer
       AccountNumber:
         type:
           - "null"
           - string
       DestinationUrl:
-        type:
-          - "null"
-          - string
+        type: string
 
   geographic_performance_report_hourly:
     $schema: http://json-schema.org/draft-07/schema#
@@ -11360,14 +12073,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier for the account associated with the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period for the report data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       Status:
@@ -11382,9 +12091,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier for the campaign associated with the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -11392,19 +12099,13 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier for the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       CurrencyCode:
         description: The currency code used for monetary values.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The distribution network where the ad is displayed.
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of times the ad was displayed.
         type:
@@ -11452,14 +12153,10 @@ schemas:
           - number
       DeviceType:
         description: The type of device where the ad is displayed.
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: The language targeting of the ad group.
-        type:
-          - "null"
-          - string
+        type: string
       QualityScore:
         description: A score reflecting the quality of the ad and landing page experience.
         type:
@@ -11497,9 +12194,7 @@ schemas:
           - number
       Network:
         description: The network where the ad is displayed.
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assists (secondary conversions).
         type:
@@ -11532,14 +12227,10 @@ schemas:
           - number
       TrackingTemplate:
         description: The tracking template URL for advanced tracking.
-        type:
-          - "null"
-          - string
+        type: string
       CustomParameters:
         description: Custom parameters associated with the ad group.
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         description: The status of the account associated with the ad group.
         type:
@@ -11552,19 +12243,13 @@ schemas:
           - string
       AdGroupLabels:
         description: Labels assigned to the ad group.
-        type:
-          - "null"
-          - string
+        type: string
       FinalUrlSuffix:
         description: The final URL suffix for tracking purposes.
-        type:
-          - "null"
-          - string
+        type: string
       CampaignType:
         description: The type of the campaign associated with the ad group.
-        type:
-          - "null"
-          - string
+        type: string
       TopImpressionSharePercent:
         description: The percentage of times the ad is shown in the top position.
         type:
@@ -11586,9 +12271,7 @@ schemas:
           - number
       BaseCampaignId:
         description: The unique identifier for the base campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AllConversions:
         description: The total count of all conversions.
         type:
@@ -11626,9 +12309,7 @@ schemas:
           - integer
       AdGroupType:
         description: The type of the ad group.
-        type:
-          - "null"
-          - string
+        type: string
       AverageCpm:
         description: The average cost per thousand impressions.
         type:
@@ -11756,14 +12437,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier of the account.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period covered by the report.
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       Status:
         description: The status of the ad (active, paused, etc.).
@@ -11777,9 +12454,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier of the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -11787,19 +12462,13 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier of the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       CurrencyCode:
         description: The currency code used for monetary values.
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: Where the ad was displayed (search, content, etc.).
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of impressions received by the ad.
         type:
@@ -11847,14 +12516,10 @@ schemas:
           - number
       DeviceType:
         description: The type of device (desktop, mobile, tablet) on which the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: The language targeting for the ad.
-        type:
-          - "null"
-          - string
+        type: string
       ImpressionSharePercent:
         description:
           The percentage of impressions achieved by the ad compared to the total
@@ -11929,9 +12594,7 @@ schemas:
           - number
       Network:
         description: The network where the ad was displayed (search, display, etc.).
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assists generated by the ad.
         type:
@@ -11964,14 +12627,10 @@ schemas:
           - number
       TrackingTemplate:
         description: The tracking template URL used for campaign tracking.
-        type:
-          - "null"
-          - string
+        type: string
       CustomParameters:
         description: Custom parameters associated with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         description: The status of the account (active, paused, etc.).
         type:
@@ -11984,9 +12643,7 @@ schemas:
           - string
       AdGroupLabels:
         description: Labels associated with the ad group.
-        type:
-          - "null"
-          - string
+        type: string
       ExactMatchImpressionSharePercent:
         description: The percentage of exact match impressions achieved by the ad.
         type:
@@ -12008,14 +12665,10 @@ schemas:
           - number
       FinalUrlSuffix:
         description: The final URL suffix added to the displayed URL.
-        type:
-          - "null"
-          - string
+        type: string
       CampaignType:
         description: The type of campaign (search, shopping, video, etc.).
-        type:
-          - "null"
-          - string
+        type: string
       TopImpressionShareLostToRankPercent:
         description: The percentage of top impressions lost due to rank constraints.
         type:
@@ -12059,9 +12712,7 @@ schemas:
           - number
       BaseCampaignId:
         description: The base campaign identifier.
-        type:
-          - "null"
-          - integer
+        type: integer
       AllConversions:
         description: The total number of all conversions.
         type:
@@ -12121,9 +12772,7 @@ schemas:
           - number
       AdGroupType:
         description: The type of ad group (standard, dynamic, remarketing, etc.).
-        type:
-          - "null"
-          - string
+        type: string
       AverageCpm:
         description: The average cost-per-thousand-impressions.
         type:
@@ -14024,14 +14673,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier for the account
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period of the report
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CampaignName:
         description: The name of the campaign
@@ -14040,9 +14685,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier for the campaign
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group
         type:
@@ -14050,14 +14693,10 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier for the ad group
-        type:
-          - "null"
-          - integer
+        type: integer
       AudienceId:
         description: The unique identifier for the audience
-        type:
-          - "null"
-          - integer
+        type: integer
       AudienceName:
         description: The name of the audience
         type:
@@ -14075,9 +14714,7 @@ schemas:
           - number
       TargetingSetting:
         description: The targeting settings used
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of impressions
         type:
@@ -14155,14 +14792,10 @@ schemas:
           - string
       AudienceType:
         description: The type of the audience
-        type:
-          - "null"
-          - string
+        type: string
       BaseCampaignId:
         description: The base campaign's ID
-        type:
-          - "null"
-          - integer
+        type: integer
       AllConversions:
         description: The total number of all conversions
         type:
@@ -14195,14 +14828,10 @@ schemas:
           - number
       AssociationId:
         description: The unique identifier for the association
-        type:
-          - "null"
-          - integer
+        type: integer
       AssociationLevel:
         description: The level of the association
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The total number of view-through conversions
         type:
@@ -14210,14 +14839,10 @@ schemas:
           - integer
       Goal:
         description: The goal of the report
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: The type of goal
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description: The percentage of absolute top impressions compared to total impressions
         type:
@@ -14270,14 +14895,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier for the account.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period associated with the data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CampaignName:
@@ -14287,9 +14908,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier for the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -14297,14 +14916,10 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier for the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       AudienceId:
         description: The unique identifier for the audience.
-        type:
-          - "null"
-          - integer
+        type: integer
       AudienceName:
         description: The name of the audience.
         type:
@@ -14322,9 +14937,7 @@ schemas:
           - number
       TargetingSetting:
         description: The targeting setting used for the data.
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of ad impressions.
         type:
@@ -14402,14 +15015,10 @@ schemas:
           - string
       AudienceType:
         description: The type of audience.
-        type:
-          - "null"
-          - string
+        type: string
       BaseCampaignId:
         description: The unique identifier for the base campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AllConversions:
         description: The total number of all conversions.
         type:
@@ -14442,14 +15051,10 @@ schemas:
           - number
       AssociationId:
         description: The unique identifier for the association.
-        type:
-          - "null"
-          - integer
+        type: integer
       AssociationLevel:
         description: The level of association for the data.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The total number of view-through conversions.
         type:
@@ -14457,14 +15062,10 @@ schemas:
           - integer
       Goal:
         description: The goal associated with the data.
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: The type of goal.
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description: The percentage of absolute top impressions out of the total eligible impressions.
         type:
@@ -14517,14 +15118,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier for the Bing Ads account.
-        type:
-          - "null"
-          - string
+        type: string
       TimePeriod:
         description: The time period for the report data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CampaignName:
         description: The name of the campaign.
@@ -14533,9 +15130,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier for the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -14543,24 +15138,16 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier for the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       Keyword:
         description: The keyword associated with the report data.
-        type:
-          - "null"
-          - string
+        type: string
       KeywordId:
         description: The unique identifier for the keyword.
-        type:
-          - "null"
-          - integer
+        type: integer
       Goal:
         description: The goal achieved in the report.
-        type:
-          - "null"
-          - string
+        type: string
       AllConversions:
         description: The total number of conversions.
         type:
@@ -14578,19 +15165,13 @@ schemas:
           - number
       GoalId:
         description: The unique identifier for the goal.
-        type:
-          - "null"
-          - integer
+        type: integer
       DeviceType:
         description: The type of device used when the event occurred.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device used when the event occurred.
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         description: The status of the Bing Ads account.
         type:
@@ -14613,9 +15194,7 @@ schemas:
           - string
       GoalType:
         description: The type of goal achieved.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: The total number of view-through conversions.
         type:
@@ -14655,14 +15234,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier of the account associated with the data.
-        type:
-          - "null"
-          - string
+        type: string
       TimePeriod:
         description: The time period the data corresponds to.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CampaignName:
@@ -14672,9 +15247,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier of the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -14682,24 +15255,16 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier of the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       Keyword:
         description: The keyword triggered in the process.
-        type:
-          - "null"
-          - string
+        type: string
       KeywordId:
         description: The unique identifier of the keyword.
-        type:
-          - "null"
-          - integer
+        type: integer
       Goal:
         description: The goal achieved.
-        type:
-          - "null"
-          - string
+        type: string
       AllConversions:
         description: Total number of conversions recorded.
         type:
@@ -14717,19 +15282,13 @@ schemas:
           - number
       GoalId:
         description: The unique identifier of the goal.
-        type:
-          - "null"
-          - integer
+        type: integer
       DeviceType:
         description: The type of device used.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device.
-        type:
-          - "null"
-          - string
+        type: string
       AccountStatus:
         description: The status of the account.
         type:
@@ -14752,9 +15311,7 @@ schemas:
           - string
       GoalType:
         description: The type of goal achieved.
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughConversions:
         description: Number of view-through conversions recorded.
         type:
@@ -15545,14 +16102,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier for the account
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period covered by the report data
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CampaignName:
         description: The name of the campaign
@@ -15561,9 +16114,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier for the campaign
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group
         type:
@@ -15571,34 +16122,22 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier for the ad group
-        type:
-          - "null"
-          - integer
+        type: integer
       Country:
         description: The country where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       State:
         description: The state where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       MetroArea:
         description: The metropolitan area where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       CurrencyCode:
         description: The currency code used in the report
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The distribution network of the ad
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of impressions
         type:
@@ -15631,74 +16170,46 @@ schemas:
           - number
       ProximityTargetLocation:
         description: The targeted location for proximity
-        type:
-          - "null"
-          - string
+        type: string
       Radius:
         description: The radius for proximity targeting
-        type:
-          - "null"
-          - integer
+        type: integer
       Language:
         description: The language setting of the user
-        type:
-          - "null"
-          - string
+        type: string
       City:
         description: The city where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentCountry:
         description: The query intent country
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentState:
         description: The query intent state
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentCity:
         description: The query intent city
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentDMA:
         description: The query intent Designated Market Area
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The match type of the bid
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The match type of the delivered item
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Indicates if the ad is shown at the top or other positions
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: The type of device where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assists in conversions
         type:
@@ -15746,34 +16257,22 @@ schemas:
           - number
       County:
         description: The county where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       PostalCode:
         description: The postal code of the location
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentCounty:
         description: The query intent county
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentPostalCode:
         description: The query intent postal code
-        type:
-          - "null"
-          - string
+        type: string
       LocationId:
         description: The unique identifier for the location
-        type:
-          - "null"
-          - integer
+        type: integer
       QueryIntentLocationId:
         description: The query intent location identifier
-        type:
-          - "null"
-          - integer
+        type: integer
       AllConversions:
         description: The total number of all conversions
         type:
@@ -15811,14 +16310,10 @@ schemas:
           - integer
       Goal:
         description: The goal associated with the report data
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: The type of goal associated with the report data
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description: The percentage of impressions shown at the absolute top of the page
         type:
@@ -15851,14 +16346,10 @@ schemas:
           - number
       Neighborhood:
         description: The neighborhood where the ad is displayed
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentNeighborhood:
         description: The query intent neighborhood
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughRevenue:
         description: The revenue generated from view-through conversions
         type:
@@ -15866,14 +16357,10 @@ schemas:
           - number
       CampaignType:
         description: The type of the campaign
-        type:
-          - "null"
-          - string
+        type: string
       AssetGroupId:
         description: The unique identifier for the asset group
-        type:
-          - "null"
-          - integer
+        type: integer
       AssetGroupName:
         description: The name of the asset group
         type:
@@ -15895,14 +16382,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier for the account
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period covered in the report
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CampaignName:
@@ -15912,9 +16395,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier for the campaign
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group
         type:
@@ -15922,34 +16403,22 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier for the ad group
-        type:
-          - "null"
-          - integer
+        type: integer
       Country:
         description: The country where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       State:
         description: The state where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       MetroArea:
         description: The metropolitan area where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       CurrencyCode:
         description: The currency code used in the report
-        type:
-          - "null"
-          - string
+        type: string
       AdDistribution:
         description: The distribution channel where the ad was shown
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: The total number of ad impressions
         type:
@@ -15982,78 +16451,50 @@ schemas:
           - number
       ProximityTargetLocation:
         description: The target location for proximity targeting
-        type:
-          - "null"
-          - string
+        type: string
       Radius:
         description: The radius for proximity targeting
-        type:
-          - "null"
-          - integer
+        type: integer
       Language:
         description: The language targeted for the ad campaign
-        type:
-          - "null"
-          - string
+        type: string
       City:
         description: The city where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentCountry:
         description: The country from query intent
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentState:
         description: The state from query intent
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentCity:
         description: The city from query intent
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentDMA:
         description: The Designated Market Area from query intent
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The type of match that triggered the ad to show
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The type of match that delivered the ad in the search results
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The advertising network where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description:
           Comparison of the top positions with other positions in displaying
           the ad
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description:
           The type of device on which the ad was displayed (e.g., Desktop,
           Mobile)
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device on which the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assists for conversions
         type:
@@ -16101,34 +16542,22 @@ schemas:
           - number
       County:
         description: The county where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       PostalCode:
         description: The postal code where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentCounty:
         description: The county from query intent
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentPostalCode:
         description: The postal code from query intent
-        type:
-          - "null"
-          - string
+        type: string
       LocationId:
         description: The unique identifier for the location where the ad was displayed
-        type:
-          - "null"
-          - integer
+        type: integer
       QueryIntentLocationId:
         description: The unique identifier for the location from query intent
-        type:
-          - "null"
-          - integer
+        type: integer
       AllConversions:
         description: The total number of all types of conversions
         type:
@@ -16168,14 +16597,10 @@ schemas:
           - integer
       Goal:
         description: The goal associated with the ad performance
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: The type of goal set for ad performance
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description:
           The percentage of times the ad appeared in the top position on the
@@ -16214,14 +16639,10 @@ schemas:
           - number
       Neighborhood:
         description: The neighborhood where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       QueryIntentNeighborhood:
         description: The neighborhood from query intent
-        type:
-          - "null"
-          - string
+        type: string
       ViewThroughRevenue:
         description:
           The revenue generated from conversions that occurred after a view-through
@@ -16231,14 +16652,10 @@ schemas:
           - number
       CampaignType:
         description: The type of campaign (e.g., Search, Display)
-        type:
-          - "null"
-          - string
+        type: string
       AssetGroupId:
         description: The unique identifier for the asset group
-        type:
-          - "null"
-          - integer
+        type: integer
       AssetGroupName:
         description: The name of the asset group
         type:
@@ -16260,14 +16677,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier of the Bing Ads account.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period of the data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       CampaignName:
         description: The name of the campaign.
@@ -16276,9 +16689,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier of the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -16286,34 +16697,22 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier of the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdId:
         description: The unique identifier of the ad.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdType:
         description: "The type of ad (text ad, responsive ad, etc.)."
-        type:
-          - "null"
-          - string
+        type: string
       DestinationUrl:
         description: The URL where the ad directs traffic.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: "The type of match (bidded, auto, etc.) for the keyword bid."
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: "The type of match (exact, broad, etc.) for the keyword delivery."
-        type:
-          - "null"
-          - string
+        type: string
       CampaignStatus:
         description: The status of the campaign.
         type:
@@ -16356,19 +16755,13 @@ schemas:
           - number
       SearchQuery:
         description: The search query that triggered the ad.
-        type:
-          - "null"
-          - string
+        type: string
       Keyword:
         description: The keyword associated with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupCriterionId:
         description: The unique identifier of the ad group criterion.
-        type:
-          - "null"
-          - string
+        type: string
       Conversions:
         description: The total number of conversions.
         type:
@@ -16386,34 +16779,22 @@ schemas:
           - number
       Language:
         description: The language setting targeted by the ad.
-        type:
-          - "null"
-          - string
+        type: string
       KeywordId:
         description: The unique identifier of the keyword.
-        type:
-          - "null"
-          - integer
+        type: integer
       Network:
         description: "The network where the ad was shown (Bing, partner sites, etc.)."
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: Indicates if the ad was shown in the top position or elsewhere.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: "The type of device (desktop, mobile, tablet, etc.)."
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device where the ad was displayed.
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assists on conversions.
         type:
@@ -16461,14 +16842,10 @@ schemas:
           - string
       CampaignType:
         description: "The type of campaign (search, display, etc.)."
-        type:
-          - "null"
-          - string
+        type: string
       CustomerId:
         description: The unique identifier of the customer.
-        type:
-          - "null"
-          - integer
+        type: integer
       CustomerName:
         description: The name of the customer.
         type:
@@ -16506,14 +16883,10 @@ schemas:
           - number
       Goal:
         description: The goal associated with the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: "The type of goal (e.g., ROAS, CPA) for the campaign."
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description: >-
           The percentage of impressions shown at the absolute top of the search
@@ -16557,14 +16930,10 @@ schemas:
           - string
       AccountId:
         description: The unique identifier of the account.
-        type:
-          - "null"
-          - integer
+        type: integer
       TimePeriod:
         description: The time period for the data.
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CampaignName:
@@ -16574,9 +16943,7 @@ schemas:
           - string
       CampaignId:
         description: The unique identifier of the campaign.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: The name of the ad group.
         type:
@@ -16584,34 +16951,22 @@ schemas:
           - string
       AdGroupId:
         description: The unique identifier of the ad group.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdId:
         description: The unique identifier of the ad.
-        type:
-          - "null"
-          - integer
+        type: integer
       AdType:
         description: The type of the ad.
-        type:
-          - "null"
-          - string
+        type: string
       DestinationUrl:
         description: The URL where the user is directed to upon clicking.
-        type:
-          - "null"
-          - string
+        type: string
       BidMatchType:
         description: The type of bid match.
-        type:
-          - "null"
-          - string
+        type: string
       DeliveredMatchType:
         description: The type of delivered match.
-        type:
-          - "null"
-          - string
+        type: string
       CampaignStatus:
         description: The status of the campaign.
         type:
@@ -16654,19 +17009,13 @@ schemas:
           - number
       SearchQuery:
         description: The search query used by the user.
-        type:
-          - "null"
-          - string
+        type: string
       Keyword:
         description: The keyword associated with the ad.
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupCriterionId:
         description: The unique identifier of the ad group criterion.
-        type:
-          - "null"
-          - string
+        type: string
       Conversions:
         description: The total number of conversions.
         type:
@@ -16684,34 +17033,22 @@ schemas:
           - number
       Language:
         description: The language of the ad.
-        type:
-          - "null"
-          - string
+        type: string
       KeywordId:
         description: The unique identifier of the keyword.
-        type:
-          - "null"
-          - integer
+        type: integer
       Network:
         description: The network where the ad is displayed.
-        type:
-          - "null"
-          - string
+        type: string
       TopVsOther:
         description: The comparison of top impression share versus other positions.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: The type of device where the ad is displayed.
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: The operating system of the device.
-        type:
-          - "null"
-          - string
+        type: string
       Assists:
         description: The number of assist conversions.
         type:
@@ -16759,14 +17096,10 @@ schemas:
           - string
       CampaignType:
         description: The type of the campaign.
-        type:
-          - "null"
-          - string
+        type: string
       CustomerId:
         description: The unique identifier of the customer.
-        type:
-          - "null"
-          - integer
+        type: integer
       CustomerName:
         description: The name of the customer.
         type:
@@ -16804,14 +17137,10 @@ schemas:
           - number
       Goal:
         description: The goal for the conversion.
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: The type of goal for the conversion.
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description: The percentage of absolute top impression share for the ad.
         type:
@@ -16843,15 +17172,11 @@ schemas:
     properties:
       TimePeriod:
         description: Time period for the data
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       AccountId:
         description: Unique identifier for the account
-        type:
-          - "null"
-          - integer
+        type: integer
       AccountNumber:
         description: Account number associated with the account
         type:
@@ -16864,14 +17189,10 @@ schemas:
           - string
       AdId:
         description: ID of the ad
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: ID of the ad group
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: Name of the ad group
         type:
@@ -16879,9 +17200,7 @@ schemas:
           - string
       CampaignId:
         description: ID of the campaign
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignName:
         description: Name of the campaign
         type:
@@ -16889,49 +17208,31 @@ schemas:
           - string
       DestinationUrl:
         description: URL of the landing page
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: Type of device
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: Operating system of the device
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: Language targeting of the ad
-        type:
-          - "null"
-          - string
+        type: string
       SearchQuery:
         description: Search query that triggered the ad
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: Network where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       MerchantProductId:
         description: ID of the merchant product
-        type:
-          - "null"
-          - string
+        type: string
       Title:
         description: Title of the ad
-        type:
-          - "null"
-          - string
+        type: string
       ClickTypeId:
         description: ID of the click type
-        type:
-          - "null"
-          - string
+        type: string
       TotalClicksOnAdElements:
         description: "Total clicks on ad elements (e.g., sitelinks)"
         type:
@@ -16939,24 +17240,16 @@ schemas:
           - number
       ClickType:
         description: "Type of click (e.g., headline, sitelink)"
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupCriterionId:
         description: ID of the ad group criterion
-        type:
-          - "null"
-          - string
+        type: string
       ProductGroup:
         description: Grouping of products
-        type:
-          - "null"
-          - string
+        type: string
       PartitionType:
         description: Type of the partition
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: Total number of impressions
         type:
@@ -17024,9 +17317,7 @@ schemas:
           - number
       CustomerId:
         description: Unique identifier for the customer
-        type:
-          - "null"
-          - integer
+        type: integer
       CustomerName:
         description: Name of the customer
         type:
@@ -17074,14 +17365,10 @@ schemas:
           - number
       Goal:
         description: Specific goal targeted by the ad
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: Type of goal
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description: >-
           The percentage of times the ad showed at the absolute top of the search
@@ -17111,14 +17398,10 @@ schemas:
           - number
       CampaignType:
         description: Type of the campaign
-        type:
-          - "null"
-          - string
+        type: string
       AssetGroupId:
         description: ID of the asset group
-        type:
-          - "null"
-          - integer
+        type: integer
       AssetGroupName:
         description: Name of the asset group
         type:
@@ -17130,16 +17413,12 @@ schemas:
     properties:
       TimePeriod:
         description: The time period of the report
-        type:
-          - "null"
-          - string
+        type: string
         format: date-time
         airbyte_type: timestamp_with_timezone
       AccountId:
         description: ID of the account associated with the data
-        type:
-          - "null"
-          - integer
+        type: integer
       AccountNumber:
         description: Number of the account associated with the data
         type:
@@ -17152,14 +17431,10 @@ schemas:
           - string
       AdId:
         description: ID of the ad
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupId:
         description: ID of the ad group
-        type:
-          - "null"
-          - integer
+        type: integer
       AdGroupName:
         description: Name of the ad group
         type:
@@ -17167,9 +17442,7 @@ schemas:
           - string
       CampaignId:
         description: ID of the campaign
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignName:
         description: Name of the campaign
         type:
@@ -17177,49 +17450,31 @@ schemas:
           - string
       DestinationUrl:
         description: URL where the ad directs the user
-        type:
-          - "null"
-          - string
+        type: string
       DeviceType:
         description: Type of device used
-        type:
-          - "null"
-          - string
+        type: string
       DeviceOS:
         description: Operating system of the device
-        type:
-          - "null"
-          - string
+        type: string
       Language:
         description: Language targeting for the ad
-        type:
-          - "null"
-          - string
+        type: string
       SearchQuery:
         description: The search query entered by the user
-        type:
-          - "null"
-          - string
+        type: string
       Network:
         description: The network where the ad was displayed
-        type:
-          - "null"
-          - string
+        type: string
       MerchantProductId:
         description: ID of the merchant product
-        type:
-          - "null"
-          - string
+        type: string
       Title:
         description: Title of the ad
-        type:
-          - "null"
-          - string
+        type: string
       ClickTypeId:
         description: ID of the click type
-        type:
-          - "null"
-          - string
+        type: string
       TotalClicksOnAdElements:
         description: Total number of clicks on elements within the ad
         type:
@@ -17227,24 +17482,16 @@ schemas:
           - number
       ClickType:
         description: Type of click
-        type:
-          - "null"
-          - string
+        type: string
       AdGroupCriterionId:
         description: Unique ID for the ad group criterion
-        type:
-          - "null"
-          - string
+        type: string
       ProductGroup:
         description: Grouping of products
-        type:
-          - "null"
-          - string
+        type: string
       PartitionType:
         description: Type of partition
-        type:
-          - "null"
-          - string
+        type: string
       Impressions:
         description: Total number of times the ad was shown
         type:
@@ -17312,9 +17559,7 @@ schemas:
           - number
       CustomerId:
         description: ID of the customer
-        type:
-          - "null"
-          - integer
+        type: integer
       CustomerName:
         description: Name of the customer
         type:
@@ -17368,14 +17613,10 @@ schemas:
           - number
       Goal:
         description: The goal associated with the ad
-        type:
-          - "null"
-          - string
+        type: string
       GoalType:
         description: Type of goal
-        type:
-          - "null"
-          - string
+        type: string
       AbsoluteTopImpressionRatePercent:
         description: >-
           The percentage of times this ad was shown in the top position on the
@@ -17407,14 +17648,10 @@ schemas:
           - number
       CampaignType:
         description: Type of the campaign
-        type:
-          - "null"
-          - string
+        type: string
       AssetGroupId:
         description: ID of the asset group
-        type:
-          - "null"
-          - integer
+        type: integer
       AssetGroupName:
         description: Name of the asset group
         type:
@@ -17437,14 +17674,10 @@ schemas:
           - string
       AccountId:
         description: Unique identifier for the account
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignId:
         description: Unique identifier for the campaign
-        type:
-          - "null"
-          - integer
+        type: integer
       CampaignName:
         description: Name of the campaign
         type:
@@ -17452,9 +17685,7 @@ schemas:
           - string
       Date:
         description: Date of the data record
-        type:
-          - "null"
-          - string
+        type: string
         format: date
       MonthlyBudget:
         description: Budget amount set for the campaign for the entire month

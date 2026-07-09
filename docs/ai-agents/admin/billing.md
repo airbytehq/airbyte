@@ -51,7 +51,7 @@ A maximum bill is a spending cap for a single billing period. If your bill reach
 To remove your maximum bill, click **Edit**, clear the value, and click **Save**. The card shows **No limit set** when no cap is in place.
 
 :::tip
-Set a maximum bill even if you don't expect to exceed your included AOs. This protects you from unexpected charges caused by unintended automations, stuck loops, or mistakes in an agent configuration.
+Set a maximum bill even if you don't expect to exceed your included AOs. This protects you from unexpected charges caused by stuck loops or mistakes in an agent configuration.
 :::
 
 ## Monitor usage
@@ -69,11 +69,11 @@ Use the toggle to switch between a table view and a chart view.
 
 Filter the Usage panel to focus on a specific source or time range:
 
-- **Source**: Filter by where the activity originated. Sources include Chat, Automation, Automation Builder Chat, MCP, API, and SDK.
+- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, and SDK.
 - **Billing period**: Choose the current billing period or one of the last five billing periods.
 - **Custom range**: Pick any start and end date to view usage across an arbitrary window.
 
-Rows from Chat, Automation, and Automation Builder Chat link to the originating session, so you can investigate what drove a particular spike.
+Rows from Chat link to the originating session, so you can investigate what drove a particular spike.
 
 ### Understand included and overage AOs
 
@@ -151,7 +151,7 @@ A plan to explore Airbyte Agents and prototype agents.
 - $0 per month.
 - 1,000 AOs per month.
 - Overage isn't available. When you reach your monthly limit, agent operations pause until the next billing period.
-- Context Store refreshes hourly during your first month, then daily.
+- Context Store refreshes hourly during your first 2 weeks, then daily.
 - AI and community support.
 
 ### Individual
@@ -168,7 +168,7 @@ You must [add a payment method](#add-a-payment-method) before you upgrade to the
 
 ### Team
 
-A plan for teams running more automations.
+A plan for teams with higher usage needs.
 
 - $299 per month.
 - 10,000 AOs per month.

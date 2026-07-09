@@ -262,7 +262,7 @@ jobs:
                     required: [pass, reasoning]
                   ai_review_passed:
                     type: object
-                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
+                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] OR airbyte-support-bot containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. Either author is valid — the AI review playbook posts as airbyte-support-bot so the PR-owning Devin session recognizes it as an external comment. If no such comment exists from either author, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
                     properties:
                       pass:
                         type: boolean
@@ -310,7 +310,16 @@ jobs:
                       reasoning:
                         type: string
                     required: [pass, reasoning]
-                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change]
+                  net_new_stream_addition:
+                    type: object
+                    description: "Set pass to true ONLY if the PR exclusively adds net-new streams to an existing connector without modifying any existing streams or core connector logic. Allowed changes: new stream class definitions, new stream registrations, new tests for the new streams, new or updated documentation/changelogs for the new streams, version bumps in metadata.yaml, new or updated schema files for the new streams, and trivial updates to existing tests that are a direct mechanical consequence of adding the new stream (e.g. incrementing an expected stream count assertion). Set pass to false if any existing stream definition, existing schema, or core connector logic (e.g. auth, base classes, shared utilities) is modified, or if existing tests are changed in ways beyond trivial count updates."
+                    properties:
+                      pass:
+                        type: boolean
+                      reasoning:
+                        type: string
+                    required: [pass, reasoning]
+                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change, net_new_stream_addition]
             required: [preconditions, change_scope]
 
       - name: Check for structured output
@@ -354,8 +363,9 @@ jobs:
           comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')
           dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
           metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
+          new_streams=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.net_new_stream_addition.pass')
 
-          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" ]]; then
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" ]]; then
             scope_pass="true"
           else
             scope_pass="false"
@@ -415,7 +425,7 @@ jobs:
             echo ""
             scope_matched=false
             has_scope_row=false
-            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then
