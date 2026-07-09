@@ -4,6 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
+from queue import Queue
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import isodate
@@ -27,10 +28,12 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.message import InMemoryMessageRepository
+from airbyte_cdk.sources.message.concurrent_repository import ConcurrentMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -69,8 +72,19 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         else:
             concurrency_level = _DEFAULT_CONCURRENCY
         logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        # Share a single queue between the concurrent source and the message repository so that state
+        # checkpoints are emitted in-order relative to the records they cover. With the default
+        # InMemoryMessageRepository, state messages live on a separate channel that the main thread
+        # drains after every record, so a checkpoint can be flushed ahead of records still queued
+        # behind it. If the sync is terminated ungracefully (e.g. an OOM/SIGTERM mid-sync), the
+        # platform can then persist a cursor that has advanced past records which were never durably
+        # written to the destination, permanently dropping them until the stream is reset.
+        queue: Queue[QueueItem] = Queue(maxsize=10_000)
+        self.message_repository = ConcurrentMessageRepository(
+            queue, InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
+        )
         concurrent_source = ConcurrentSource.create(
-            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
+            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository, queue=queue
         )
         super().__init__(concurrent_source)
         self.catalog = catalog

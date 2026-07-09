@@ -584,9 +584,11 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream_config_date_format.update({"start_date": "2023-01-01"})
     state = StateBuilder().with_stream_state("Account", {"LastModifiedDate": "2023-01-01T10:20:10.000Z"}).build()
 
-    source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.full_refresh).build(), _ANY_CONFIG, _ANY_STATE)
+    source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.incremental).build(), _ANY_CONFIG, state)
     source.streams = Mock()
-    source.streams.return_value = [generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False)]
+    source.streams.return_value = [
+        generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False, source=source)
+    ]
 
     # using legacy state to configure HTTP requests
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
@@ -675,3 +677,14 @@ def test_request_params_substream(stream_config_date_format, stream_api):
     params = stream.request_params(stream_state={}, stream_slice={"parents": [{"Id": 1}, {"Id": 2}]})
 
     assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
+
+
+def test_source_uses_ordered_concurrent_message_repository():
+    """State checkpoints must be emitted in-order with records to avoid advancing the cursor past
+    records not yet durably committed on an ungraceful termination. This requires the ordered
+    ConcurrentMessageRepository (sharing the concurrent source's queue) rather than the default
+    InMemoryMessageRepository."""
+    from airbyte_cdk.sources.message.concurrent_repository import ConcurrentMessageRepository
+
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    assert isinstance(source.message_repository, ConcurrentMessageRepository)
