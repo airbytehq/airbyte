@@ -42,7 +42,7 @@ class DirectLoadTableAppendStreamLoader(
                 stream,
                 realTableName,
                 columnNameMapping,
-                replace = true
+                replace = false
             )
         } else {
             schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
@@ -199,7 +199,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     stream,
                     realTableName,
                     columnNameMapping,
-                    replace = true,
+                    replace = false,
                 )
                 isWritingToTemporaryTable = false
             } else if (
