@@ -36,6 +36,7 @@ data:
       6.0.0:
         message: "The `tickets` stream cursor is reverted from `updated_at` back to `generated_timestamp` (the Incremental Ticket Export cursor), restoring reliable capture of automation/macro/system-driven ticket changes. Existing `updated_at` state is migrated automatically, but a one-time refresh of the `tickets` and `ticket_metrics` streams is recommended to backfill updates that were missed while on `updated_at`. Please see the migration guide for details."
         upgradeDeadline: "2026-07-23"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:
