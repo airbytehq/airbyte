@@ -56,7 +56,7 @@ Set a maximum bill even if you don't expect to exceed your included AOs. This pr
 
 ## Monitor usage
 
-The Usage panel on the Billing page shows how your activity consumes AOs and tool calls over time. Chat, Automation, and Automation Builder Chat usage includes AOs from tool calls and reasoning. MCP, API, and SDK usage includes AOs from tool calls only.
+The Usage panel on the Billing page shows how your activity consumes AOs and tool calls over time. Chat usage includes AOs from tool calls and reasoning. MCP, API, SDK, and CLI usage includes AOs from tool calls only.
 
 ### View usage
 
@@ -69,7 +69,7 @@ Use the toggle to switch between a table view and a chart view.
 
 Filter the Usage panel to focus on a specific source or time range:
 
-- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, and SDK.
+- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, SDK, and CLI.
 - **Billing period**: Choose the current billing period or one of the last five billing periods.
 - **Custom range**: Pick any start and end date to view usage across an arbitrary window.
 
