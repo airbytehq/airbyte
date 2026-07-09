@@ -74,6 +74,30 @@ internal class IcebergTableCleanerTest {
         )
 
         verify(exactly = 1) { catalog.dropTable(tableIdentifier, true) }
+        // The location must be normalized with a trailing slash so that the prefix matches
+        // STS-scoped session policies (e.g. "table/location/*") and does not match sibling tables.
+        verify(exactly = 1) { fileIo.deletePrefix("$tableLocation/") }
+    }
+
+    @Test
+    fun testClearingTableWithPrefixAlreadyEndingWithSlash() {
+        val catalog: Catalog = mockk { every { dropTable(any(), true) } returns true }
+        val icebergUtil: IcebergUtil = mockk()
+        val tableIdentifier: TableIdentifier = mockk()
+        val fileIo: FileIOWithPrefixSupport = mockk { every { deletePrefix(any()) } returns Unit }
+        val tableLocation = "table/location/"
+
+        val cleaner = IcebergTableCleaner(icebergUtil)
+
+        cleaner.clearTable(
+            catalog = catalog,
+            identifier = tableIdentifier,
+            io = fileIo,
+            tableLocation = tableLocation
+        )
+
+        verify(exactly = 1) { catalog.dropTable(tableIdentifier, true) }
+        // A location that already ends with a slash must not gain a duplicate slash.
         verify(exactly = 1) { fileIo.deletePrefix(tableLocation) }
     }
 

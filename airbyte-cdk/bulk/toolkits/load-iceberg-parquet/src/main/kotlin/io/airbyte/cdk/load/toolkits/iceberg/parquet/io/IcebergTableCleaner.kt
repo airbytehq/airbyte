@@ -38,7 +38,15 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
     ) {
         catalog.dropTable(identifier, true)
         if (io is SupportsPrefixOperations) {
-            io.deletePrefix(tableLocation)
+            // Normalize the location to always end with a trailing slash before deleting the
+            // prefix. Without it, the prefix passed to S3's ListObjectsV2 (e.g.
+            // "warehouse/ns/table") does not match STS session policies scoped with
+            // StringLike { s3:prefix: "warehouse/ns/table/*" }, causing a 403 AccessDenied when a
+            // REST catalog (e.g. Lakekeeper) vends STS-scoped credentials. It also prevents the
+            // prefix from matching sibling tables sharing a name prefix (e.g. "orders" matching
+            // "orders_archive/...").
+            val prefix = if (tableLocation.endsWith("/")) tableLocation else "$tableLocation/"
+            io.deletePrefix(prefix)
         }
     }
 
