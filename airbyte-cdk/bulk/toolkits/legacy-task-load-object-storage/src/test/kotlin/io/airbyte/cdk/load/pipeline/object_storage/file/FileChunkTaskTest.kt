@@ -231,6 +231,48 @@ class FileChunkTaskTest<T> {
         )
     }
 
+    @Test
+    fun `skips records with null file reference without crashing`() = runTest {
+        val key = StreamKey(Fixtures.unmappedDescriptor)
+        val messageWithoutFileRef =
+            AirbyteMessage()
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withData(Jsons.deserialize("""{"something": "has to give"}"""))
+                )
+        val schema = Fixtures.schema()
+        val stream = Fixtures.stream(schema)
+        val record =
+            DestinationRecordRaw(
+                stream = stream,
+                rawData = DestinationRecordJsonSource(messageWithoutFileRef),
+                serializedSizeBytes = 0L,
+                airbyteRawId = UUID.randomUUID(),
+            )
+
+        every { catalog.getStream(key.stream) } returns stream
+
+        val input =
+            PipelineMessage(
+                checkpointCounts = mapOf(CheckpointId("1") to CheckpointValue(1, 1)),
+                key = key,
+                value = record,
+                postProcessingCallback = {},
+                context =
+                    PipelineContext(
+                        mapOf(CheckpointId("1") to CheckpointValue(1, 1)),
+                        record,
+                    )
+            )
+        task.handleEvent(input)
+
+        // Should not publish anything to the partQueue (record was skipped)
+        coVerify(exactly = 0) { partQueue.publish(any(), any()) }
+        coVerify(exactly = 0) { partQueue.broadcast(any()) }
+        // Should not attempt to create a file handle
+        verify(exactly = 0) { fileHandleFactory.make(any()) }
+    }
+
     object Fixtures {
         val unmappedDescriptor =
             DestinationStream.Descriptor(namespace = "namespace-1", name = "name-1")
