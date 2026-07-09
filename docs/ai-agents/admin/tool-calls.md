@@ -49,6 +49,8 @@ Use the filters above the table to narrow the activity to a specific subset:
 - **Tool Type**: Show only Direct tool calls, only Search tool calls, or both.
 - **Status**: Show only successful calls, only failed calls, or both.
 
+Administrators see tool calls from every workspace in the organization; members see tool calls from the workspaces they belong to. Tool calls made in a workspace that was later deleted are preserved and still appear in the table.
+
 #### Columns
 
 Each row in the table includes the following information:

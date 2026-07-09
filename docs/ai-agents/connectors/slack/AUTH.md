@@ -35,8 +35,9 @@ For API-first use cases, create a connector with OAuth credentials directly.
 | `start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
 | `lookback_window` | `int` | Yes | Number of days to look back when syncing data (0-365). |
 | `join_channels` | `bool` | Yes | Whether to automatically join public channels to sync messages. |
-| `include_archived_channels` | `bool` | Yes | Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members. |
-| `threads_ignore_no_replies` | `bool` | Yes | When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records. |
+| `include_archived_channels` | `bool` | No | Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members. |
+| `threads_ignore_no_replies` | `bool` | No | When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records. |
+| `include_private_channels` | `bool` | No | Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated. |
 
 Example request:
 
@@ -58,7 +59,8 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "lookback_window": "<Number of days to look back when syncing data (0-365).>",
       "join_channels": "<Whether to automatically join public channels to sync messages.>",
       "include_archived_channels": "<Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members.>",
-      "threads_ignore_no_replies": "<When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.>"
+      "threads_ignore_no_replies": "<When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.>",
+      "include_private_channels": "<Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated.>"
     }
   }'
 ```
@@ -83,8 +85,9 @@ Create a connector with Token credentials.
 | `start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
 | `lookback_window` | `int` | Yes | Number of days to look back when syncing data (0-365). |
 | `join_channels` | `bool` | Yes | Whether to automatically join public channels to sync messages. |
-| `include_archived_channels` | `bool` | Yes | Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members. |
-| `threads_ignore_no_replies` | `bool` | Yes | When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records. |
+| `include_archived_channels` | `bool` | No | Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members. |
+| `threads_ignore_no_replies` | `bool` | No | When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records. |
+| `include_private_channels` | `bool` | No | Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated. |
 
 Example request:
 
@@ -105,7 +108,8 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "lookback_window": "<Number of days to look back when syncing data (0-365).>",
       "join_channels": "<Whether to automatically join public channels to sync messages.>",
       "include_archived_channels": "<Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members.>",
-      "threads_ignore_no_replies": "<When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.>"
+      "threads_ignore_no_replies": "<When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.>",
+      "include_private_channels": "<Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated.>"
     }
   }'
 ```

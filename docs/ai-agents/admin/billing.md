@@ -109,17 +109,17 @@ If you can't pay with the card on file, [update your payment method](#update-you
 
 In the Invoices panel, click the download icon next to an invoice to save a copy.
 
-### Automatic invoice at $2,000 {#auto-bill}
+### Automatic invoice at $10,000 {#auto-bill}
 
-If your charges for a billing period reach $2,000, Airbyte automatically issues an invoice and bills the payment method on file. This is in addition to your regular monthly invoice. After the automatic invoice, charges continue to accrue normally for the rest of the billing period.
+If your charges for a billing period reach $10,000, Airbyte automatically issues an invoice and bills the payment method on file. This is in addition to your regular monthly invoice. After the automatic invoice, charges continue to accrue normally for the rest of the billing period.
 
-The $2,000 automatic invoice is independent of your [maximum bill](#maximum-bill). The automatic invoice is how Airbyte collects what you already owe. The maximum bill is how you tell Airbyte to stop adding charges.
+The $10,000 automatic invoice is independent of your [maximum bill](#maximum-bill). The automatic invoice is how Airbyte collects what you already owe. The maximum bill is how you tell Airbyte to stop adding charges.
 
 ## Avoid billing surprises
 
 To avoid billing surprises, Airbyte offers two capabilities. Airbyte strongly encourages you to rely on these tools to avoid unexpected charges.
 
-- If your charges reach $2,000 in a billing period, Airbyte [automatically generates an invoice and bills you](#auto-bill).
+- If your charges reach $10,000 in a billing period, Airbyte [automatically generates an invoice and bills you](#auto-bill).
 - You can set a [maximum bill](#maximum-bill) so you're never charged more than you're willing to pay in a billing period.
 
 ## Cancel your subscription
@@ -174,8 +174,9 @@ A plan for teams with higher usage needs.
 - 10,000 AOs per month.
 - Overage AOs are available.
 - Context Store refreshes hourly.
-- Multiple workspaces.
-- Single sign-on and SAML.
+- [Multiple workspaces](../concepts/architecture/workspaces.md).
+- [Single sign-on and SAML](./sso.md).
+- [Multiple users](./users.md).
 - Standard human support, in addition to AI and community support.
 
 ### Custom
