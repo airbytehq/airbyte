@@ -19,13 +19,6 @@ api_budget:
 
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 100
-          interval: PT1M
-      matchers:
-        - url_path_pattern: "^/api/v2/search/export$"
-
-    - type: MovingWindowCallRatePolicy
-      rates:
         - limit: 10
           interval: PT1M
       matchers:
@@ -1164,56 +1157,13 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
-  # Export Search Results paginator: uses cursor-based pagination via links.next
-  export_search_paginator:
-    type: DefaultPaginator
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: "{{ response.get('links', {}).get('next', '') }}"
-      stop_condition: "{{ not response.get('meta', {}).get('has_more', False) }}"
-      page_size: 100
-    page_token_option:
-      type: RequestPath
-    page_size_option:
-      type: RequestOption
-      field_name: "page[size]"
-      inject_into: request_parameter
-
   tickets_stream:
-    type: DeclarativeStream
-    name: "tickets"
-    primary_key: "id"
+    $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
-      requester:
-        $ref: "#/definitions/retriever/requester"
-        path: "search/export"
-        request_parameters:
-          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} updated_at<={{ format_datetime(stream_interval['end_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }}"
-          "filter[type]": "ticket"
       paginator:
-        $ref: "#/definitions/export_search_paginator"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["results"]
-        schema_normalization: Default
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_datetime_formats:
-        - "%s"
-        - "%Y-%m-%dT%H:%M:%SZ"
-        - "%Y-%m-%dT%H:%M:%S%z"
-      datetime_format: "%s"
-      cursor_field: "updated_at"
-      start_datetime:
-        datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
-      end_datetime:
-        datetime: "{{ now_utc().strftime('%s') }}"
-      step: "P30D"
-      cursor_granularity: "PT1S"
+        $ref: "#/definitions/after_url_paginator"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TicketsStateMigration
@@ -1221,6 +1171,12 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/tickets"
+    $parameters:
+      name: "tickets"
+      path: "incremental/tickets/cursor.json"
+      cursor_field: "generated_timestamp"
+      cursor_filter: "start_time"
+      primary_key: "id"
 
   ticket_metrics_stream:
     type: StateDelegatingStream
@@ -1314,7 +1270,7 @@ definitions:
               parent_key: "id"
               partition_field: "ticket_id"
               extra_fields:
-                - ["updated_at"]
+                - ["generated_timestamp"]
               stream:
                 $ref: "#/definitions/tickets_stream"
               incremental_dependency: true
@@ -1323,7 +1279,7 @@ definitions:
           fields:
             - path:
                 - "_ab_updated_at"
-              value: "{{ format_datetime(record['updated_at'], '%s') if 'updated_at' in record else format_datetime(stream_slice.extra_fields['updated_at'], '%s') }}"
+              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'] }}"
               value_type: "integer"
 
   topics_stream:

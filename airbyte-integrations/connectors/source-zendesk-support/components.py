@@ -45,15 +45,21 @@ class ZendeskSupportAttributeDefinitionsExtractor(RecordExtractor):
 
 
 class TicketsStateMigration(StateMigration):
-    """Migrates tickets stream state from generated_timestamp cursor to updated_at cursor.
+    """Migrates tickets stream state from the updated_at cursor back to generated_timestamp.
 
-    The tickets stream was switched from the Incremental Export API (which uses generated_timestamp)
-    to the Export Search Results API (which filters by updated_at). Existing connections may have
-    state with generated_timestamp as the cursor field, which needs to be migrated to updated_at.
+    The tickets stream was reverted from the Export Search Results API (which filtered by
+    updated_at) to the Incremental Ticket Export API (which is keyed on generated_timestamp),
+    because updated_at is not a reliable cursor: Zendesk only bumps updated_at when an update
+    generates a ticket event, so automation/macro/system-driven changes were silently dropped.
+
+    Connections that ran the updated_at-based version stored state under updated_at (epoch
+    seconds). This migration carries that watermark over to generated_timestamp. Because
+    generated_timestamp is always >= updated_at for a given ticket, resuming from the prior
+    updated_at watermark is safe and does not skip records.
     """
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return "generated_timestamp" in stream_state
+        return "updated_at" in stream_state and "generated_timestamp" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"updated_at": stream_state["generated_timestamp"]}
+        return {"generated_timestamp": stream_state["updated_at"]}

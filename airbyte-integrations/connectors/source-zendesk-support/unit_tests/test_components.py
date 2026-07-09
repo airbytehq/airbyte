@@ -102,3 +102,34 @@ def test_attribute_definitions_extractor(response_data, expected_records, compon
 
     # Assert that the returned records match the expected records
     assert records == expected_records, f"Expected records to be {expected_records}, but got {records}"
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected_should_migrate, expected_migrated_state",
+    [
+        pytest.param(
+            {"updated_at": "1723660897"},
+            True,
+            {"generated_timestamp": "1723660897"},
+            id="updated_at_state_is_migrated_to_generated_timestamp",
+        ),
+        pytest.param(
+            {"generated_timestamp": "1723660897"},
+            False,
+            None,
+            id="generated_timestamp_state_is_left_untouched",
+        ),
+        pytest.param(
+            {},
+            False,
+            None,
+            id="empty_state_is_not_migrated",
+        ),
+    ],
+)
+def test_tickets_state_migration(stream_state, expected_should_migrate, expected_migrated_state, components_module):
+    migration = components_module.TicketsStateMigration()
+
+    assert migration.should_migrate(stream_state) is expected_should_migrate
+    if expected_should_migrate:
+        assert migration.migrate(stream_state) == expected_migrated_state

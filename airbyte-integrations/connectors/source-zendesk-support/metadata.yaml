@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.4.1
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -33,6 +33,14 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      6.0.0:
+        message: "The `tickets` stream cursor is reverted from `updated_at` back to `generated_timestamp` (the Incremental Ticket Export cursor), restoring reliable capture of automation/macro/system-driven ticket changes. Existing `updated_at` state is migrated automatically, but a one-time refresh of the `tickets` and `ticket_metrics` streams is recommended to backfill updates that were missed while on `updated_at`. Please see the migration guide for details."
+        upgradeDeadline: "2026-07-23"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "tickets"
+              - "ticket_metrics"
       1.0.0:
         message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
         upgradeDeadline: "2023-07-19"
