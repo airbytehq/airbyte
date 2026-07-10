@@ -3,7 +3,7 @@
 #
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
