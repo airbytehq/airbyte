@@ -241,10 +241,21 @@ class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
 class TicketsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def tickets_record(cls) -> "TicketsRecordBuilder":
-        record_template = cls.extract_record("tickets", __file__, NestedPath(["results", 0]))
+        record_template = cls.extract_record("tickets", __file__, NestedPath(["tickets", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
     def with_id(self, id: int) -> "TicketsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class TicketsSearchRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def tickets_search_record(cls) -> "TicketsSearchRecordBuilder":
+        record_template = cls.extract_record("tickets_search", __file__, NestedPath(["results", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TicketsSearchRecordBuilder":
         self._record["id"] = id
         return self
 
@@ -559,9 +570,19 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
 
 class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketsResponseBuilder":
+    def tickets_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketsResponseBuilder":
         return cls(
             find_template("tickets", __file__),
+            FieldPath("tickets"),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+        )
+
+
+class TicketsSearchResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def tickets_search_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketsSearchResponseBuilder":
+        return cls(
+            find_template("tickets_search", __file__),
             FieldPath("results"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
