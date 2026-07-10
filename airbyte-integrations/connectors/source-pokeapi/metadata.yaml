@@ -1,4 +1,5 @@
 data:
+  # Dummy edit to trigger connector detection for progressive-rollout (autopilot) release testing. Superseded by the version-bump workflow commit.
   allowedHosts:
     hosts:
       - "*"
