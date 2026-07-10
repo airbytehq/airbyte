@@ -218,7 +218,7 @@ Now that your agent is configured with a tool, update `main.py` and run your pro
    ```
 
     :::tip
-    No matter which connector you use, `connect()` validates your Airbyte credentials at import time. If you still have placeholder values in `.env`, you'll see a 401 error before the chat loop starts. Make sure `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` contain your real credentials from [app.airbyte.ai](https://app.airbyte.ai).
+    `connect()` validates your Airbyte credentials at import time. If you still have placeholder values in `.env`, you'll see a 401 error before the chat loop starts. Make sure `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` contain your real credentials from [app.airbyte.ai](https://app.airbyte.ai).
     :::
 
 ### Chat with your agent

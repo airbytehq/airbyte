@@ -220,7 +220,7 @@ Add the following to your Cursor MCP configuration file (`.cursor/mcp.json` in y
 </Tabs>
 
 :::tip
-No matter which connector you use, `connect()` validates your Airbyte credentials when the server starts. If you still have placeholder values in `.env`, you'll see a 401 error before the server is ready. Make sure `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` contain your real credentials from [app.airbyte.ai](https://app.airbyte.ai).
+`connect()` validates your Airbyte credentials when the server starts. If you still have placeholder values in `.env`, you'll see a 401 error before the server is ready. Make sure `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` contain your real credentials from [app.airbyte.ai](https://app.airbyte.ai).
 :::
 
 ## Part 7: Use the MCP server
