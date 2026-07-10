@@ -612,8 +612,11 @@ Classes
 
     ### Class variables
 
-    `include_archived_channels: bool`
+    `include_archived_channels: bool | None`
     :   Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members.
+
+    `include_private_channels: bool | None`
+    :   Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated.
 
     `join_channels: bool`
     :   Whether to automatically join public channels to sync messages.
@@ -627,7 +630,7 @@ Classes
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
 
-    `threads_ignore_no_replies: bool`
+    `threads_ignore_no_replies: bool | None`
     :   When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.
 
 <a id="ThreadsSearchData"></a>
