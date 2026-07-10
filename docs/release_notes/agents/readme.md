@@ -1,5 +1,12 @@
 # Airbyte Agents release notes
 
+## July 10, 2026
+
+Web app
+
+- New workspaces you create now have Context Store search enabled automatically, so your agents can search that workspace's synced data right away.
+- During connector setup, your data entity selection is now locked while a connector is saving or checking its configuration, so your choices can't change unexpectedly mid-save.
+
 ## July 3, 2026
 
 Web app
