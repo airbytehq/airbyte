@@ -772,4 +772,106 @@ internal class SnowflakeAirbyteClientTest {
             assertTrue(exception.cause is SnowflakeSQLException)
         }
     }
+
+    @Test
+    fun testExecuteWithInsufficientPrivilegesError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "SHOW TABLES IN SCHEMA test_schema"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.close() } just Runs
+
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException(
+                "SQL access control error:\n" +
+                    "Insufficient privileges to operate on schema 'RAW_INTERCOM'."
+            )
+        every { connection.close() } just Runs
+
+        val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
+
+        assertTrue(exception.message!!.contains("Insufficient privileges"))
+        assertTrue(exception.cause is SnowflakeSQLException)
+    }
+
+    @Test
+    fun testExecuteWithAccessControlError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "SHOW TABLES IN SCHEMA test_schema"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.close() } just Runs
+
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException(
+                "SQL access control error: " + "Your role does not have privileges on this object."
+            )
+        every { connection.close() } just Runs
+
+        val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
+
+        assertTrue(exception.message!!.contains("access control error"))
+        assertTrue(exception.cause is SnowflakeSQLException)
+    }
+
+    @Test
+    fun testTableExistsWithInsufficientPrivilegesError() {
+        val tableName = TableName(namespace = "RAW_INTERCOM", name = "test_table")
+
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } throws
+                    SnowflakeSQLException(
+                        "SQL access control error:\n" +
+                            "Insufficient privileges to operate on schema 'RAW_INTERCOM'. " +
+                            "Your primary role LOADER or one of your secondary roles must have " +
+                            "USAGE granted on SCHEMA ANALYTICS.RAW_INTERCOM."
+                    )
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            val exception = assertThrows<ConfigErrorException> { client.tableExists(tableName) }
+
+            assertTrue(exception.message!!.contains("Insufficient privileges"))
+            assertTrue(exception.cause is SnowflakeSQLException)
+        }
+    }
+
+    @Test
+    fun testTableExistsWithNonPermissionError() {
+        val tableName = TableName(namespace = "RAW_INTERCOM", name = "test_table")
+
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } throws SnowflakeSQLException("Connection timeout")
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            val exception = assertThrows<SnowflakeSQLException> { client.tableExists(tableName) }
+
+            assertEquals("Connection timeout", exception.message)
+        }
+    }
 }

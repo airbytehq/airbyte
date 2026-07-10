@@ -63,17 +63,21 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun tableExists(table: TableName): Boolean =
-        dataSource.connection.use { connection ->
-            val statement =
-                connection.prepareStatement(
-                    """
+        try {
+            dataSource.connection.use { connection ->
+                val statement =
+                    connection.prepareStatement(
+                        """
                     show tables
                     like ?
                     in schema "$databaseName"."${table.namespace}"
                     """.trimIndent()
-                )
-            statement.setString(1, table.name)
-            statement.use { it.executeQuery().next() }
+                    )
+                statement.setString(1, table.name)
+                statement.use { it.executeQuery().next() }
+            }
+        } catch (e: SnowflakeSQLException) {
+            handleSnowflakePermissionError(e)
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
@@ -363,7 +367,9 @@ class SnowflakeAirbyteClient(
 
         // Check for known permission-related error patterns
         when {
-            errorMessage.contains("current role has no privileges on it") -> {
+            errorMessage.contains("current role has no privileges on it") ||
+                errorMessage.contains("insufficient privileges") ||
+                errorMessage.contains("access control error") -> {
                 throw ConfigErrorException(e.message ?: "Permission error", e)
             }
             else -> {
