@@ -155,6 +155,9 @@ definitions:
               }}
       primary_key:
         - id
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.ProjectDetailEnrichmentTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
