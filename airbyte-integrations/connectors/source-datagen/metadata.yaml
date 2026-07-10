@@ -1,5 +1,4 @@
 data:
-  # Dummy edit to trigger connector detection for progressive-rollout (autopilot) release testing. Rollout config + version bump are applied by the workflows.
   ab_internal:
     ql: 100
     sl: 100
