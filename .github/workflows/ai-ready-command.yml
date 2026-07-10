@@ -93,7 +93,7 @@ jobs:
             > **`/ai-ready` blocked: weekend freeze**
             >
             > Auto-merge is paused over the weekend, so no `hyd-ready` label was applied.
-            > Re-run `/ai-ready force=true` (or dispatch this workflow with `force` set to `true`) to bypass the freeze.
+            > If this is urgent, re-run `/ai-ready force=true` to bypass the freeze. Otherwise, please wait until Monday.
 
       - name: Apply ready label
         if: inputs.pr != '' && steps.weekend-check.outputs.blocked != 'true'
