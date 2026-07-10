@@ -288,6 +288,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.45          | 2026-07-09 | [81530](https://github.com/airbytehq/airbyte/pull/81530)   | Restore NULL-safe primary-key matching in dedup MERGE to fix duplicate rows when composite PKs contain NULLs |
 | 4.0.44          | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346)   | Remove unnecessary NULL PK equality checks from merge SQL |
 | 4.0.43          | 2026-05-19 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
 | 4.0.42          | 2026-05-11 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
