@@ -47,7 +47,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 7.2.1 | 2026-07-10 | [0](https://github.com/airbytehq/airbyte/pull/0) | Align default records_per_slice with the connection spec |
+| 7.2.1 | 2026-07-10 | [81622](https://github.com/airbytehq/airbyte/pull/81622) | Align default records_per_slice with the connection spec |
 | 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
 | 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |
 | 7.2.0-rc.1 | 2026-06-09 | [79331](https://github.com/airbytehq/airbyte/pull/79331) | Progressive rollout e2e test |
