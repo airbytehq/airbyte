@@ -37,7 +37,7 @@ data:
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
-        strategy: fast
+        strategy: slow
     breakingChanges:
       4.0.0:
         message: This is a breaking change message
