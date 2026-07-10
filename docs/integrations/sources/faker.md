@@ -2,6 +2,8 @@
 
 The Sample Data source generates realistic fake data using the Python [`mimesis`](https://mimesis.name/en/master/) library. It produces an e-commerce-like dataset useful for testing, demos, and development.
 
+All data is generated deterministically from a fixed seed, so repeated syncs with the same configuration produce identical records.
+
 ## Prerequisites
 
 None. This connector generates data locally and does not connect to an external API.
