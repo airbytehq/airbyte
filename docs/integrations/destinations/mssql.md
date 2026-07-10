@@ -85,7 +85,7 @@ You'll need the following information to configure the MSSQL destination:
       - **BULK Load Data Source** - Specifies the [external data source name configured in MSSQL](https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql), which references the Azure Blob container.
       - **Pre-Load Value Validation** - When enabled, Airbyte validates all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.
 - **SSH Tunnel Method** (optional)
-  - You can connect to the database through an SSH tunnel. Supported methods are **SSH Key Authentication** and **Password Authentication**. See the [SSH tunnel documentation](https://docs.airbyte.com/platform/using-airbyte/core-concepts/connecting-external-services-via-ssh-tunnel) for details.
+  - You can connect to the database through an SSH tunnel. Supported methods are **SSH Key Authentication** and **Password Authentication**. See the [SSH tunnel documentation](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) for details.
 
 #### MSSQL with Azure Blob Storage (Bulk Upload) Setup Guide
 
