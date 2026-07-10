@@ -72,10 +72,10 @@ jobs:
         env:
           FORCE: ${{ inputs.force }}
         run: |
-          # Day of week in UTC: 6 = Saturday, 7 = Sunday.
-          dow=$(date -u +%u)
+          # Day of week in US Pacific time: 6 = Saturday, 7 = Sunday.
+          dow=$(TZ="America/Los_Angeles" date +%u)
           if [[ ( "$dow" == "6" || "$dow" == "7" ) && "$FORCE" != "true" ]]; then
-            echo "::notice::Weekend freeze in effect (UTC day-of-week=$dow). Skipping auto-merge."
+            echo "::notice::Weekend freeze in effect (Pacific day-of-week=$dow). Skipping auto-merge."
             echo "blocked=true" | tee -a "$GITHUB_OUTPUT"
           else
             echo "blocked=false" | tee -a "$GITHUB_OUTPUT"
