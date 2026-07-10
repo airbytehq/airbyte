@@ -21,6 +21,7 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConnectorSpecification,
+    DestinationSyncMode,
     FailureType,
     SyncMode,
     Type,
@@ -91,7 +92,7 @@ class SourceHuggingFaceBuckets(Source):
             },
             documentationUrl="https://docs.airbyte.com/integrations/sources/hugging-face-buckets",
             supportsIncremental=False,
-            supportedDestinationSyncModes=["append", "overwrite"],
+            supported_destination_sync_modes=[DestinationSyncMode.append, DestinationSyncMode.overwrite],
         )
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:

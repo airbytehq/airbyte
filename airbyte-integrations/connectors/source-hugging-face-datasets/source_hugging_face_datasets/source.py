@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConnectorSpecification,
+    DestinationSyncMode,
     FailureType,
     Status,
     Type,
@@ -77,7 +78,7 @@ class SourceHuggingFaceDatasets(Source):
             },
             documentationUrl="https://docs.airbyte.com/integrations/sources/hugging-face-datasets",
             supportsIncremental=False,
-            supportedDestinationSyncModes=["append", "overwrite"],
+            supported_destination_sync_modes=[DestinationSyncMode.append, DestinationSyncMode.overwrite],
         )
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
