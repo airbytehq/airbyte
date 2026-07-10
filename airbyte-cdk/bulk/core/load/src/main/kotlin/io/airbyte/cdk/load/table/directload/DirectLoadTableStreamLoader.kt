@@ -16,6 +16,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/*
+ * For non-truncate modes (Append, Dedup), real table creation uses replace=false
+ * to prevent accidental data loss. Using replace=true was unnecessarily risky and
+ * could drop existing tables in edge cases.
+ *
+ * Truncate paths (AppendTruncate, DedupTruncate) intentionally keep replace=true
+ * because those modes expect the table to be fully replaced.
+ */
+
 /**
  * Stream loader implementation for append mode.
  *
