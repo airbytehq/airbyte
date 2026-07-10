@@ -1,13 +1,16 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import datetime, timezone
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
+import pytest
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import ExpectedOutcome, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
@@ -24,6 +27,9 @@ _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "ad_campaign_analytics"
 _PARENT_STREAM_NAME = "campaigns"
 _GRANDPARENT_STREAM_NAME = "accounts"
+_DATA_VOLUME_RATE_LIMIT_MESSAGE = (
+    "The data request limit has been exceeded. More than 45 million metric values were requested in a 5-minute window."
+)
 
 
 def _create_account_record(account_id: int, name: str = "Test Account") -> dict:
@@ -311,3 +317,93 @@ class TestAdCampaignAnalyticsStream(TestCase):
         # Note: dateRange is processed by the custom record extractor and converted to end_date/start_date
         assert "end_date" in record_data
         assert "start_date" in record_data
+
+
+def _configure_rate_limit_test_parents(http_mocker: HttpMocker) -> None:
+    http_mocker.get(
+        LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+        LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111)]),
+    )
+    http_mocker.get(
+        LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+        LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111)]),
+    )
+
+
+def _read_campaign_analytics(config: dict, expected_outcome: ExpectedOutcome = ExpectedOutcome.EXPECT_SUCCESS):
+    source = get_source(config=config)
+    catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+    return read(source, config=config, catalog=catalog, expected_outcome=expected_outcome)
+
+
+@freezegun.freeze_time("2024-06-15T00:00:00Z")
+def test_data_volume_rate_limit_retry() -> None:
+    config = ConfigBuilder().with_start_date("2024-06-01").build()
+    sleeps = []
+
+    with HttpMocker() as http_mocker, patch("time.sleep", side_effect=lambda seconds: sleeps.append(float(seconds))):
+        _configure_rate_limit_test_parents(http_mocker)
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
+            [
+                HttpResponse(status_code=429, body=json.dumps({"message": _DATA_VOLUME_RATE_LIMIT_MESSAGE})),
+                LinkedInAdsAnalyticsResponseBuilder.single_page([_create_analytics_record(1001)]),
+            ],
+        )
+
+        output = _read_campaign_analytics(config)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.stream == _STREAM_NAME
+        assert [seconds for seconds in sleeps if seconds > 0] == [331.0]
+        assert output.errors == []
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param(json.dumps({"message": "Rate limit exceeded."}), id="generic_json"),
+        pytest.param("not-json", id="malformed_body"),
+    ],
+)
+@freezegun.freeze_time("2024-06-15T00:00:00Z")
+def test_non_data_volume_rate_limit_fallback(body: str) -> None:
+    config = ConfigBuilder().with_start_date("2024-06-01").build()
+    sleeps = []
+
+    with HttpMocker() as http_mocker, patch("time.sleep", side_effect=lambda seconds: sleeps.append(float(seconds))):
+        _configure_rate_limit_test_parents(http_mocker)
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
+            [
+                HttpResponse(status_code=429, body=body),
+                LinkedInAdsAnalyticsResponseBuilder.single_page([_create_analytics_record(1001)]),
+            ],
+        )
+
+        output = _read_campaign_analytics(config)
+
+        assert len(output.records) == 1
+        assert [seconds for seconds in sleeps if seconds > 0] == [11.0]
+        assert output.errors == []
+
+
+@freezegun.freeze_time("2024-06-15T00:00:00Z")
+def test_uri_too_long_failure() -> None:
+    config = ConfigBuilder().with_start_date("2024-06-01").build()
+    sleeps = []
+
+    with HttpMocker() as http_mocker, patch("time.sleep", side_effect=lambda seconds: sleeps.append(float(seconds))):
+        _configure_rate_limit_test_parents(http_mocker)
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
+            HttpResponse(status_code=414, body="{}"),
+        )
+
+        output = _read_campaign_analytics(config, expected_outcome=ExpectedOutcome.EXPECT_EXCEPTION)
+
+        errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.system_error]
+        assert output.records == []
+        assert len(errors) == 1
+        assert errors[0].message == "LinkedIn Ads request URL exceeds the API length limit."
+        assert [seconds for seconds in sleeps if seconds > 0] == []

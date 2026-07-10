@@ -551,7 +551,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -627,7 +628,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -703,7 +705,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -779,7 +782,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -855,7 +859,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -931,7 +936,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1007,7 +1013,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1083,7 +1090,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1159,7 +1167,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1235,7 +1244,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1311,7 +1321,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1388,7 +1399,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers: "#/definitions/ad_analytics_error_handler"
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:

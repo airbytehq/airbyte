@@ -156,7 +156,7 @@ class TestAllStreams:
             if stream.get("retriever", {}).get("requester", {}).get("path") == "adAnalytics"
         ]
         assert analytics_requesters
-        assert all(requester["error_handlers"] == "#/definitions/ad_analytics_error_handler" for requester in analytics_requesters)
+        assert all(requester["error_handler"] == {"$ref": "#/definitions/ad_analytics_error_handler"} for requester in analytics_requesters)
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
