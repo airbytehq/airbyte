@@ -32,7 +32,7 @@ data:
   releaseStage: beta
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
       defaultRolloutMode: autopilot
       autopilotConfig:
         autoStart: true
