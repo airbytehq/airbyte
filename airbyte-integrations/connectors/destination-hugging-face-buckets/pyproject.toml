@@ -34,6 +34,3 @@ pytest = "^8.3.3"
 include = [
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
-
-[tool.pytest.ini_options]
-pythonpath = ["."]
