@@ -3,6 +3,9 @@ plan: all
 sidebar_position: 3
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Execute operations
 
 Once you've added a connector to your workspace, you can run operations against it from Python. The SDK offers direct execution and patterns for exposing a connector as a tool to an AI agent framework.
@@ -68,16 +71,6 @@ When you wrap a connector as a tool for an AI agent, the agent needs to know whi
 
 `build_connector_tools(connector)` returns a `ConnectorTools` object with three callables bound to one connector: `inspect_connector`, `read_skill_docs`, and `execute`. Pass `framework=` so runtime errors surface as that framework's retry signal, then register all three with `tools.as_list()`.
 
-```python title="agent.py"
-from pydantic_ai import Agent
-from airbyte_agent_sdk import build_connector_tools, connect
-
-github = connect("github")
-tools = build_connector_tools(github, framework="pydantic_ai")
-
-agent = Agent("openai:gpt-4o", tools=tools.as_list())
-```
-
 Instead of packing the whole connector schema into one static tool description, the agent works through a progressive introspection flow:
 
 ```text
@@ -98,11 +91,50 @@ Skill docs are hosted by Airbyte and served by the platform. If you point the SD
 
 To expose only `execute` with a single generated description instead of the progressive flow, pass `use_progressive_docs=False`. `tools.as_list()` then returns just the `execute` tool.
 
-#### Other frameworks
+#### Register the tools with your framework
 
-`tools.as_list()` returns plain async callables, so you can register them with any framework. Set `framework=` to match.
+`tools.as_list()` returns plain async callables, so you can register them with any framework. Set `framework=` to match the one you use.
 
-LangChain wraps each callable as a `StructuredTool`:
+<Tabs groupId="agent-framework">
+<TabItem value="pydantic_ai" label="Pydantic AI" default>
+
+Pass `tools.as_list()` straight to the agent:
+
+```python title="agent.py"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import build_connector_tools, connect
+
+github = connect("github")
+tools = build_connector_tools(github, framework="pydantic_ai")
+
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+</TabItem>
+<TabItem value="openai_agents" label="OpenAI Agents SDK">
+
+Wrap each callable with `function_tool`:
+
+```python title="agent.py"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import build_connector_tools, connect
+
+github = connect("github")
+tools = build_connector_tools(github, framework="openai_agents")
+
+oai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="github-agent", model="gpt-4o", tools=oai_tools)
+```
+
+:::note
+The OpenAI Agents SDK enforces a strict JSON schema by default, which rejects `execute`'s open-ended `params` object. Pass `strict_mode=False` to `function_tool` so the tools register.
+:::
+
+</TabItem>
+<TabItem value="langchain" label="LangChain">
+
+Wrap each callable as a `StructuredTool`:
 
 ```python title="agent.py"
 from langchain_core.tools import StructuredTool
@@ -121,7 +153,10 @@ lc_tools = [
 LangChain 1.x re-raises tool errors by default, so a wrong `read_skill_docs` section guess aborts the run before the agent can self-correct from the returned outline. To let the agent recover, add the `wrap_tool_call` middleware shown in [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model) in the LangChain quickstart.
 :::
 
-FastMCP registers each callable as a tool:
+</TabItem>
+<TabItem value="mcp" label="FastMCP">
+
+Register each callable as an MCP tool:
 
 ```python title="server.py"
 from fastmcp import FastMCP
@@ -133,6 +168,9 @@ github = connect("github")
 for tool in build_connector_tools(github, framework="mcp").as_list():
     mcp.tool(tool)
 ```
+
+</TabItem>
+</Tabs>
 
 ### Alternatives
 
