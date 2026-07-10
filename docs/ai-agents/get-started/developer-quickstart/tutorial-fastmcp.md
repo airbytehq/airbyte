@@ -11,7 +11,7 @@ import TabItem from '@theme/TabItem';
 
 In this tutorial, you'll create a new Python project with uv, build a FastMCP server that exposes one of Airbyte's agent connectors as an MCP tool, and use it to query GitHub data from any MCP-compatible agent. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
 
-Your MCP server executes through Airbyte. Airbyte Agents owns the OAuth apps, stores your third-party tokens, and refreshes them for you. Your Python code only ever sees your Airbyte client ID and client secret.
+Your MCP server executes through Airbyte. Airbyte Agents owns the OAuth apps, stores your third-party tokens, and refreshes them for you. You provide third-party credentials like your GitHub personal access token once during connector setup through Airbyte's web app or API. After that, your Python code only ever sees your Airbyte client ID and client secret.
 
 ## Overview
 
@@ -212,6 +212,10 @@ Add the following to your Cursor MCP configuration file (`.cursor/mcp.json` in y
 
 </TabItem>
 </Tabs>
+
+:::tip
+`connect()` validates your Airbyte credentials when the server starts. If you still have placeholder values in `.env`, you'll see a 401 error before the server is ready. Make sure `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` contain your real credentials from [app.airbyte.ai](https://app.airbyte.ai).
+:::
 
 ## Part 7: Use the MCP server
 
