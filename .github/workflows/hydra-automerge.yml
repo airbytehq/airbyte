@@ -1,7 +1,10 @@
 name: "Hydra: Auto-merge (AI-gated)"
 # Triggered via the /ai-ready slash command or called from other workflows.
-# Kicks off a Devin AI session with structured output to evaluate whether
-# the PR is safe to auto-merge, then evaluates the result deterministically:
+# Kicks off a Devin AI session using the `pr_scope_analysis` playbook
+# (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
+# playbook carries the analysis prompt and the structured output schema; this
+# workflow only supplies the PR to analyze and evaluates the result
+# deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
@@ -102,6 +105,7 @@ jobs:
               docs/integrations/destinations/*) ;;
               docs/ai-agents/connectors/*) ;;
               docs/developers/pyairbyte/*) ;;
+              docs/release_notes/*) ;;
               docusaurus/src/data/*) ;;
               *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
             esac
@@ -230,88 +234,16 @@ jobs:
           max-acu-limit: "2"
           wait-for-stopped-status: "true"
           wait-minutes-max: "10"
-          structured-output-required: "true"
+          # The analysis prompt and structured output schema live in the
+          # `pr_scope_analysis` playbook in airbytehq/ai-skills. Launching a
+          # session with the macro attaches the schema automatically.
+          playbook-macro: "!pr_scope_analysis"
           tags: |
             auto-merge-eval
             hyd-ready
           prompt-text: |
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
-
-            Review the PR diff, changed files, and PR comments. Each field in the schema has a description explaining exactly what to check and when to set pass to true or false.
-
-            Important:
-            - For change_scope, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
-            - Be precise and conservative: when in doubt, set pass to false.
-            - Do NOT create any files, branches, or PRs. Do NOT write any code. Only analyze.
-          structured-output-schema: |
-            type: object
-            properties:
-              preconditions:
-                type: object
-                description: "Safety and readiness checks for the PR."
-                properties:
-                  no_breaking_changes:
-                    type: object
-                    description: "Set pass to true ONLY if the PR does not introduce any breaking changes. A breaking change includes: major version bumps, removed or renamed public APIs, changed function signatures, removed configuration options, backward-incompatible schema changes, or anything that would require downstream consumers to modify their code or configuration."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  ai_review_passed:
-                    type: object
-                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                required: [no_breaking_changes, ai_review_passed]
-              change_scope:
-                type: object
-                description: "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else."
-                properties:
-                  docs_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if every file changed in the PR is a documentation file (markdown, rst, mdx, or files under docs/ directories). If even one non-documentation file is changed, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  comment_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if the entire diff consists exclusively of code comment additions, removals, or modifications (e.g. Python # comments, Java/Kotlin // or /* */ comments, YAML # comments). No functional code, imports, or logic may be added, removed, or changed. If any non-comment line is modified, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  dependency_version_bump:
-                    type: object
-                    description: "Set pass to true if the PR is a dependency version bump with no functional code changes. Allowed files: dependency manifests (pyproject.toml, setup.py, build.gradle, package.json), lockfiles (poetry.lock, package-lock.json, yarn.lock), connector version metadata (metadata.yaml version/dockerImageTag fields), and changelog entries (docs/integrations/**/*.md). Set pass to false ONLY if the PR also modifies source code, test files, or other functional files beyond the categories listed above."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  metadata_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if every file changed in the PR is a connector metadata file such as metadata.yaml, icon.svg, or similar non-code connector configuration files. If any source code, test, or documentation file is changed, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change]
-            required: [preconditions, change_scope]
 
       - name: Check for structured output
         if: steps.devin.outputs.session-id
@@ -354,8 +286,9 @@ jobs:
           comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')
           dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
           metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
+          new_streams=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.net_new_stream_addition.pass')
 
-          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" ]]; then
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" ]]; then
             scope_pass="true"
           else
             scope_pass="false"
@@ -415,7 +348,7 @@ jobs:
             echo ""
             scope_matched=false
             has_scope_row=false
-            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then

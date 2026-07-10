@@ -34,7 +34,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| **Count** | integer | 1000 | The total number of user records to generate. The purchases stream scales proportionally. Does not affect the products stream beyond its 100-product catalog. |
+| **Count** | integer | 1000 | The total number of user records to generate. The purchases stream scales proportionally. Also limits how many of the 100 available products are emitted (setting `count` above 100 has no additional effect on products). |
 | **Seed** | integer | -1 | Controls random data generation. Set a specific value to produce the same records on each sync. Leave at `-1` for random data. |
 | **Always Updated** | boolean | true | When `true`, every sync emits all records with fresh `updated_at` timestamps. When `false`, the connector stops emitting records after the initial sync produces `count` records. |
 | **Records Per Stream Slice** | integer | 1000 | The number of records per stream slice before a state checkpoint is emitted. |
@@ -47,6 +47,9 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
+| 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
+| 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |
 | 7.2.0-rc.1 | 2026-06-09 | [79331](https://github.com/airbytehq/airbyte/pull/79331) | Progressive rollout e2e test |
 | 7.1.1 | 2026-05-13 | [78075](https://github.com/airbytehq/airbyte/pull/78075) | Re-release to verify PyPI README publishing |
 | 7.1.0 | 2026-03-31 | [75941](https://github.com/airbytehq/airbyte/pull/75941) | Promoted release candidate to GA |
@@ -111,7 +114,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 | 6.0.1 | 2024-02-12 | [35172](https://github.com/airbytehq/airbyte/pull/35172) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 6.0.0 | 2024-01-30 | [34644](https://github.com/airbytehq/airbyte/pull/34644) | Declare 'id' columns as primary keys. |
 | 5.0.2 | 2024-01-17 | [34344](https://github.com/airbytehq/airbyte/pull/34344) | Ensure unique state messages |
-| 5.0.1 | 2023-01-08 | [34033](https://github.com/airbytehq/airbyte/pull/34033) | Add standard entrypoints for usage with AirbyteLib |
+| 5.0.1 | 2024-01-11 | [34033](https://github.com/airbytehq/airbyte/pull/34033) | Add standard entrypoints for usage with AirbyteLib |
 | 5.0.0 | 2023-08-08 | [29213](https://github.com/airbytehq/airbyte/pull/29213) | Change all `*id` fields and `products.year` to be integer |
 | 4.0.0 | 2023-07-19 | [28485](https://github.com/airbytehq/airbyte/pull/28485) | Bump to test publication |
 | 3.0.2 | 2023-07-07 | [28060](https://github.com/airbytehq/airbyte/pull/28060) | Bump to test publication |

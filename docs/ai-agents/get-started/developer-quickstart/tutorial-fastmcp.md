@@ -71,21 +71,17 @@ my-mcp-agent/
 2. Create a `server.py` file with the following imports:
 
    ```python title="server.py"
-   import json
-
    from dotenv import load_dotenv
    from fastmcp import FastMCP
-   from airbyte_agent_sdk import connect
-   from airbyte_agent_sdk.connectors.github import GithubConnector
+   from airbyte_agent_sdk import build_connector_tools, connect
    ```
 
    These imports provide:
 
-   - `json`: Serialize connector results for the MCP tool return value.
    - `load_dotenv`: Load environment variables from your `.env` file.
    - `FastMCP`: The FastMCP server class that handles MCP protocol communication.
    - `connect`: The Agent SDK entry point. One call returns a typed connector bound to your workspace.
-   - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
+   - `build_connector_tools`: Turns a connector into ready-to-bind agent tools that inspect the connector and read its skill docs before executing.
 
 ## Part 3: Add a .env file with your secrets
 
@@ -143,24 +139,22 @@ github = connect("github")
 
 If you want to connect to a different workspace or pass credentials explicitly, use `connect("github", workspace_name="my-workspace", client_id=..., client_secret=...)` or pass an `AirbyteAuthConfig`. See the [SDK reference](https://github.com/airbytehq/airbyte-agent-sdk) for details.
 
-### Register the tool
+### Register the tools
 
-Rather than one tool per GitHub endpoint, the Agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. This one-tool-per-connector model is context-efficient: instead of registering dozens of tools that consume the agent's context window, a single tool with a compact entity/action catalog gives the agent full connector coverage with minimal overhead.
+Rather than one tool per GitHub endpoint, `build_connector_tools` returns three tools bound to your connector: `inspect_connector`, `read_skill_docs`, and `execute`. This model is context-efficient: instead of registering dozens of endpoint tools that consume the client's context window, the agent inspects the connector and reads its skill docs on demand, then executes.
 
-The `@GithubConnector.tool_utils` decorator fills in the entity and action catalog as part of the tool description, so the agent knows what's available without you writing a schema. It also enables automatic fallback to the `list` action when the Context Store is not yet ready, so your tool works immediately even before the first replication completes.
+`tools.as_list()` returns plain async callables. Register each one with the server:
 
 ```python title="server.py"
-@mcp.tool()
-@GithubConnector.tool_utils
-async def github_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute GitHub connector operations."""
-    result = await github.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+tools = build_connector_tools(github, framework="mcp")
+
+for tool in tools.as_list():
+    mcp.tool(tool)
 ```
 
-The decorator stack is the whole tool definition. No per-action `docstring`, no `GITHUB_LIST_COMMITS` or `GITHUB_GET_PR` sprawl, one entry point that covers the full connector. `@GithubConnector.tool_utils` appends the full entity and action catalog to the tool description so the MCP client sees every entity, action, and enum value the connector supports. As the connector grows, the tool signature stays the same.
+Passing `framework="mcp"` makes runtime errors surface in a form the MCP client can act on. Each callable carries its own name, docstring, and signature, so `mcp.tool` registers it with the right schema. Because the agent reads the connector's skill docs before it executes, the MCP client discovers the entities, actions, and enum values the connector supports without a hand-written schema.
 
-Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). MCP tools return strings, so this tutorial serializes the whole result with `json.dumps` so the MCP client can reason about both the records and the pagination state.
+Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). FastMCP serializes the result for the MCP client, so it can reason about both the records and the pagination state.
 
 ### Add the server entry point
 
