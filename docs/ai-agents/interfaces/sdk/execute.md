@@ -93,7 +93,7 @@ The SDK binds the skill-doc ID internally, so the model only passes an optional 
 `connect("github")` returns a typed connector when a generated submodule exists, but `build_connector_tools` also accepts a generic `HostedExecutor` for YAML-only connectors. Either works with the same three tools.
 
 :::note
-Skill docs are hosted by Airbyte and served by the platform. If you point the SDK at a local or offline connector (no hosted backend), `build_connector_tools` still returns the same three tools, but `inspect_connector` reports `"mode": "local"` and `read_skill_docs` falls back to the connector's generated (YAML-derived) description instead of hosted section docs. `execute` still runs directly against the connector.
+Skill docs are hosted by Airbyte and served by the platform. If you point the SDK at a connector running in open source mode (no hosted backend), `build_connector_tools` still returns the same three tools, but `inspect_connector` reports `"mode": "local"` and `read_skill_docs` falls back to the connector's generated (YAML-derived) description instead of hosted section docs. `execute` still runs directly against the connector.
 :::
 
 To expose only `execute` with a single generated description instead of the progressive flow, pass `use_progressive_docs=False`. `tools.as_list()` then returns just the `execute` tool.
