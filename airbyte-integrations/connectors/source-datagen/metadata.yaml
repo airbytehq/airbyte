@@ -28,6 +28,11 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   releaseStage: alpha
   supportLevel: community
   tags:
