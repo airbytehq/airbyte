@@ -9,12 +9,10 @@ from airbyte_cdk.entrypoint import launch
 from source_hugging_face_datasets.source import SourceHuggingFaceDatasets
 
 
-def main() -> int:
-    """Run the connector."""
+def run():
     source = SourceHuggingFaceDatasets()
     launch(source, sys.argv[1:])
-    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    run()

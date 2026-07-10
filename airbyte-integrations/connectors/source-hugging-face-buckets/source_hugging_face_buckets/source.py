@@ -90,8 +90,8 @@ class SourceHuggingFaceBuckets(Source):
                 },
             },
             documentationUrl="https://docs.airbyte.com/integrations/sources/hugging-face-buckets",
-            supports_incremental=False,
-            supported_destination_sync_modes=["append", "overwrite"],
+            supportsIncremental=False,
+            supportedDestinationSyncModes=["append", "overwrite"],
         )
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
