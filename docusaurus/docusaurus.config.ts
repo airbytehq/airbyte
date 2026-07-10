@@ -311,6 +311,7 @@ const config: Config = {
           "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
         depth: 4,
         content: {
+          enableLlmsFullTxt: true,
           includePages: true,
           excludeRoutes: ["./api-docs/**", "./ai-agents/slack-app"],
         },
