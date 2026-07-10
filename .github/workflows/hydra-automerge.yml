@@ -1,0 +1,471 @@
+name: "Hydra: Auto-merge (AI-gated)"
+# Triggered via the /ai-ready slash command or called from other workflows.
+# Kicks off a Devin AI session using the `pr_scope_analysis` playbook
+# (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
+# playbook carries the analysis prompt and the structured output schema; this
+# workflow only supplies the PR to analyze and evaluates the result
+# deterministically:
+#   pass = ALL(preconditions) AND ANY(allowed_scopes)
+#
+# Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
+# Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
+# The dry-run input skips approve/merge regardless of the variable.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo (owner/repo)"
+        required: false
+      gitref:
+        description: "Git ref"
+        required: false
+      pr:
+        description: "PR number"
+        required: true
+      dry-run:
+        description: "If 'true', evaluate only -- do not approve or merge"
+        required: false
+        default: ""
+  workflow_call:
+    inputs:
+      pr:
+        description: "PR number"
+        required: true
+        type: string
+      dry-run:
+        description: "If 'true', evaluate only -- do not approve or merge"
+        required: false
+        type: string
+        default: ""
+
+run-name: "Auto-merge eval for PR #${{ inputs.pr }}"
+
+# All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+permissions: {}
+
+jobs:
+  evaluate-and-merge:
+    name: "Evaluate PR #${{ inputs.pr }}"
+    runs-on: ubuntu-24.04
+    env:
+      PR_NUMBER: ${{ inputs.pr }}
+    steps:
+      # ── Authentication ──────────────────────────────────────────────
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-hoard-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      # ── Pre-checks ─────────────────────────────────────────────────
+      - name: Check PR is still open
+        id: pre-check
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title)
+          state=$(echo "$pr_json" | jq -r '.state')
+          is_draft=$(echo "$pr_json" | jq -r '.isDraft')
+          title=$(echo "$pr_json" | jq -r '.title')
+          echo "state=$state" | tee -a "$GITHUB_OUTPUT"
+          echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
+          echo "title=$title" | tee -a "$GITHUB_OUTPUT"
+          if [[ "$state" != "OPEN" ]]; then
+            echo "::warning::PR #$PR_NUMBER is no longer open (state=$state). Skipping."
+          fi
+
+      - name: Post status comment
+        if: steps.pre-check.outputs.state == 'OPEN'
+        id: status-comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **Auto-merge evaluation in progress...**
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Validate connector-only file paths
+        if: steps.pre-check.outputs.state == 'OPEN'
+        id: validate-paths
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -e
+          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
+          valid=true
+          while IFS= read -r file; do
+            case "$file" in
+              airbyte-integrations/connectors/*) ;;
+              docs/integrations/sources/*) ;;
+              docs/integrations/destinations/*) ;;
+              docs/ai-agents/connectors/*) ;;
+              docs/developers/pyairbyte/*) ;;
+              docusaurus/src/data/*) ;;
+              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
+            esac
+          done < /tmp/changed-files.txt
+          echo "valid=$valid" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Early exit -- path validation failed
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'false'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            > **Auto-merge evaluation: SKIPPED**
+            >
+            > This PR modifies files outside the allowed connector paths.
+            > Auto-merge is only available for PRs that exclusively touch connector-related files.
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Fetch required checks for master branch
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        id: required-checks
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const { data: rules } = await github.request(
+              'GET /repos/{owner}/{repo}/rules/branches/{branch}',
+              { owner: 'airbytehq', repo: 'airbyte', branch: 'master' }
+            );
+            const checks = [];
+            for (const rule of rules) {
+              if (rule.type === 'required_status_checks') {
+                for (const check of (rule.parameters?.required_status_checks || [])) {
+                  checks.push(check.context);
+                }
+              }
+            }
+            core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
+            core.setOutput('checks', JSON.stringify(checks));
+
+      - name: Verify required status checks pass
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        id: verify-checks
+        uses: actions/github-script@v7
+        env:
+          REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const prNum = Number(process.env.PR_NUMBER);
+            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
+            });
+            const sha = pr.head.sha;
+
+            const statuses = await github.paginate(
+              github.rest.repos.listCommitStatusesForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
+            );
+            const successStatuses = new Set(
+              statuses.filter(s => s.state === 'success').map(s => s.context)
+            );
+
+            const checkRuns = await github.paginate(
+              github.rest.checks.listForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
+              (response) => response.data
+            );
+            const successChecks = new Set(
+              checkRuns
+                .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
+                .map(cr => cr.name)
+            );
+
+            const allPassing = new Set([...successStatuses, ...successChecks]);
+            const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+
+            if (missing.length > 0) {
+              core.info(`Missing checks: ${missing.join(', ')}`);
+              core.setOutput('ready', 'false');
+              core.setOutput('missing', missing.join(', '));
+            } else {
+              core.info('All required checks passing');
+              core.setOutput('ready', 'true');
+              core.setOutput('missing', '');
+            }
+
+      - name: Early exit -- required checks not passing
+        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true' && steps.verify-checks.outputs.ready == 'false'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            > **Auto-merge evaluation: BLOCKED**
+            >
+            > Required status checks are not passing. Missing: `${{ steps.verify-checks.outputs.missing }}`
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      # ── Devin AI evaluation ────────────────────────────────────────
+      - name: Checkout code
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.verify-checks.outputs.ready == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Devin auto-merge evaluation
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.verify-checks.outputs.ready == 'true'
+        id: devin
+        uses: aaronsteers/devin-action@main
+        with:
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          max-acu-limit: "2"
+          wait-for-stopped-status: "true"
+          wait-minutes-max: "10"
+          # The analysis prompt and structured output schema live in the
+          # `pr_scope_analysis` playbook in airbytehq/ai-skills. Launching a
+          # session with the macro attaches the schema automatically.
+          playbook-macro: "!pr_scope_analysis"
+          tags: |
+            auto-merge-eval
+            hyd-ready
+          prompt-text: |
+            Analyze this pull request and classify it by filling out the structured output schema:
+            https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
+
+      - name: Check for structured output
+        if: steps.devin.outputs.session-id
+        id: check-output
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+        run: |
+          if [[ -n "$STRUCTURED_OUTPUT" ]]; then
+            echo "success=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Devin session completed but did not produce structured output."
+            echo "success=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Evaluate structured output ─────────────────────────────────
+      - name: Evaluate auto-merge gates
+        if: steps.check-output.outputs.success == 'true'
+        id: evaluate
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+        run: |
+          set -euo pipefail
+
+          echo "::group::Structured output"
+          echo "$STRUCTURED_OUTPUT" | jq .
+          echo "::endgroup::"
+
+          # Preconditions: ALL must be true
+          no_breaking=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.pass')
+          ai_review=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.pass')
+
+          if [[ "$no_breaking" == "true" && "$ai_review" == "true" ]]; then
+            preconditions_pass="true"
+          else
+            preconditions_pass="false"
+          fi
+
+          # Change scope: ANY must be true
+          docs_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.docs_only_change.pass')
+          comment_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.comment_only_change.pass')
+          dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
+          metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
+          new_streams=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.net_new_stream_addition.pass')
+
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" ]]; then
+            scope_pass="true"
+          else
+            scope_pass="false"
+          fi
+
+          # Final decision
+          if [[ "$preconditions_pass" == "true" && "$scope_pass" == "true" ]]; then
+            result="PASS"
+          else
+            result="FAIL"
+          fi
+
+          echo "preconditions_pass=$preconditions_pass" | tee -a "$GITHUB_OUTPUT"
+          echo "scope_pass=$scope_pass" | tee -a "$GITHUB_OUTPUT"
+          echo "result=$result" | tee -a "$GITHUB_OUTPUT"
+
+          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, change_scope=$scope_pass)"
+
+      # ── Post results ───────────────────────────────────────────────
+      - name: Build evaluation report
+        if: steps.check-output.outputs.success == 'true'
+        id: report
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+          EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
+          SESSION_URL: ${{ steps.devin.outputs.session-url }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+
+          # Helpers
+          icon() { if [[ "$1" == "true" ]]; then echo ":white_check_mark:"; else echo ":x:"; fi; }
+          pretty_label() { echo "$1" | sed 's/_/ /g; s/\b\(.\)/\u\1/g'; }
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            header="## Auto-merge evaluation: **${EVAL_RESULT}** (dry run)"
+            footer_note="Dry run -- no merge action taken."
+          else
+            header="## Auto-merge evaluation: **${EVAL_RESULT}**"
+            footer_note=""
+          fi
+
+          {
+            echo "$header"
+            echo ""
+            echo "### Preconditions (all must pass)"
+            echo ""
+            echo "| Status | Check | Reasoning |"
+            echo "|--------|-------|-----------|"
+            for key in no_breaking_changes ai_review_passed; do
+              pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".preconditions.${key}.pass")
+              reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".preconditions.${key}.reasoning")
+              echo "| $(icon "$pass") | $(pretty_label "$key") | ${reasoning} |"
+            done
+            echo ""
+            echo "### Change scope (at least one must pass)"
+            echo ""
+            scope_matched=false
+            has_scope_row=false
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
+              pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
+              if [[ "$pass" == "true" ]]; then
+                if [[ "$has_scope_row" == "false" ]]; then
+                  echo "| Status | Scope | Reasoning |"
+                  echo "|--------|-------|-----------|"
+                  has_scope_row=true
+                fi
+                reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.reasoning")
+                echo "| :white_check_mark: | $(pretty_label "$key") | ${reasoning} |"
+                scope_matched=true
+              fi
+            done
+            if [[ "$scope_matched" == "false" ]]; then
+              echo ":x: No matching change scope detected."
+            fi
+            if [[ -n "$footer_note" ]]; then
+              echo ""
+              echo "> $footer_note"
+            fi
+            echo ""
+            echo "> [Devin session](${SESSION_URL}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } > /tmp/eval-comment.md
+
+          {
+            echo "comment<<EVAL_EOF"
+            cat /tmp/eval-comment.md
+            echo "EVAL_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update status comment with results
+        if: steps.report.outputs.comment && steps.status-comment.outputs.comment-id
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: ${{ steps.report.outputs.comment }}
+
+      - name: Update status comment on Devin error
+        if: always() && steps.check-output.outcome != 'skipped' && steps.check-output.outputs.success != 'true' && steps.status-comment.outputs.comment-id
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            > **Auto-merge evaluation: ERROR**
+            >
+            > The Devin AI evaluation session did not produce structured output.
+            >
+            > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      # ── Merge (if evaluation passed and not dry-run) ────────────────
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      - name: Mark draft PR as ready for review
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && steps.pre-check.outputs.is_draft == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
+
+      - name: Approve PR with admin bot
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "$PR_NUMBER"
+          --repo airbytehq/airbyte
+          --approve
+          --body "Auto-approved by AI-gated auto-merge evaluation."
+
+      - name: Squash merge PR
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
+              echo "::notice::Merged PR #${PR_NUMBER}: ${{ steps.pre-check.outputs.title }}"
+              exit 0
+            fi
+            echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
+            sleep 60
+          done
+          echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
+          exit 1
+
+      - name: Post automerge notification to Slack
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C0A30PKB8HK
+            text: "Hydra auto-merged PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>"
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow run> | <${{ steps.devin.outputs.session-url }}|Devin session>"
+
+      - name: Dry-run notice (variable)
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
+        run: echo "::notice::DRY RUN (ENABLE_CONNECTOR_AUTO_MERGE not set) -- would merge PR #${PR_NUMBER}"
+
+      - name: Dry-run notice (flag)
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run == 'true'
+        run: echo "::notice::DRY RUN (dry-run flag) -- would merge PR #${PR_NUMBER}"

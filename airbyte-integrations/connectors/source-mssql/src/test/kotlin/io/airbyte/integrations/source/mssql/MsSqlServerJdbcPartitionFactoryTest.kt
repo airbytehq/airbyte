@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.BinaryNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
@@ -269,6 +270,37 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
     }
 
+    @Test
+    fun testColdStartFullRefreshEmptyTable() {
+        val emptyTableStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("empty_table")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldId,
+            )
+
+        val factoryWithEmptyTable =
+            object :
+                MsSqlServerJdbcPartitionFactory(
+                    sharedState,
+                    selectQueryGenerator,
+                    config,
+                    metadataQuerierFactory,
+                ) {
+                // Simulate an empty source table: MAX(orderedColumn) returns NULL.
+                // Overriding here avoids needing a live JDBC connection for the unit test.
+                override fun findPkUpperBound(stream: Stream): JsonNode = Jsons.nullNode()
+            }
+
+        val partition = factoryWithEmptyTable.create(streamFeedBootstrap(emptyTableStream))
+        assertTrue(partition is MsSqlServerJdbcNonResumableSnapshotPartition)
+    }
+
     @ParameterizedTest
     @CsvSource(
         "'2025-01-20T10:30:45', '2025-01-20T10:30:45.000000Z'",
@@ -477,9 +509,21 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertTrue(jdbcPartition is MsSqlServerJdbcNonResumableSnapshotPartition)
     }
 
+    /**
+     * Incremental sync, v2 -> v3 state migration: Version 3 does not persist state for an empty
+     * tables (upperBound is NULL).
+     *
+     * Incremental empty table goes through [MsSqlServerJdbcSnapshotWithCursorPartition] that
+     * returns the [cursorIncrementalCheckpoint] as Json.nullNode(). This value is skipped by the
+     * guards in create(). No state is saved for the empty table because [StateManager.checkpoint]
+     * drops states whose value isNull.
+     *
+     * A cursor_based state carrying a NULL cursor can therefore only come from a v2 migration,
+     * where cursor_based entry (with a null cursor) did exist for empty tables. In this case, we
+     * are calling coldStart() to uddate the cursor value and state.
+     */
     @Test
-    fun testResumeFromCompletedCursorBasedReadWithoutCursorValue() {
-        // Test for handling non-existing cursor values which should be treated as null
+    fun testResumeFromCompletedCursorBasedReadWithoutCursorValueVersion2To3() {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
@@ -498,12 +542,33 @@ class MsSqlServerJdbcPartitionFactoryTest {
 
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
-        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
+    }
 
-        // Verify that empty string is converted to null node
-        val cursorLowerBound =
-            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
-        assertTrue(cursorLowerBound.isNull)
+    @Test
+    fun testResumableFromV2CursorBasedReadWithCursorValueVersion2To3() {
+        // v2 state with a cursor (not empty table on v2) - migration keeps the cursor and resume
+        // the
+        // incremental sync without any coldStart.
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+              "version": 2,
+              "state_type": "cursor_based",
+              "stream_name": "test_table",
+              "cursor_field": [
+                "id"
+              ],
+              "cursor": "12345",
+              "stream_namespace": "dbo",
+              "cursor_record_count": 1
+              }
+        """.trimIndent()
+            )
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
     }
 
     @Test
@@ -820,6 +885,43 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertTrue(
             partition is MsSqlServerJdbcNonResumableSnapshotPartition,
             "Views in full refresh mode should use non-resumable partitions"
+        )
+    }
+
+    @Test
+    fun testCursorIncrementalPartitionHasNoUpperBound() {
+        // Regression test for oncall#12592: datetime2(7) cursor boundary issue.
+        // The upper bound must be null so the predicate is `cursor > lower` without a ceiling.
+        // A `<= MAX(cursor)` ceiling would exclude rows whose datetime2(7) value exceeds
+        // the 6-digit-truncated max.
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+                  "cursor": "2026-04-23T12:54:31.693333",
+                  "version": 3,
+                  "state_type": "cursor_based",
+                  "stream_name": "datetime_table",
+                  "cursor_field": [
+                    "datetime_col"
+                  ],
+                  "stream_namespace": "dbo",
+                  "cursor_record_count": 1
+              }
+        """.trimIndent()
+            )
+
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(
+                streamFeedBootstrap(datetimeStream, incomingStateValue)
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        val partition = jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition
+        assertNull(
+            partition.upperBound,
+            "upperBound must be null to avoid excluding datetime2(7) rows " +
+                "whose 7th fractional digit makes them greater than the truncated max"
         )
     }
 

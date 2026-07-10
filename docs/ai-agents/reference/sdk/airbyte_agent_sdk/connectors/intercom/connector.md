@@ -101,6 +101,16 @@ Classes
         Returns:
             Company
 
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.CompanyDeletedResponse`
+    :   Permanently delete a company by ID
+        
+        Args:
+            id: The unique identifier of the company to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            CompanyDeletedResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Company`
     :   Get a single company by ID
         
@@ -244,6 +254,16 @@ Classes
         Returns:
             Contact
 
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.ContactDeletedResponse`
+    :   Permanently delete a contact by ID
+        
+        Args:
+            id: The unique identifier of the contact to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            ContactDeletedResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Contact`
     :   Get a single contact by ID
         
@@ -350,6 +370,30 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, from_: ConversationsCreateParamsFrom, body: str, subject: str | None = None, attachment_urls: list[str] | None = None, created_at: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Message`
+    :   Create a new conversation initiated by a contact (user or lead)
+        
+        Args:
+            from_: The contact (user or lead) initiating the conversation
+            body: The content of the initial message in the conversation
+            subject: The subject line of the conversation (optional)
+            attachment_urls: A list of URLs of attached files (max 10)
+            created_at: Optional timestamp for the conversation creation (Unix)
+            **kwargs: Additional parameters
+        
+        Returns:
+            Message
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.ConversationDeletedResponse`
+    :   Permanently delete a conversation by ID
+        
+        Args:
+            id: Conversation ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            ConversationDeletedResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Conversation`
     :   Get a single conversation by ID
         
@@ -370,6 +414,18 @@ Classes
         
         Returns:
             ConversationsListResult
+
+    `update(self, read: bool | None = None, custom_attributes: dict[str, Any] | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Conversation`
+    :   Update conversation attributes such as custom_attributes or read status
+        
+        Args:
+            read: Mark the conversation as read or unread
+            custom_attributes: Custom attributes to set on the conversation
+            id: Conversation ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Conversation
 
 <a id="IntercomConnector"></a>
 
@@ -424,53 +480,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'IntercomAuthConfig'", name: str | None = None, replication_config: "'IntercomReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Typed replication settings.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A IntercomConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await IntercomConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=IntercomAuthConfig(access_token="..."),
-            )
-        
-            # With replication config (required for this connector):
-            connector = await IntercomConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=IntercomAuthConfig(access_token="..."),
-                replication_config=IntercomReplicationConfig(start_date="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -521,10 +530,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await IntercomConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -561,7 +566,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -573,6 +578,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -615,6 +623,30 @@ Classes
             body: The content of the article in HTML
             owner_id: The ID of the owner of the article
             author_id: The ID of the author of the article
+            **kwargs: Additional parameters
+        
+        Returns:
+            InternalArticle
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.InternalArticleDeletedResponse`
+    :   Permanently delete an internal article by ID
+        
+        Args:
+            id: Internal article ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            InternalArticleDeletedResponse
+
+    `update(self, title: str | None = None, body: str | None = None, author_id: int | None = None, owner_id: int | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.InternalArticle`
+    :   Update an existing internal article by ID
+        
+        Args:
+            title: The title of the article
+            body: The content of the article in HTML
+            author_id: The ID of the author of the article
+            owner_id: The ID of the owner of the article
+            id: Internal article ID
             **kwargs: Additional parameters
         
         Returns:
@@ -688,6 +720,16 @@ Classes
         
         Returns:
             Tag
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.TagDeletedResponse`
+    :   Permanently delete a tag by ID. This removes the tag from all contacts, companies, and conversations.
+        
+        Args:
+            id: The unique identifier of the tag to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            TagDeletedResponse
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Tag`
     :   Get a single tag by ID

@@ -50,6 +50,10 @@ Your default login username and password could be used as secrets, ref: `https:/
 | timesheets |  | DefaultPaginator | ✅ |  ❌  |
 | workload_planners |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -57,6 +61,11 @@ Your default login username and password could be used as secrets, ref: `https:/
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.55 | 2026-06-30 | [81262](https://github.com/airbytehq/airbyte/pull/81262) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80691](https://github.com/airbytehq/airbyte/pull/80691) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [80080](https://github.com/airbytehq/airbyte/pull/80080) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79532](https://github.com/airbytehq/airbyte/pull/79532) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [79004](https://github.com/airbytehq/airbyte/pull/79004) | Update dependencies |
 | 0.0.50 | 2026-04-28 | [77462](https://github.com/airbytehq/airbyte/pull/77462) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76764](https://github.com/airbytehq/airbyte/pull/76764) | Update dependencies |
 | 0.0.48 | 2026-03-17 | [75047](https://github.com/airbytehq/airbyte/pull/75047) | Update dependencies |

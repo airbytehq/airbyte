@@ -13,6 +13,9 @@ The GCS Data Lake connector requires two things:
    - BigLake
    - Polaris
 
+If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
+
 ## Setup guide
 
 Follow these steps to set up your GCS storage and Iceberg catalog permissions.
@@ -218,6 +221,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13 |
 | 1.0.9   | 2026-04-16 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9.                                                                 |
 | 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution.                |
 | 1.0.7   | 2026-02-04 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |

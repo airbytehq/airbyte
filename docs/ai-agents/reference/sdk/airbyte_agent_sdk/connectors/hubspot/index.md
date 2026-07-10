@@ -138,9 +138,14 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CallsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CompaniesSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[DealsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[EmailsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[MeetingsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[NotesSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]
 
     ### Class variables
@@ -153,6 +158,24 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsSearchResult"></a>
+
+`CallsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 <a id="CompaniesSearchResult"></a>
 
@@ -208,6 +231,78 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="EmailsSearchResult"></a>
+
+`EmailsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MeetingsSearchResult"></a>
+
+`MeetingsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="NotesSearchResult"></a>
+
+`NotesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TasksSearchResult"></a>
+
+`TasksSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="TicketsSearchResult"></a>
 
 `TicketsSearchResult(**data: Any)`
@@ -225,6 +320,72 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallsSearchData"></a>
+
+`CallsSearchData(**data: Any)`
+:   Search result data for calls entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the call has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the call was created
+
+    `id: str | None`
+    :   Unique identifier for the call record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the call
+
+    `properties_hs_call_body: str | None`
+    :   Description or notes about the call
+
+    `properties_hs_call_direction: str | None`
+    :   Direction of the call (INBOUND or OUTBOUND)
+
+    `properties_hs_call_duration: str | None`
+    :   Duration of the call in milliseconds
+
+    `properties_hs_call_status: str | None`
+    :   Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER)
+
+    `properties_hs_call_title: str | None`
+    :   Title or subject of the call
+
+    `properties_hs_createdate: str | None`
+    :   Date the call was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the call
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the call activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the call owner
+
+    `updated_at: str | None`
+    :   Timestamp when the call record was last modified
 
 <a id="CompaniesSearchData"></a>
 
@@ -262,6 +423,24 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Object containing all property values for the company
 
+    `properties_createdate: str | None`
+    :   Date the company was created
+
+    `properties_domain: str | None`
+    :   Company domain name
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the company
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this company
+
+    `properties_name: str | None`
+    :   Company name
+
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
 
@@ -284,16 +463,16 @@ Classes
     ### Class variables
 
     `archived: bool | None`
-    :   Boolean flag indicating whether the contact has been archived or deleted.
+    :   Boolean flag indicating whether the contact has been archived or deleted
 
     `companies: list[typing.Any] | None`
-    :   Associated company records linked to this contact.
+    :   Associated company records linked to this contact
 
     `created_at: str | None`
-    :   Timestamp indicating when the contact was first created in the system.
+    :   Timestamp indicating when the contact was first created in the system
 
     `id: str | None`
-    :   Unique identifier for the contact record.
+    :   Unique identifier for the contact record
 
     `model_config`
     :   The type of the None singleton.
@@ -301,8 +480,32 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Key-value object storing all contact properties and their values.
 
+    `properties_associatedcompanyid: str | None`
+    :   ID of the associated company
+
+    `properties_createdate: str | None`
+    :   Date the contact was created
+
+    `properties_email: str | None`
+    :   Contact email address
+
+    `properties_firstname: str | None`
+    :   Contact first name
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this contact
+
+    `properties_lastmodifieddate: str | None`
+    :   Last modified date of the contact
+
+    `properties_lastname: str | None`
+    :   Contact last name
+
     `updated_at: str | None`
-    :   Timestamp indicating when the contact record was last modified.
+    :   Timestamp indicating when the contact record was last modified
 
 <a id="DealsSearchData"></a>
 
@@ -346,8 +549,98 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Key-value object containing all deal properties and custom fields
 
+    `properties_amount: str | None`
+    :   Deal amount
+
+    `properties_closedate: str | None`
+    :   Expected close date of the deal
+
+    `properties_createdate: str | None`
+    :   Date the deal was created
+
+    `properties_dealname: str | None`
+    :   Deal name
+
+    `properties_dealstage: str | None`
+    :   Current deal stage
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the deal
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this deal
+
+    `properties_pipeline: str | None`
+    :   Deal pipeline
+
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
+
+<a id="EmailsSearchData"></a>
+
+`EmailsSearchData(**data: Any)`
+:   Search result data for emails entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the email has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the email was created
+
+    `id: str | None`
+    :   Unique identifier for the email record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the email
+
+    `properties_hs_createdate: str | None`
+    :   Date the email was created
+
+    `properties_hs_email_direction: str | None`
+    :   Direction of the email (EMAIL, INCOMING_EMAIL, FORWARDED_EMAIL)
+
+    `properties_hs_email_status: str | None`
+    :   Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT)
+
+    `properties_hs_email_subject: str | None`
+    :   Subject line of the email
+
+    `properties_hs_email_text: str | None`
+    :   Plain text body of the email
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the email
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the email activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the email owner
+
+    `updated_at: str | None`
+    :   Timestamp when the email record was last modified
 
 <a id="HubspotConnector"></a>
 
@@ -402,129 +695,6 @@ Classes
 
     ### Static methods
 
-    `configure_oauth_app_parameters(*, airbyte_config: AirbyteAuthConfig, credentials: HubspotOAuthCredentials | None) ‑> None`
-    :   Configure or remove OAuth app credentials for your organization.
-        
-        When credentials are provided, replaces the default Airbyte-managed OAuth
-        app credentials with your own. After calling this, all OAuth flows for
-        this connector in your organization will use the provided credentials.
-        
-        When credentials are None, removes any existing override so the
-        organization reverts to the default Airbyte-managed OAuth app.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials.
-            credentials: Your OAuth app credentials (HubspotOAuthCredentials), or None to remove the override.
-        
-        Example:
-            await HubspotConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=HubspotOAuthCredentials(
-                    client_id="...",
-                    client_secret="...",
-                ),
-            )
-        
-            await HubspotConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=None,
-            )
-
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'HubspotAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A HubspotConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await HubspotConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=HubspotAuthConfig(client_id="...", client_secret="...", refresh_token="...", access_token="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await HubspotConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await HubspotConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Hubspot Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -575,10 +745,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await HubspotConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -615,7 +781,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'api_search', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'api_search', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -627,6 +793,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -679,6 +848,195 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MeetingsSearchData"></a>
+
+`MeetingsSearchData(**data: Any)`
+:   Search result data for meetings entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the meeting has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the meeting was created
+
+    `id: str | None`
+    :   Unique identifier for the meeting record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the meeting
+
+    `properties_hs_createdate: str | None`
+    :   Date the meeting was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the meeting
+
+    `properties_hs_meeting_body: str | None`
+    :   Description or notes about the meeting
+
+    `properties_hs_meeting_end_time: str | None`
+    :   End time of the meeting
+
+    `properties_hs_meeting_location: str | None`
+    :   Location of the meeting
+
+    `properties_hs_meeting_outcome: str | None`
+    :   Outcome of the meeting (e.g., SCHEDULED, COMPLETED, NO_SHOW, CANCELED)
+
+    `properties_hs_meeting_start_time: str | None`
+    :   Start time of the meeting
+
+    `properties_hs_meeting_title: str | None`
+    :   Title of the meeting
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the meeting activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the meeting owner
+
+    `updated_at: str | None`
+    :   Timestamp when the meeting record was last modified
+
+<a id="NotesSearchData"></a>
+
+`NotesSearchData(**data: Any)`
+:   Search result data for notes entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the note has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the note was created
+
+    `id: str | None`
+    :   Unique identifier for the note record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the note
+
+    `properties_hs_createdate: str | None`
+    :   Date the note was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the note
+
+    `properties_hs_note_body: str | None`
+    :   The body content of the note (supports HTML)
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the note activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the note owner
+
+    `updated_at: str | None`
+    :   Timestamp when the note record was last modified
+
+<a id="TasksSearchData"></a>
+
+`TasksSearchData(**data: Any)`
+:   Search result data for tasks entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the task has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the task was created
+
+    `id: str | None`
+    :   Unique identifier for the task record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the task
+
+    `properties_hs_createdate: str | None`
+    :   Date the task was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the task
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_task_body: str | None`
+    :   Description or notes for the task
+
+    `properties_hs_task_priority: str | None`
+    :   Priority of the task (LOW, MEDIUM, HIGH)
+
+    `properties_hs_task_status: str | None`
+    :   Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED)
+
+    `properties_hs_task_subject: str | None`
+    :   Subject or title of the task
+
+    `properties_hs_task_type: str | None`
+    :   Type of the task (TODO, CALL, EMAIL)
+
+    `properties_hs_timestamp: str | None`
+    :   Due date / timestamp for the task
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the task owner
+
+    `updated_at: str | None`
+    :   Timestamp when the task record was last modified
+
 <a id="TicketsSearchData"></a>
 
 `TicketsSearchData(**data: Any)`
@@ -716,7 +1074,34 @@ Classes
     :   The type of the None singleton.
 
     `properties: dict[str, typing.Any]`
-    :   Key-value object containing all ticket properties and custom fields
+    :   Object containing all property values for the ticket
+
+    `properties_content: str | None`
+    :   Ticket content/description
+
+    `properties_createdate: str | None`
+    :   Date the ticket was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the ticket
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_pipeline: str | None`
+    :   Ticket pipeline
+
+    `properties_hs_pipeline_stage: str | None`
+    :   Current pipeline stage of the ticket
+
+    `properties_hs_ticket_category: str | None`
+    :   Ticket category
+
+    `properties_hs_ticket_priority: str | None`
+    :   Ticket priority level
+
+    `properties_subject: str | None`
+    :   Ticket subject line
 
     `updated_at: str | None`
     :   Timestamp when the ticket record was last modified

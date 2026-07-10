@@ -179,6 +179,10 @@ This connector outputs the following incremental streams:
 - `teams`
 - `users`
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -237,6 +241,18 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.36-rc.1 | 2026-07-08 | [80133](https://github.com/airbytehq/airbyte/pull/80133) | Switch base class from AbstractSource to YamlDeclarativeSource (Step 1 of declarative migration) |
+| 2.1.35 | 2026-07-07 | [81440](https://github.com/airbytehq/airbyte/pull/81440) | Update dependencies |
+| 2.1.34 | 2026-06-30 | [81084](https://github.com/airbytehq/airbyte/pull/81084) | Update dependencies |
+| 2.1.33 | 2026-06-23 | [80440](https://github.com/airbytehq/airbyte/pull/80440) | Update dependencies |
+| 2.1.32 | 2026-06-16 | [79802](https://github.com/airbytehq/airbyte/pull/79802) | Update dependencies |
+| 2.1.31 | 2026-06-08 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
+| 2.1.30 | 2026-06-09 | [79312](https://github.com/airbytehq/airbyte/pull/79312) | Update dependencies |
+| 2.1.29 | 2026-06-02 | [78702](https://github.com/airbytehq/airbyte/pull/78702) | Update dependencies |
+| 2.1.28 | 2026-05-07 | [77847](https://github.com/airbytehq/airbyte/pull/77847) | Reduce GraphQL `releases` query cost (mark as large stream), bound page-size halving at 1, and improve 504 Gateway Timeout error messages |
+| 2.1.27 | 2026-05-02 | [77685](https://github.com/airbytehq/airbyte/pull/77685) | Make `parse_response` and error-handler helpers defensive against unexpected response shapes (HTML error pages, malformed JSON, missing keys) |
+| 2.1.26 | 2026-05-02 | [77681](https://github.com/airbytehq/airbyte/pull/77681) | Treat 410 "Issues/Projects disabled" responses as skip-the-slice instead of failing the stream |
+| 2.1.25 | 2026-05-01 | [77690](https://github.com/airbytehq/airbyte/pull/77690) | Replaced placeholder and raw-passthrough error messages with actionable text including HTTP status codes, affected resources, and likely causes |
 | 2.1.24 | 2026-04-28 | [77238](https://github.com/airbytehq/airbyte/pull/77238) | Update dependencies |
 | 2.1.23 | 2026-04-22 | [76922](https://github.com/airbytehq/airbyte/pull/76922) | Handle `None` response in `read_records` error handler so transport-layer failures (connection errors, timeouts) surface as transient errors instead of `AttributeError` |
 | 2.1.22 | 2026-04-22 | [74758](https://github.com/airbytehq/airbyte/pull/74758) | Fix rate limit sleep blocking heartbeat; classify rate limit errors as transient; increase default max_waiting_time to 120 minutes to cover GitHub's hourly rate limit window |

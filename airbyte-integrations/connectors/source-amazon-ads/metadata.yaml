@@ -9,11 +9,11 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.4@sha256:f63c39a8a6f28ec20ada2ddf5861f3b1fb7b6a1ef1a8a8d1d537ff684ee3f9bd
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 8.0.1
+  dockerImageTag: 9.0.3
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
@@ -37,11 +37,15 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      9.0.0:
+        message: "The `sponsored_product_ad_group_suggested_keywords` stream has been migrated from the deprecated V2 Suggested Keywords API (`/v2/sp/adGroups/{adGroupId}/suggested/keywords`) to the Keyword Recommendations API (`/sp/targets/keywords/recommendations`). The response schema has changed: fields `suggestedKeywords[].keywordText` and `suggestedKeywords[].matchType` are replaced by `keyword`, `recId`, `bidInfo[]`, `searchTermImpressionShare`, `searchTermImpressionRank`, and other new fields. Users must reset this stream after upgrading."
+        upgradeDeadline: "2026-06-26"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_product_ad_group_suggested_keywords"
       8.0.0:
-        message:
-          "Daily report streams now use the `date` field from the API response as the cursor and primary key instead of the synthetic `reportDate` field.
-          Previously, all rows within a 30-day window were incorrectly assigned the same `reportDate`, causing ~96% data loss during deduplication.
-          Users must refresh all affected daily report streams to backfill the missing data."
+        message: "Daily report streams now use the `date` field from the API response as the cursor and primary key instead of the synthetic `reportDate` field. Previously, all rows within a 30-day window were incorrectly assigned the same `reportDate`, causing ~96% data loss during deduplication. Users must refresh all affected daily report streams to backfill the missing data."
         upgradeDeadline: "2026-05-22"
         scopedImpact:
           - scopeType: stream
@@ -60,9 +64,7 @@ data:
               - "sponsored_products_asins_keywords_report_stream_daily"
               - "sponsored_products_asins_targets_report_stream_daily"
       7.0.0:
-        message:
-          "This version introduces new report streams, replacing SponsoredDisplayReportStream and SponsoredProductsReportStream with detailed breakdowns.
-          Primary keys have changed, and metrics are now correctly typed at the root level. We recommend using new detailed streams with the same dataset."
+        message: "This version introduces new report streams, replacing SponsoredDisplayReportStream and SponsoredProductsReportStream with detailed breakdowns. Primary keys have changed, and metrics are now correctly typed at the root level. We recommend using new detailed streams with the same dataset."
         upgradeDeadline: "2025-02-24"
         deadlineAction: "auto_upgrade"
         scopedImpact:
@@ -72,9 +74,7 @@ data:
               - "sponsored_brands_v3_report_stream"
               - "sponsored_products_report_stream"
       6.0.0:
-        message:
-          "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
-          and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. We recommend using `SponsoredBrandsV3ReportStream` as an alternative stream with the same dataset."
+        message: "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change, and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. We recommend using `SponsoredBrandsV3ReportStream` as an alternative stream with the same dataset."
         upgradeDeadline: "2024-11-01"
         deadlineAction: "auto_upgrade"
         scopedImpact:

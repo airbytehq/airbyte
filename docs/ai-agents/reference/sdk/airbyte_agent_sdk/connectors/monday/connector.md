@@ -245,95 +245,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'MondayAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A MondayConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await MondayConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=MondayAuthConfig(access_token="...", client_id="...", client_secret="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await MondayConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await MondayConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Monday Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -384,10 +295,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await MondayConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -424,7 +331,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -436,6 +343,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -633,27 +543,15 @@ Classes
         - country_code: User's country code
         - created_at: When the user was created
         - email: User's email address
-        - enabled: Whether the user account is enabled
         - id: Unique user identifier
-        - is_admin: Whether the user is an admin
-        - is_guest: Whether the user is a guest
-        - is_pending: Whether the user is pending
-        - is_view_only: Whether the user is view-only
-        - is_verified: Whether the user is verified
-        - join_date: When the user joined
         - location: User's location
         - mobile_phone: User's mobile phone number
         - name: User's display name
         - phone: User's phone number
-        - photo_original: URL to original size photo
-        - photo_small: URL to small photo
-        - photo_thumb: URL to thumbnail photo
-        - photo_thumb_small: URL to small thumbnail photo
-        - photo_tiny: URL to tiny photo
         - time_zone_identifier: User's timezone identifier
         - title: User's job title
         - url: User's Monday.com profile URL
-        - utc_hours_diff: UTC hours difference for the user's timezone
+        - utc_hours_diff: UTC hours difference for the user's timezone (Float under API 2026-07)
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -679,8 +577,13 @@ Classes
         Returns:
             dict[str, Any]
 
-    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[User]]`
+    `list(self, page: int | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[User]]`
     :   Returns all users in the Monday.com account
+        
+        Args:
+            page: Page number for pagination
+            limit: Number of users to return per page (API 2026-07 maximum is 1000)
+            **kwargs: Additional parameters
         
         Returns:
             UsersListResult

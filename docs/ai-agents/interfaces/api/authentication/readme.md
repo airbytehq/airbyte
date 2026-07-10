@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Authenticate
 
-You authenticate with the Airbyte Agent API using your Airbyte Agents client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
+You authenticate with the Agent API using your Airbyte Agents client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
 
 - You authenticate using Airbyte Agents client credentials.
 - Airbyte stores connector credentials securely and handles refresh for you.
@@ -15,7 +15,7 @@ If you're building a Python app, the [SDK](../../sdk/authenticate) handles token
 
 ## Token types
 
-The Airbyte Agent API uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
+The Agent API uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
 
 | Token type        | Use case                                                                          | Scope             |
 | ----------------- | --------------------------------------------------------------------------------- | ----------------- |

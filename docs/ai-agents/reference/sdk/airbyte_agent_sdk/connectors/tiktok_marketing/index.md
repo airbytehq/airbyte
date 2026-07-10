@@ -418,6 +418,351 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdsReportsHourlySearchData"></a>
+
+`AdsReportsHourlySearchData(**data: Any)`
+:   Search result data for ads_reports_hourly entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `ad_id: int | None`
+    :   The unique identifier for the ad.
+
+    `ad_name: str | None`
+    :   The name of the ad.
+
+    `ad_text: str | None`
+    :   The text content of the ad.
+
+    `adgroup_id: int | None`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str | None`
+    :   The name of the ad group.
+
+    `app_install: float | None`
+    :   Number of app installations.
+
+    `average_video_play: float | None`
+    :   Average video play duration.
+
+    `average_video_play_per_user: float | None`
+    :   Average video play duration per user.
+
+    `campaign_id: int | None`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str | None`
+    :   The name of the marketing campaign.
+
+    `clicks: str | None`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: float | None`
+    :   Number of clicks on the music disc.
+
+    `comments: float | None`
+    :   Number of comments.
+
+    `conversion: str | None`
+    :   Number of conversions.
+
+    `conversion_rate: str | None`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str | None`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str | None`
+    :   Cost per conversion.
+
+    `cost_per_result: str | None`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str | None`
+    :   Cost per secondary goal result.
+
+    `cpc: str | None`
+    :   Cost per click.
+
+    `cpm: str | None`
+    :   Cost per thousand impressions.
+
+    `ctr: str | None`
+    :   Click-through rate.
+
+    `follows: float | None`
+    :   Number of follows.
+
+    `frequency: str | None`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str | None`
+    :   Number of times the ad was displayed.
+
+    `likes: float | None`
+    :   Number of likes.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `placement_type: str | None`
+    :   Type of ad placement.
+
+    `profile_visits: float | None`
+    :   Number of profile visits.
+
+    `reach: str | None`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: float | None`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: float | None`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str | None`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str | None`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str | None`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str | None`
+    :   Real-time cost per result.
+
+    `real_time_result: str | None`
+    :   Real-time results.
+
+    `real_time_result_rate: str | None`
+    :   Real-time result rate.
+
+    `result: str | None`
+    :   Number of results.
+
+    `result_rate: str | None`
+    :   Rate of results.
+
+    `secondary_goal_result: str | None`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str | None`
+    :   Rate of secondary goal results.
+
+    `shares: float | None`
+    :   Number of shares.
+
+    `spend: str | None`
+    :   Total amount of money spent.
+
+    `stat_time_hour: str | None`
+    :   The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+
+    `video_play_actions: float | None`
+    :   Number of video play actions.
+
+    `video_views_p100: float | None`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: float | None`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: float | None`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: float | None`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: float | None`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: float | None`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsLifetimeSearchData"></a>
+
+`AdsReportsLifetimeSearchData(**data: Any)`
+:   Search result data for ads_reports_lifetime entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `ad_id: int | None`
+    :   The unique identifier for the ad.
+
+    `ad_name: str | None`
+    :   The name of the ad.
+
+    `ad_text: str | None`
+    :   The text content of the ad.
+
+    `adgroup_id: int | None`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str | None`
+    :   The name of the ad group.
+
+    `app_install: float | None`
+    :   Number of app installations.
+
+    `average_video_play: float | None`
+    :   Average video play duration.
+
+    `average_video_play_per_user: float | None`
+    :   Average video play duration per user.
+
+    `campaign_id: int | None`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str | None`
+    :   The name of the marketing campaign.
+
+    `clicks: str | None`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: float | None`
+    :   Number of clicks on the music disc.
+
+    `comments: float | None`
+    :   Number of comments.
+
+    `conversion: str | None`
+    :   Number of conversions.
+
+    `conversion_rate: str | None`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str | None`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str | None`
+    :   Cost per conversion.
+
+    `cost_per_result: str | None`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str | None`
+    :   Cost per secondary goal result.
+
+    `cpc: str | None`
+    :   Cost per click.
+
+    `cpm: str | None`
+    :   Cost per thousand impressions.
+
+    `ctr: str | None`
+    :   Click-through rate.
+
+    `follows: float | None`
+    :   Number of follows.
+
+    `frequency: str | None`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str | None`
+    :   Number of times the ad was displayed.
+
+    `likes: float | None`
+    :   Number of likes.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `placement_type: str | None`
+    :   Type of ad placement.
+
+    `profile_visits: float | None`
+    :   Number of profile visits.
+
+    `reach: str | None`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: float | None`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: float | None`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str | None`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str | None`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str | None`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str | None`
+    :   Real-time cost per result.
+
+    `real_time_result: str | None`
+    :   Real-time results.
+
+    `real_time_result_rate: str | None`
+    :   Real-time result rate.
+
+    `result: str | None`
+    :   Number of results.
+
+    `result_rate: str | None`
+    :   Rate of results.
+
+    `secondary_goal_result: str | None`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str | None`
+    :   Rate of secondary goal results.
+
+    `shares: float | None`
+    :   Number of shares.
+
+    `spend: str | None`
+    :   Total amount of money spent.
+
+    `video_play_actions: float | None`
+    :   Number of video play actions.
+
+    `video_views_p100: float | None`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: float | None`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: float | None`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: float | None`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: float | None`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: float | None`
+    :   Number of times video was watched for at least 6 seconds.
+
 <a id="AdsSearchData"></a>
 
 `AdsSearchData(**data: Any)`
@@ -828,6 +1173,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdGroupsReportsDailySearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdGroupsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsDailySearchData]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsHourlySearchData]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsLifetimeSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdvertisersReportsDailySearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdvertisersSearchData]
@@ -836,6 +1183,7 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CampaignsSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsImagesSearchData]
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[CreativeAssetsVideosSearchData]
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[SparkAdsSearchData]
 
     ### Class variables
 
@@ -887,6 +1235,42 @@ Classes
 <a id="AdsReportsDailySearchResult"></a>
 
 `AdsReportsDailySearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="AdsReportsHourlySearchResult"></a>
+
+`AdsReportsHourlySearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="AdsReportsLifetimeSearchResult"></a>
+
+`AdsReportsLifetimeSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -1031,6 +1415,24 @@ Classes
 <a id="CreativeAssetsVideosSearchResult"></a>
 
 `CreativeAssetsVideosSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SparkAdsSearchResult"></a>
+
+`SparkAdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -1388,6 +1790,39 @@ Classes
     `width: int | None`
     :   Width of the video in pixels.
 
+<a id="SparkAdsSearchData"></a>
+
+`SparkAdsSearchData(**data: Any)`
+:   Search result data for spark_ads entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `auth_info: dict[str, typing.Any] | None`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: dict[str, typing.Any] | None`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `user_info: dict[str, typing.Any] | None`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: dict[str, typing.Any] | None`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
 <a id="TiktokMarketingAuthConfig"></a>
 
 `TiktokMarketingAuthConfig(**data: Any)`
@@ -1465,53 +1900,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'TiktokMarketingAuthConfig'", name: str | None = None, replication_config: "'TiktokMarketingReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Typed replication settings.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A TiktokMarketingConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await TiktokMarketingConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=TiktokMarketingAuthConfig(access_token="..."),
-            )
-        
-            # With replication config (required for this connector):
-            connector = await TiktokMarketingConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=TiktokMarketingAuthConfig(access_token="..."),
-                replication_config=TiktokMarketingReplicationConfig(start_date="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -1562,10 +1950,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await TiktokMarketingConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -1602,7 +1986,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1614,6 +1998,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation

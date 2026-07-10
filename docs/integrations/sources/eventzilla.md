@@ -17,6 +17,10 @@ The Airbyte connector for Eventzilla enables seamless integration between Eventz
 | users | id | DefaultPaginator | ✅ |  ❌  |
 | transactions | refno | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,11 @@ The Airbyte connector for Eventzilla enables seamless integration between Eventz
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-06-30 | [81057](https://github.com/airbytehq/airbyte/pull/81057) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80433](https://github.com/airbytehq/airbyte/pull/80433) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [79846](https://github.com/airbytehq/airbyte/pull/79846) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79301](https://github.com/airbytehq/airbyte/pull/79301) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78704](https://github.com/airbytehq/airbyte/pull/78704) | Update dependencies |
 | 0.0.47 | 2026-04-28 | [77208](https://github.com/airbytehq/airbyte/pull/77208) | Update dependencies |
 | 0.0.46 | 2026-04-21 | [76554](https://github.com/airbytehq/airbyte/pull/76554) | Update dependencies |
 | 0.0.45 | 2026-03-24 | [75038](https://github.com/airbytehq/airbyte/pull/75038) | Update dependencies |

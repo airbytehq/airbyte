@@ -54,7 +54,7 @@ Once you install the skills, prompt Codex the way you normally would. For exampl
 - _"Add a HubSpot connector to this agent."_
 - _"List the entities available on the Salesforce connector."_
 
-Codex matches the prompt against each skill's description, loads the relevant skill, and uses its instructions to generate code that matches the patterns in the Airbyte Agent SDK.
+Codex matches the prompt against each skill's description, loads the relevant skill, and uses its instructions to generate code that matches the patterns in the Agent SDK.
 
 ## Credentials
 

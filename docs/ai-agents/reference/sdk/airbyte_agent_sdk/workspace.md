@@ -15,7 +15,7 @@ Classes
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.
     
-    Provides workspace-level methods: list/create/delete connectors, get a
+    Provides workspace-level methods: list/delete connectors, get a
     connector executor, and workflow/automation CRUD. Use `Workspace` when
     you want to operate against a whole workspace (many connectors,
     workflows, automations); use [`connect()`](index.md#connect) when you already
@@ -57,9 +57,6 @@ Classes
 
     `create_automation(self, workflow_id: str, *, trigger_type: str = 'schedule', enabled: bool = True, cron_expression: str | None = None, timezone: str | None = None, completion_webhook_url: str | None = None) ‑> airbyte_agent_sdk.executor.models.AutomationInfo`
     :   Create an automation on a workflow.
-
-    `create_connector(self, *, definition_id: str, credentials: dict[str, Any] | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Create a new connector, returns the connector ID.
 
     `create_workflow(self, name: str, *, tasks: list[dict[str, Any]] | None = None) ‑> airbyte_agent_sdk.executor.models.WorkflowInfo`
     :   Create a workflow in this workspace.

@@ -104,8 +104,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or (now_utc() -
-            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+            {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -137,6 +136,10 @@ definitions:
                       - 404
           request_body_json:
             contentSelector:
+              context: "Extended"
+              contextTiming:
+                - "Now"
+                - "TimeOfCall"
               exposedFields:
                 media: true
                 content:
@@ -201,8 +204,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or (now_utc() -
-            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+            {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -322,8 +324,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or (now_utc() -
-            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+            {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -396,8 +397,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or (now_utc() -
-            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+            {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_client_side_incremental: true
         global_substream_cursor: true
@@ -429,6 +429,7 @@ definitions:
           grant_type: refresh_token
           refresh_request_headers:
             Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
+          send_refresh_request_as_query_params: true
           refresh_token_updater:
             refresh_token_name: refresh_token
             access_token_config_path:
@@ -455,7 +456,8 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 5
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 10
 
 spec:
   type: Spec
@@ -541,14 +543,27 @@ spec:
         type: string
         description: >-
           The date from which to list calls, in the ISO-8601 format; if not
-          specified, the calls start with the earliest recorded call. For
-          web-conference calls recorded by Gong, the date denotes its scheduled
-          time, otherwise, it denotes its actual start time.
+          specified, the connector syncs all available data from the
+          earliest recorded call. For web-conference calls recorded by
+          Gong, the date denotes its scheduled time, otherwise, it denotes
+          its actual start time.
         title: Start date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2018-02-18T08:00:00Z"
         order: 1
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up
+          syncs but may increase API rate limit usage. Adjust based on your
+          Gong API plan; the default of 4 is tuned to stay within the standard
+          3 requests/second limit.
+        default: 4
+        minimum: 1
+        maximum: 10
+        order: 2
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0

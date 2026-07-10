@@ -9,7 +9,7 @@ triggers, macros, views, satisfaction ratings, SLA policies, and help center art
 for customer support analytics and service performance insights.
 
 
-## Example questions
+## Example prompts
 
 The Zendesk-Support connector is optimized to handle prompts like these.
 
@@ -28,7 +28,7 @@ The Zendesk-Support connector is optimized to handle prompts like these.
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
-## Unsupported questions
+## Unsupported prompts
 
 The Zendesk-Support connector isn't currently able to handle prompts like these.
 
@@ -36,233 +36,7 @@ The Zendesk-Support connector isn't currently able to handle prompts like these.
 - Merge two tickets together
 - Export all tickets to a CSV file
 
-## Installation
-
-```bash
-uv pip install airbyte-agent-sdk
-```
-
-## Usage
-
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
-
-connector = ZendeskSupportConnector(
-    auth_config=ZendeskSupportApiTokenAuthConfig(
-        email="<Your Zendesk account email address>",
-        api_token="<Your Zendesk API token from Admin Center>"
-    )
-)
-
-@agent.tool_plain
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
-
-connector = ZendeskSupportConnector(
-    auth_config=ZendeskSupportApiTokenAuthConfig(
-        email="<Your Zendesk account email address>",
-        api_token="<Your Zendesk API token from Admin Center>"
-    )
-)
-
-@tool
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Zendesk-Support connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
-
-connector = ZendeskSupportConnector(
-    auth_config=ZendeskSupportApiTokenAuthConfig(
-        email="<Your Zendesk account email address>",
-        api_token="<Your Zendesk API token from Admin Center>"
-    )
-)
-
-mcp = FastMCP("Zendesk-Support Agent")
-
-@mcp.tool()
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Zendesk-Support connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-### Hosted
-
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-The `connect()` factory returns a fully typed `ZendeskSupportConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
-
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-
-connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
-
-@agent.tool_plain
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-
-connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
-
-@tool
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Zendesk-Support connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-
-connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
-
-mcp = FastMCP("Zendesk-Support Agent")
-
-@mcp.tool()
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Zendesk-Support connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = ZendeskSupportConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@agent.tool_plain
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = ZendeskSupportConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@tool
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Zendesk-Support connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = ZendeskSupportConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-mcp = FastMCP("Zendesk-Support Agent")
-
-@mcp.tool()
-@ZendeskSupportConnector.tool_utils
-async def zendesk_support_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Zendesk-Support connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-## Full documentation
-
-### Entities and actions
+## Entities and actions
 
 This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
@@ -281,29 +55,379 @@ This connector supports the following entities and actions. For more details, se
 | Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search) |
 | Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get), [Context Store Search](./REFERENCE.md#brands-context-store-search) |
 | Views | [List](./REFERENCE.md#views-list), [Get](./REFERENCE.md#views-get) |
-| Macros | [Get](./REFERENCE.md#macros-get), [List](./REFERENCE.md#macros-list) |
-| Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get) |
-| Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get) |
+| Macros | [Get](./REFERENCE.md#macros-get), [List](./REFERENCE.md#macros-list), [Context Store Search](./REFERENCE.md#macros-context-store-search) |
+| Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get), [Context Store Search](./REFERENCE.md#triggers-context-store-search) |
+| Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get), [Context Store Search](./REFERENCE.md#automations-context-store-search) |
 | Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
 | Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search) |
-| Group Memberships | [List](./REFERENCE.md#group-memberships-list) |
-| Organization Memberships | [List](./REFERENCE.md#organization-memberships-list) |
-| Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get) |
+| Group Memberships | [List](./REFERENCE.md#group-memberships-list), [Context Store Search](./REFERENCE.md#group-memberships-context-store-search) |
+| Organization Memberships | [List](./REFERENCE.md#organization-memberships-list), [Context Store Search](./REFERENCE.md#organization-memberships-context-store-search) |
+| Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get), [Context Store Search](./REFERENCE.md#sla-policies-context-store-search) |
 | Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search) |
-| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get) |
-| Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
+| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Context Store Search](./REFERENCE.md#articles-context-store-search) |
+| Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download), [Context Store Search](./REFERENCE.md#article-attachments-context-store-search) |
 
 
-### Authentication
-
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
-
-### Zendesk-Support API docs
+## Zendesk-Support API docs
 
 See the official [Zendesk-Support API reference](https://developer.zendesk.com/api-reference/ticketing/introduction/).
 
+## Interfaces
+
+Use the Zendesk-Support connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tickets",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+#### Usage
+
+Connectors can run in hosted or open source mode.
+
+##### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `ZendeskSupportConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+
+connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+
+connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
+
+@tool
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+
+connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@ZendeskSupportConnector.tool_utils(framework="openai_agents")
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Zendesk-Support Assistant", tools=[zendesk_support_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+
+connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Zendesk-Support Agent")
+
+@mcp.tool
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@ZendeskSupportConnector.tool_utils(framework="openai_agents")
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Zendesk-Support Assistant", tools=[zendesk_support_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Zendesk-Support Agent")
+
+@mcp.tool
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+##### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=ZendeskSupportApiTokenAuthConfig(
+        email="<Your Zendesk account email address>",
+        api_token="<Your Zendesk API token from Admin Center>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=ZendeskSupportApiTokenAuthConfig(
+        email="<Your Zendesk account email address>",
+        api_token="<Your Zendesk API token from Admin Center>"
+    )
+)
+
+@tool
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=ZendeskSupportApiTokenAuthConfig(
+        email="<Your Zendesk account email address>",
+        api_token="<Your Zendesk API token from Admin Center>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@ZendeskSupportConnector.tool_utils(framework="openai_agents")
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Zendesk-Support Assistant", tools=[zendesk_support_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=ZendeskSupportApiTokenAuthConfig(
+        email="<Your Zendesk account email address>",
+        api_token="<Your Zendesk API token from Admin Center>"
+    )
+)
+
+mcp = FastMCP("Zendesk-Support Agent")
+
+@mcp.tool
+@ZendeskSupportConnector.tool_utils
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Zendesk-Support connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
+
 ## Version information
 
-- **Package version:** 0.1.20
-- **Connector version:** 0.1.20
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 0.1.20

@@ -10,6 +10,120 @@ Hubspot connector.
 Classes
 -------
 
+<a id="CallsQuery"></a>
+
+`CallsQuery(connector: HubspotConnector)`
+:   Query class for Calls entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: CallsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CallsSearchData]`
+    :   Search calls records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CallsSearchFilter):
+        - archived: Indicates whether the call has been archived
+        - created_at: Timestamp when the call was created
+        - id: Unique identifier for the call record
+        - properties: Object containing all property values for the call
+        - properties_hs_call_body: Description or notes about the call
+        - properties_hs_call_direction: Direction of the call (INBOUND or OUTBOUND)
+        - properties_hs_call_duration: Duration of the call in milliseconds
+        - properties_hs_call_status: Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER)
+        - properties_hs_call_title: Title or subject of the call
+        - properties_hs_createdate: Date the call was created
+        - properties_hs_lastmodifieddate: Last modified date of the call
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hs_timestamp: Timestamp when the call activity occurred
+        - properties_hubspot_owner_id: ID of the call owner
+        - updated_at: Timestamp when the call record was last modified
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CallsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, properties: CallsCreateParamsProperties, associations: list[CallsCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Call`
+    :   Create a new call engagement in HubSpot CRM. Calls can be associated with contacts,
+        companies, deals, or tickets by using the associations parameter.
+        The hs_timestamp property sets when the call activity occurred.
+        
+        
+                Args:
+                    properties: Call properties to set
+                    associations: Associate the call with other CRM records (contacts, companies, deals, tickets)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Call
+
+    `delete(self, call_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Archive a call by ID. This is a soft delete — the call is moved to the
+        recycle bin and can be restored for approximately 90 days. No public
+        hard-delete endpoint exists.
+        
+        
+                Args:
+                    call_id: Call ID
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `get(self, call_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Call`
+    :   Get a single call by ID
+        
+        Args:
+            call_id: Call ID
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            associations: A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.
+            id_property: The name of a property whose values are unique for this object.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            Call
+
+    `list(self, limit: int | None = None, after: str | None = None, associations: str | None = None, properties: str | None = None, properties_with_history: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Call], CallsListResultMeta]`
+    :   Returns a paginated list of calls
+        
+        Args:
+            limit: The maximum number of results to display per page.
+            after: The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results.
+            associations: A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names.
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            CallsListResult
+
+    `update(self, properties: CallsUpdateParamsProperties, call_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Call`
+    :   Update an existing call's properties by ID.
+        
+        Args:
+            properties: Call properties to update
+            call_id: Call ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Call
+
 <a id="CompaniesQuery"></a>
 
 `CompaniesQuery(connector: HubspotConnector)`
@@ -46,6 +160,12 @@ Classes
         - created_at: Timestamp when the company record was created
         - id: Unique identifier for the company record
         - properties: Object containing all property values for the company
+        - properties_createdate: Date the company was created
+        - properties_domain: Company domain name
+        - properties_hs_lastmodifieddate: Last modified date of the company
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hubspot_owner_id: ID of the HubSpot owner assigned to this company
+        - properties_name: Company name
         - updated_at: Timestamp when the company record was last modified
         
         Args:
@@ -61,6 +181,16 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, properties: CompaniesCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
+    :   Create a new company in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Company properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Company
 
     `get(self, company_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
     :   Get a single company by ID
@@ -91,6 +221,17 @@ Classes
         
         Returns:
             CompaniesListResult
+
+    `update(self, properties: CompaniesUpdateParamsProperties, company_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
+    :   Update an existing company's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Company properties to update
+            company_id: Company ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Company
 
 <a id="ContactsQuery"></a>
 
@@ -123,12 +264,20 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (ContactsSearchFilter):
-        - archived: Boolean flag indicating whether the contact has been archived or deleted.
-        - companies: Associated company records linked to this contact.
-        - created_at: Timestamp indicating when the contact was first created in the system.
-        - id: Unique identifier for the contact record.
+        - archived: Boolean flag indicating whether the contact has been archived or deleted
+        - companies: Associated company records linked to this contact
+        - created_at: Timestamp indicating when the contact was first created in the system
+        - id: Unique identifier for the contact record
         - properties: Key-value object storing all contact properties and their values.
-        - updated_at: Timestamp indicating when the contact record was last modified.
+        - properties_associatedcompanyid: ID of the associated company
+        - properties_createdate: Date the contact was created
+        - properties_email: Contact email address
+        - properties_firstname: Contact first name
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hubspot_owner_id: ID of the HubSpot owner assigned to this contact
+        - properties_lastmodifieddate: Last modified date of the contact
+        - properties_lastname: Contact last name
+        - updated_at: Timestamp indicating when the contact record was last modified
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -143,6 +292,16 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, properties: ContactsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
+    :   Create a new contact in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Contact properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Contact
 
     `get(self, contact_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
     :   Get a single contact by ID
@@ -173,6 +332,17 @@ Classes
         
         Returns:
             ContactsListResult
+
+    `update(self, properties: ContactsUpdateParamsProperties, contact_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
+    :   Update an existing contact's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Contact properties to update
+            contact_id: Contact ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Contact
 
 <a id="DealsQuery"></a>
 
@@ -212,6 +382,15 @@ Classes
         - id: Unique identifier for the deal record
         - line_items: Collection of product line items associated with the deal
         - properties: Key-value object containing all deal properties and custom fields
+        - properties_amount: Deal amount
+        - properties_closedate: Expected close date of the deal
+        - properties_createdate: Date the deal was created
+        - properties_dealname: Deal name
+        - properties_dealstage: Current deal stage
+        - properties_hs_lastmodifieddate: Last modified date of the deal
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hubspot_owner_id: ID of the HubSpot owner assigned to this deal
+        - properties_pipeline: Deal pipeline
         - updated_at: Timestamp when the deal record was last modified
         
         Args:
@@ -227,6 +406,16 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, properties: DealsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
+    :   Create a new deal in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Deal properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Deal
 
     `get(self, deal_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
     :   Get a single deal by ID
@@ -257,6 +446,130 @@ Classes
         
         Returns:
             DealsListResult
+
+    `update(self, properties: DealsUpdateParamsProperties, deal_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
+    :   Update an existing deal's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Deal properties to update
+            deal_id: Deal ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Deal
+
+<a id="EmailsQuery"></a>
+
+`EmailsQuery(connector: HubspotConnector)`
+:   Query class for Emails entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: EmailsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[EmailsSearchData]`
+    :   Search emails records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (EmailsSearchFilter):
+        - archived: Indicates whether the email has been archived
+        - created_at: Timestamp when the email was created
+        - id: Unique identifier for the email record
+        - properties: Object containing all property values for the email
+        - properties_hs_createdate: Date the email was created
+        - properties_hs_email_direction: Direction of the email (EMAIL, INCOMING_EMAIL, FORWARDED_EMAIL)
+        - properties_hs_email_status: Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT)
+        - properties_hs_email_subject: Subject line of the email
+        - properties_hs_email_text: Plain text body of the email
+        - properties_hs_lastmodifieddate: Last modified date of the email
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hs_timestamp: Timestamp when the email activity occurred
+        - properties_hubspot_owner_id: ID of the email owner
+        - updated_at: Timestamp when the email record was last modified
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            EmailsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, properties: EmailsCreateParamsProperties, associations: list[EmailsCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Email`
+    :   Create a new email engagement in HubSpot CRM. Emails can be associated with contacts,
+        companies, deals, or tickets by using the associations parameter.
+        The hs_timestamp property sets when the email activity occurred.
+        
+        
+                Args:
+                    properties: Email properties to set
+                    associations: Associate the email with other CRM records (contacts, companies, deals, tickets)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Email
+
+    `delete(self, email_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Archive an email by ID. This is a soft delete — the email is moved to the
+        recycle bin and can be restored for approximately 90 days. No public
+        hard-delete endpoint exists.
+        
+        
+                Args:
+                    email_id: Email ID
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `get(self, email_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Email`
+    :   Get a single email by ID
+        
+        Args:
+            email_id: Email ID
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            associations: A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.
+            id_property: The name of a property whose values are unique for this object.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            Email
+
+    `list(self, limit: int | None = None, after: str | None = None, associations: str | None = None, properties: str | None = None, properties_with_history: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Email], EmailsListResultMeta]`
+    :   Returns a paginated list of emails
+        
+        Args:
+            limit: The maximum number of results to display per page.
+            after: The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results.
+            associations: A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names.
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            EmailsListResult
+
+    `update(self, properties: EmailsUpdateParamsProperties, email_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Email`
+    :   Update an existing email's properties by ID.
+        
+        Args:
+            properties: Email properties to update
+            email_id: Email ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Email
 
 <a id="HubspotConnector"></a>
 
@@ -311,129 +624,6 @@ Classes
 
     ### Static methods
 
-    `configure_oauth_app_parameters(*, airbyte_config: AirbyteAuthConfig, credentials: HubspotOAuthCredentials | None) ‑> None`
-    :   Configure or remove OAuth app credentials for your organization.
-        
-        When credentials are provided, replaces the default Airbyte-managed OAuth
-        app credentials with your own. After calling this, all OAuth flows for
-        this connector in your organization will use the provided credentials.
-        
-        When credentials are None, removes any existing override so the
-        organization reverts to the default Airbyte-managed OAuth app.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials.
-            credentials: Your OAuth app credentials (HubspotOAuthCredentials), or None to remove the override.
-        
-        Example:
-            await HubspotConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=HubspotOAuthCredentials(
-                    client_id="...",
-                    client_secret="...",
-                ),
-            )
-        
-            await HubspotConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=None,
-            )
-
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'HubspotAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A HubspotConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await HubspotConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=HubspotAuthConfig(client_id="...", client_secret="...", refresh_token="...", access_token="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await HubspotConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await HubspotConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Hubspot Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -484,10 +674,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await HubspotConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -524,7 +710,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'api_search', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'api_search', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -536,6 +722,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -560,6 +749,231 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="MeetingsQuery"></a>
+
+`MeetingsQuery(connector: HubspotConnector)`
+:   Query class for Meetings entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MeetingsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[MeetingsSearchData]`
+    :   Search meetings records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MeetingsSearchFilter):
+        - archived: Indicates whether the meeting has been archived
+        - created_at: Timestamp when the meeting was created
+        - id: Unique identifier for the meeting record
+        - properties: Object containing all property values for the meeting
+        - properties_hs_createdate: Date the meeting was created
+        - properties_hs_lastmodifieddate: Last modified date of the meeting
+        - properties_hs_meeting_body: Description or notes about the meeting
+        - properties_hs_meeting_end_time: End time of the meeting
+        - properties_hs_meeting_location: Location of the meeting
+        - properties_hs_meeting_outcome: Outcome of the meeting (e.g., SCHEDULED, COMPLETED, NO_SHOW, CANCELED)
+        - properties_hs_meeting_start_time: Start time of the meeting
+        - properties_hs_meeting_title: Title of the meeting
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hs_timestamp: Timestamp when the meeting activity occurred
+        - properties_hubspot_owner_id: ID of the meeting owner
+        - updated_at: Timestamp when the meeting record was last modified
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MeetingsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, properties: MeetingsCreateParamsProperties, associations: list[MeetingsCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Meeting`
+    :   Create a new meeting engagement in HubSpot CRM. Meetings can be associated with contacts,
+        companies, deals, or tickets by using the associations parameter.
+        The hs_timestamp property sets when the meeting activity occurred.
+        
+        
+                Args:
+                    properties: Meeting properties to set
+                    associations: Associate the meeting with other CRM records (contacts, companies, deals, tickets)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Meeting
+
+    `delete(self, meeting_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Archive a meeting by ID. This is a soft delete — the meeting is moved to the
+        recycle bin and can be restored for approximately 90 days. No public
+        hard-delete endpoint exists.
+        
+        
+                Args:
+                    meeting_id: Meeting ID
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `get(self, meeting_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Meeting`
+    :   Get a single meeting by ID
+        
+        Args:
+            meeting_id: Meeting ID
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            associations: A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.
+            id_property: The name of a property whose values are unique for this object.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            Meeting
+
+    `list(self, limit: int | None = None, after: str | None = None, associations: str | None = None, properties: str | None = None, properties_with_history: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Meeting], MeetingsListResultMeta]`
+    :   Returns a paginated list of meetings
+        
+        Args:
+            limit: The maximum number of results to display per page.
+            after: The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results.
+            associations: A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names.
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            MeetingsListResult
+
+    `update(self, properties: MeetingsUpdateParamsProperties, meeting_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Meeting`
+    :   Update an existing meeting's properties by ID.
+        
+        Args:
+            properties: Meeting properties to update
+            meeting_id: Meeting ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Meeting
+
+<a id="NotesQuery"></a>
+
+`NotesQuery(connector: HubspotConnector)`
+:   Query class for Notes entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: NotesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[NotesSearchData]`
+    :   Search notes records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (NotesSearchFilter):
+        - archived: Indicates whether the note has been archived
+        - created_at: Timestamp when the note was created
+        - id: Unique identifier for the note record
+        - properties: Object containing all property values for the note
+        - properties_hs_createdate: Date the note was created
+        - properties_hs_lastmodifieddate: Last modified date of the note
+        - properties_hs_note_body: The body content of the note (supports HTML)
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hs_timestamp: Timestamp when the note activity occurred
+        - properties_hubspot_owner_id: ID of the note owner
+        - updated_at: Timestamp when the note record was last modified
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            NotesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, properties: NotesCreateParamsProperties, associations: list[NotesCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Note`
+    :   Create a new note in HubSpot CRM. Notes can be associated with contacts,
+        companies, deals, or tickets by using the associations parameter.
+        The hs_timestamp property sets when the note activity occurred.
+        
+        
+                Args:
+                    properties: Note properties to set
+                    associations: Associate the note with other CRM records (contacts, companies, deals, tickets)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Note
+
+    `delete(self, note_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Archive a note by ID. This is a soft delete — the note is moved to the
+        recycle bin and can be restored for approximately 90 days. No public
+        hard-delete endpoint exists.
+        
+        
+                Args:
+                    note_id: Note ID
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `get(self, note_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Note`
+    :   Get a single note by ID
+        
+        Args:
+            note_id: Note ID
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            associations: A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.
+            id_property: The name of a property whose values are unique for this object.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            Note
+
+    `list(self, limit: int | None = None, after: str | None = None, associations: str | None = None, properties: str | None = None, properties_with_history: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Note], NotesListResultMeta]`
+    :   Returns a paginated list of notes
+        
+        Args:
+            limit: The maximum number of results to display per page.
+            after: The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results.
+            associations: A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names.
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            NotesListResult
+
+    `update(self, properties: NotesUpdateParamsProperties, note_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Note`
+    :   Update an existing note's properties by ID.
+        
+        Args:
+            properties: Note properties to update
+            note_id: Note ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Note
 
 <a id="ObjectsQuery"></a>
 
@@ -631,6 +1045,120 @@ Classes
         Returns:
             SchemasListResult
 
+<a id="TasksQuery"></a>
+
+`TasksQuery(connector: HubspotConnector)`
+:   Query class for Tasks entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: TasksSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TasksSearchData]`
+    :   Search tasks records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TasksSearchFilter):
+        - archived: Indicates whether the task has been archived
+        - created_at: Timestamp when the task was created
+        - id: Unique identifier for the task record
+        - properties: Object containing all property values for the task
+        - properties_hs_createdate: Date the task was created
+        - properties_hs_lastmodifieddate: Last modified date of the task
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hs_task_body: Description or notes for the task
+        - properties_hs_task_priority: Priority of the task (LOW, MEDIUM, HIGH)
+        - properties_hs_task_status: Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED)
+        - properties_hs_task_subject: Subject or title of the task
+        - properties_hs_task_type: Type of the task (TODO, CALL, EMAIL)
+        - properties_hs_timestamp: Due date / timestamp for the task
+        - properties_hubspot_owner_id: ID of the task owner
+        - updated_at: Timestamp when the task record was last modified
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TasksSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, properties: TasksCreateParamsProperties, associations: list[TasksCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Task`
+    :   Create a new task in HubSpot CRM. Tasks can be associated with contacts,
+        companies, deals, or tickets by using the associations parameter.
+        The hs_timestamp property sets when the task activity occurred.
+        
+        
+                Args:
+                    properties: Task properties to set
+                    associations: Associate the task with other CRM records (contacts, companies, deals, tickets)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Task
+
+    `delete(self, task_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Archive a task by ID. This is a soft delete — the task is moved to the
+        recycle bin and can be restored for approximately 90 days. No public
+        hard-delete endpoint exists.
+        
+        
+                Args:
+                    task_id: Task ID
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `get(self, task_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Task`
+    :   Get a single task by ID
+        
+        Args:
+            task_id: Task ID
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            associations: A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.
+            id_property: The name of a property whose values are unique for this object.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            Task
+
+    `list(self, limit: int | None = None, after: str | None = None, associations: str | None = None, properties: str | None = None, properties_with_history: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Task], TasksListResultMeta]`
+    :   Returns a paginated list of tasks
+        
+        Args:
+            limit: The maximum number of results to display per page.
+            after: The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results.
+            associations: A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names.
+            properties: A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            properties_with_history: A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.
+            archived: Whether to return only results that have been archived.
+            **kwargs: Additional parameters
+        
+        Returns:
+            TasksListResult
+
+    `update(self, properties: TasksUpdateParamsProperties, task_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Task`
+    :   Update an existing task's properties by ID.
+        
+        Args:
+            properties: Task properties to update
+            task_id: Task ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Task
+
 <a id="TicketsQuery"></a>
 
 `TicketsQuery(connector: HubspotConnector)`
@@ -667,7 +1195,16 @@ Classes
         - contacts: Collection of contact records associated with the ticket
         - created_at: Timestamp when the ticket record was originally created
         - id: Unique identifier for the ticket record
-        - properties: Key-value object containing all ticket properties and custom fields
+        - properties: Object containing all property values for the ticket
+        - properties_content: Ticket content/description
+        - properties_createdate: Date the ticket was created
+        - properties_hs_lastmodifieddate: Last modified date of the ticket
+        - properties_hs_object_id: HubSpot object ID
+        - properties_hs_pipeline: Ticket pipeline
+        - properties_hs_pipeline_stage: Current pipeline stage of the ticket
+        - properties_hs_ticket_category: Ticket category
+        - properties_hs_ticket_priority: Ticket priority level
+        - properties_subject: Ticket subject line
         - updated_at: Timestamp when the ticket record was last modified
         
         Args:
@@ -683,6 +1220,16 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, properties: TicketsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
+    :   Create a new support ticket in HubSpot CRM with the provided properties.
+        
+        Args:
+            properties: Ticket properties to set
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
 
     `get(self, ticket_id: str, properties: str | None = None, properties_with_history: str | None = None, associations: str | None = None, id_property: str | None = None, archived: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
     :   Get a single ticket by ID
@@ -713,3 +1260,14 @@ Classes
         
         Returns:
             TicketsListResult
+
+    `update(self, properties: TicketsUpdateParamsProperties, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
+    :   Update an existing ticket's properties by ID. Only the specified properties will be updated.
+        
+        Args:
+            properties: Ticket properties to update
+            ticket_id: Ticket ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket

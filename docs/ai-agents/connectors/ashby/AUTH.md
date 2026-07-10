@@ -2,47 +2,15 @@
 
 This page documents the authentication and configuration options for the Ashby agent connector.
 
-## Authentication
+## Hosted mode (most cases)
 
-### Open source execution
+In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
-In open source mode, you provide API credentials directly to the connector.
-
-#### OAuth
+### OAuth
 This authentication method isn't available for this connector.
 
-#### Token
 
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Ashby API key |
-
-Example request:
-
-```python
-from airbyte_agent_sdk.connectors.ashby import AshbyConnector
-from airbyte_agent_sdk.connectors.ashby.models import AshbyAuthConfig
-
-connector = AshbyConnector(
-    auth_config=AshbyAuthConfig(
-        api_key="<Your Ashby API key>"
-    )
-)
-```
-
-### Hosted execution
-
-In hosted mode, you first create a connector via the Airbyte API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-#### OAuth
-This authentication method isn't available for this connector.
-
-#### Bring your own OAuth flow
-This authentication method isn't available for this connector.
-
-#### Token
+### Token
 Create a connector with Token credentials.
 
 
@@ -78,11 +46,48 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-#### Execution
+### Execution
 
-After creating the connector, execute operations using either the Python SDK or API.
-If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
+After creating the connector, execute operations using the CLI, Python SDK, or API.
+If your Airbyte client can access multiple organizations, set the default organization with `airbyte-agent organizations use`, include `organization_id` in `AirbyteAuthConfig`, or include `X-Organization-Id` in raw API calls.
 
+**CLI**
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "<entity>",
+  "action": "<action>",
+  "params": {}
+}'
+```
 
 **Python SDK**
 
@@ -92,10 +97,13 @@ The `connect()` factory returns a fully typed `AshbyConnector` and reads `AIRBYT
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from pydantic_ai import Agent
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.ashby import AshbyConnector
 
 connector = connect("ashby", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
 
 @agent.tool_plain
 @AshbyConnector.tool_utils
@@ -106,8 +114,6 @@ async def ashby_execute(entity: str, action: str, params: dict | None = None):
 **LangChain**
 
 ```python title="LangChain"
-import json
-
 from langchain_core.tools import tool
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.ashby import AshbyConnector
@@ -116,17 +122,37 @@ connector = connect("ashby", workspace_name="<your_workspace_name>")
 
 @tool
 @AshbyConnector.tool_utils
-async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def ashby_execute(entity: str, action: str, params: dict | None = None):
     """Execute Ashby connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+
+connector = connect("ashby", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AshbyConnector.tool_utils(framework="openai_agents")
+async def ashby_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Ashby Assistant", tools=[ashby_execute])
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
-import json
-
 from fastmcp import FastMCP
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.ashby import AshbyConnector
@@ -135,18 +161,19 @@ connector = connect("ashby", workspace_name="<your_workspace_name>")
 
 mcp = FastMCP("Ashby Agent")
 
-@mcp.tool()
+@mcp.tool
 @AshbyConnector.tool_utils
-async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def ashby_execute(entity: str, action: str, params: dict | None = None):
     """Execute Ashby connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.ashby import AshbyConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -159,6 +186,8 @@ connector = AshbyConnector(
     )
 )
 
+agent = Agent("openai:gpt-4o")
+
 @agent.tool_plain
 @AshbyConnector.tool_utils
 async def ashby_execute(entity: str, action: str, params: dict | None = None):
@@ -168,8 +197,6 @@ async def ashby_execute(entity: str, action: str, params: dict | None = None):
 **LangChain**
 
 ```python title="LangChain"
-import json
-
 from langchain_core.tools import tool
 from airbyte_agent_sdk.connectors.ashby import AshbyConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -185,17 +212,44 @@ connector = AshbyConnector(
 
 @tool
 @AshbyConnector.tool_utils
-async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def ashby_execute(entity: str, action: str, params: dict | None = None):
     """Execute Ashby connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AshbyConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AshbyConnector.tool_utils(framework="openai_agents")
+async def ashby_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Ashby Assistant", tools=[ashby_execute])
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
-import json
-
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.ashby import AshbyConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -211,12 +265,12 @@ connector = AshbyConnector(
 
 mcp = FastMCP("Ashby Agent")
 
-@mcp.tool()
+@mcp.tool
 @AshbyConnector.tool_utils
-async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def ashby_execute(entity: str, action: str, params: dict | None = None):
     """Execute Ashby connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
 **API**
@@ -229,4 +283,32 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
   -d '{"entity": "<entity>", "action": "<action>", "params": {}}'
 ```
 
+
+## Open source mode
+
+In open source mode, provide API credentials directly to the connector.
+
+### OAuth
+This authentication method isn't available for this connector.
+
+### Token
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `api_key` | `str` | Yes | Your Ashby API key |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.connectors.ashby.models import AshbyAuthConfig
+
+connector = AshbyConnector(
+    auth_config=AshbyAuthConfig(
+        api_key="<Your Ashby API key>"
+    )
+)
+```
 

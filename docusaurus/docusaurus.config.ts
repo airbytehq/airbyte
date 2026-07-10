@@ -26,7 +26,7 @@ const getRemarkPlugins = () => ({
 
 const plugins = getRemarkPlugins();
 
-// Import constants for Airbyte Agents API sidebar generation
+// Import constants for Agent API sidebar generation
 const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
@@ -38,12 +38,17 @@ const darkCodeTheme = prismThemes.dracula;
 const config: Config = {
   future: {
     v4: true,
-    experimental_faster: true,
+    faster: true,
   },
   markdown: {
     mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: "throw",
+    },
+    mdx1Compat: {
+      comments: true,
+      admonitions: true,
+      headingIds: true,
     },
   },
   themes: [
@@ -166,7 +171,7 @@ const config: Config = {
         async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
           const sidebarItems = await defaultSidebarItemsGenerator(args);
 
-          // Load and filter the Airbyte Agents API sidebar based on allowed tags
+          // Load and filter the Agent API sidebar based on allowed tags
           const agentEngineApiItems = loadAgentEngineApiSidebar();
 
           // Replace the "api-reference" category with the filtered API items
@@ -183,8 +188,12 @@ const config: Config = {
           // multi-instance sidebars (e.g. sidebar-platform.js) use this same
           // pattern, so this makes ai-agents breadcrumbs consistent with them.
           // See https://github.com/facebook/docusaurus/issues/6953.
+          // Filter out the README (used as the category link) and
+          // standalone landing pages that should not appear in navigation.
+          const hiddenDocIds = new Set(["README", "slack-app"]);
           const itemsWithoutReadme = processedItems.filter(
-            (item: any) => !(item.type === "doc" && item.id === "README"),
+            (item: any) =>
+              !(item.type === "doc" && hiddenDocIds.has(item.id)),
           );
 
           return [
@@ -303,7 +312,7 @@ const config: Config = {
         depth: 4,
         content: {
           includePages: true,
-          excludeRoutes: ["./api-docs/**"],
+          excludeRoutes: ["./api-docs/**", "./ai-agents/slack-app"],
         },
       } satisfies LLmPluginOptions,
     ],

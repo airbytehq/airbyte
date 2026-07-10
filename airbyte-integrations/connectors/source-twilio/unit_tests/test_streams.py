@@ -5,16 +5,18 @@
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
+from components import TwilioConferencesStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
 BASE = "https://api.twilio.com/2010-04-01"
+MONITOR_BASE = "https://monitor.twilio.com/v1"
 
 ACCOUNTS_JSON = {
     "accounts": [
@@ -204,6 +206,192 @@ class TestIncrementalTwilioStream:
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_cursor_advances_across_windows(self, requests_mock):
+        """Regression for the stuck-cursor bug (oncall #12688).
+
+        `messages` uses a second-precision ``datetime_format`` (``%Y-%m-%d %H:%M:%SZ``). If
+        ``cursor_granularity`` is finer than that (e.g. ``PT0.000001S``), each slice end
+        (``next_start - granularity``) is truncated to the second when formatted, opening a
+        ~1s gap between consecutive slice intervals that ``merge_intervals`` cannot bridge.
+        The per-partition cursor then never advances past the first window and the stream
+        re-reads its whole history every sync. With a matching granularity (``PT1S``) the
+        intervals merge and the cursor advances to the newest record.
+
+        The assertion checks the cursor lands on the *newest record across every window* (not
+        merely that it moved), so a partial-advance regression where only some slices merge
+        would still fail.
+        """
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+
+        # Each monthly window returns one record dated at its lower bound (DateSent>),
+        # echoed back in the ISO 'T' form the connector normalizes records to.
+        windows = []
+
+        def _messages(request, context):
+            lower = parse_qs(urlparse(request.url).query, keep_blank_values=True).get("DateSent>", ["1970-01-01 00:00:00Z"])[0]
+            windows.append(lower)
+            context.status_code = 200
+            return {"messages": [{"sid": "SM", "date_sent": lower.replace(" ", "T")}]}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_messages)
+
+        # Saved per-partition state a few months back -> several monthly windows are generated.
+        saved_cursor = "2022-08-16 00:00:00Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [
+                        {
+                            "partition": {"parent_slice": {}, "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": saved_cursor},
+                        }
+                    ],
+                    "state": {"date_sent": saved_cursor},
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        # The sync must span several windows, otherwise the multi-slice merge isn't exercised.
+        assert len(set(windows)) >= 3, f"expected multiple date windows, got {sorted(set(windows))}"
+
+        # The newest record returned across all windows (records sit at each window's lower bound).
+        # Window bounds and the stored cursor share the second-precision format, so a string
+        # comparison is exact and order-preserving.
+        newest_record = max(windows)
+
+        # Emitted per-partition cursor must land on that newest record -- i.e. every slice merged
+        # and the cursor advanced fully, not just past the first window.
+        final = output.most_recent_state.stream_state.__dict__
+        partition_cursor = final["states"][0]["cursor"]["date_sent"]
+        assert partition_cursor == newest_record, (
+            f"per-partition cursor did not advance to the newest record: "
+            f"cursor={partition_cursor!r}, newest_record={newest_record!r}, saved={saved_cursor!r}"
+        )
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_pagination_limit_error_message(self, requests_mock):
+        requests_mock.get(
+            f"{MONITOR_BASE}/Alerts",
+            json={
+                "code": 400,
+                "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+            },
+            status_code=400,
+        )
+
+        output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert not output.records
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert "Twilio Alerts request exceeds the 10,000-result pagination limit." in output.get_formatted_error_message()
+        assert "in the source configuration" in output.get_formatted_error_message()
+        assert "fewer Alert records per slice" in output.get_formatted_error_message()
+
+
+class TestConferenceParticipantsStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_only_requests_active_conferences(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        requested_statuses = []
+
+        def _match_active_status(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            status = q.get("Status")
+            if status in (["init"], ["in-progress"]):
+                requested_statuses.extend(status)
+                return True
+            return False
+
+        conferences_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:00:00Z",
+                        "status": "in-progress",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF2/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_active_status,
+        )
+
+        # Participants for in-progress conference CF2
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences/CF2/Participants.json",
+            json={
+                "participants": [
+                    {
+                        "call_sid": "CA2",
+                        "conference_sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:01:00Z",
+                        "date_updated": "2022-11-15T11:05:00Z",
+                        "status": "connected",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert conferences_matcher.called, "Should request conferences with an active Status filter"
+        assert set(requested_statuses) == {"init", "in-progress"}, "Should request both init and in-progress conferences"
+        assert len(records) >= 1
+        assert records[0].record.data["conference_sid"] == "CF2"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_empty_parent_returns_no_records(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={"conferences": []},
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert len(records) == 0
+
 
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
@@ -263,6 +451,89 @@ class TestTwilioNestedStream:
         assert media_matcher.called, "Media endpoint for SM1 was not called"
         assert len(records) == 1, f"Expected 1 media record (only from SM1), got {len(records)}"
 
+    def test_services_stream_reads_from_conversations_api(self, requests_mock):
+        """`services` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        Twilio's Programmable Chat REST API (`chat.twilio.com/v2`) reaches end of life on
+        June 1, 2026, so the connector routes `services` to `conversations.twilio.com/v1/Services`.
+        """
+        chat_matcher = requests_mock.get("https://chat.twilio.com/v2/Services", status_code=410)
+        conversations_matcher = requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": "IS11111111111111111111111111111111",
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": "https://conversations.twilio.com/v1/Services/IS11111111111111111111111111111111",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "services", SyncMode.full_refresh).records
+
+        assert conversations_matcher.called, "`services` should call the Conversations API endpoint"
+        assert not chat_matcher.called, "`services` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+
+    def test_roles_stream_reads_from_conversations_api(self, requests_mock):
+        """`roles` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        The Conversations API preserves Service and Role SIDs, so existing primary keys are
+        unchanged, but the request base URL must be `conversations.twilio.com/v1`.
+        """
+        service_sid = "IS11111111111111111111111111111111"
+        requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": service_sid,
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+        chat_roles_matcher = requests_mock.get(f"https://chat.twilio.com/v2/Services/{service_sid}/Roles", status_code=410)
+        conversations_roles_matcher = requests_mock.get(
+            f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles",
+            json={
+                "roles": [
+                    {
+                        "sid": "RL22222222222222222222222222222222",
+                        "account_sid": "AC123",
+                        "chat_service_sid": service_sid,
+                        "friendly_name": "service admin",
+                        "type": "service",
+                        "permissions": ["editAnyMessage"],
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles/RL22222222222222222222222222222222",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "roles", SyncMode.full_refresh).records
+
+        assert conversations_roles_matcher.called, "`roles` should call the Conversations API endpoint"
+        assert not chat_roles_matcher.called, "`roles` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+        assert records[0].record.data["chat_service_sid"] == service_sid
+
     @pytest.mark.parametrize(
         "stream_name, expected_count",
         [
@@ -299,3 +570,197 @@ class TestTwilioNestedStream:
         records = read_from_stream(TEST_CONFIG, stream_name, SyncMode.full_refresh).records
 
         assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "input_state,expected_state,should_migrate",
+    [
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="single_partition_duplicated_for_all_statuses",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="multiple_partitions_each_duplicated_with_own_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                ]
+            },
+            True,
+            id="partition_without_cursor_gets_empty_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            None,
+            False,
+            id="already_migrated_no_op",
+        ),
+        pytest.param(
+            {},
+            None,
+            False,
+            id="empty_state_no_op",
+        ),
+    ],
+)
+def test_conferences_state_migration(input_state, expected_state, should_migrate):
+    migration = TwilioConferencesStateMigration()
+    assert migration.should_migrate(input_state) == should_migrate
+    if should_migrate:
+        assert migration.migrate(input_state) == expected_state

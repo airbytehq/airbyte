@@ -103,6 +103,75 @@ Classes
     `total_size: int | None`
     :   The type of the None singleton.
 
+<a id="AccountWriteInput"></a>
+
+`AccountWriteInput(**data: Any)`
+:   AccountWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_number: str | None`
+    :   The type of the None singleton.
+
+    `annual_revenue: float | None`
+    :   The type of the None singleton.
+
+    `billing_city: str | None`
+    :   The type of the None singleton.
+
+    `billing_country: str | None`
+    :   The type of the None singleton.
+
+    `billing_postal_code: str | None`
+    :   The type of the None singleton.
+
+    `billing_state: str | None`
+    :   The type of the None singleton.
+
+    `billing_street: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `industry: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `number_of_employees: int | None`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `parent_id: str | None`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `website: str | None`
+    :   The type of the None singleton.
+
 <a id="AccountsListResultMeta"></a>
 
 `AccountsListResultMeta(**data: Any)`
@@ -798,6 +867,69 @@ Classes
     `total_size: int | None`
     :   The type of the None singleton.
 
+<a id="CampaignWriteInput"></a>
+
+`CampaignWriteInput(**data: Any)`
+:   CampaignWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `actual_cost: float | None`
+    :   The type of the None singleton.
+
+    `budgeted_cost: float | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `end_date: str | None`
+    :   The type of the None singleton.
+
+    `expected_response: float | None`
+    :   The type of the None singleton.
+
+    `expected_revenue: float | None`
+    :   The type of the None singleton.
+
+    `is_active: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `number_sent: float | None`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `parent_id: str | None`
+    :   The type of the None singleton.
+
+    `start_date: str | None`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
 <a id="CampaignsListResultMeta"></a>
 
 `CampaignsListResultMeta(**data: Any)`
@@ -918,6 +1050,72 @@ Classes
     `total_size: int | None`
     :   The type of the None singleton.
 
+<a id="CaseWriteInput"></a>
+
+`CaseWriteInput(**data: Any)`
+:   CaseWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_id: str | None`
+    :   The type of the None singleton.
+
+    `contact_id: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `origin: str | None`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `parent_id: str | None`
+    :   The type of the None singleton.
+
+    `priority: str | None`
+    :   The type of the None singleton.
+
+    `reason: str | None`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
+
+    `subject: str | None`
+    :   The type of the None singleton.
+
+    `supplied_company: str | None`
+    :   The type of the None singleton.
+
+    `supplied_email: str | None`
+    :   The type of the None singleton.
+
+    `supplied_name: str | None`
+    :   The type of the None singleton.
+
+    `supplied_phone: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
 <a id="CasesListResultMeta"></a>
 
 `CasesListResultMeta(**data: Any)`
@@ -1033,6 +1231,72 @@ Classes
     :   The type of the None singleton.
 
     `total_size: int | None`
+    :   The type of the None singleton.
+
+<a id="ContactWriteInput"></a>
+
+`ContactWriteInput(**data: Any)`
+:   ContactWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_id: str | None`
+    :   The type of the None singleton.
+
+    `department: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `email: str | None`
+    :   The type of the None singleton.
+
+    `first_name: str | None`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `mailing_city: str | None`
+    :   The type of the None singleton.
+
+    `mailing_country: str | None`
+    :   The type of the None singleton.
+
+    `mailing_postal_code: str | None`
+    :   The type of the None singleton.
+
+    `mailing_state: str | None`
+    :   The type of the None singleton.
+
+    `mailing_street: str | None`
+    :   The type of the None singleton.
+
+    `mobile_phone: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   The type of the None singleton.
+
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsListResultMeta"></a>
@@ -1383,6 +1647,60 @@ Classes
     `total_size: int | None`
     :   The type of the None singleton.
 
+<a id="EventWriteInput"></a>
+
+`EventWriteInput(**data: Any)`
+:   EventWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `duration_in_minutes: int`
+    :   The type of the None singleton.
+
+    `end_date_time: str | None`
+    :   The type of the None singleton.
+
+    `is_all_day_event: bool | None`
+    :   The type of the None singleton.
+
+    `location: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `show_as: str | None`
+    :   The type of the None singleton.
+
+    `start_date_time: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `what_id: str | None`
+    :   The type of the None singleton.
+
+    `who_id: str | None`
+    :   The type of the None singleton.
+
 <a id="EventsListResultMeta"></a>
 
 `EventsListResultMeta(**data: Any)`
@@ -1498,6 +1816,90 @@ Classes
     :   The type of the None singleton.
 
     `total_size: int | None`
+    :   The type of the None singleton.
+
+<a id="LeadWriteInput"></a>
+
+`LeadWriteInput(**data: Any)`
+:   LeadWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `annual_revenue: float | None`
+    :   The type of the None singleton.
+
+    `city: str | None`
+    :   The type of the None singleton.
+
+    `company: str`
+    :   The type of the None singleton.
+
+    `country: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `email: str | None`
+    :   The type of the None singleton.
+
+    `first_name: str | None`
+    :   The type of the None singleton.
+
+    `industry: str | None`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `lead_source: str | None`
+    :   The type of the None singleton.
+
+    `mobile_phone: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `number_of_employees: int | None`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   The type of the None singleton.
+
+    `postal_code: str | None`
+    :   The type of the None singleton.
+
+    `rating: str | None`
+    :   The type of the None singleton.
+
+    `state: str | None`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
+
+    `street: str | None`
+    :   The type of the None singleton.
+
+    `title: str | None`
+    :   The type of the None singleton.
+
+    `website: str | None`
     :   The type of the None singleton.
 
 <a id="LeadsListResultMeta"></a>
@@ -1707,6 +2109,42 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="NoteCreateInput"></a>
+
+`NoteCreateInput(**data: Any)`
+:   NoteCreateInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: str | None`
+    :   The type of the None singleton.
+
+    `is_private: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `parent_id: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
 <a id="NoteQueryResult"></a>
 
 `NoteQueryResult(**data: Any)`
@@ -1738,6 +2176,41 @@ Classes
     :   The type of the None singleton.
 
     `total_size: int | None`
+    :   The type of the None singleton.
+
+<a id="NoteWriteInput"></a>
+
+`NoteWriteInput(**data: Any)`
+:   Fields for updating a classic Note. `ParentId` is omitted because Salesforce
+    treats it as immutable on existing Notes; create a new Note under a different
+    parent rather than reparenting.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: str | None`
+    :   The type of the None singleton.
+
+    `is_private: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="NotesListResultMeta"></a>
@@ -2169,6 +2642,66 @@ Classes
     `system_modstamp: str | None`
     :   System timestamp when the record was last modified
 
+<a id="OpportunityWriteInput"></a>
+
+`OpportunityWriteInput(**data: Any)`
+:   OpportunityWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_id: str | None`
+    :   The type of the None singleton.
+
+    `amount: float | None`
+    :   The type of the None singleton.
+
+    `campaign_id: str | None`
+    :   The type of the None singleton.
+
+    `close_date: str`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `forecast_category_name: str | None`
+    :   The type of the None singleton.
+
+    `lead_source: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `next_step: str | None`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `probability: float | None`
+    :   The type of the None singleton.
+
+    `stage_name: str`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
 <a id="QueryListResultMeta"></a>
 
 `QueryListResultMeta(**data: Any)`
@@ -2364,6 +2897,36 @@ Classes
     `urls: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="SObjectCreateResponse"></a>
+
+`SObjectCreateResponse(**data: Any)`
+:   SObjectCreateResponse type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `errors: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `success: bool | None`
+    :   The type of the None singleton.
+
 <a id="SObjectsResponse"></a>
 
 `SObjectsResponse(**data: Any)`
@@ -2532,7 +3095,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `SalesforceExecuteResultWithMeta[list[Account], AccountsListResultMeta](**data: Any)`
@@ -3662,6 +4225,60 @@ Classes
     `total_size: int | None`
     :   The type of the None singleton.
 
+<a id="TaskWriteInput"></a>
+
+`TaskWriteInput(**data: Any)`
+:   TaskWriteInput type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `activity_date: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `is_reminder_set: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `owner_id: str | None`
+    :   The type of the None singleton.
+
+    `priority: str | None`
+    :   The type of the None singleton.
+
+    `reminder_date_time: str | None`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `what_id: str | None`
+    :   The type of the None singleton.
+
+    `who_id: str | None`
+    :   The type of the None singleton.
+
 <a id="TasksListResultMeta"></a>
 
 `TasksListResultMeta(**data: Any)`
@@ -3839,6 +4456,79 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="UserCreateInput"></a>
+
+`UserCreateInput(**data: Any)`
+:   Fields for creating a Salesforce User. Creating a User consumes a paid
+    user-license seat. Requires the "Manage Internal Users" permission.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `alias: str`
+    :   The type of the None singleton.
+
+    `department: str | None`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `email_encoding_key: str`
+    :   The type of the None singleton.
+
+    `first_name: str | None`
+    :   The type of the None singleton.
+
+    `is_active: bool | None`
+    :   The type of the None singleton.
+
+    `language_locale_key: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `locale_sid_key: str`
+    :   The type of the None singleton.
+
+    `manager_id: str | None`
+    :   The type of the None singleton.
+
+    `mobile_phone: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   The type of the None singleton.
+
+    `profile_id: str`
+    :   The type of the None singleton.
+
+    `time_zone_sid_key: str`
+    :   The type of the None singleton.
+
+    `title: str | None`
+    :   The type of the None singleton.
+
+    `user_role_id: str | None`
+    :   The type of the None singleton.
+
+    `username: str`
+    :   The type of the None singleton.
+
 <a id="UserQueryResult"></a>
 
 `UserQueryResult(**data: Any)`
@@ -3870,6 +4560,78 @@ Classes
     :   The type of the None singleton.
 
     `total_size: int | None`
+    :   The type of the None singleton.
+
+<a id="UserWriteInput"></a>
+
+`UserWriteInput(**data: Any)`
+:   Fields for updating a Salesforce User. Salesforce does not allow deleting Users; deactivate by sending `IsActive: false`.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `alias: str | None`
+    :   The type of the None singleton.
+
+    `department: str | None`
+    :   The type of the None singleton.
+
+    `email: str | None`
+    :   The type of the None singleton.
+
+    `email_encoding_key: str | None`
+    :   The type of the None singleton.
+
+    `first_name: str | None`
+    :   The type of the None singleton.
+
+    `is_active: bool | None`
+    :   The type of the None singleton.
+
+    `language_locale_key: str | None`
+    :   The type of the None singleton.
+
+    `last_name: str | None`
+    :   The type of the None singleton.
+
+    `locale_sid_key: str | None`
+    :   The type of the None singleton.
+
+    `manager_id: str | None`
+    :   The type of the None singleton.
+
+    `mobile_phone: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   The type of the None singleton.
+
+    `profile_id: str | None`
+    :   The type of the None singleton.
+
+    `time_zone_sid_key: str | None`
+    :   The type of the None singleton.
+
+    `title: str | None`
+    :   The type of the None singleton.
+
+    `user_role_id: str | None`
+    :   The type of the None singleton.
+
+    `username: str | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>

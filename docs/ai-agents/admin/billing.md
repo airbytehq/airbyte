@@ -51,12 +51,12 @@ A maximum bill is a spending cap for a single billing period. If your bill reach
 To remove your maximum bill, click **Edit**, clear the value, and click **Save**. The card shows **No limit set** when no cap is in place.
 
 :::tip
-Set a maximum bill even if you don't expect to exceed your included AOs. This protects you from unexpected charges caused by unintended automations, stuck loops, or mistakes in an agent configuration.
+Set a maximum bill even if you don't expect to exceed your included AOs. This protects you from unexpected charges caused by stuck loops or mistakes in an agent configuration.
 :::
 
 ## Monitor usage
 
-The Usage panel on the Billing page shows how your activity consumes AOs and tool calls over time.
+The Usage panel on the Billing page shows how your activity consumes AOs and tool calls over time. Chat usage includes AOs from tool calls and reasoning. MCP, API, SDK, and CLI usage includes AOs from tool calls only.
 
 ### View usage
 
@@ -69,11 +69,11 @@ Use the toggle to switch between a table view and a chart view.
 
 Filter the Usage panel to focus on a specific source or time range:
 
-- **Source**: Filter by where the activity originated. Sources include Chat, Automation, Automation Builder Chat, MCP, API, and SDK.
+- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, SDK, and CLI.
 - **Billing period**: Choose the current billing period or one of the last five billing periods.
 - **Custom range**: Pick any start and end date to view usage across an arbitrary window.
 
-Rows from Chat, Automation, and Automation Builder Chat link to the originating session, so you can investigate what drove a particular spike.
+Usage from Chat links to the originating session, so you can investigate the tool calls and reasoning that drove a particular spike.
 
 ### Understand included and overage AOs
 
@@ -109,17 +109,17 @@ If you can't pay with the card on file, [update your payment method](#update-you
 
 In the Invoices panel, click the download icon next to an invoice to save a copy.
 
-### Automatic invoice at $2,000 {#auto-bill}
+### Automatic invoice at $10,000 {#auto-bill}
 
-If your charges for a billing period reach $2,000, Airbyte automatically issues an invoice and bills the payment method on file. This is in addition to your regular monthly invoice. After the automatic invoice, charges continue to accrue normally for the rest of the billing period.
+If your charges for a billing period reach $10,000, Airbyte automatically issues an invoice and bills the payment method on file. This is in addition to your regular monthly invoice. After the automatic invoice, charges continue to accrue normally for the rest of the billing period.
 
-The $2,000 automatic invoice is independent of your [maximum bill](#maximum-bill). The automatic invoice is how Airbyte collects what you already owe. The maximum bill is how you tell Airbyte to stop adding charges.
+The $10,000 automatic invoice is independent of your [maximum bill](#maximum-bill). The automatic invoice is how Airbyte collects what you already owe. The maximum bill is how you tell Airbyte to stop adding charges.
 
 ## Avoid billing surprises
 
 To avoid billing surprises, Airbyte offers two capabilities. Airbyte strongly encourages you to rely on these tools to avoid unexpected charges.
 
-- If your charges reach $2,000 in a billing period, Airbyte [automatically generates an invoice and bills you](#auto-bill).
+- If your charges reach $10,000 in a billing period, Airbyte [automatically generates an invoice and bills you](#auto-bill).
 - You can set a [maximum bill](#maximum-bill) so you're never charged more than you're willing to pay in a billing period.
 
 ## Cancel your subscription
@@ -151,7 +151,7 @@ A plan to explore Airbyte Agents and prototype agents.
 - $0 per month.
 - 1,000 AOs per month.
 - Overage isn't available. When you reach your monthly limit, agent operations pause until the next billing period.
-- Context Store refreshes hourly during your first month, then daily.
+- Context Store refreshes hourly during your first 2 weeks, then daily.
 - AI and community support.
 
 ### Individual
@@ -159,8 +159,7 @@ A plan to explore Airbyte Agents and prototype agents.
 A plan for personal use and daily work.
 
 - $29 per month.
-- 1,000 AOs per month.
-- No daily limit.
+- 5,000 AOs per month.
 - Overage AOs are available.
 - Context Store refreshes hourly.
 - Standard human support, in addition to AI and community support.
@@ -169,21 +168,22 @@ You must [add a payment method](#add-a-payment-method) before you upgrade to the
 
 ### Team
 
-A plan for teams running more automations.
+A plan for teams with higher usage needs.
 
 - $299 per month.
 - 10,000 AOs per month.
-- No daily limit.
 - Overage AOs are available.
 - Context Store refreshes hourly.
-- Multiple workspaces and an authentication module.
-- Single sign-on and SAML.
+- [Multiple workspaces](../concepts/architecture/workspaces.md).
+- [Single sign-on and SAML](./sso.md).
+- [Multiple users](./users.md).
 - Standard human support, in addition to AI and community support.
 
 ### Custom
 
 A plan for large companies and embedded products. Airbyte tailors pricing, usage limits, and feature access to your needs. Custom plans include:
 
+- An authentication module for embedding connector authentication in your app.
 - A dedicated account manager.
 - Service level agreements.
 - Dedicated human support.

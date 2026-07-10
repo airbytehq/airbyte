@@ -286,9 +286,6 @@ Classes
     `page_cursor: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
 <a id="CampaignsLtCondition"></a>
 
 `CampaignsLtCondition(*args, **kwargs)`
@@ -2472,10 +2469,10 @@ Classes
 
     ### Class variables
 
-    `page_cursor: str`
+    `filter: str`
     :   The type of the None singleton.
 
-    `page_size: int`
+    `page_cursor: str`
     :   The type of the None singleton.
 
 <a id="MetricsLtCondition"></a>

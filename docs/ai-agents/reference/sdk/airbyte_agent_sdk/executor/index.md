@@ -42,7 +42,7 @@ Classes
 
 <a id="ExecutionConfig"></a>
 
-`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None)`
+`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None)`
 :   Configuration for connector execution.
     
     Used by both LocalExecutor and HostedExecutor to specify the operation to execute.
@@ -56,6 +56,10 @@ Classes
             - For GET: \{"id": "cus_123"\}
             - For LIST: \{"limit": 10\}
             - For CREATE: \{"email": "...", "name": "..."\}
+        select_fields: Optional allowlist of dot-notation fields to include
+        exclude_fields: Optional blocklist of dot-notation fields to remove
+        skip_truncation: Disable long-text truncation for collection actions
+        intent: Optional short description of why this execution is being performed (max 512 chars)
     
     Example:
         config = ExecutionConfig(
@@ -72,7 +76,19 @@ Classes
     `entity: str`
     :   The type of the None singleton.
 
+    `exclude_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `intent: str | None`
+    :   The type of the None singleton.
+
     `params: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `select_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `skip_truncation: bool`
     :   The type of the None singleton.
 
 <a id="ExecutionResult"></a>
@@ -257,20 +273,26 @@ Classes
     
     Initialize hosted executor.
     
-    Either provide connector_id directly OR (workspace_name + connector_definition_id)
-    for lookup.
+    Either provide `connector_id` directly OR (`workspace_name` +
+    `connector_definition_id`) for lookup. When neither `connector_id`
+    nor `workspace_name` is provided, `workspace_name` defaults to
+    `"default"`, so the lookup resolves against the workspace literally
+    named "default" as long as `connector_definition_id` is supplied.
     
     Args:
         airbyte_client_id: Airbyte client ID for authentication
         airbyte_client_secret: Airbyte client secret for authentication
         connector_id: Direct connector/source ID (skips lookup if provided)
-        workspace_name: Workspace name for connector lookup
+        workspace_name: Workspace name for connector lookup. Defaults to
+            `"default"` when neither this nor `connector_id` is provided.
         connector_definition_id: Connector definition ID (for lookup)
         organization_id: Optional Airbyte organization ID for multi-org request routing
         model: Optional ConnectorModel for health check operation selection
     
     Raises:
-        ValueError: If neither connector_id nor (workspace_name + connector_definition_id) provided
+        ValueError: If neither `connector_id` nor `connector_definition_id` is provided
+            (a missing `workspace_name` alone no longer raises, since it now
+            defaults to `"default"`).
     
     Example:
         # With explicit connector_id (no lookup)
@@ -312,11 +334,11 @@ Classes
             finally:
                 await executor.close()
 
-    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
+    `execute(self, *args: ExecutionConfig | str, config_or_entity: ExecutionConfig | str | None = None, config: ExecutionConfig | None = None, params: dict[str, Any] | None = None, entity: str | None = None, action: str | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
     :   Execute connector via cloud API (ExecutorProtocol implementation).
         
-        Accepts either an :class:`ExecutionConfig` or positional ``(entity, action)``
-        strings with an optional ``params`` keyword argument.
+        Accepts either an :class:`ExecutionConfig`, positional ``(entity, action)``
+        strings, or keyword ``entity=...``/``action=...`` strings.
         
         Flow:
         1. Use provided connector_id or look up from workspace_name + definition_id
@@ -324,9 +346,20 @@ Classes
         3. Parse the response into ExecutionResult
         
         Args:
-            config_or_entity: ExecutionConfig object *or* entity name string
+            config_or_entity: Backward-compatible alias for either an
+                ExecutionConfig object or entity name string.
+            config: ExecutionConfig object
+            entity: Entity name string, or an ExecutionConfig when passed positionally
             action: Action string (required when entity is a string)
             params: Optional parameters dict (only with string form)
+            select_fields: Optional allowlist of dot-notation fields to include
+                (only with string form)
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+                (only with string form)
+            skip_truncation: Disable long-text truncation for collection actions
+                (only with string form)
+            intent: Optional short description of why this execution is being
+                performed, max 512 chars (only with string form)
         
         Returns:
             ExecutionResult with success/failure status
@@ -351,6 +384,12 @@ Classes
         
             # Shorthand form:
             result = await executor.execute("customers", "list", params=\{"limit": 10\})
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect hosted connector metadata and readiness.
+
+    `read_skill_docs(self, id: str, section: str | None = None) ‑> dict[str, typing.Any]`
+    :   Read hosted skill docs by skill ID.
 
 <a id="InvalidParameterError"></a>
 

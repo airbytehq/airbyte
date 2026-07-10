@@ -34,6 +34,7 @@ from .errors_handlers import (
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
     is_conflict_with_empty_repository,
+    is_gone_with_feature_disabled,
 )
 from .graphql import (
     CursorStorage,
@@ -151,44 +152,62 @@ class GithubStreamABC(HttpStream, ABC):
                 elif isinstance(self, TeamMemberships):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
                 else:
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
+                    error_msg = (
+                        f"Skipping `{self.__class__.__name__}` for repository `{repository}`: "
+                        f"GitHub returned 404 Not Found. The repository may not exist, may have been deleted, "
+                        f"or the configured token may lack access to it."
+                    )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e._exception.response.json().get("message"))
+                api_message = (e._exception.response.json() or {}).get("message", "")
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
+                elif isinstance(self, (Organizations, Teams, Users)):
                     error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+                        f"Skipping `{self.name}` for organization `{organisation}`: "
+                        f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
+                        f"or this organization may require SAML SSO authorization. "
+                        f"GitHub message: {api_message!r}"
                     )
                 # For all other `Repository` base streams
                 else:
                     error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+                        f"Skipping `{self.name}` for repository `{repository}`: "
+                        f"GitHub denied access (HTTP 403). Your token may be missing required scopes, "
+                        f"or this organization may require SAML SSO authorization. "
+                        f"GitHub message: {api_message!r}"
                     )
             elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
+                api_message = (e._exception.response.json() or {}).get("message", "")
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
-                    error_msg = str(e._exception.response.json().get("message"))
-                    self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
+                    self.logger.error(
+                        f"GitHub authentication failed (HTTP 401) for stream `{self.name}`. "
+                        f"Your Personal Access Token may need to be renewed. GitHub message: {api_message!r}"
+                    )
                 raise e
-            elif e._exception.response.status_code == requests.codes.GONE and isinstance(self, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+
             elif e._exception.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
+                    f"Skipping `{self.name}` for repository `{stream_slice['repository']}`: "
+                    f"GitHub returned 409 Conflict. The repository is likely empty (no commits)."
                 )
             elif e._exception.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e._exception.response.status_code == requests.codes.BAD_GATEWAY:
-                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
+                error_msg = (
+                    f"GitHub returned HTTP 502 Bad Gateway for stream `{self.name}` after exhausting retries. "
+                    f"This is usually transient — the next sync attempt should succeed."
+                )
+            elif e._exception.response.status_code == requests.codes.GATEWAY_TIMEOUT:
+                error_msg = (
+                    f"GitHub returned HTTP 504 Gateway Timeout for stream `{self.name}` after exhausting retries "
+                    f"and reducing the GraphQL page size. The next sync attempt should succeed; "
+                    f'if 504s persist, lower "Page size for large streams" in the source configuration.'
+                )
             else:
-                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
                 raise e
 
@@ -219,11 +238,15 @@ class GithubStream(GithubStreamABC):
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if (
             isinstance(exception, DefaultBackoffException)
-            and exception.response.status_code == requests.codes.BAD_GATEWAY
+            and exception.response.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT)
             and self.large_stream
             and self.page_size > 1
         ):
-            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
+            return (
+                f'Please try to decrease the "Page size for large streams" below {self.page_size}. '
+                f'The stream "{self.name}" is a large stream, such streams can fail with '
+                f'{exception.response.status_code} for high "page_size" values.'
+            )
         return super().get_error_display_message(exception)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -238,6 +261,39 @@ class GithubStream(GithubStreamABC):
 
         return record
 
+    def _safe_json_list(self, response: requests.Response, key: Optional[str] = None) -> Optional[list]:
+        """Parse JSON from `response` and return a list, or ``None`` on failure.
+
+        When `key` is provided the body is expected to be a dict and the list is
+        extracted via ``body[key]``.  When `key` is ``None`` the body itself must
+        be a list.  On any parse/validation failure a warning is logged and
+        ``None`` is returned so callers can short-circuit gracefully.
+        """
+        try:
+            body = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r).",
+                self.name,
+                response.status_code,
+                response.text[:50],
+            )
+            return None
+        if key is not None:
+            items = (body or {}).get(key)
+        else:
+            items = body
+        if not isinstance(items, list):
+            self.logger.warning(
+                "`%s` response has unexpected structure (HTTP %s, key=%r, got %s).",
+                self.name,
+                response.status_code,
+                key,
+                type(items).__name__,
+            )
+            return None
+        return items
+
     def parse_response(
         self,
         response: requests.Response,
@@ -245,9 +301,8 @@ class GithubStream(GithubStreamABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if is_conflict_with_empty_repository(response):
-            # I would expect that this should be handled (skipped) by the error handler, but it seems like
-            # ignored this error but continue to processing records. This may be fixed in latest CDK versions.
+        if is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
+            # The CDK IGNORE action still calls parse_response; guard against non-array error bodies.
             return
         yield from super().parse_response(
             response=response,
@@ -805,6 +860,16 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
 
     cursor_field = "created_at"
     is_sorted = "asc"
+    # The Releases GraphQL query is high-cost on the server side: every node
+    # materializes `description` and `descriptionHTML`, which forces GitHub
+    # to render each release body to HTML. On repositories with long release
+    # notes, a page_size of 100 pushes the resolver past its internal 10s
+    # deadline and returns 504 Gateway Timeout (reproduced deterministically
+    # against nodejs/node: first=100 -> 504 in ~11s; first=10 -> 200 in ~3s).
+    # `releaseAssets` / `reactionGroups` / `mentions` are NOT the cost driver
+    # — stripping them does not fix the timeout, only lowering `first` does.
+    # Mark as large_stream so it picks up the smaller default page size.
+    large_stream = True
 
     GRAPHQL_REACTION_TO_REST = {
         "THUMBS_UP": "plus_one",
@@ -1583,8 +1648,10 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/workflows"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json().get("workflows")
-        for record in response:
+        items = self._safe_json_list(response, key="workflows")
+        if items is None:
+            return
+        for record in items:
             yield self.transform(record=record, stream_slice=stream_slice)
 
     def convert_cursor_value(self, value):
@@ -1608,8 +1675,10 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/runs"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json().get("workflow_runs")
-        for record in response:
+        items = self._safe_json_list(response, key="workflow_runs")
+        if items is None:
+            return
+        for record in items:
             yield record
 
     def read_records(
@@ -1687,7 +1756,10 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        for record in response.json()["jobs"]:
+        items = self._safe_json_list(response, key="jobs")
+        if items is None:
+            return
+        for record in items:
             if record.get(self.cursor_field):
                 yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -1873,8 +1945,11 @@ class IssueTimelineEvents(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        events_list = response.json()
         record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
+        events_list = self._safe_json_list(response)
+        if events_list is None:
+            yield record
+            return
         for event in events_list:
             record[event["event"]] = event
         yield record

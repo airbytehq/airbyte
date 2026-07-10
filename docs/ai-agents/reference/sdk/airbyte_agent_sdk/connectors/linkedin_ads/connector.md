@@ -48,7 +48,7 @@ Classes
     :   Returns a list of users associated with ad accounts
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying by account URN
             accounts: Account URN, e.g. urn:li:sponsoredAccount:123456
             count: Number of items per page
             start: Offset for pagination
@@ -112,11 +112,11 @@ Classes
         Returns:
             Account
 
-    `list(self, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta]`
+    `list(self, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], AccountsListResultMeta]`
     :   Returns a list of ad accounts the authenticated user has access to
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad accounts
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -199,7 +199,7 @@ Classes
         
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad analytics
             pivot: Pivot dimension for analytics grouping
             time_granularity: Time granularity for analytics data
             date_range: Date range in LinkedIn format, e.g. (start:(year:2024,month:1,day:1),end:(year:2024,month:12,day:31))
@@ -285,7 +285,7 @@ Classes
         
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad analytics
             pivot: Pivot dimension for analytics grouping
             time_granularity: Time granularity for analytics data
             date_range: Date range in LinkedIn format, e.g. (start:(year:2024,month:1,day:1),end:(year:2024,month:12,day:31))
@@ -353,7 +353,7 @@ Classes
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying campaign groups
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -427,12 +427,12 @@ Classes
         Returns:
             Campaign
 
-    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]`
+    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CampaignsListResultMeta]`
     :   Returns a list of campaigns for an ad account
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying campaigns
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -499,7 +499,7 @@ Classes
     :   Returns a list of conversion rules for an ad account
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying conversions by account
             account: Account URN, e.g. urn:li:sponsoredAccount:123456
             count: Number of items per page
             start: Offset for pagination
@@ -563,12 +563,12 @@ Classes
         Returns:
             Creative
 
-    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Creative], CreativesListResultMeta]`
+    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CreativesListResultMeta]`
     :   Returns a list of creatives for an ad account
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying creatives
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -629,109 +629,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'LinkedinAdsAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: "'LinkedinAdsReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Typed replication settings.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A LinkedinAdsConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await LinkedinAdsConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=LinkedinAdsAuthConfig(refresh_token="...", client_id="...", client_secret="..."),
-            )
-        
-            # With replication config (required for this connector):
-            connector = await LinkedinAdsConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=LinkedinAdsAuthConfig(refresh_token="...", client_id="...", client_secret="..."),
-                replication_config=LinkedinAdsReplicationConfig(start_date="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await LinkedinAdsConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-                replication_config=LinkedinAdsReplicationConfig(start_date="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: "'LinkedinAdsReplicationConfig' | None" = None, source_template_id: str | None = None)`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Typed replication settings. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await LinkedinAdsConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Linkedin-Ads Source",
-                replication_config=LinkedinAdsReplicationConfig(start_date="..."),
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -782,10 +679,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await LinkedinAdsConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -822,7 +715,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -834,6 +727,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation

@@ -36,6 +36,10 @@ MARID is the Master Address Repository ID associated with all addresses within t
 | units | UnitNum | No pagination | ✅ |  ❌  |
 | ssls | SSL | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -43,6 +47,11 @@ MARID is the Master Address Repository ID associated with all addresses within t
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-06-30 | [81197](https://github.com/airbytehq/airbyte/pull/81197) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80603](https://github.com/airbytehq/airbyte/pull/80603) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79972](https://github.com/airbytehq/airbyte/pull/79972) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79430](https://github.com/airbytehq/airbyte/pull/79430) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78885](https://github.com/airbytehq/airbyte/pull/78885) | Update dependencies |
 | 0.0.48 | 2026-04-28 | [77327](https://github.com/airbytehq/airbyte/pull/77327) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [75663](https://github.com/airbytehq/airbyte/pull/75663) | Update dependencies |
 | 0.0.46 | 2026-03-17 | [74238](https://github.com/airbytehq/airbyte/pull/74238) | Update dependencies |

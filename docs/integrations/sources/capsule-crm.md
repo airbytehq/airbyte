@@ -29,6 +29,10 @@ Capsule CRM connector  enables seamless data syncing from Capsule CRM to various
 | activity_types | id | DefaultPaginator | ✅ |  ❌  |
 | stages | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -36,6 +40,11 @@ Capsule CRM connector  enables seamless data syncing from Capsule CRM to various
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-06-30 | [81022](https://github.com/airbytehq/airbyte/pull/81022) | Update dependencies |
+| 0.0.46 | 2026-06-23 | [80423](https://github.com/airbytehq/airbyte/pull/80423) | Update dependencies |
+| 0.0.45 | 2026-06-16 | [79813](https://github.com/airbytehq/airbyte/pull/79813) | Update dependencies |
+| 0.0.44 | 2026-06-09 | [79272](https://github.com/airbytehq/airbyte/pull/79272) | Update dependencies |
+| 0.0.43 | 2026-06-02 | [78644](https://github.com/airbytehq/airbyte/pull/78644) | Update dependencies |
 | 0.0.42 | 2026-04-28 | [77175](https://github.com/airbytehq/airbyte/pull/77175) | Update dependencies |
 | 0.0.41 | 2026-04-21 | [76523](https://github.com/airbytehq/airbyte/pull/76523) | Update dependencies |
 | 0.0.40 | 2026-03-31 | [75681](https://github.com/airbytehq/airbyte/pull/75681) | Update dependencies |

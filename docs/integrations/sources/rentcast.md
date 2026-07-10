@@ -33,6 +33,10 @@ Docs : https://developers.rentcast.io/reference/introduction
 | Value Estimate |  | No pagination | ✅ |  ❌  |
 | Rent Estimate |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,11 @@ Docs : https://developers.rentcast.io/reference/introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-06-30 | [81218](https://github.com/airbytehq/airbyte/pull/81218) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80617](https://github.com/airbytehq/airbyte/pull/80617) | Update dependencies |
+| 0.0.52 | 2026-06-16 | [80054](https://github.com/airbytehq/airbyte/pull/80054) | Update dependencies |
+| 0.0.51 | 2026-06-09 | [79478](https://github.com/airbytehq/airbyte/pull/79478) | Update dependencies |
+| 0.0.50 | 2026-06-02 | [78954](https://github.com/airbytehq/airbyte/pull/78954) | Update dependencies |
 | 0.0.49 | 2026-04-28 | [77409](https://github.com/airbytehq/airbyte/pull/77409) | Update dependencies |
 | 0.0.48 | 2026-04-21 | [76740](https://github.com/airbytehq/airbyte/pull/76740) | Update dependencies |
 | 0.0.47 | 2026-03-17 | [74924](https://github.com/airbytehq/airbyte/pull/74924) | Update dependencies |

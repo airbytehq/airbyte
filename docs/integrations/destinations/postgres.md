@@ -46,7 +46,8 @@ You'll need the following information to configure the Postgres destination:
 #### Configure Network Access
 
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you
-may need to allow access from the IP you're using to expose Airbyte.
+may need to allow access from the IP you're using to expose Airbyte. If you're using Airbyte Cloud,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 ## Step 1: Set up Postgres
 

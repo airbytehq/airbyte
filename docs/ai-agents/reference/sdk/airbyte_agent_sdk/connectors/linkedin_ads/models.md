@@ -2983,15 +2983,15 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[AccountUser], AccountUsersListResultMeta]
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[CampaignGroup], CampaignGroupsListResultMeta]
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Conversion], ConversionsListResultMeta]
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Creative], CreativesListResultMeta]
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], AccountsListResultMeta]
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CampaignsListResultMeta]
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CreativesListResultMeta]
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `LinkedinAdsExecuteResultWithMeta[list[AccountUser], AccountUsersListResultMeta](**data: Any)`
@@ -3021,51 +3021,6 @@ Classes
 <a id="AccountUsersListResult"></a>
 
 `AccountUsersListResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-`LinkedinAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="AccountsListResult"></a>
-
-`AccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3129,51 +3084,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`LinkedinAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="CampaignsListResult"></a>
-
-`CampaignsListResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `LinkedinAdsExecuteResultWithMeta[list[Conversion], ConversionsListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3219,7 +3129,97 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`LinkedinAdsExecuteResultWithMeta[list[Creative], CreativesListResultMeta](**data: Any)`
+`LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], AccountsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AccountsListResult"></a>
+
+`AccountsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CampaignsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="CampaignsListResult"></a>
+
+`CampaignsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CreativesListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3349,6 +3349,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `account_ids: str | None`
+    :   Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all accounts accessible by the authenticated user. See the LinkedIn docs to locate these IDs.
 
     `model_config`
     :   The type of the None singleton.
