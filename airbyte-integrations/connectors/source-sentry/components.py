@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
+
 # Fields returned by the deprecated `GET /projects/` endpoint but dropped by the
 # org-scoped `GET /organizations/{org}/projects/` endpoint. They are still served by
 # the project detail endpoint (`GET /projects/{org}/{project}/`), so we backfill them.
