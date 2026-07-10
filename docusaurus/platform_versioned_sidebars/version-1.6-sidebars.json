@@ -309,6 +309,22 @@
         },
         {
           "type": "category",
+          "label": "Self-Managed Enterprise",
+          "link": {
+            "type": "doc",
+            "id": "enterprise-setup/README"
+          },
+          "items": [
+            "enterprise-setup/implementation-guide",
+            "enterprise-setup/api-access-config",
+            "enterprise-setup/multi-region",
+            "enterprise-setup/scaling-airbyte",
+            "enterprise-setup/upgrade-service-account",
+            "enterprise-setup/upgrading-from-community"
+          ]
+        },
+        {
+          "type": "category",
           "label": "Upgrading Airbyte",
           "link": {
             "type": "doc",
