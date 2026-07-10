@@ -112,8 +112,7 @@ class TestAllStreams:
     def test_manifest_maps_429_to_rate_limited(self):
         """
         Verify the manifest configures HTTP 429 responses with RATE_LIMITED action
-        (not RETRY), so that rate-limited requests retry indefinitely with backoff
-        instead of failing after a limited number of retries.
+        (not RETRY) so rate-limited requests use the rate-limit backoff path.
 
         HTTP 500/503 should remain mapped to RETRY.
         """
@@ -133,10 +132,31 @@ class TestAllStreams:
         filter_429 = next(f for f in response_filters if 429 in f.get("http_codes", []))
         filter_5xx = next(f for f in response_filters if 500 in f.get("http_codes", []))
 
-        assert (
-            filter_429["action"] == "RATE_LIMITED"
-        ), f"HTTP 429 must use RATE_LIMITED action for indefinite retry, got {filter_429['action']}"
+        assert filter_429["action"] == "RATE_LIMITED", f"HTTP 429 must use RATE_LIMITED action, got {filter_429['action']}"
         assert filter_5xx["action"] == "RETRY", f"HTTP 500/503 should use RETRY action, got {filter_5xx['action']}"
+
+    def test_ad_analytics_error_handler_configuration(self):
+        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+        manifest = yaml.safe_load(manifest_path.read_text())
+        analytics_error_handler = manifest["definitions"]["ad_analytics_error_handler"]
+
+        assert analytics_error_handler["max_retries"] == 5
+        assert analytics_error_handler["max_time"] == 1800
+        assert analytics_error_handler["backoff_strategies"] == [
+            {
+                "type": "CustomBackoffStrategy",
+                "class_name": "source_declarative_manifest.components.LinkedInAdsDataVolumeBackoffStrategy",
+            },
+            {"type": "ExponentialBackoffStrategy", "factor": 5},
+        ]
+
+        analytics_requesters = [
+            stream["retriever"]["requester"]
+            for stream in manifest["definitions"]["streams"].values()
+            if stream.get("retriever", {}).get("requester", {}).get("path") == "adAnalytics"
+        ]
+        assert analytics_requesters
+        assert all(requester["error_handlers"] == "#/definitions/ad_analytics_error_handler" for requester in analytics_requesters)
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}

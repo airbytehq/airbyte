@@ -99,6 +99,16 @@ predict when a customer will hit limits. If customers report rate limiting, the 
 value is the primary lever to reduce pressure. The analytics property chunking (5 requests per record
 page) means the effective request rate is much higher than the visible concurrency level suggests.
 
+LinkedIn separately limits Ad Analytics requests to 45 million metric values across a rolling five-minute
+window. Metric values are calculated from the requested fields and returned records, so the call-count
+budget cannot predict this limit. `LinkedInAdsDataVolumeBackoffStrategy` detects the documented response
+message and waits 330 seconds before retrying. Analytics requests keep the existing five-retry limit but
+allow up to 30 minutes so each retry starts after the rolling window can clear.
+
+**Why this matters:** Do not replace the data-volume backoff with a faster generic 429 strategy. Count-based
+429 responses must continue using the exponential fallback, and unrecognized response bodies must not be
+treated as data-volume throttles.
+
 ## Incremental Stream Considerations
 
 The LinkedIn Marketing API supports date-based filtering on analytics and campaign/creative endpoints, which the connector already uses for 17 incremental streams. The single remaining FR parent stream (`accounts`) is a config-style endpoint listing ad accounts, which does not support date-based filtering on its list endpoint.
