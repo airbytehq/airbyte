@@ -76,6 +76,7 @@ data:
   tags:
     - language:python
     - cdk:python
+    - keyword:sample-data
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
