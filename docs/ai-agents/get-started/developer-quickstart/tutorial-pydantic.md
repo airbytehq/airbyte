@@ -80,8 +80,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
    ```python title="agent.py"
    from dotenv import load_dotenv
    from pydantic_ai import Agent
-   from airbyte_agent_sdk import connect
-   from airbyte_agent_sdk.connectors.github import GithubConnector
+   from airbyte_agent_sdk import build_connector_tools, connect
    ```
 
    These imports provide:
@@ -89,7 +88,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
    - `load_dotenv`: Load environment variables from your `.env` file.
    - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
    - `connect`: The Agent SDK entry point. One call returns a typed connector bound to your workspace.
-   - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
+   - `build_connector_tools`: Turns a connector into ready-to-bind agent tools that inspect the connector and read its skill docs before executing.
 
 ## Part 3: Add a .env file with your secrets
 
@@ -148,40 +147,39 @@ One line does four things for you:
 
 If you want to connect to a different workspace or pass credentials explicitly, use `connect("github", workspace_name="my-workspace", client_id=..., client_secret=...)` or pass an `AirbyteAuthConfig`. See the [SDK reference](https://github.com/airbytehq/airbyte-agent-sdk) for details.
 
-### Define the agent
+### Build the tools and agent
 
-Create a Pydantic AI agent with a system prompt that describes its purpose:
+Build the connector's tools, then create a Pydantic AI agent that uses them:
 
 ```python title="agent.py"
+tools = build_connector_tools(github, framework="pydantic_ai")
+
 agent = Agent(
     "openai:gpt-4o",
+    tools=tools.as_list(),
     system_prompt=(
-        "You are a helpful assistant that can access GitHub data through the "
-        "github_execute tool. Be concise and accurate."
+        "You are a helpful assistant that can access GitHub data. Before your first "
+        "execute call, inspect the connector and read its skill docs to learn the "
+        "available entities, actions, and parameters. Be concise and accurate."
     ),
 )
 ```
 
+- `build_connector_tools(github, framework="pydantic_ai")` returns three tools bound to your connector: `inspect_connector`, `read_skill_docs`, and `execute`. Passing `framework="pydantic_ai"` makes runtime errors surface as Pydantic AI retry signals, and `tools.as_list()` registers all three at once.
 - The `"openai:gpt-4o"` string specifies the model to use. You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` to lower costs, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
-- The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Agent SDK already exposes entity names, actions, and enum values through the tool description, so the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
-- The prompt references a `github_execute` tool. You register that tool in the next part.
+- The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. Because the agent reads skill docs at runtime, the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
 
-## Part 6: Add a tool to your agent
+## Part 6: How the agent uses the connector
 
-Rather than one tool per GitHub endpoint, the Agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. The `tool_utils` decorator fills in the entity and action catalog as the tool description, so the model knows what's available without you writing a schema.
+You don't wire up one tool per GitHub endpoint. `build_connector_tools` gave the agent three tools that work together, so the agent discovers what the connector supports at runtime instead of relying on a schema baked into the prompt:
 
-Add the following to `agent.py`:
+1. `inspect_connector()` reports the connector's metadata and Context Store readiness.
+2. `read_skill_docs()` returns an outline of the connector's entities and actions. `read_skill_docs(section="...")` drills into the exact guidance for the operation the agent is about to run.
+3. `execute(entity, action, params)` runs the operation.
 
-```python title="agent.py"
-@agent.tool_plain
-@GithubConnector.tool_utils
-async def github_execute(entity: str, action: str, params: dict | None = None):
-    return await github.execute(entity, action, params or {})
-```
+This progressive flow keeps the agent's context small: it reads only the section it needs before executing, rather than loading the entire connector schema up front. Airbyte serves the skill docs from the same connector definition the SDK is generated from, so they stay accurate as the connector grows.
 
-The decorator stack is the whole tool definition. No per-action `docstring`, no `GITHUB_LIST_COMMITS` or `GITHUB_GET_PR` sprawl, one entry point that covers the full connector. `@GithubConnector.tool_utils` appends the full entity and action catalog to the tool description, and caps oversized responses. As the connector grows, the tool signature stays the same.
-
-Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). Pydantic AI serializes the dict for the model automatically, so you don't need to call `json.dumps` here. You can keep the result as-is, filter it in Python, or page through it using `meta.end_cursor`.
+Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). Pydantic AI serializes the result for the model automatically. You can keep it as-is, filter it in Python, or page through it using `meta.end_cursor`.
 
 ## Part 7: Run your project
 
@@ -250,7 +248,7 @@ In this tutorial, you learned how to:
 - Set up a new Python project with uv
 - Add Pydantic AI and Airbyte's GitHub agent connector to your project
 - Configure environment variables for your Airbyte Agents credentials
-- Register a single tool that covers the entire GitHub API
+- Equip the agent with connector tools that introspect and execute against the entire GitHub API
 - Run your project and use natural language to interact with GitHub data through Airbyte
 
 ## Next steps
