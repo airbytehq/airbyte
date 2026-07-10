@@ -27,7 +27,13 @@ tqdm = ">=4.65.0"
 [tool.poetry.scripts]
 destination-hugging-face-buckets = "destination_hugging_face_buckets.run:run"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
 [tool.poe]
 include = [
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

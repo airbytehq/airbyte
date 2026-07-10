@@ -29,3 +29,6 @@ source-hugging-face-datasets = "source_hugging_face_datasets.run:run"
 include = [
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
