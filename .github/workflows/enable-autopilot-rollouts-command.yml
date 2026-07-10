@@ -172,9 +172,12 @@ jobs:
 
       - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'
         if: steps.git-diff.outputs.changes == 'true'
+        env:
+          CONTRIBUTOR_REPO: ${{ steps.job-vars.outputs.repo }}
+          HEAD_BRANCH: ${{ steps.job-vars.outputs.branch }}
         run: |
-          git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
+          git remote add contributor "https://github.com/$CONTRIBUTOR_REPO.git"
+          git push contributor "HEAD:$HEAD_BRANCH"
 
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
