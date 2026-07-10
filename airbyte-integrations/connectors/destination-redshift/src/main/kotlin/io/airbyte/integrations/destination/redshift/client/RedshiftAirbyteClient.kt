@@ -36,6 +36,9 @@ private const val COLUMN_NAME_COLUMN = "column_name"
 /** PostgreSQL/Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
 private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 
+/** PostgreSQL/Redshift SQL state for UNDEFINED_TABLE (relation does not exist). */
+private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
+
 @Singleton
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
@@ -386,7 +389,7 @@ class RedshiftAirbyteClient(
     }
 
     private fun isTableNotFoundException(e: SQLException): Boolean =
-        e.message?.contains("does not exist") == true
+        e.sqlState == SQLSTATE_UNDEFINED_TABLE
 
     /** Executes a SQL query and processes the [ResultSet] with the given [resultProcessor]. */
     private fun <T> executeQuery(query: String, resultProcessor: (ResultSet) -> T): T {

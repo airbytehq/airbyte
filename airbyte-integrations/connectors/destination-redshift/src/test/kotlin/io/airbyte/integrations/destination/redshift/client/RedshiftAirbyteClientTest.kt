@@ -253,7 +253,7 @@ internal class RedshiftAirbyteClientTest {
     fun `countTable returns null on missing table`() = runTest {
         every { sqlGenerator.countTable(testTable) } returns "COUNT SQL"
         every { mockStatement.executeQuery("COUNT SQL") } throws
-            SQLException("relation \"test_schema.test_table\" does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist", "42P01")
 
         assertNull(client.countTable(testTable))
     }
@@ -303,7 +303,7 @@ internal class RedshiftAirbyteClientTest {
     fun `isTableNotEmpty returns null on missing table`() = runTest {
         every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
         every { mockStatement.executeQuery("IS NOT EMPTY SQL") } throws
-            SQLException("relation \"test_schema.test_table\" does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist", "42P01")
 
         assertNull(client.isTableNotEmpty(testTable))
     }
@@ -353,7 +353,7 @@ internal class RedshiftAirbyteClientTest {
     fun `getGenerationId returns 0 on missing table`() = runTest {
         every { sqlGenerator.getGenerationId(testTable) } returns "GEN ID SQL"
         every { mockStatement.executeQuery("GEN ID SQL") } throws
-            SQLException("relation \"test_schema.test_table\" does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist", "42P01")
 
         assertEquals(0L, client.getGenerationId(testTable))
     }
