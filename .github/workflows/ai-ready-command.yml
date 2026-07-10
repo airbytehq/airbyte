@@ -26,7 +26,7 @@ on:
         default: ""
         type: string
       force:
-        description: "If 'true', bypass the weekend freeze and evaluate anyway"
+        description: "If 'true', bypass the weekend freeze window and evaluate anyway"
         required: false
         default: ""
         type: string
@@ -66,20 +66,34 @@ jobs:
         if: inputs.pr == ''
         run: exit 1
 
-      - name: Check for weekend freeze
+      - name: Check for weekend freeze window
         if: inputs.pr != ''
         id: weekend-check
         env:
           FORCE: ${{ inputs.force }}
         run: |
-          # Day of week in US Pacific time: 6 = Saturday, 7 = Sunday.
+          # Auto-merge is frozen over the weekend, from Friday 12:00 noon through
+          # Monday 9:00 AM US Pacific time. Eligible PRs are not merged during this
+          # window; they merge on the next hands-free pass once the freeze lifts.
+          # Day-of-week in Pacific time: 1 = Monday ... 5 = Friday, 6 = Saturday, 7 = Sunday.
           dow=$(TZ="America/Los_Angeles" date +%u)
-          if [[ ( "$dow" == "6" || "$dow" == "7" ) && "$FORCE" != "true" ]]; then
-            echo "::notice::Weekend freeze in effect (Pacific day-of-week=$dow). Skipping auto-merge."
-            echo "blocked=true" | tee -a "$GITHUB_OUTPUT"
-          else
-            echo "blocked=false" | tee -a "$GITHUB_OUTPUT"
+          # Strip any leading zero so the hour is treated as a base-10 integer.
+          hour=$((10#$(TZ="America/Los_Angeles" date +%H)))
+          blocked=false
+          if [[ "$dow" == "5" && "$hour" -ge 12 ]]; then
+            blocked=true # Friday at or after 12:00 noon
+          elif [[ "$dow" == "6" || "$dow" == "7" ]]; then
+            blocked=true # All day Saturday and Sunday
+          elif [[ "$dow" == "1" && "$hour" -lt 9 ]]; then
+            blocked=true # Monday before 9:00 AM
           fi
+          if [[ "$blocked" == "true" && "$FORCE" == "true" ]]; then
+            echo "::notice::Weekend freeze window active (Pacific dow=$dow hour=$hour) but force=true; proceeding."
+            blocked=false
+          elif [[ "$blocked" == "true" ]]; then
+            echo "::notice::Weekend freeze in effect (Pacific dow=$dow hour=$hour). Skipping auto-merge."
+          fi
+          echo "blocked=$blocked" | tee -a "$GITHUB_OUTPUT"
 
       - name: Weekend freeze notice
         if: inputs.pr != '' && steps.weekend-check.outputs.blocked == 'true'
@@ -92,8 +106,9 @@ jobs:
           body: |
             > **`/ai-ready` blocked: weekend freeze**
             >
-            > Auto-merge is paused over the weekend, so no `hyd-ready` label was applied.
-            > If this is urgent, re-run `/ai-ready force=true` to bypass the freeze. Otherwise, please wait until after the weekend.
+            > Auto-merge is paused from **Friday 12:00 PM through Monday 9:00 AM (US Pacific)**, so no `hyd-ready` label was applied and this PR was not merged.
+            > This PR stays eligible: the next hands-free pass after the freeze lifts re-runs `/ai-ready` and merges it automatically.
+            > If this is urgent, re-run `/ai-ready force=true` to bypass the freeze.
 
       - name: Apply ready label
         if: inputs.pr != '' && steps.weekend-check.outputs.blocked != 'true'
