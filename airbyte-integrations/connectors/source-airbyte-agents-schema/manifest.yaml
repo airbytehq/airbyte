@@ -1,0 +1,255 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Materializes an Agents Schema (https://github.com/dbt-labs/agents_schema) from Airbyte's own
+  configuration metadata. Given a destination actor id, it enumerates the connections landing in that
+  destination and emits AGENTS-shaped streams (`root`, `airbyte_stream`) describing every active
+  stream and its physical destination table. Sync these to Parquet, DuckDB, or back into a warehouse
+  `AGENTS` schema so a SQL agent can discover how Airbyte-landed data is laid out.
+
+check:
+  type: CheckStream
+  stream_names:
+    - root
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ "https://{}/api/public/v1/".format(config['host']) if config['host']
+      else "https://api.airbyte.com/v1/" }}
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: >-
+          {{ 'https://' + config['host'] + '/api/public/v1/applications/' if
+          config['host'] else 'https://api.airbyte.com/v1/applications/'
+          }}/token
+        authenticator:
+          type: NoAuth
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_json:
+          client_id: "{{ config['client_id'] }}"
+          grant-type: client_credentials
+          client_secret: "{{ config['client_secret'] }}"
+      session_token_path:
+        - access_token
+      request_authentication:
+        type: Bearer
+
+  streams:
+    airbyte_stream:
+      type: DeclarativeStream
+      name: airbyte_stream
+      primary_key:
+        - connection_id
+        - stream_namespace
+        - stream_name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: connections
+          http_method: GET
+          request_parameters:
+            limit: "100"
+            includeDeleted: "false"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.AgentsStreamExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', {}) }}"
+            stop_condition: "{{ not response.get('next', {}) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/airbyte_stream"
+    root:
+      type: DeclarativeStream
+      name: root
+      primary_key:
+        - provider
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: connections
+          http_method: GET
+          request_parameters:
+            limit: "100"
+            includeDeleted: "false"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.AgentsRootExtractor
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/root"
+
+streams:
+  - $ref: "#/definitions/streams/root"
+  - $ref: "#/definitions/streams/airbyte_stream"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - destination_id
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        description: >-
+          The client id of an Airbyte API application. Exchanged for a short-lived access token used
+          as the bearer credential against the Airbyte API.
+      client_secret:
+        type: string
+        order: 1
+        title: Client Secret
+        airbyte_secret: true
+        description: The client secret of the Airbyte API application.
+      destination_id:
+        type: string
+        order: 2
+        title: Destination ID
+        description: >-
+          The actor id (GUID) of the destination to describe. Every connection landing in this
+          destination is enumerated; the workspace is inferred from the destination, so it is not a
+          separate input.
+      host:
+        type: string
+        order: 3
+        title: Self-Managed Host
+        description: >-
+          The host of your Self-Managed Airbyte deployment (e.g. airbyte.mydomain.com). Leave blank
+          for Airbyte Cloud (api.airbyte.com).
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    root: false
+    airbyte_stream: false
+  assist: {}
+
+schemas:
+  root:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    required:
+      - provider
+      - key
+    properties:
+      provider:
+        type: string
+        description: Agents Schema provider namespace (always `airbyte` for this connector).
+      key:
+        type: string
+        description: Row key — `index` for the self-describing index, or `skill/<name>` for guidance.
+      content:
+        type:
+          - string
+          - "null"
+        description: JSON index payload or free-form markdown guidance.
+  airbyte_stream:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    required:
+      - connection_id
+      - stream_name
+    properties:
+      connection_id:
+        type: string
+      connection_name:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      source_id:
+        type:
+          - string
+          - "null"
+      destination_id:
+        type:
+          - string
+          - "null"
+      stream_name:
+        type: string
+      stream_namespace:
+        type:
+          - string
+          - "null"
+      sync_mode:
+        type:
+          - string
+          - "null"
+      primary_key:
+        type:
+          - array
+          - "null"
+      cursor_field:
+        type:
+          - array
+          - "null"
+      selected_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      destination_namespace:
+        type:
+          - string
+          - "null"
+      destination_table_name:
+        type:
+          - string
+          - "null"
+      prefix:
+        type:
+          - string
+          - "null"
+      namespace_definition:
+        type:
+          - string
+          - "null"
+      namespace_format:
+        type:
+          - string
+          - "null"
+      connection_status:
+        type:
+          - string
+          - "null"
