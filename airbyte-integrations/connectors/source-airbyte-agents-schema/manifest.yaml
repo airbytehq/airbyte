@@ -25,9 +25,9 @@ definitions:
       login_requester:
         type: HttpRequester
         url_base: >-
-          {{ 'https://' + config['host'] + '/api/public/v1/applications/' if
-          config['host'] else 'https://api.airbyte.com/v1/applications/'
-          }}/token
+          {{ "https://{}/api/public/v1/applications/token".format(config['host'])
+          if config['host'] else
+          "https://api.airbyte.com/v1/applications/token" }}
         authenticator:
           type: NoAuth
         http_method: POST
