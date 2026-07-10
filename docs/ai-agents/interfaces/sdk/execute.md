@@ -113,6 +113,10 @@ lc_tools = [
 ]
 ```
 
+:::note
+LangChain 1.x re-raises tool errors by default, so a wrong `read_skill_docs` section guess aborts the run before the agent can self-correct from the returned outline. To let the agent recover, add the `wrap_tool_call` middleware shown in [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model) in the LangChain quickstart.
+:::
+
 FastMCP registers each callable as a tool:
 
 ```python title="server.py"
