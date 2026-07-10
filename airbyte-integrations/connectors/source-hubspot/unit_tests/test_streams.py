@@ -706,7 +706,6 @@ def test_cast_record_fields_if_needed(
         ("owners", "crm.objects.owners.read", "https://api.hubapi.com/crm/v3/owners", "GET"),
         ("owners_archived", "crm.objects.owners.read", "https://api.hubapi.com/crm/v3/owners", "GET"),
         ("products", "e-commerce", "https://api.hubapi.com/crm/v3/objects/product", "GET"),
-        ("projects", "crm.objects.projects.read", "https://api.hubapi.com/crm/objects/2026-03/projects", "GET"),
         ("subscription_changes", "content", "https://api.hubapi.com/email/public/v1/subscriptions/timeline", "GET"),
         (
             "ticket_pipelines",
@@ -756,6 +755,30 @@ def test_streams_raise_error_message_if_scopes_missing(stream, scopes, url, meth
         f"Verify your scopes: {scopes} to access stream {stream}. "
         f"See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only"
     )
+
+
+def test_projects_stream_skips_on_missing_scope_without_failing_sync(config, requests_mock, mock_dynamic_schema_requests):
+    # The `crm.objects.projects.read` scope is not yet generally available, so the
+    # projects endpoint returns 403 for standard accounts. The stream must skip
+    # gracefully (0 records, no error) instead of aborting the whole sync.
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.register_uri("GET", "https://api.hubapi.com/crm/objects/2026-03/projects", [{"status_code": 403}])
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "projects", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("projects", {}).build()
+    source_hubspot = get_source(config)
+    output = read(source_hubspot, config=config, catalog=catalog, state=state)
+    assert output.errors == []
+    assert len(output.records) == 0
 
 
 def test_discover_if_scopes_missing(config, requests_mock, mock_dynamic_schema_requests):

@@ -2061,6 +2061,10 @@ definitions:
         request_parameters:
           archived: "false"
           properties: "hs_name,hs_description,hs_status,hs_type,hs_target_due_date,hubspot_owner_id,hs_pipeline,hs_pipeline_stage,hs_object_id,hs_createdate,hs_lastmodifieddate"
+        # The projects scope is not yet generally available; accounts without it
+        # get a 403. Skip the stream instead of failing the whole sync.
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_403"
       record_selector:
         $ref: "#/definitions/base_selector"
         schema_normalization:
