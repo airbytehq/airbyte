@@ -27,7 +27,7 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSo
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
-from airbyte_cdk.sources.message import InMemoryMessageRepository
+from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.message.concurrent_repository import ConcurrentMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -64,7 +64,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
     stop_sync_on_stream_failure = True
-    message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
+    # `AbstractSource.message_repository` is a read-only property; this class-level attribute shadows it
+    # so that `__init__` can assign a per-instance `ConcurrentMessageRepository`. The value is only a
+    # placeholder — it is always replaced in `__init__` before the repository is used.
+    message_repository: Optional[MessageRepository] = None
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState], **kwargs):
         if config:

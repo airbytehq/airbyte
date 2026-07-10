@@ -688,3 +688,6 @@ def test_source_uses_ordered_concurrent_message_repository():
 
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     assert isinstance(source.message_repository, ConcurrentMessageRepository)
+    # The ordering guarantee only holds if the repository writes to the same queue the concurrent
+    # source drains on the main thread. Assert they are the very same object, not just the right type.
+    assert source.message_repository._queue is source._concurrent_source._queue
