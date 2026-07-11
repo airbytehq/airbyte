@@ -7,8 +7,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 plugins {
     id 'base'
     id 'com.github.spotbugs' version '6.0.7'
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
-    id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
+    id 'org.jetbrains.kotlin.jvm' version '2.4.0'
+    id 'com.google.devtools.ksp' version '2.3.10'
 }
 
 allprojects {
@@ -53,8 +53,8 @@ allprojects {
     java {
         withSourcesJar()
         withJavadocJar()
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_26
+        targetCompatibility = JavaVersion.VERSION_26
         compileJava {
             options.compilerArgs += ["-Xlint:all,-serial,-processing"] + getJavaCompilerArgs()
         }
@@ -75,8 +75,8 @@ allprojects {
 
     compileKotlin {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_21
-            languageVersion = KotlinVersion.KOTLIN_1_9
+            jvmTarget = JvmTarget.JVM_26
+            languageVersion = KotlinVersion.KOTLIN_2_4
             allWarningsAsErrors = isInCi()
             freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
@@ -86,8 +86,8 @@ allprojects {
     }
     compileTestKotlin {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_21
-            languageVersion = KotlinVersion.KOTLIN_1_9
+            jvmTarget = JvmTarget.JVM_26
+            languageVersion = KotlinVersion.KOTLIN_2_4
             allWarningsAsErrors = isInCi()
             freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
@@ -97,8 +97,8 @@ allprojects {
     }
     compileTestFixturesKotlin {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_21
-            languageVersion = KotlinVersion.KOTLIN_1_9
+            jvmTarget = JvmTarget.JVM_26
+            languageVersion = KotlinVersion.KOTLIN_2_4
             allWarningsAsErrors = isInCi()
             freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }

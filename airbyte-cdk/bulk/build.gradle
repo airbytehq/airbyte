@@ -7,7 +7,7 @@ import org.gradle.api.GradleException
 import org.w3c.dom.Document
 
 plugins {
-    id 'org.jetbrains.dokka' version '2.0.0'
+    id 'org.jetbrains.dokka' version '2.2.0'
 }
 
 final var baseVersionFile = file("core/base/version.properties")
@@ -187,11 +187,11 @@ tasks.register('docsGenerate') {
 }
 
 // Backwards-compatible alias
-tasks.register('dokkaGenerate') {
-    group = 'documentation'
-    description = 'Generate Dokka documentation for all modules (alias for docsGenerate)'
-    dependsOn 'docsGenerate'
-}
+//tasks.register('dokkaGenerate') {
+//    group = 'documentation'
+//    description = 'Generate Dokka documentation for all modules (alias for docsGenerate)'
+//    dependsOn 'docsGenerate'
+//}
 
 // Helper function to check if a version exists in the Maven repository
 def checkVersionExists(String artifactName, String versionToCheck) {
