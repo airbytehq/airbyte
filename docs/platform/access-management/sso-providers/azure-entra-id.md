@@ -1,6 +1,6 @@
 ---
 sidebar_label: Entra ID
-products: cloud, oss-enterprise
+products: cloud
 ---
 
 # Set up single sign on using Entra ID
@@ -15,7 +15,7 @@ This guide is for administrators. It assumes you have:
 - The permissions to manage Entra ID in your organization
 - Organization admin permissions for Airbyte
 
-The steps below cover Cloud with Entra ID OIDC. Self-Managed Enterprise documentation is preserved as a [PDF](/assets/docs/Airbyte-Self-Managed-Enterprise.pdf).
+The steps below cover Cloud with Entra ID OIDC.
 
 ## Cloud with Entra ID OIDC
 
@@ -146,5 +146,3 @@ If you no longer need a domain for SSO purposes, delete its verification.
 4. Click **Test your connection** to verify the updated credentials work correctly.
 
 5. Click **Activate SSO**. -->
-
-

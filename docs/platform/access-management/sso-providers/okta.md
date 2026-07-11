@@ -1,6 +1,6 @@
 ---
 sidebar_label: Okta
-products: oss-enterprise, cloud
+products: cloud
 ---
 
 # Set up single sign on using Okta
@@ -15,7 +15,7 @@ This guide is for administrators. It assumes you have:
 - The permissions to manage Okta in your organization
 - Organization admin permissions for Airbyte
 
-The steps below cover Cloud with Okta OIDC. Self-Managed Enterprise documentation is preserved as a [PDF](/assets/docs/Airbyte-Self-Managed-Enterprise.pdf).
+The steps below cover Cloud with Okta OIDC.
 
 ## Cloud with Okta OIDC
 
@@ -158,5 +158,3 @@ If you no longer need a domain for SSO purposes, delete its verification.
 4. Click **Test your connection** to verify the updated credentials work correctly.
 
 5. Click **Activate SSO**. -->
-
-

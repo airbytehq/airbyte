@@ -392,6 +392,11 @@
       "statusCode": 301
     },
     {
+      "source": "/platform/operator-guides/open-telemetry",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
       "source": "/project-overview/security",
       "destination": "/platform/operating-airbyte/security",
       "statusCode": 301
