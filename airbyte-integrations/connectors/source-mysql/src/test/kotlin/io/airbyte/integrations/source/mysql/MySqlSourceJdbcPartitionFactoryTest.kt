@@ -25,6 +25,8 @@ import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.JdbcNonResumablePartitionReader
+import io.airbyte.cdk.read.JdbcResumablePartitionReader
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.StateManager
@@ -37,6 +39,7 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.util.Base64
 import kotlin.test.assertNull
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -183,6 +186,51 @@ class MySqlSourceJdbcPartitionFactoryTest {
     fun testColdStartWithPkCursorBased() {
         val jdbcPartition = mySqlSourceJdbcPartitionFactory.create(streamFeedBootstrap(stream))
         assertTrue(jdbcPartition is MySqlSourceJdbcSnapshotWithCursorPartition)
+    }
+
+    @Test
+    fun testConcurrentSinglePartitionCanCheckpoint() {
+        val streamState =
+            mySqlSourceJdbcPartitionFactory.streamState(streamFeedBootstrap(stream))
+        val jdbcPartition =
+            MySqlSourceJdbcRfrSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                listOf(fieldId),
+                lowerBound = null,
+                upperBound = null,
+            )
+        val readers =
+            runBlocking {
+                MySqlJdbcConcurrentPartitionsCreator(
+                        jdbcPartition,
+                        mySqlSourceJdbcPartitionFactory
+                    )
+                    .run()
+            }
+
+        assertTrue(readers.single() is JdbcResumablePartitionReader<*>)
+    }
+
+    @Test
+    fun testConcurrentUnsplittablePartitionRemainsNonResumable() {
+        val streamState =
+            mySqlSourceJdbcPartitionFactory.streamState(streamFeedBootstrap(stream))
+        val jdbcPartition =
+            MySqlSourceJdbcNonResumableSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+            )
+        val readers =
+            runBlocking {
+                MySqlJdbcConcurrentPartitionsCreator(
+                        jdbcPartition,
+                        mySqlSourceJdbcPartitionFactory
+                    )
+                    .run()
+            }
+
+        assertTrue(readers.single() is JdbcNonResumablePartitionReader<*>)
     }
 
     @Test
