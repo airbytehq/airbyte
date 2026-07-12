@@ -190,8 +190,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
 
     @Test
     fun testConcurrentSinglePartitionCanCheckpoint() {
-        val streamState =
-            mySqlSourceJdbcPartitionFactory.streamState(streamFeedBootstrap(stream))
+        val streamState = mySqlSourceJdbcPartitionFactory.streamState(streamFeedBootstrap(stream))
         val jdbcPartition =
             MySqlSourceJdbcRfrSnapshotPartition(
                 selectQueryGenerator,
@@ -200,35 +199,26 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 lowerBound = null,
                 upperBound = null,
             )
-        val readers =
-            runBlocking {
-                MySqlJdbcConcurrentPartitionsCreator(
-                        jdbcPartition,
-                        mySqlSourceJdbcPartitionFactory
-                    )
-                    .run()
-            }
+        val readers = runBlocking {
+            MySqlJdbcConcurrentPartitionsCreator(jdbcPartition, mySqlSourceJdbcPartitionFactory)
+                .run()
+        }
 
         assertTrue(readers.single() is JdbcResumablePartitionReader<*>)
     }
 
     @Test
     fun testConcurrentUnsplittablePartitionRemainsNonResumable() {
-        val streamState =
-            mySqlSourceJdbcPartitionFactory.streamState(streamFeedBootstrap(stream))
+        val streamState = mySqlSourceJdbcPartitionFactory.streamState(streamFeedBootstrap(stream))
         val jdbcPartition =
             MySqlSourceJdbcNonResumableSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
             )
-        val readers =
-            runBlocking {
-                MySqlJdbcConcurrentPartitionsCreator(
-                        jdbcPartition,
-                        mySqlSourceJdbcPartitionFactory
-                    )
-                    .run()
-            }
+        val readers = runBlocking {
+            MySqlJdbcConcurrentPartitionsCreator(jdbcPartition, mySqlSourceJdbcPartitionFactory)
+                .run()
+        }
 
         assertTrue(readers.single() is JdbcNonResumablePartitionReader<*>)
     }
