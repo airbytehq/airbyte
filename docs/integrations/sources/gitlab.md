@@ -143,6 +143,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.33 | 2026-07-03 | [79707](https://github.com/airbytehq/airbyte/pull/79707) | Paginate group projects to discover more than 100 projects per group |
 | 4.4.32 | 2026-06-30 | [81041](https://github.com/airbytehq/airbyte/pull/81041) | Update dependencies |
 | 4.4.31 | 2026-06-23 | [80476](https://github.com/airbytehq/airbyte/pull/80476) | Update dependencies |
 | 4.4.30 | 2026-06-17 | [77516](https://github.com/airbytehq/airbyte/pull/77516) | Lower default concurrency from 8 to 4; set HTTPAPIBudget to documented GitLab.com rate limits |
