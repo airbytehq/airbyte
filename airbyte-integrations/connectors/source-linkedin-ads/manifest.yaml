@@ -564,7 +564,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -641,7 +641,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -718,7 +718,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -795,7 +795,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -872,7 +872,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -949,7 +949,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1026,7 +1026,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1103,7 +1103,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1180,7 +1180,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1257,7 +1257,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -1334,7 +1334,7 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
-          batch_size: 20
+          batch_size: 50
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id

@@ -52,6 +52,26 @@ def test_analytics_stream_slices(requests_mock):
     assert [partition.to_slice() for partition in list(stream.generate_partitions())] == expected_partitions
 
 
+@freeze_time("2021-01-02")
+def test_analytics_stream_batches_campaigns_at_manifest_limit(requests_mock):
+    config = {**TEST_CONFIG, "start_date": "2021-01-01", "end_date": "2021-01-02"}
+    campaign_ids = list(range(1, 52))
+    expected_campaigns = [f"urn%3Ali%3AsponsoredCampaign%3A{campaign_id}" for campaign_id in campaign_ids]
+
+    stream = find_stream("ad_member_country_analytics", config)
+    requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+    requests_mock.get(
+        "https://api.linkedin.com/rest/adAccounts/1/adCampaigns",
+        json={"elements": [{"id": campaign_id} for campaign_id in campaign_ids]},
+    )
+
+    campaign_batches = [partition.to_slice()["campaign_id"].split(",") for partition in list(stream.generate_partitions())]
+    emitted_campaigns = [campaign for batch in campaign_batches for campaign in batch]
+
+    assert [len(batch) for batch in campaign_batches] == [50, 1]
+    assert emitted_campaigns == expected_campaigns
+
+
 def test_read_records(requests_mock):
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
