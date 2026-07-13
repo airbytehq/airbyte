@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   externalDocumentationUrls:
@@ -91,6 +91,9 @@ data:
           for every project in the organization.
         upgradeDeadline: "2026-07-15"
         deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["projects"]
     rolloutConfiguration:
       enableProgressiveRollout: false
 metadataSpecVersion: "1.0"
