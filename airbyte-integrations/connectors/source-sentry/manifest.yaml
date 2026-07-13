@@ -1263,6 +1263,58 @@ schemas:
         type:
           - "null"
           - boolean
+      hasFlags:
+        type:
+          - "null"
+          - boolean
+      hasLogs:
+        type:
+          - "null"
+          - boolean
+      hasTraceMetrics:
+        type:
+          - "null"
+          - boolean
+      hasInsightsHttp:
+        type:
+          - "null"
+          - boolean
+      hasInsightsDb:
+        type:
+          - "null"
+          - boolean
+      hasInsightsAssets:
+        type:
+          - "null"
+          - boolean
+      hasInsightsAppStart:
+        type:
+          - "null"
+          - boolean
+      hasInsightsScreenLoad:
+        type:
+          - "null"
+          - boolean
+      hasInsightsVitals:
+        type:
+          - "null"
+          - boolean
+      hasInsightsCaches:
+        type:
+          - "null"
+          - boolean
+      hasInsightsQueues:
+        type:
+          - "null"
+          - boolean
+      hasInsightsAgentMonitoring:
+        type:
+          - "null"
+          - boolean
+      hasInsightsMCP:
+        type:
+          - "null"
+          - boolean
       latestRelease:
         type:
           - "null"
