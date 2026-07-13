@@ -461,7 +461,7 @@ data class ArrayGetter<T>(
             ?.use { rsInner: ResultSet ->
                 mutableListOf<T>().apply {
                     while (rsInner.next()) {
-                        addLast(elementGetter.get(rsInner, 2))
+                        addLast(elementGetter.get(rsInner, 2) as T)
                     }
                 }
             }

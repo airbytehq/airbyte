@@ -5,8 +5,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 compileTestFixturesKotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_26
-        languageVersion = KotlinVersion.KOTLIN_2_4
+        jvmTarget = JvmTarget.JVM_21
+        languageVersion = KotlinVersion.KOTLIN_2_1
         allWarningsAsErrors = false
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
@@ -17,8 +17,8 @@ compileTestFixturesKotlin {
 
 compileTestKotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_26
-        languageVersion = KotlinVersion.KOTLIN_2_4
+        jvmTarget = JvmTarget.JVM_21
+        languageVersion = KotlinVersion.KOTLIN_2_1
         allWarningsAsErrors = false
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
