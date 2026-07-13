@@ -10,6 +10,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: source_faker/spec.json
+        backward_compatibility_tests_config:
+          disable_for_version: "8.0.0" # Removed the always_updated spec field
   discovery:
     tests:
       - config_path: secrets/config.json

@@ -2,6 +2,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Sample Data Migration Guide
 
+## Upgrading to 8.0.0
+
+The `always_updated` configuration field has been removed from the connection spec. Connections that previously set `always_updated: false` will now always refresh `updated_at` values on every sync. If you relied on that field to stop emitting records after `count` records, update your connection configuration accordingly after upgrading.
+
 ## Upgrading to 7.0.0
 
 This is a test breaking change to validate breaking change infrastructure. No actual schema or functionality changes were made. No user action is required.
