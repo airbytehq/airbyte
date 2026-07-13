@@ -1,0 +1,28 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/hugging-face-datasets",
+  "supported_destination_sync_modes": ["overwrite"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Hugging Face Datasets",
+    "type": "object",
+    "required": ["dataset_name"],
+    "additionalProperties": false,
+    "properties": {
+      "dataset_name": {
+        "title": "Dataset Name",
+        "type": "string",
+        "description": "The name of the Hugging Face Dataset to write to. Format: {username}/{dataset_name}",
+        "examples": ["lhoestq/demo1", "organization/my_dataset"],
+        "order": 0
+      },
+      "token": {
+        "title": "Hugging Face Token",
+        "type": "string",
+        "description": "Your Hugging Face token for authentication.",
+        "airbyte_secret": true,
+        "order": 1
+      }
+    }
+  }
+}
