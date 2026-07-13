@@ -148,10 +148,7 @@ The Infor Nexus Datasets source connector supports the following [sync modes](ht
 |-------------|-------------|------------|---------------------|----------------------|
 | datasets | None | Yes | Yes | Yes |
 
-The `datasets` stream returns records from the configured Infor Nexus export dataset. Each record contains the following fields:
-
-- `raw_data`: The record payload as a JSON object.
-- `raw_data_string`: The record payload as a JSON string.
+The `datasets` stream returns records from the configured Infor Nexus export dataset. The schema is dynamically discovered from the Infor Nexus Analytics model API at discover time, so each record contains the actual fields defined in your dataset model. An additional `zzz_ChangeCode` field is injected to support incremental sync detection.
 
 ## Limitations and troubleshooting
 
@@ -176,6 +173,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.0 | 2026-07-08 | [76091](https://github.com/airbytehq/airbyte/pull/76091) | Add dynamic schema discovery via Analytics model API |
 | 0.1.9 | 2026-06-23 | [80544](https://github.com/airbytehq/airbyte/pull/80544) | Update dependencies |
 | 0.1.8 | 2026-06-16 | [79933](https://github.com/airbytehq/airbyte/pull/79933) | Update dependencies |
 | 0.1.7 | 2026-06-09 | [78847](https://github.com/airbytehq/airbyte/pull/78847) | Update dependencies |
