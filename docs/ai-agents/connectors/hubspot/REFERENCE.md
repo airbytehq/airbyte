@@ -12,6 +12,11 @@ The Hubspot connector supports the following entities and actions.
 | Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [API Search](#companies-api-search), [Context Store Search](#companies-context-store-search) |
 | Deals | [List](#deals-list), [Create](#deals-create), [Get](#deals-get), [Update](#deals-update), [API Search](#deals-api-search), [Context Store Search](#deals-context-store-search) |
 | Tickets | [List](#tickets-list), [Create](#tickets-create), [Get](#tickets-get), [Update](#tickets-update), [API Search](#tickets-api-search), [Context Store Search](#tickets-context-store-search) |
+| Notes | [List](#notes-list), [Create](#notes-create), [Get](#notes-get), [Update](#notes-update), [Delete](#notes-delete), [Context Store Search](#notes-context-store-search) |
+| Calls | [List](#calls-list), [Create](#calls-create), [Get](#calls-get), [Update](#calls-update), [Delete](#calls-delete), [Context Store Search](#calls-context-store-search) |
+| Emails | [List](#emails-list), [Create](#emails-create), [Get](#emails-get), [Update](#emails-update), [Delete](#emails-delete), [Context Store Search](#emails-context-store-search) |
+| Meetings | [List](#meetings-list), [Create](#meetings-create), [Get](#meetings-get), [Update](#meetings-update), [Delete](#meetings-delete), [Context Store Search](#meetings-context-store-search) |
+| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Context Store Search](#tasks-context-store-search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
 
@@ -653,7 +658,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `properties.domain` | `string` | No | Company domain name (e.g., example.com) |
 | `properties.description` | `string` | No | Company description |
 | `properties.phone` | `string` | No | Company phone number |
-| `properties.industry` | `string` | No | Company industry |
+| `properties.industry` | `string` | No | Company industry (e.g., COMPUTER_SOFTWARE, INFORMATION_TECHNOLOGY_AND_SERVICES, INTERNET, FINANCIAL_SERVICES, MARKETING_AND_ADVERTISING, EDUCATION_MANAGEMENT) |
 | `properties.city` | `string` | No | Company city |
 | `properties.state` | `string` | No | Company state/region |
 | `properties.country` | `string` | No | Company country |
@@ -815,7 +820,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `properties.domain` | `string` | No | Company domain name (e.g., example.com) |
 | `properties.description` | `string` | No | Company description |
 | `properties.phone` | `string` | No | Company phone number |
-| `properties.industry` | `string` | No | Company industry |
+| `properties.industry` | `string` | No | Company industry (e.g., COMPUTER_SOFTWARE, INFORMATION_TECHNOLOGY_AND_SERVICES, INTERNET, FINANCIAL_SERVICES, MARKETING_AND_ADVERTISING, EDUCATION_MANAGEMENT) |
 | `properties.city` | `string` | No | Company city |
 | `properties.state` | `string` | No | Company state/region |
 | `properties.country` | `string` | No | Company country |
@@ -2048,6 +2053,2381 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].properties.hs_ticket_priority` | `string` | Ticket priority level |
 | `data[].properties.subject` | `string` | Ticket subject line |
 | `data[].updatedAt` | `string` | Timestamp when the ticket record was last modified |
+
+</details>
+
+## Notes
+
+### Notes List
+
+Returns a paginated list of notes
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "notes",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.notes.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | The maximum number of results to display per page. |
+| `after` | `string` | No | The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results. |
+| `associations` | `string` | No | A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names. |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string` |  |
+| `next_link` | `string` |  |
+
+</details>
+
+### Notes Create
+
+Create a new note in HubSpot CRM. Notes can be associated with contacts,
+companies, deals, or tickets by using the associations parameter.
+The hs_timestamp property sets when the note activity occurred.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "notes",
+  "action": "create",
+  "params": {
+    "properties": {
+      "hs_note_body": "<str>",
+      "hs_timestamp": "<str>"
+    },
+    "associations": []
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.notes.create(
+    properties={
+        "hs_note_body": "<str>",
+        "hs_timestamp": "<str>"
+    },
+    associations=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "create",
+    "params": {
+        "properties": {
+            "hs_note_body": "<str>",
+            "hs_timestamp": "<str>"
+        },
+        "associations": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Note properties to set |
+| `properties.hs_note_body` | `string` | Yes | The body content of the note (supports HTML) |
+| `properties.hs_timestamp` | `string` | Yes | Required. Timestamp when the note activity occurred (ISO 8601 format, e.g. 2025-01-15T10:30:00.000Z). Use the current time if the user does not specify one. |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this note |
+| `associations` | `array<object>` | No | Associate the note with other CRM records (contacts, companies, deals, tickets) |
+| `associations.to` | `object` | No |  |
+| `associations.to.id` | `string` | No | ID of the record to associate with |
+| `associations.types` | `array<object>` | No |  |
+| `associations.types.associationCategory` | `string` | No | Association category (e.g., HUBSPOT_DEFINED) |
+| `associations.types.associationTypeId` | `integer` | No | Association type ID (e.g., 202 for note-to-contact, 190 for note-to-company, 214 for note-to-deal, 18 for note-to-ticket) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Notes Get
+
+Get a single note by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "notes",
+  "action": "get",
+  "params": {
+    "noteId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.notes.get(
+    note_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "get",
+    "params": {
+        "noteId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `noteId` | `string` | Yes | Note ID |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `associations` | `string` | No | A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored. |
+| `idProperty` | `string` | No | The name of a property whose values are unique for this object. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Notes Update
+
+Update an existing note's properties by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "notes",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "noteId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.notes.update(
+    properties={},
+    note_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "noteId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Note properties to update |
+| `properties.hs_note_body` | `string` | No | The body content of the note (supports HTML) |
+| `properties.hs_timestamp` | `string` | No | Timestamp when the note activity occurred |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this note |
+| `noteId` | `string` | Yes | Note ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Notes Delete
+
+Archive a note by ID. This is a soft delete — the note is moved to the
+recycle bin and can be restored for approximately 90 days. No public
+hard-delete endpoint exists.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "notes",
+  "action": "delete",
+  "params": {
+    "noteId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.notes.delete(
+    note_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "delete",
+    "params": {
+        "noteId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `noteId` | `string` | Yes | Note ID |
+
+
+### Notes Context Store Search
+
+Search and filter notes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "notes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.notes.context_store_search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the note has been archived |
+| `createdAt` | `string` | Timestamp when the note was created |
+| `id` | `string` | Unique identifier for the note record |
+| `properties` | `object` | Object containing all property values for the note |
+| `properties.hs_createdate` | `string` | Date the note was created |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the note |
+| `properties.hs_note_body` | `string` | The body content of the note (supports HTML) |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hs_timestamp` | `string` | Timestamp when the note activity occurred |
+| `properties.hubspot_owner_id` | `string` | ID of the note owner |
+| `updatedAt` | `string` | Timestamp when the note record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Indicates whether the note has been archived |
+| `data[].createdAt` | `string` | Timestamp when the note was created |
+| `data[].id` | `string` | Unique identifier for the note record |
+| `data[].properties` | `object` | Object containing all property values for the note |
+| `data[].properties.hs_createdate` | `string` | Date the note was created |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the note |
+| `data[].properties.hs_note_body` | `string` | The body content of the note (supports HTML) |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hs_timestamp` | `string` | Timestamp when the note activity occurred |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the note owner |
+| `data[].updatedAt` | `string` | Timestamp when the note record was last modified |
+
+</details>
+
+## Calls
+
+### Calls List
+
+Returns a paginated list of calls
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "calls",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.calls.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | The maximum number of results to display per page. |
+| `after` | `string` | No | The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results. |
+| `associations` | `string` | No | A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names. |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string` |  |
+| `next_link` | `string` |  |
+
+</details>
+
+### Calls Create
+
+Create a new call engagement in HubSpot CRM. Calls can be associated with contacts,
+companies, deals, or tickets by using the associations parameter.
+The hs_timestamp property sets when the call activity occurred.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "calls",
+  "action": "create",
+  "params": {
+    "properties": {
+      "hs_timestamp": "<str>"
+    },
+    "associations": []
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.calls.create(
+    properties={
+        "hs_timestamp": "<str>"
+    },
+    associations=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "create",
+    "params": {
+        "properties": {
+            "hs_timestamp": "<str>"
+        },
+        "associations": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Call properties to set |
+| `properties.hs_call_body` | `string` | No | Description or notes about the call |
+| `properties.hs_call_direction` | `string` | No | Direction of the call (INBOUND or OUTBOUND) |
+| `properties.hs_call_disposition` | `string` | No | The outcome of the call (e.g., connected, no answer, busy, left voicemail) |
+| `properties.hs_call_duration` | `string` | No | Duration of the call in milliseconds |
+| `properties.hs_call_from_number` | `string` | No | Phone number the call was made from |
+| `properties.hs_call_to_number` | `string` | No | Phone number the call was made to |
+| `properties.hs_call_status` | `string` | No | Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER, FAILED, CANCELED) |
+| `properties.hs_call_title` | `string` | No | Title or subject of the call |
+| `properties.hs_timestamp` | `string` | Yes | Required. Timestamp when the call activity occurred (ISO 8601 format, e.g. 2025-01-15T10:30:00.000Z). Use the current time if the user does not specify one. |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this call |
+| `associations` | `array<object>` | No | Associate the call with other CRM records (contacts, companies, deals, tickets) |
+| `associations.to` | `object` | No |  |
+| `associations.to.id` | `string` | No | ID of the record to associate with |
+| `associations.types` | `array<object>` | No |  |
+| `associations.types.associationCategory` | `string` | No | Association category (e.g., HUBSPOT_DEFINED) |
+| `associations.types.associationTypeId` | `integer` | No | Association type ID (e.g., 194 for call-to-contact, 182 for call-to-company, 206 for call-to-deal, 220 for call-to-ticket) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Calls Get
+
+Get a single call by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "calls",
+  "action": "get",
+  "params": {
+    "callId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.calls.get(
+    call_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "get",
+    "params": {
+        "callId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `callId` | `string` | Yes | Call ID |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `associations` | `string` | No | A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored. |
+| `idProperty` | `string` | No | The name of a property whose values are unique for this object. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Calls Update
+
+Update an existing call's properties by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "calls",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "callId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.calls.update(
+    properties={},
+    call_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "callId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Call properties to update |
+| `properties.hs_call_body` | `string` | No | Description or notes about the call |
+| `properties.hs_call_direction` | `string` | No | Direction of the call (INBOUND or OUTBOUND) |
+| `properties.hs_call_disposition` | `string` | No | The outcome of the call |
+| `properties.hs_call_duration` | `string` | No | Duration of the call in milliseconds |
+| `properties.hs_call_from_number` | `string` | No | Phone number the call was made from |
+| `properties.hs_call_to_number` | `string` | No | Phone number the call was made to |
+| `properties.hs_call_status` | `string` | No | Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER) |
+| `properties.hs_call_title` | `string` | No | Title or subject of the call |
+| `properties.hs_timestamp` | `string` | No | Timestamp when the call activity occurred |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this call |
+| `callId` | `string` | Yes | Call ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Calls Delete
+
+Archive a call by ID. This is a soft delete — the call is moved to the
+recycle bin and can be restored for approximately 90 days. No public
+hard-delete endpoint exists.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "calls",
+  "action": "delete",
+  "params": {
+    "callId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.calls.delete(
+    call_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "delete",
+    "params": {
+        "callId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `callId` | `string` | Yes | Call ID |
+
+
+### Calls Context Store Search
+
+Search and filter calls records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "calls",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.calls.context_store_search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the call has been archived |
+| `createdAt` | `string` | Timestamp when the call was created |
+| `id` | `string` | Unique identifier for the call record |
+| `properties` | `object` | Object containing all property values for the call |
+| `properties.hs_call_body` | `string` | Description or notes about the call |
+| `properties.hs_call_direction` | `string` | Direction of the call (INBOUND or OUTBOUND) |
+| `properties.hs_call_duration` | `string` | Duration of the call in milliseconds |
+| `properties.hs_call_status` | `string` | Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER) |
+| `properties.hs_call_title` | `string` | Title or subject of the call |
+| `properties.hs_createdate` | `string` | Date the call was created |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the call |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hs_timestamp` | `string` | Timestamp when the call activity occurred |
+| `properties.hubspot_owner_id` | `string` | ID of the call owner |
+| `updatedAt` | `string` | Timestamp when the call record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Indicates whether the call has been archived |
+| `data[].createdAt` | `string` | Timestamp when the call was created |
+| `data[].id` | `string` | Unique identifier for the call record |
+| `data[].properties` | `object` | Object containing all property values for the call |
+| `data[].properties.hs_call_body` | `string` | Description or notes about the call |
+| `data[].properties.hs_call_direction` | `string` | Direction of the call (INBOUND or OUTBOUND) |
+| `data[].properties.hs_call_duration` | `string` | Duration of the call in milliseconds |
+| `data[].properties.hs_call_status` | `string` | Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER) |
+| `data[].properties.hs_call_title` | `string` | Title or subject of the call |
+| `data[].properties.hs_createdate` | `string` | Date the call was created |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the call |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hs_timestamp` | `string` | Timestamp when the call activity occurred |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the call owner |
+| `data[].updatedAt` | `string` | Timestamp when the call record was last modified |
+
+</details>
+
+## Emails
+
+### Emails List
+
+Returns a paginated list of emails
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "emails",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.emails.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "emails",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | The maximum number of results to display per page. |
+| `after` | `string` | No | The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results. |
+| `associations` | `string` | No | A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names. |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string` |  |
+| `next_link` | `string` |  |
+
+</details>
+
+### Emails Create
+
+Create a new email engagement in HubSpot CRM. Emails can be associated with contacts,
+companies, deals, or tickets by using the associations parameter.
+The hs_timestamp property sets when the email activity occurred.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "emails",
+  "action": "create",
+  "params": {
+    "properties": {
+      "hs_timestamp": "<str>",
+      "hs_email_direction": "<str>"
+    },
+    "associations": []
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.emails.create(
+    properties={
+        "hs_timestamp": "<str>",
+        "hs_email_direction": "<str>"
+    },
+    associations=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "emails",
+    "action": "create",
+    "params": {
+        "properties": {
+            "hs_timestamp": "<str>",
+            "hs_email_direction": "<str>"
+        },
+        "associations": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Email properties to set |
+| `properties.hs_email_subject` | `string` | No | Subject line of the email |
+| `properties.hs_email_text` | `string` | No | Plain text body of the email |
+| `properties.hs_email_html` | `string` | No | HTML body of the email |
+| `properties.hs_email_direction` | `string` | Yes | Required. Direction of the email (EMAIL for sent, INCOMING_EMAIL for received, FORWARDED_EMAIL for forwarded) |
+| `properties.hs_email_status` | `string` | No | Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT) |
+| `properties.hs_email_sender_email` | `string` | No | Sender email address |
+| `properties.hs_email_to_email` | `string` | No | Recipient email address(es) |
+| `properties.hs_timestamp` | `string` | Yes | Required. Timestamp when the email activity occurred (ISO 8601 format, e.g. 2025-01-15T10:30:00.000Z). Use the current time if the user does not specify one. |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this email |
+| `associations` | `array<object>` | No | Associate the email with other CRM records (contacts, companies, deals, tickets) |
+| `associations.to` | `object` | No |  |
+| `associations.to.id` | `string` | No | ID of the record to associate with |
+| `associations.types` | `array<object>` | No |  |
+| `associations.types.associationCategory` | `string` | No | Association category (e.g., HUBSPOT_DEFINED) |
+| `associations.types.associationTypeId` | `integer` | No | Association type ID (e.g., 198 for email-to-contact, 186 for email-to-company, 210 for email-to-deal, 224 for email-to-ticket) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Emails Get
+
+Get a single email by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "emails",
+  "action": "get",
+  "params": {
+    "emailId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.emails.get(
+    email_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "emails",
+    "action": "get",
+    "params": {
+        "emailId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `emailId` | `string` | Yes | Email ID |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `associations` | `string` | No | A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored. |
+| `idProperty` | `string` | No | The name of a property whose values are unique for this object. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Emails Update
+
+Update an existing email's properties by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "emails",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "emailId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.emails.update(
+    properties={},
+    email_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "emails",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "emailId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Email properties to update |
+| `properties.hs_email_subject` | `string` | No | Subject line of the email |
+| `properties.hs_email_text` | `string` | No | Plain text body of the email |
+| `properties.hs_email_html` | `string` | No | HTML body of the email |
+| `properties.hs_email_direction` | `string` | No | Direction of the email (EMAIL, INCOMING_EMAIL, FORWARDED_EMAIL) |
+| `properties.hs_email_status` | `string` | No | Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT) |
+| `properties.hs_timestamp` | `string` | No | Timestamp when the email activity occurred |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this email |
+| `emailId` | `string` | Yes | Email ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Emails Delete
+
+Archive an email by ID. This is a soft delete — the email is moved to the
+recycle bin and can be restored for approximately 90 days. No public
+hard-delete endpoint exists.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "emails",
+  "action": "delete",
+  "params": {
+    "emailId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.emails.delete(
+    email_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "emails",
+    "action": "delete",
+    "params": {
+        "emailId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `emailId` | `string` | Yes | Email ID |
+
+
+### Emails Context Store Search
+
+Search and filter emails records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "emails",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.emails.context_store_search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "emails",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the email has been archived |
+| `createdAt` | `string` | Timestamp when the email was created |
+| `id` | `string` | Unique identifier for the email record |
+| `properties` | `object` | Object containing all property values for the email |
+| `properties.hs_createdate` | `string` | Date the email was created |
+| `properties.hs_email_direction` | `string` | Direction of the email (EMAIL, INCOMING_EMAIL, FORWARDED_EMAIL) |
+| `properties.hs_email_status` | `string` | Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT) |
+| `properties.hs_email_subject` | `string` | Subject line of the email |
+| `properties.hs_email_text` | `string` | Plain text body of the email |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the email |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hs_timestamp` | `string` | Timestamp when the email activity occurred |
+| `properties.hubspot_owner_id` | `string` | ID of the email owner |
+| `updatedAt` | `string` | Timestamp when the email record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Indicates whether the email has been archived |
+| `data[].createdAt` | `string` | Timestamp when the email was created |
+| `data[].id` | `string` | Unique identifier for the email record |
+| `data[].properties` | `object` | Object containing all property values for the email |
+| `data[].properties.hs_createdate` | `string` | Date the email was created |
+| `data[].properties.hs_email_direction` | `string` | Direction of the email (EMAIL, INCOMING_EMAIL, FORWARDED_EMAIL) |
+| `data[].properties.hs_email_status` | `string` | Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT) |
+| `data[].properties.hs_email_subject` | `string` | Subject line of the email |
+| `data[].properties.hs_email_text` | `string` | Plain text body of the email |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the email |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hs_timestamp` | `string` | Timestamp when the email activity occurred |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the email owner |
+| `data[].updatedAt` | `string` | Timestamp when the email record was last modified |
+
+</details>
+
+## Meetings
+
+### Meetings List
+
+Returns a paginated list of meetings
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "meetings",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.meetings.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "meetings",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | The maximum number of results to display per page. |
+| `after` | `string` | No | The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results. |
+| `associations` | `string` | No | A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names. |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string` |  |
+| `next_link` | `string` |  |
+
+</details>
+
+### Meetings Create
+
+Create a new meeting engagement in HubSpot CRM. Meetings can be associated with contacts,
+companies, deals, or tickets by using the associations parameter.
+The hs_timestamp property sets when the meeting activity occurred.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "meetings",
+  "action": "create",
+  "params": {
+    "properties": {
+      "hs_timestamp": "<str>",
+      "hs_meeting_title": "<str>"
+    },
+    "associations": []
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.meetings.create(
+    properties={
+        "hs_timestamp": "<str>",
+        "hs_meeting_title": "<str>"
+    },
+    associations=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "meetings",
+    "action": "create",
+    "params": {
+        "properties": {
+            "hs_timestamp": "<str>",
+            "hs_meeting_title": "<str>"
+        },
+        "associations": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Meeting properties to set |
+| `properties.hs_meeting_title` | `string` | Yes | Required. Title of the meeting |
+| `properties.hs_meeting_body` | `string` | No | Description or notes about the meeting (supports HTML) |
+| `properties.hs_meeting_start_time` | `string` | No | Start time of the meeting (ISO 8601 format, e.g. 2025-01-15T10:30:00.000Z) |
+| `properties.hs_meeting_end_time` | `string` | No | End time of the meeting (ISO 8601 format, e.g. 2025-01-15T11:30:00.000Z) |
+| `properties.hs_meeting_location` | `string` | No | Location of the meeting |
+| `properties.hs_meeting_outcome` | `string` | No | Outcome of the meeting (e.g., SCHEDULED, COMPLETED, RESCHEDULED, NO_SHOW, CANCELED) |
+| `properties.hs_internal_meeting_notes` | `string` | No | Internal notes about the meeting |
+| `properties.hs_timestamp` | `string` | Yes | Required. Timestamp when the meeting activity occurred (ISO 8601 format, e.g. 2025-01-15T10:30:00.000Z). Use the current time if the user does not specify one. |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this meeting |
+| `associations` | `array<object>` | No | Associate the meeting with other CRM records (contacts, companies, deals, tickets) |
+| `associations.to` | `object` | No |  |
+| `associations.to.id` | `string` | No | ID of the record to associate with |
+| `associations.types` | `array<object>` | No |  |
+| `associations.types.associationCategory` | `string` | No | Association category (e.g., HUBSPOT_DEFINED) |
+| `associations.types.associationTypeId` | `integer` | No | Association type ID (e.g., 200 for meeting-to-contact, 188 for meeting-to-company, 212 for meeting-to-deal, 226 for meeting-to-ticket) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Meetings Get
+
+Get a single meeting by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "meetings",
+  "action": "get",
+  "params": {
+    "meetingId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.meetings.get(
+    meeting_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "meetings",
+    "action": "get",
+    "params": {
+        "meetingId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `meetingId` | `string` | Yes | Meeting ID |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `associations` | `string` | No | A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored. |
+| `idProperty` | `string` | No | The name of a property whose values are unique for this object. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Meetings Update
+
+Update an existing meeting's properties by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "meetings",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "meetingId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.meetings.update(
+    properties={},
+    meeting_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "meetings",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "meetingId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Meeting properties to update |
+| `properties.hs_meeting_title` | `string` | No | Title of the meeting |
+| `properties.hs_meeting_body` | `string` | No | Description or notes about the meeting (supports HTML) |
+| `properties.hs_meeting_start_time` | `string` | No | Start time of the meeting (ISO 8601 format) |
+| `properties.hs_meeting_end_time` | `string` | No | End time of the meeting (ISO 8601 format) |
+| `properties.hs_meeting_location` | `string` | No | Location of the meeting |
+| `properties.hs_meeting_outcome` | `string` | No | Outcome of the meeting (e.g., SCHEDULED, COMPLETED, RESCHEDULED, NO_SHOW, CANCELED) |
+| `properties.hs_internal_meeting_notes` | `string` | No | Internal notes about the meeting |
+| `properties.hs_timestamp` | `string` | No | Timestamp when the meeting activity occurred |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this meeting |
+| `meetingId` | `string` | Yes | Meeting ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Meetings Delete
+
+Archive a meeting by ID. This is a soft delete — the meeting is moved to the
+recycle bin and can be restored for approximately 90 days. No public
+hard-delete endpoint exists.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "meetings",
+  "action": "delete",
+  "params": {
+    "meetingId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.meetings.delete(
+    meeting_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "meetings",
+    "action": "delete",
+    "params": {
+        "meetingId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `meetingId` | `string` | Yes | Meeting ID |
+
+
+### Meetings Context Store Search
+
+Search and filter meetings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "meetings",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.meetings.context_store_search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "meetings",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the meeting has been archived |
+| `createdAt` | `string` | Timestamp when the meeting was created |
+| `id` | `string` | Unique identifier for the meeting record |
+| `properties` | `object` | Object containing all property values for the meeting |
+| `properties.hs_createdate` | `string` | Date the meeting was created |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the meeting |
+| `properties.hs_meeting_body` | `string` | Description or notes about the meeting |
+| `properties.hs_meeting_end_time` | `string` | End time of the meeting |
+| `properties.hs_meeting_location` | `string` | Location of the meeting |
+| `properties.hs_meeting_outcome` | `string` | Outcome of the meeting (e.g., SCHEDULED, COMPLETED, NO_SHOW, CANCELED) |
+| `properties.hs_meeting_start_time` | `string` | Start time of the meeting |
+| `properties.hs_meeting_title` | `string` | Title of the meeting |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hs_timestamp` | `string` | Timestamp when the meeting activity occurred |
+| `properties.hubspot_owner_id` | `string` | ID of the meeting owner |
+| `updatedAt` | `string` | Timestamp when the meeting record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Indicates whether the meeting has been archived |
+| `data[].createdAt` | `string` | Timestamp when the meeting was created |
+| `data[].id` | `string` | Unique identifier for the meeting record |
+| `data[].properties` | `object` | Object containing all property values for the meeting |
+| `data[].properties.hs_createdate` | `string` | Date the meeting was created |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the meeting |
+| `data[].properties.hs_meeting_body` | `string` | Description or notes about the meeting |
+| `data[].properties.hs_meeting_end_time` | `string` | End time of the meeting |
+| `data[].properties.hs_meeting_location` | `string` | Location of the meeting |
+| `data[].properties.hs_meeting_outcome` | `string` | Outcome of the meeting (e.g., SCHEDULED, COMPLETED, NO_SHOW, CANCELED) |
+| `data[].properties.hs_meeting_start_time` | `string` | Start time of the meeting |
+| `data[].properties.hs_meeting_title` | `string` | Title of the meeting |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hs_timestamp` | `string` | Timestamp when the meeting activity occurred |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the meeting owner |
+| `data[].updatedAt` | `string` | Timestamp when the meeting record was last modified |
+
+</details>
+
+## Tasks
+
+### Tasks List
+
+Returns a paginated list of tasks
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tasks",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tasks.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | The maximum number of results to display per page. |
+| `after` | `string` | No | The paging cursor token of the last successfully read resource will be returned as the paging.next.after JSON property of a paged response containing more results. |
+| `associations` | `string` | No | A comma separated list of associated object types to include in the response. Valid values are contacts, companies, deals, tickets, and custom object type IDs or fully qualified names. |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string` |  |
+| `next_link` | `string` |  |
+
+</details>
+
+### Tasks Create
+
+Create a new task in HubSpot CRM. Tasks can be associated with contacts,
+companies, deals, or tickets by using the associations parameter.
+The hs_timestamp property sets when the task activity occurred.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tasks",
+  "action": "create",
+  "params": {
+    "properties": {
+      "hs_timestamp": "<str>",
+      "hs_task_subject": "<str>"
+    },
+    "associations": []
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tasks.create(
+    properties={
+        "hs_timestamp": "<str>",
+        "hs_task_subject": "<str>"
+    },
+    associations=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "create",
+    "params": {
+        "properties": {
+            "hs_timestamp": "<str>",
+            "hs_task_subject": "<str>"
+        },
+        "associations": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Task properties to set |
+| `properties.hs_task_body` | `string` | No | Description or notes for the task (supports HTML) |
+| `properties.hs_task_subject` | `string` | Yes | Required. Subject or title of the task |
+| `properties.hs_task_status` | `string` | No | Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED). Defaults to NOT_STARTED. |
+| `properties.hs_task_priority` | `string` | No | Priority of the task (LOW, MEDIUM, HIGH) |
+| `properties.hs_task_type` | `string` | No | Type of the task (TODO, CALL, EMAIL). Defaults to TODO. |
+| `properties.hs_task_reminders` | `string` | No | Reminder timestamp for the task (epoch milliseconds) |
+| `properties.hs_timestamp` | `string` | Yes | Required. Due date / timestamp for the task (ISO 8601 format, e.g. 2025-01-15T10:30:00.000Z). Use the current time if the user does not specify one. |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this task |
+| `associations` | `array<object>` | No | Associate the task with other CRM records (contacts, companies, deals, tickets) |
+| `associations.to` | `object` | No |  |
+| `associations.to.id` | `string` | No | ID of the record to associate with |
+| `associations.types` | `array<object>` | No |  |
+| `associations.types.associationCategory` | `string` | No | Association category (e.g., HUBSPOT_DEFINED) |
+| `associations.types.associationTypeId` | `integer` | No | Association type ID (e.g., 204 for task-to-contact, 192 for task-to-company, 216 for task-to-deal, 228 for task-to-ticket) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Tasks Get
+
+Get a single task by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tasks",
+  "action": "get",
+  "params": {
+    "taskId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tasks.get(
+    task_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "get",
+    "params": {
+        "taskId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `taskId` | `string` | Yes | Task ID |
+| `properties` | `string` | No | A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `propertiesWithHistory` | `string` | No | A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. |
+| `associations` | `string` | No | A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored. |
+| `idProperty` | `string` | No | The name of a property whose values are unique for this object. |
+| `archived` | `boolean` | No | Whether to return only results that have been archived. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Tasks Update
+
+Update an existing task's properties by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tasks",
+  "action": "update",
+  "params": {
+    "properties": {},
+    "taskId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tasks.update(
+    properties={},
+    task_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "update",
+    "params": {
+        "properties": {},
+        "taskId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `properties` | `object` | Yes | Task properties to update |
+| `properties.hs_task_body` | `string` | No | Description or notes for the task (supports HTML) |
+| `properties.hs_task_subject` | `string` | No | Subject or title of the task |
+| `properties.hs_task_status` | `string` | No | Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED) |
+| `properties.hs_task_priority` | `string` | No | Priority of the task (LOW, MEDIUM, HIGH) |
+| `properties.hs_task_type` | `string` | No | Type of the task (TODO, CALL, EMAIL) |
+| `properties.hs_task_reminders` | `string` | No | Reminder timestamp for the task (epoch milliseconds) |
+| `properties.hs_timestamp` | `string` | No | Due date / timestamp for the task |
+| `properties.hubspot_owner_id` | `string` | No | ID of the HubSpot owner to assign to this task |
+| `taskId` | `string` | Yes | Task ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `properties` | `object` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
+| `archived` | `boolean` |  |
+| `archivedAt` | `string \| null` |  |
+| `associations` | `object \| null` |  |
+
+
+</details>
+
+### Tasks Delete
+
+Archive a task by ID. This is a soft delete — the task is moved to the
+recycle bin and can be restored for approximately 90 days. No public
+hard-delete endpoint exists.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tasks",
+  "action": "delete",
+  "params": {
+    "taskId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tasks.delete(
+    task_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "delete",
+    "params": {
+        "taskId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `taskId` | `string` | Yes | Task ID |
+
+
+### Tasks Context Store Search
+
+Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.tasks.context_store_search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the task has been archived |
+| `createdAt` | `string` | Timestamp when the task was created |
+| `id` | `string` | Unique identifier for the task record |
+| `properties` | `object` | Object containing all property values for the task |
+| `properties.hs_createdate` | `string` | Date the task was created |
+| `properties.hs_lastmodifieddate` | `string` | Last modified date of the task |
+| `properties.hs_object_id` | `string` | HubSpot object ID |
+| `properties.hs_task_body` | `string` | Description or notes for the task |
+| `properties.hs_task_priority` | `string` | Priority of the task (LOW, MEDIUM, HIGH) |
+| `properties.hs_task_status` | `string` | Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED) |
+| `properties.hs_task_subject` | `string` | Subject or title of the task |
+| `properties.hs_task_type` | `string` | Type of the task (TODO, CALL, EMAIL) |
+| `properties.hs_timestamp` | `string` | Due date / timestamp for the task |
+| `properties.hubspot_owner_id` | `string` | ID of the task owner |
+| `updatedAt` | `string` | Timestamp when the task record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Indicates whether the task has been archived |
+| `data[].createdAt` | `string` | Timestamp when the task was created |
+| `data[].id` | `string` | Unique identifier for the task record |
+| `data[].properties` | `object` | Object containing all property values for the task |
+| `data[].properties.hs_createdate` | `string` | Date the task was created |
+| `data[].properties.hs_lastmodifieddate` | `string` | Last modified date of the task |
+| `data[].properties.hs_object_id` | `string` | HubSpot object ID |
+| `data[].properties.hs_task_body` | `string` | Description or notes for the task |
+| `data[].properties.hs_task_priority` | `string` | Priority of the task (LOW, MEDIUM, HIGH) |
+| `data[].properties.hs_task_status` | `string` | Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED) |
+| `data[].properties.hs_task_subject` | `string` | Subject or title of the task |
+| `data[].properties.hs_task_type` | `string` | Type of the task (TODO, CALL, EMAIL) |
+| `data[].properties.hs_timestamp` | `string` | Due date / timestamp for the task |
+| `data[].properties.hubspot_owner_id` | `string` | ID of the task owner |
+| `data[].updatedAt` | `string` | Timestamp when the task record was last modified |
 
 </details>
 
