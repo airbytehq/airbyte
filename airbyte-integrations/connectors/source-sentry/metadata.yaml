@@ -88,6 +88,7 @@ data:
           synced project data, back up your existing `projects` data before
           accepting this change, then run a Full Refresh - Overwrite sync.
         upgradeDeadline: "2026-07-15"
+        deadlineAction: disable
     rolloutConfiguration:
       enableProgressiveRollout: false
 metadataSpecVersion: "1.0"
