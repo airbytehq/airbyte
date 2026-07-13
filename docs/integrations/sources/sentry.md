@@ -31,8 +31,23 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 - [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/)
 - [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
-- [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
+- [Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/)
+- [Project Detail](https://docs.sentry.io/api/projects/retrieve-a-project/)
 - [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
+
+## Authentication token scopes
+
+The [authentication token](https://docs.sentry.io/api/auth/#auth-tokens) you configure must include the scopes required by the streams you sync. The union of scopes required across all streams is `org:read`, `event:read`, and `project:read`.
+
+| Stream         | Endpoint                                                          | Required scope   |
+| :------------- | :---------------------------------------------------------------- | :--------------- |
+| Events         | `GET /api/0/projects/{organization}/{project}/events/`            | `project:read`   |
+| Issues         | `GET /api/0/projects/{organization}/{project}/issues/`            | `event:read`     |
+| Projects       | `GET /api/0/organizations/{organization}/projects/`               | `org:read`       |
+| Project Detail | `GET /api/0/projects/{organization}/{project}/`                   | `project:read`   |
+| Releases       | `GET /api/0/organizations/{organization}/releases/`               | `project:read`   |
+
+If the token is missing a scope, the corresponding stream returns an HTTP 403 error. See the Sentry [permissions and scopes](https://docs.sentry.io/api/permissions/) reference for details.
 
 ## Limitations & Troubleshooting
 
@@ -70,8 +85,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.9.29 | 2026-07-10 | [80190](https://github.com/airbytehq/airbyte/pull/80190) | Backfill `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` on the projects stream (dropped by the org-scoped list endpoint) via the project detail endpoint |
-| 0.9.28 | 2026-07-06 | [80190](https://github.com/airbytehq/airbyte/pull/80190) | Fix projects stream to use org-scoped endpoint (Sentry deprecated non-org-scoped `/projects/`) |
+| 1.0.0 | 2026-07-13 | [80190](https://github.com/airbytehq/airbyte/pull/80190) | Breaking: migrate the `projects` stream to the org-scoped endpoint (Sentry deprecated the legacy `/projects/` endpoint). The stream now returns only projects belonging to the configured organization. Back up existing projects data and run a Full Refresh - Overwrite sync. See the [migration guide](/integrations/sources/sentry-migrations). |
 | 0.9.27 | 2026-06-30 | [81219](https://github.com/airbytehq/airbyte/pull/81219) | Update dependencies |
 | 0.9.26 | 2026-06-23 | [80622](https://github.com/airbytehq/airbyte/pull/80622) | Update dependencies |
 | 0.9.25 | 2026-06-16 | [80036](https://github.com/airbytehq/airbyte/pull/80036) | Update dependencies |
