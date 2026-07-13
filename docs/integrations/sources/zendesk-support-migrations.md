@@ -2,6 +2,29 @@
 
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
+## Upgrading to 6.0.0
+
+Version 6.0.0 reverts the `tickets` stream cursor from `updated_at` back to `generated_timestamp` and switches the stream back to the Zendesk [Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) endpoint.
+
+### Why this change
+
+`updated_at` is not a reliable cursor for Zendesk tickets. Zendesk only bumps `updated_at` when an update generates a ticket event (a user-visible change), whereas `generated_timestamp` is bumped on *every* change, including automation-, macro-, trigger-, and system-driven updates. While the `tickets` stream tracked `updated_at` (versions 5.2.0–5.4.1), such changes could be silently missed, leaving affected tickets stale in the destination.
+
+### What changed
+
+- The `tickets` stream cursor field is `generated_timestamp` again.
+- The `ticket_metrics` stream (which derives its cursor from the parent `tickets` stream) tracks `generated_timestamp` again.
+- Existing `updated_at`-based state is migrated automatically to `generated_timestamp`. Because `generated_timestamp` is always greater than or equal to `updated_at` for a given ticket, resuming from the migrated watermark does not skip records.
+
+### Who is affected
+
+All users of the `tickets` and `ticket_metrics` streams. Tickets whose most recent change was automation/macro/trigger/system-driven while the connector was on the `updated_at` cursor may currently be stale in the destination.
+
+### Migration steps
+
+1. Upgrade the connector to version 6.0.0. Existing state is migrated automatically; no manual state edits are needed.
+2. To backfill updates that were missed while on the `updated_at` cursor, perform a one-time **Refresh** (clear data and resync) of the `tickets` and `ticket_metrics` streams.
+
 ## Upgrading to 5.2.0
 
 This is not a breaking change. No stream reset is required, and existing state is migrated automatically. This guide is provided because the behavioral change to the `tickets` stream may affect downstream pipelines that depend on deleted ticket data.
