@@ -155,9 +155,6 @@ definitions:
               }}
       primary_key:
         - id
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.ProjectDetailEnrichmentTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -248,6 +245,44 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/project_detail"
+    all_projects_detail:
+      type: DeclarativeStream
+      name: all_projects_detail
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/{{ config['organization'] }}/{{ stream_partition['project_slug'] }}/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: project_slug
+              stream:
+                $ref: "#/definitions/streams/projects"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_detail"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['hostname'] }}/api/0/
@@ -260,6 +295,7 @@ streams:
   - $ref: "#/definitions/streams/issues"
   - $ref: "#/definitions/streams/projects"
   - $ref: "#/definitions/streams/project_detail"
+  - $ref: "#/definitions/streams/all_projects_detail"
   - $ref: "#/definitions/streams/releases"
 
 spec:
@@ -363,12 +399,20 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    all_projects_detail:
+      hasRecords: true
+      streamHash: null
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   autoImportSchema:
     events: false
     issues: false
     projects: false
     releases: false
     project_detail: false
+    all_projects_detail: false
 
 schemas:
   events:
@@ -1161,6 +1205,163 @@ schemas:
         type:
           - "null"
           - boolean
+      team:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      teams:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
+      environments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      platforms:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      hasUserReports:
+        type:
+          - "null"
+          - boolean
+      latestRelease:
+        type:
+          - "null"
+          - object
+        properties:
+          version:
+            type:
+              - string
+              - "null"
+          ref:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          data:
+            type:
+              - object
+              - "null"
+          owner:
+            type:
+              - "null"
+              - string
+          authors:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+          projects:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                slug:
+                  type:
+                    - string
+                    - "null"
+          lastEvent:
+            type:
+              - "null"
+              - string
+          newGroups:
+            type:
+              - integer
+              - "null"
+          firstEvent:
+            type:
+              - "null"
+              - string
+          lastCommit:
+            type:
+              - "null"
+              - object
+          lastDeploy:
+            type:
+              - "null"
+              - object
+          commitCount:
+            type:
+              - integer
+              - "null"
+          dateCreated:
+            type:
+              - string
+              - "null"
+          deployCount:
+            type:
+              - integer
+              - "null"
+          dateReleased:
+            type:
+              - "null"
+              - string
+          shortVersion:
+            type:
+              - string
+              - "null"
     additionalProperties: true
   releases:
     type: object

@@ -2,29 +2,25 @@
 
 ## Upgrading to 1.0.0
 
-Sentry deprecated the legacy, non-org-scoped projects endpoint (`GET /api/0/projects/`). This release migrates the `projects` stream to Sentry's organization-scoped endpoint (`GET /api/0/organizations/{organization}/projects/`).
+Sentry deprecated the legacy, non-org-scoped projects endpoint (`GET /api/0/projects/`). This release migrates the `projects` stream to Sentry's organization-scoped endpoint (`GET /api/0/organizations/{organization}/projects/`) and adds a new `all_projects_detail` stream.
 
 ### What changed
 
 - The `projects` stream previously used `GET /api/0/projects/`, which returned every project the authentication token could access across **all** organizations.
 - It now uses `GET /api/0/organizations/{organization}/projects/`, which returns **only the projects that belong to the organization configured in the connector setup**.
-
-As a result, if your token had access to projects in organizations other than the one configured in the connector, those projects are no longer returned by the `projects` stream.
+- The org-scoped endpoint does not return the following six fields that the legacy endpoint returned: `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status`. On the `projects` stream these fields are now `null`.
+- A new `all_projects_detail` stream was added. It returns the full project-detail payload (the same data as the existing `project_detail` stream, via `GET /api/0/projects/{organization}/{project}/`) for **every** project in the organization, so the six fields above — and the rest of the detailed project serializer — remain available.
 
 ### Affected streams
 
-- `projects`
+- `projects` — the six fields listed above now return `null`; the stream is scoped to the configured organization.
+- `all_projects_detail` — new stream.
 
 ### Required actions
 
-Because the set of projects returned by the stream can change, previously synced project data may no longer be produced by the source and could be removed from your destination on the next Full Refresh - Overwrite sync.
-
-Before accepting this breaking change:
-
-1. **Back up the existing data** for the `projects` stream in your destination, so you retain any historical projects that will no longer be returned.
-2. After upgrading, **run a Full Refresh - Overwrite sync** of the `projects` stream so the destination reflects the org-scoped result set.
-3. If you need projects from more than one organization, configure a separate connection per organization.
+- You do **not** need to run a Full Refresh - Overwrite sync for this upgrade, and there is **no risk of losing data** for the six fields: they are still retrievable from the new `all_projects_detail` stream. Enable `all_projects_detail` if you need `avatar`, `color`, `isInternal`, `isPublic`, `organization`, or `status` for your projects.
+- Be aware that the `projects` stream now returns information **only for the projects that belong to the organization specified during setup**. If your token previously returned projects from other organizations, those projects will no longer appear in the `projects` stream. If you need projects from more than one organization, configure a separate connection per organization.
 
 ### Required token scopes
 
-Confirm your [authentication token](https://docs.sentry.io/api/auth/#auth-tokens) includes the scopes required by the streams you sync. Across all streams, the required scopes are `org:read`, `event:read`, and `project:read`. The `projects` stream specifically requires `org:read`.
+Confirm your [authentication token](https://docs.sentry.io/api/auth/#auth-tokens) includes the scopes required by the streams you sync. Across all streams, the required scopes are `org:read`, `event:read`, and `project:read`. The `projects` stream specifically requires `org:read`, and the `all_projects_detail` stream requires both `org:read` (to list the organization's projects) and `project:read` (to read each project's detail).

@@ -35,10 +35,6 @@ class TestProjectsStream(TestCase):
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(), create_response("projects", has_next=False)
         )
-        http_mocker.get(
-            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "test-project", _AUTH_TOKEN).build(),
-            create_response("project_detail"),
-        )
 
         source = get_source(config=self._config())
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -46,8 +42,6 @@ class TestProjectsStream(TestCase):
 
         assert len(output.records) >= 1, f"Expected project records"
         assert output.records[0].record.data["slug"] == "test-project"
-        # Enrichment backfills fields the org-scoped list endpoint omits (from project detail).
-        assert output.records[0].record.data["status"] == "active"
 
     @HttpMocker()
     def test_pagination(self, http_mocker: HttpMocker):
@@ -55,10 +49,6 @@ class TestProjectsStream(TestCase):
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
             [create_response("projects", has_next=True, cursor="next"), create_response("projects", has_next=False)],
-        )
-        http_mocker.get(
-            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "test-project", _AUTH_TOKEN).build(),
-            create_response("project_detail"),
         )
 
         source = get_source(config=self._config())
@@ -102,10 +92,6 @@ class TestProjectsStream(TestCase):
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
             create_response("projects_mixed_dates", has_next=False),
-        )
-        http_mocker.get(
-            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "new-project", _AUTH_TOKEN).build(),
-            create_response("project_detail"),
         )
 
         # ACT - Run the sync with state
@@ -161,10 +147,6 @@ class TestProjectsStream(TestCase):
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(), create_response("projects", has_next=False)
         )
-        http_mocker.get(
-            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "test-project", _AUTH_TOKEN).build(),
-            create_response("project_detail"),
-        )
 
         # ACT - First incremental sync (no state parameter)
         source = get_source(config=self._config())
@@ -202,10 +184,6 @@ class TestProjectsStream(TestCase):
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
             create_response("projects", has_next=False),
-        )
-        http_mocker.get(
-            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "test-project", _AUTH_TOKEN).build(),
-            create_response("project_detail"),
         )
 
         # ACT - Read projects stream
