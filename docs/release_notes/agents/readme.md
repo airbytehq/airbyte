@@ -1,5 +1,154 @@
 # Airbyte Agents release notes
 
+## July 10, 2026
+
+Web app
+
+- New workspaces you create now have Context Store search enabled automatically, so your agents can search that workspace's synced data right away.
+- During connector setup, your data entity selection is now locked while a connector is saving or checking its configuration, so your choices can't change unexpectedly mid-save.
+
+## July 9, 2026
+
+Web app
+
+- When you create or edit a workspace, you no longer need to choose a Context Store region. That field has been removed to simplify workspace setup.
+- Connector setup and configuration forms have a refreshed, more consistent appearance.
+- The floating support button no longer appears while you're on a workspace chat page, reducing clutter in the chat view.
+
+Connectors
+
+- Fixed an issue where the Gong connector could lose access and stop syncing when its authorization token was rotated. Gong connections now stay authenticated reliably.
+- The Slack connector now requests fewer permissions when you connect it, since direct message and channel-invite permissions that weren't used have been removed.
+
+## July 8, 2026
+
+Connectors
+
+- You can now create, update, and delete notes, calls, emails, meetings, and tasks with the HubSpot connector, so your agents can log and manage CRM engagement activity such as adding a note to a contact or logging a call.
+
+## July 7, 2026
+
+Web app
+
+- When you use chat to explore a workspace's connected data, the assistant now gathers more results before it stops, so answers to broad questions are more complete. If it reaches the limit, it lets you know the results are partial instead of stopping without explanation.
+
+## July 6, 2026
+
+Connectors
+
+- When you query Google Ads campaigns, you now get each campaign's start and end dates. The Google Ads connector was also updated to a newer version of the Google Ads API, so your Google Ads data keeps flowing reliably.
+
+## July 3, 2026
+
+Web app
+
+- You can now see an "Admin" badge next to admin members when managing workspace members, making it easier to identify who has administrative permissions.
+
+SDK
+
+- Semantic search can now return multiple matching passages from the same source record. Set the new `dedup` option to `none` to retrieve all relevant chunks, or keep the default `max` to get only the single best match per record.
+
+Connectors
+
+- The Linear connector now supports semantic search over issue descriptions and comments, so your agents can find relevant Linear content using natural language.
+- Connectors using OAuth no longer lose refreshed tokens during health checks, which previously could cause intermittent authentication failures.
+
+## July 2, 2026
+
+Web app
+
+- Workspace filter options on the Sessions page are now sorted alphabetically.
+- You can now click links in connector setup field descriptions to open external documentation.
+
+Connectors
+
+- You can now create, update, and delete contacts, companies, and conversations with the Intercom connector.
+- You can now access hourly and lifetime ad performance reports through the TikTok Marketing connector.
+
+## July 1, 2026
+
+Web app
+
+- You can now filter sessions by workspace on the Sessions page, making it easier to find sessions for a specific workspace.
+- Fixed an issue where workspace members on shared workspaces could not launch the connector setup experience.
+
+MCP
+
+- If you belong to multiple organizations, you can now list and switch between them within an MCP session using the new `list_organizations` and `use_organization` tools.
+
+Connectors
+
+- The GitHub connector now automatically derives the repository owner and name from your configured repository paths, improving reliability when reading data across multiple repositories.
+
+## June 29, 2026
+
+SDK
+
+- Fixed an issue where responses from connectors using record transforms returned only the transformed fields instead of the complete record. All original fields are now preserved alongside transformed values.
+
+Connectors
+
+- You can now create, update, and delete Shopify data through your agent, including customers, products, draft orders, discount codes, blog posts, pages, inventory levels, collections, and metafields.
+- Search results from Freshdesk, Gong, Linear, Slack, and Zendesk Support now automatically include related names and context. For example, Freshdesk ticket results show the requester's name and email, and Slack messages include the author's display name.
+
+## June 26, 2026
+
+Web app
+
+- Fixed an issue where adding or removing workspace members could fail or behave incorrectly when editing multiple members at once.
+
+Connectors
+
+- Your agents can now create and update contacts, deals, companies, and tickets in HubSpot.
+- The Google Ads connector has been upgraded from API version 20 to version 23 for continued compatibility with Google's platform.
+- Fixed an issue where connector health checks could fail when your configuration included multiple values for fields like property IDs or account IDs.
+
+## June 25, 2026
+
+Web app
+
+- Your recent chats in the sidebar now show only conversations from your current workspace.
+- When you create or edit a workspace, the member picker now scrolls properly with long lists and options are sorted alphabetically. The workspace picker is also centered correctly on mobile devices.
+- New workspaces you create now default to private visibility. Minting API tokens for a workspace now requires workspace admin access.
+
+Connectors
+
+- The Facebook Marketing connector now uses Facebook Graph API v25.0 for improved compatibility.
+
+## June 24, 2026
+
+Web app
+
+- When new members accept an organization invitation, they now automatically receive access to all shared workspaces in the organization.
+
+MCP
+
+- Fixed an issue where some connectors were not accessible through the Airbyte Agent MCP when using organization-scoped or operator tokens.
+
+SDK
+
+- SDK models are now forward-compatible with new connector registry extensions, preventing unexpected validation errors when connector specifications evolve.
+- The SDK now only includes connectors that are publicly available, removing experimental connectors from packages and documentation.
+
+Connectors
+
+- The Exa connector is now available for all users. Exa provides AI-powered web search and content retrieval.
+- Updated the Monday connector (v2.0.0) for forward-compatibility with monday.com's upcoming July 2026 API changes. Some deprecated User fields have been removed from the cached data schema.
+
+## June 23, 2026
+
+Web app
+
+- You can now add team members directly when creating a new workspace, so everyone has access from the start.
+- The workspace picker shows an "Admin" badge on workspaces where you have admin privileges.
+- Switching workspaces while in a chat shows a toast confirming which workspace you switched to.
+- Member lists in workspace settings are now sorted alphabetically.
+
+Connectors
+
+- Gong call transcripts now support semantic search, allowing your agent to find relevant conversations based on meaning rather than exact keyword matches.
+- Your agent can now search GitHub data using more natural field names, and sorting results by fields like creation date works correctly.
+
 ## June 19, 2026
 
 Web app
@@ -19,6 +168,19 @@ Connectors
 Other
 
 - Upgraded the AI model powering Chats and Automations for improved response quality.
+
+## June 18, 2026
+
+Web app
+
+- Your credentials page now shows a "Direct only" badge on connectors that support direct queries but not Context Store search.
+- The option to convert a chat to an automation is no longer available in the chat interface.
+- The "New workspace" button now appears at the top of the workspace picker for faster access.
+- Fixed an issue where shared workspaces could be hidden from organization members who didn't have a direct workspace grant.
+
+Connectors
+
+- Setting up and using direct-only connectors is now more reliable.
 
 ## June 17, 2026
 

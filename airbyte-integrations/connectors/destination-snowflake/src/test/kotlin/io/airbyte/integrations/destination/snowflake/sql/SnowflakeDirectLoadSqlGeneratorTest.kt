@@ -980,6 +980,62 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         assertEquals(expectedSql, sql)
     }
 
+    @Test
+    fun testGenerateUpsertTableUsesNullSafePrimaryKeyMatching() {
+        // Regression test for oncall#13078: composite primary keys whose component columns can
+        // contain NULLs must still dedupe. The MERGE ON clause must treat two NULL PK-component
+        // values as equal, otherwise the row falls through to INSERT and is duplicated on every
+        // sync (NULL = NULL is UNKNOWN in SQL three-valued logic).
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames =
+                            mapOf(
+                                "id" to "ID",
+                                "org_id" to "ORG_ID",
+                                "value" to "VALUE",
+                            ),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "ORG_ID" to ColumnType("VARCHAR", true),
+                                "VALUE" to ColumnType("NUMBER", true),
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "org_id" to FieldType(StringType, nullable = true),
+                                "value" to FieldType(StringType, nullable = true),
+                            )
+                    ),
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("id"), listOf("org_id")),
+                        cursor = emptyList()
+                    )
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
+
+        val expectedOnClause =
+            """ON (target_table."ID" = new_record."ID" OR (target_table."ID" IS NULL AND new_record."ID" IS NULL)) AND (target_table."ORG_ID" = new_record."ORG_ID" OR (target_table."ORG_ID" IS NULL AND new_record."ORG_ID" IS NULL))"""
+        assertTrue(
+            sql.contains(expectedOnClause),
+            "MERGE ON clause must use NULL-safe matching for every composite PK component; got:\n$sql"
+        )
+    }
+
     // Tests moved from SnowflakeSqlNameUtilsTest
     @Test
     fun testFullyQualifiedNameInCountTable() {

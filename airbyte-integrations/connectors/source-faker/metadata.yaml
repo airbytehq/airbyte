@@ -1,4 +1,5 @@
 data:
+  # Dummy edit to exercise the /enable-autopilot-rollouts slash command workflow. Not for merge.
   ab_internal:
     ql: 300
     sl: 100
@@ -9,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 7.2.0-rc.1
+  dockerImageTag: 7.2.1
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   externalDocumentationUrls:
@@ -32,6 +33,11 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
     breakingChanges:
       4.0.0:
         message: This is a breaking change message

@@ -630,9 +630,6 @@ Classes
     `name: str | None`
     :   Branch name (e.g. `main`, `feature/foo`)
 
-    `prefix: str | None`
-    :   Git ref prefix for the branch (typically `refs/heads/`)
-
 <a id="CommentsSearchData"></a>
 
 `CommentsSearchData(**data: Any)`
@@ -663,9 +660,6 @@ Classes
     `id: str | None`
     :   GraphQL node ID of the comment
 
-    `is_minimized: bool | None`
-    :   Whether the comment has been hidden/collapsed
-
     `model_config`
     :   The type of the None singleton.
 
@@ -693,34 +687,13 @@ Classes
 
     ### Class variables
 
-    `abbreviated_oid: str | None`
-    :   Abbreviated Git commit SHA (typically 7 characters)
-
-    `additions: int | None`
-    :   Number of lines added across all files in the commit
-
-    `authored_date: str | None`
-    :   ISO 8601 timestamp when the commit was originally authored
-
-    `changed_files: int | None`
-    :   Number of files changed in the commit
-
-    `committed_date: str | None`
-    :   ISO 8601 timestamp when the commit was applied to its tree
-
-    `deletions: int | None`
-    :   Number of lines deleted across all files in the commit
-
-    `message: str | None`
-    :   Full commit message
-
-    `message_headline: str | None`
-    :   First line of the commit message
+    `created_at: str | None`
+    :   ISO 8601 timestamp of the commit
 
     `model_config`
     :   The type of the None singleton.
 
-    `oid: str | None`
+    `sha: str | None`
     :   Full Git commit SHA
 
     `url: str | None`
@@ -843,47 +816,73 @@ Classes
     ### Static methods
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    :   Add connector-specific documentation and runtime safeguards to one tool.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
         
-        Usage:
-            @mcp.tool()
-            @GithubConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
         
-            @mcp.tool()
-            @GithubConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
         
-            @mcp.tool()
-            @GithubConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = GithubConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @GithubConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @GithubConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @GithubConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -1035,10 +1034,10 @@ Classes
     :   Repository-scoped issue number
 
     `state: str | None`
-    :   Issue state: `OPEN` or `CLOSED`
+    :   Issue state in the cache: lowercase `open` or `closed`
 
     `state_reason: str | None`
-    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+    :   Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
 
     `title: str | None`
     :   Issue title
@@ -1070,9 +1069,6 @@ Classes
     `color: str | None`
     :   Label color as a 6-character hex string without a leading `#`
 
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the label was created
-
     `description: str | None`
     :   Short description of what the label is used for
 
@@ -1086,7 +1082,7 @@ Classes
     :   Label name
 
     `url: str | None`
-    :   Permalink to the label on GitHub
+    :   API URL to the label resource
 
 <a id="MilestonesSearchData"></a>
 
@@ -1127,11 +1123,8 @@ Classes
     `number: int | None`
     :   Repository-scoped milestone number
 
-    `progress_percentage: float | None`
-    :   Percentage of associated issues/PRs that are closed
-
     `state: str | None`
-    :   Milestone state: `OPEN` or `CLOSED`
+    :   Milestone state in the cache: lowercase `open` or `closed`
 
     `title: str | None`
     :   Milestone title
@@ -1316,9 +1309,6 @@ Classes
 
     ### Class variables
 
-    `base_ref_name: str | None`
-    :   Name of the branch being merged into
-
     `closed_at: str | None`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -1328,17 +1318,11 @@ Classes
     `database_id: int | None`
     :   REST API numeric identifier for the pull request
 
-    `head_ref_name: str | None`
-    :   Name of the branch with the proposed changes
-
     `id: str | None`
     :   GraphQL node ID of the pull request
 
     `is_draft: bool | None`
     :   Whether the pull request is still a draft
-
-    `merged: bool | None`
-    :   Whether the pull request has been merged
 
     `merged_at: str | None`
     :   ISO 8601 timestamp when the pull request was merged, if applicable
@@ -1350,7 +1334,7 @@ Classes
     :   Repository-scoped pull request number
 
     `state: str | None`
-    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+    :   Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
 
     `title: str | None`
     :   Pull request title
@@ -1506,7 +1490,7 @@ Classes
     :   The type of the None singleton.
 
     `state: str | None`
-    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+    :   Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
 
     `submitted_at: str | None`
     :   ISO 8601 timestamp when the review was submitted
@@ -1565,9 +1549,6 @@ Classes
     `name: str | None`
     :   Tag name (e.g. `v1.2.3`)
 
-    `prefix: str | None`
-    :   Git ref prefix for the tag (typically `refs/tags/`)
-
 <a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
@@ -1586,9 +1567,6 @@ Classes
 
     ### Class variables
 
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the team was created
-
     `database_id: int | None`
     :   REST API numeric identifier for the team
 
@@ -1605,13 +1583,10 @@ Classes
     :   Display name of the team
 
     `privacy: str | None`
-    :   Team visibility: `SECRET` or `VISIBLE`
+    :   Team visibility: `secret` or `closed` (REST API values)
 
     `slug: str | None`
     :   URL-friendly slug for the team within its organization
-
-    `updated_at: str | None`
-    :   ISO 8601 timestamp when the team was last updated
 
     `url: str | None`
     :   Permalink to the team on GitHub
@@ -1634,38 +1609,17 @@ Classes
 
     ### Class variables
 
-    `company: str | None`
-    :   Public company affiliation of the user, if set
-
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the user account was created
-
     `database_id: int | None`
     :   REST API numeric identifier for the user
 
-    `email: str | None`
-    :   Public email address of the user, if set
-
     `id: str | None`
     :   GraphQL node ID of the user
-
-    `is_hireable: bool | None`
-    :   Whether the user has marked themselves as available for hire
-
-    `location: str | None`
-    :   Public location of the user, if set
 
     `login: str | None`
     :   User login/handle
 
     `model_config`
     :   The type of the None singleton.
-
-    `name: str | None`
-    :   Public display name of the user, if set
-
-    `twitter_username: str | None`
-    :   Public Twitter/X username of the user, if set
 
     `url: str | None`
     :   Permalink to the user's profile on GitHub
