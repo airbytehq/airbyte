@@ -59,6 +59,9 @@ class Products(Stream, IncrementalMixin):
             if product["id"] <= self.count:
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
+                # Re-emit each product so records dropped by the upstream
+                # paginator's off-by-one are recovered in the same sync.
+                yield product
                 yield product
 
         self.state = {"seed": self.seed, "updated_at": updated_at}
