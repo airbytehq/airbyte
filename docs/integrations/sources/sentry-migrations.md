@@ -18,8 +18,10 @@ Sentry deprecated the legacy, non-org-scoped projects endpoint (`GET /api/0/proj
 
 ### Required actions
 
-:::error Risk of data loss
+:::danger Risk of data loss
+
 Follow the steps below to preserve historical data. If you don't, you risk permanent and irreversible loss of data in your destination.
+
 :::
 
 - If you sync the `projects` stream in **Full Refresh - Overwrite** mode, back up the existing `projects` records before upgrading. After the upgrade, the next sync overwrites all previously stored records with the new ones. In the new records the six fields `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` return `null`. In addition, the new endpoint returns only the projects that belong to the organization configured in the connector setup, so any previously stored projects that are no longer returned (for example, projects from other organizations the token could reach) are removed by the overwrite.
