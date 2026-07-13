@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## July 13, 2026
+
+Web app
+
+- When you connect Salesforce, the assistant can now build a risk-adjusted sales pipeline forecast by cross-referencing your open opportunities with signals from other connected tools such as Gong calls and Zendesk tickets. It automatically learns organization-specific details, like which Salesforce field tracks new business, so forecasts stay accurate without you having to re-explain your setup each time.
+
 ## July 10, 2026
 
 Web app
