@@ -43,6 +43,157 @@ definitions:
       page_size: 100
       start_from_page: 1
 
+  # Resolver streams: internal parent streams used only to drive the shared
+  # partition routers below. They are not exposed in the catalog.
+  #
+  # `repositories_resolver` expands wildcard patterns (e.g. `org/*`) by listing
+  # each wildcard org's repos and filtering them against the anchored pattern
+  # derived inline from config. `repository_stats` validates explicit `org/repo`
+  # entries (404s on bad names) and exposes the canonical `full_name` and
+  # `organization.login`.
+  repositories_resolver_stream:
+    type: DeclarativeStream
+    name: repositories_resolver
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "orgs/{{ stream_partition.organization }}/repos"
+        http_method: GET
+        use_cache: true
+        request_parameters:
+          per_page: "100"
+          sort: "updated"
+          direction: "desc"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        cursor_field: "organization"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          full_name:
+            type:
+              - "null"
+              - string
+          owner:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+
+  repository_stats_stream:
+    type: DeclarativeStream
+    name: repository_stats
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "repos/{{ stream_partition.repository }}"
+        http_method: GET
+        use_cache: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config.get('repositories', []) | map('regex_search', '^([^*]+)$') | select | unique | list }}"
+        cursor_field: "repository"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          full_name:
+            type:
+              - "null"
+              - string
+          organization:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+
+  # Shared partition routers. Repo-scoped streams reference
+  # `repository_partition_router`; org-scoped streams reference
+  # `organization_partition_router`.
+  #
+  # `repository_partition_router` yields the deduplicated union of
+  # wildcard-expanded repos and validated explicit repos.
+  #
+  # `organization_partition_router` yields the deduplicated union of wildcard
+  # orgs (derived inline from config) and the orgs owning explicit repos.
+  # User-owned repos have no `organization` object, so the substream child
+  # skips them (they contribute a repository but not an organization).
+  repository_partition_router:
+    type: UnionPartitionRouter
+    partition_field: repository
+    partition_routers:
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repositories_resolver_stream"
+            parent_key: "full_name"
+            partition_field: "repository"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repository_stats_stream"
+            parent_key: "full_name"
+            partition_field: "repository"
+
+  organization_partition_router:
+    type: UnionPartitionRouter
+    partition_field: organization
+    partition_routers:
+      - type: ListPartitionRouter
+        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        cursor_field: "organization"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repository_stats_stream"
+            parent_key: "organization/login"
+            partition_field: "organization"
+
   repositories_stream:
     type: DeclarativeStream
     name: repositories
@@ -65,14 +216,12 @@ definitions:
         record_filter:
           type: RecordFilter
           condition: >-
-            {{ config.get('_repository_pattern', '') == ''
-               or record['full_name'] | regex_search(config['_repository_pattern']) }}
+            {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
+               or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
-        type: ListPartitionRouter
-        values: "{{ config.get('_resolved_organizations', []) }}"
-        cursor_field: "organization"
+        $ref: "#/definitions/organization_partition_router"
     transformations:
       - type: AddFields
         fields:
@@ -90,8 +239,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       is_client_side_incremental: true
     state_migrations:
-      - type: CustomStateMigration
-        class_name: source_github.components.OrganizationListStateMigration
+      - type: LegacyToPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
