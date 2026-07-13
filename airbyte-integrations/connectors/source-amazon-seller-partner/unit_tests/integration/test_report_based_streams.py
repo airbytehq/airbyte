@@ -652,6 +652,9 @@ class TestIncremental:
                 "2023-01-15T00:00:00Z",
                 {
                     "reportType": "GET_VENDOR_SALES_REPORT",
+                    # Window is day-aligned from the slice start day (lookback is still not applied here).
+                    "dataStartTime": "2023-01-15T00:00:00Z",
+                    "dataEndTime": "2023-01-15T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
                 },
                 "GET_VENDOR_SALES_REPORT",
@@ -700,6 +703,104 @@ class TestIncremental:
             state=initial_state,
         )
         assert len(output.records) > 0
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_request_body, download_response_stream_name, account_type",
+        [
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "queryEndDate",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"asinGranularity": "PARENT"},
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "Seller",
+                id="sales_and_traffic",
+            ),
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT_BY_DATE",
+                "queryEndDate",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "Seller",
+                id="sales_and_traffic_by_date",
+            ),
+            pytest.param(
+                "GET_VENDOR_SALES_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_SALES_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_VENDOR_SALES_REPORT",
+                "Vendor",
+                id="vendor_sales",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_off_midnight_state_when_incremental_read_then_report_window_is_day_aligned(
+        self,
+        stream_name: str,
+        cursor_field: str,
+        create_report_request_body: dict,
+        download_response_stream_name: str,
+        account_type: str,
+        http_mocker: HttpMocker,
+    ) -> None:
+        """Regression test for the off-midnight window drift (oncall #12765).
+
+        When a prior sync ends mid-day, the slice bounds drift off midnight
+        (e.g. 2023-01-29T13:27:00Z). The daily report streams must still request a single,
+        day-aligned calendar-day window ([<day>T00:00:00Z, <day>T23:59:59Z]) instead of the raw
+        drifted slice bounds, otherwise the API rounds the off-midnight window outward to every
+        calendar day it spans and sums them, inflating the day's metrics. The emitted cursor value
+        must likewise be day-aligned so destination deduplication compares stable per-day values.
+
+        The mocked create-report matcher only matches the day-aligned body, so a drifted window
+        would produce zero records and fail the assertions below.
+        """
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: "2023-01-29T13:27:00Z"}).build()
+
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_request_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(download_response_stream_name, data_format="json"),
+        )
+
+        config_builder = config().with_end_date(pendulum.parse("2023-01-30T13:27:00Z"))
+        if account_type == "Vendor":
+            config_builder = config_builder.with_account_type("Vendor")
+
+        output = self._read(stream_name, config_builder, state=initial_state)
+
+        assert len(output.records) > 0
+        assert all(record.record.data.get(cursor_field) == "2023-01-29T23:59:59Z" for record in output.records)
 
     @HttpMocker()
     def test_given_cancelled_report_when_incremental_read_then_state_unchanged(self, http_mocker: HttpMocker) -> None:
@@ -1186,7 +1287,7 @@ class TestSalesAndTrafficReportRequestBody:
         stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
         http_mocker.clear_all_matchers()
 
-        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"}, data_end_time="2023-01-02T00:00:00Z")
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"}, data_end_time="2023-01-01T23:59:59Z")
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
@@ -1214,7 +1315,7 @@ class TestSalesAndTrafficReportRequestBody:
         stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
         http_mocker.clear_all_matchers()
 
-        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"}, data_end_time="2023-01-02T00:00:00Z")
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"}, data_end_time="2023-01-01T23:59:59Z")
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
