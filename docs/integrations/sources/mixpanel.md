@@ -34,7 +34,9 @@ The connector also supports [Project Secret](https://developer.mixpanel.com/refe
 15. For **Export Lookback Window**, enter the number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This helps avoid missed data due to delays in event recording. The default is 0 seconds.
 16. For **Number of concurrent threads**, enter the number of worker threads for the sync. The default is 3. Higher values may improve performance but are constrained by your Mixpanel plan's [rate limits](https://developer.mixpanel.com/reference/rate-limits).
 17. (Optional) For **Streams to Discover**, select the specific streams you want to discover and sync. If left empty, all streams are available. Use this to speed up schema discovery when your account has access to many endpoints and discovery is timing out. Available streams: `cohorts`, `engage`, `annotations`, `cohort_members`, `funnels`, `export`.
-18. Click **Set up source**.
+18. (Optional) For **Export Events**, enter the exact, case-sensitive event names to replicate from the Export stream. If left empty, all events are replicated. This setting also scopes dynamic Export schema discovery to the selected events.
+19. (Optional) For **Export Properties**, enter the exact event property names to include in the Export schema. When provided, the connector skips Mixpanel's dynamic property-discovery request. This setting doesn't remove other properties from exported records or reduce the raw response size.
+20. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -71,7 +73,7 @@ Mixpanel enforces separate rate limits for different API endpoints:
 - **Query API** (Cohorts, Engage, Funnels, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
 - **Raw Data Export API** (Export): 100 concurrent queries, 60 queries per hour, 3 queries per second.
 
-Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits.
+Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits. Use **Export Events** to reduce the number of events returned by Mixpanel. If Export schema discovery times out, use **Export Properties** to define the required schema fields without querying Mixpanel for every available event property.
 
 ## Limitations
 
@@ -88,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 4.1.0 | 2026-06-30 | [81343](https://github.com/airbytehq/airbyte/pull/81343) | Add optional `streams` config parameter to filter which streams are discovered and synced, improving schema discovery performance for accounts with broad access |
+| 4.1.0 | 2026-06-30 | [81343](https://github.com/airbytehq/airbyte/pull/81343) | Add optional stream, Export event, and Export property filters to reduce schema discovery and sync volume |
 | 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
