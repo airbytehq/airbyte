@@ -5,6 +5,7 @@
 import jsonschema
 import pytest
 from source_faker import SourceFaker
+from source_faker.utils import humanize_count
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
@@ -270,3 +271,9 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+def test_humanize_count():
+    # count=1000 should render with a thousands separator
+    assert humanize_count(1000) == "1,000"
+    assert humanize_count(1234567) == "1,234,567"
