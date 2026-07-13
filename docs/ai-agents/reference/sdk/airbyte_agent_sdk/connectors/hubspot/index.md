@@ -138,9 +138,14 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CallsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CompaniesSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[DealsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[EmailsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[MeetingsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[NotesSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]
 
     ### Class variables
@@ -153,6 +158,24 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsSearchResult"></a>
+
+`CallsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 <a id="CompaniesSearchResult"></a>
 
@@ -208,6 +231,78 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="EmailsSearchResult"></a>
+
+`EmailsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MeetingsSearchResult"></a>
+
+`MeetingsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="NotesSearchResult"></a>
+
+`NotesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TasksSearchResult"></a>
+
+`TasksSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="TicketsSearchResult"></a>
 
 `TicketsSearchResult(**data: Any)`
@@ -225,6 +320,72 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallsSearchData"></a>
+
+`CallsSearchData(**data: Any)`
+:   Search result data for calls entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the call has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the call was created
+
+    `id: str | None`
+    :   Unique identifier for the call record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the call
+
+    `properties_hs_call_body: str | None`
+    :   Description or notes about the call
+
+    `properties_hs_call_direction: str | None`
+    :   Direction of the call (INBOUND or OUTBOUND)
+
+    `properties_hs_call_duration: str | None`
+    :   Duration of the call in milliseconds
+
+    `properties_hs_call_status: str | None`
+    :   Status of the call (e.g., COMPLETED, BUSY, NO_ANSWER)
+
+    `properties_hs_call_title: str | None`
+    :   Title or subject of the call
+
+    `properties_hs_createdate: str | None`
+    :   Date the call was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the call
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the call activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the call owner
+
+    `updated_at: str | None`
+    :   Timestamp when the call record was last modified
 
 <a id="CompaniesSearchData"></a>
 
@@ -418,6 +579,69 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
 
+<a id="EmailsSearchData"></a>
+
+`EmailsSearchData(**data: Any)`
+:   Search result data for emails entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the email has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the email was created
+
+    `id: str | None`
+    :   Unique identifier for the email record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the email
+
+    `properties_hs_createdate: str | None`
+    :   Date the email was created
+
+    `properties_hs_email_direction: str | None`
+    :   Direction of the email (EMAIL, INCOMING_EMAIL, FORWARDED_EMAIL)
+
+    `properties_hs_email_status: str | None`
+    :   Status of the email (BOUNCED, FAILED, SCHEDULED, SENDING, SENT, DRAFT)
+
+    `properties_hs_email_subject: str | None`
+    :   Subject line of the email
+
+    `properties_hs_email_text: str | None`
+    :   Plain text body of the email
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the email
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the email activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the email owner
+
+    `updated_at: str | None`
+    :   Timestamp when the email record was last modified
+
 <a id="HubspotConnector"></a>
 
 `HubspotConnector(auth_config: HubspotAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
@@ -472,47 +696,73 @@ Classes
     ### Static methods
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    :   Add connector-specific documentation and runtime safeguards to one tool.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
         
-        Usage:
-            @mcp.tool()
-            @HubspotConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
         
-            @mcp.tool()
-            @HubspotConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
         
-            @mcp.tool()
-            @HubspotConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = HubspotConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @HubspotConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @HubspotConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @HubspotConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -557,7 +807,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'api_search', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'api_search', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -623,6 +873,195 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MeetingsSearchData"></a>
+
+`MeetingsSearchData(**data: Any)`
+:   Search result data for meetings entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the meeting has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the meeting was created
+
+    `id: str | None`
+    :   Unique identifier for the meeting record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the meeting
+
+    `properties_hs_createdate: str | None`
+    :   Date the meeting was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the meeting
+
+    `properties_hs_meeting_body: str | None`
+    :   Description or notes about the meeting
+
+    `properties_hs_meeting_end_time: str | None`
+    :   End time of the meeting
+
+    `properties_hs_meeting_location: str | None`
+    :   Location of the meeting
+
+    `properties_hs_meeting_outcome: str | None`
+    :   Outcome of the meeting (e.g., SCHEDULED, COMPLETED, NO_SHOW, CANCELED)
+
+    `properties_hs_meeting_start_time: str | None`
+    :   Start time of the meeting
+
+    `properties_hs_meeting_title: str | None`
+    :   Title of the meeting
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the meeting activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the meeting owner
+
+    `updated_at: str | None`
+    :   Timestamp when the meeting record was last modified
+
+<a id="NotesSearchData"></a>
+
+`NotesSearchData(**data: Any)`
+:   Search result data for notes entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the note has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the note was created
+
+    `id: str | None`
+    :   Unique identifier for the note record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the note
+
+    `properties_hs_createdate: str | None`
+    :   Date the note was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the note
+
+    `properties_hs_note_body: str | None`
+    :   The body content of the note (supports HTML)
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_timestamp: str | None`
+    :   Timestamp when the note activity occurred
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the note owner
+
+    `updated_at: str | None`
+    :   Timestamp when the note record was last modified
+
+<a id="TasksSearchData"></a>
+
+`TasksSearchData(**data: Any)`
+:   Search result data for tasks entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the task has been archived
+
+    `created_at: str | None`
+    :   Timestamp when the task was created
+
+    `id: str | None`
+    :   Unique identifier for the task record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Object containing all property values for the task
+
+    `properties_hs_createdate: str | None`
+    :   Date the task was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the task
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_task_body: str | None`
+    :   Description or notes for the task
+
+    `properties_hs_task_priority: str | None`
+    :   Priority of the task (LOW, MEDIUM, HIGH)
+
+    `properties_hs_task_status: str | None`
+    :   Status of the task (NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, DEFERRED)
+
+    `properties_hs_task_subject: str | None`
+    :   Subject or title of the task
+
+    `properties_hs_task_type: str | None`
+    :   Type of the task (TODO, CALL, EMAIL)
+
+    `properties_hs_timestamp: str | None`
+    :   Due date / timestamp for the task
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the task owner
+
+    `updated_at: str | None`
+    :   Timestamp when the task record was last modified
 
 <a id="TicketsSearchData"></a>
 

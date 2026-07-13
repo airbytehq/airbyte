@@ -59,6 +59,7 @@ spec:
         - ES
         - FR
         - GB
+        - IE
         - IN
         - IT
         - JP
@@ -212,8 +213,10 @@ spec:
               - GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
               - GET_VENDOR_FORECASTING_REPORT
               - GET_VENDOR_INVENTORY_REPORT
+              - GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
               - GET_VENDOR_REAL_TIME_INVENTORY_REPORT
               - GET_VENDOR_SALES_REPORT
+              - GET_VENDOR_TRAFFIC_REPORT
               - GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
               - GET_XML_BROWSE_TREE_DATA
             stream_name:
@@ -530,6 +533,7 @@ spec:
           ES: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           FR: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           GB: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          IE: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           IN: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           IT: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
           JP: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
@@ -555,6 +559,7 @@ spec:
           ES: "A1RKKUPIHCS9HS"
           FR: "A13V1IB3VIYZZH"
           GB: "A1F83G8C2ARO7P"
+          IE: "A28R8C7NBKEWEA"
           IN: "A21TJRUUN4KGV"
           IT: "APJ6JRA9NG5V4"
           JP: "A1VC38T7YXB528"
@@ -3114,6 +3119,138 @@ definitions:
         schema:
           $ref: "#/schemas/get_vendor_inventory_report"
 
+    get_vendor_traffic_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_TRAFFIC_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_TRAFFIC_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["trafficByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["endDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_vendor_traffic_report"
+
+    get_vendor_net_pure_product_margin_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["netPureProductMarginByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["endDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_vendor_net_pure_product_margin_report"
+
+    get_vendor_real_time_inventory_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_REAL_TIME_INVENTORY_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_REAL_TIME_INVENTORY_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["reportData"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["endTime"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_vendor_real_time_inventory_report"
+
   basic_async_retriever:
     type: AsyncRetriever
     failed_retry_wait_time_in_seconds: "{{ config.get('failed_retry_wait_time_in_seconds', 1800) }}"
@@ -3410,6 +3547,9 @@ streams:
       - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
       - $ref: "#/definitions/streams/get_vendor_sales_report"
       - $ref: "#/definitions/streams/get_vendor_inventory_report"
+      - $ref: "#/definitions/streams/get_vendor_traffic_report"
+      - $ref: "#/definitions/streams/get_vendor_net_pure_product_margin_report"
+      - $ref: "#/definitions/streams/get_vendor_real_time_inventory_report"
 
     # Reports Streams
   - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"
@@ -9346,6 +9486,108 @@ schemas:
             type:
             - 'null'
             - string
+  get_vendor_traffic_report:
+    title: Vendor Traffic Report
+    description: Vendor retail analytics reports - Traffic Report
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      asin:
+        type:
+        - 'null'
+        - string
+      glanceViews:
+        type:
+        - 'null'
+        - integer
+      dataEndTime:
+        type:
+        - 'null'
+        - string
+        format: date
+      queryEndDate:
+        type:
+        - 'null'
+        - string
+        format: date
+  get_vendor_net_pure_product_margin_report:
+    title: Net Pure Product Margin Report
+    description: Vendor retail analytics reports - Net Pure Product Margin Report
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      asin:
+        type:
+        - 'null'
+        - string
+      netPureProductMargin:
+        type:
+        - 'null'
+        - number
+      dataEndTime:
+        type:
+        - 'null'
+        - string
+        format: date
+      queryEndDate:
+        type:
+        - 'null'
+        - string
+        format: date
+  get_vendor_real_time_inventory_report:
+    title: Rapid Retail Analytics Inventory Report
+    description: Vendor retail analytics reports - Real-Time Inventory Report
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startTime:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      endTime:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      asin:
+        type:
+        - 'null'
+        - string
+      highlyAvailableInventory:
+        type:
+        - 'null'
+        - integer
+      dataEndTime:
+        type:
+        - 'null'
+        - string
+        format: date
+      queryEndDate:
+        type:
+        - 'null'
+        - string
+        format: date
   orders:
     title: Orders
     description: All orders that were updated after a specified date

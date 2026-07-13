@@ -109,6 +109,28 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, article: ArticlesCreateParamsArticle, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ArticleCreatePayload`
+    :   Creates a new blog article via GraphQL mutation.
+        
+        
+        Args:
+            article: Parameter article
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticleCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ArticleDeletePayload`
+    :   Deletes a blog article via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the article to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticleDeletePayload
+
     `get(self, blog_id: str, article_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Article`
     :   Retrieves a single article by ID from a blog
         
@@ -136,6 +158,18 @@ Classes
         
         Returns:
             ArticlesListResult
+
+    `update(self, article: ArticlesUpdateParamsArticle, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ArticleUpdatePayload`
+    :   Updates an existing blog article via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the article to update
+            article: Parameter article
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticleUpdatePayload
 
 <a id="BalanceTransactionsQuery"></a>
 
@@ -230,6 +264,28 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, blog: BlogsCreateParamsBlog, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.BlogCreatePayload`
+    :   Creates a new blog on the online store via GraphQL mutation.
+        
+        
+        Args:
+            blog: Parameter blog
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.BlogDeletePayload`
+    :   Deletes a blog from the online store via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the blog to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogDeletePayload
+
     `get(self, blog_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Blog`
     :   Retrieves a single blog by ID
         
@@ -250,6 +306,18 @@ Classes
         
         Returns:
             BlogsListResult
+
+    `update(self, blog: BlogsUpdateParamsBlog, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.BlogUpdatePayload`
+    :   Updates an existing blog via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the blog to update
+            blog: Parameter blog
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogUpdatePayload
 
 <a id="CollectsQuery"></a>
 
@@ -404,6 +472,29 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, input: CustomCollectionsCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CollectionCreatePayload`
+    :   Creates a new collection (custom or smart) via GraphQL mutation.
+        For smart collections, provide ruleSet with rules.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CollectionCreatePayload
+
+    `delete(self, input: CustomCollectionsDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CollectionDeletePayload`
+    :   Deletes a collection via GraphQL mutation.
+        
+        
+        Args:
+            input: Parameter input
+            **kwargs: Additional parameters
+        
+        Returns:
+            CollectionDeletePayload
+
     `get(self, collection_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomCollection`
     :   Retrieves a single custom collection by ID
         
@@ -428,6 +519,18 @@ Classes
         
         Returns:
             CustomCollectionsListResult
+
+    `update(self, input: CustomCollectionsUpdateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CollectionUpdatePayload`
+    :   Updates an existing collection via GraphQL mutation.
+        Rule-based membership recompute is async for smart collections.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CollectionUpdatePayload
 
 <a id="CustomerAddressQuery"></a>
 
@@ -502,6 +605,30 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, input: CustomersCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomerCreatePayload`
+    :   Creates a new customer in the store via GraphQL mutation.
+        Requires at least one of: email, phone, firstName, or lastName.
+        
+        
+                Args:
+                    input: CustomerInput object
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CustomerCreatePayload
+
+    `delete(self, input: CustomersDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomerDeletePayload`
+    :   Deletes a customer from the store via GraphQL mutation.
+        Only succeeds if the customer has no orders. This action is irreversible.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CustomerDeletePayload
+
     `get(self, customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Customer`
     :   Retrieves a single customer by ID
         
@@ -526,6 +653,18 @@ Classes
         
         Returns:
             CustomersListResult
+
+    `update(self, input: CustomersUpdateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomerUpdatePayload`
+    :   Updates an existing customer via GraphQL mutation.
+        All fields except id are optional for partial updates.
+        
+        
+                Args:
+                    input: CustomerInput object with id
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CustomerUpdatePayload
 
 <a id="DiscountCodesQuery"></a>
 
@@ -564,6 +703,29 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, basic_code_discount: DiscountCodesCreateParamsBasiccodediscount, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCodeBasicCreatePayload`
+    :   Creates a basic discount code via GraphQL mutation.
+        Supports percentage, fixed amount, or free shipping discounts.
+        
+        
+                Args:
+                    basic_code_discount: Parameter basicCodeDiscount
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DiscountCodeBasicCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCodeDeletePayload`
+    :   Deletes a discount code via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the discount code node to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            DiscountCodeDeletePayload
+
     `get(self, price_rule_id: str, discount_code_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCode`
     :   Retrieves a single discount code by ID
         
@@ -585,6 +747,18 @@ Classes
         
         Returns:
             DiscountCodesListResult
+
+    `update(self, basic_code_discount: DiscountCodesUpdateParamsBasiccodediscount, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCodeBasicUpdatePayload`
+    :   Updates an existing basic discount code via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the discount code node to update
+            basic_code_discount: Parameter basicCodeDiscount
+            **kwargs: Additional parameters
+        
+        Returns:
+            DiscountCodeBasicUpdatePayload
 
 <a id="DisputesQuery"></a>
 
@@ -651,6 +825,27 @@ Classes
         Returns:
             DisputesListResult
 
+<a id="DraftOrderCompleteQuery"></a>
+
+`DraftOrderCompleteQuery(connector: ShopifyConnector)`
+:   Query class for DraftOrderComplete entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `update(self, id: str | None = None, payment_pending: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderCompletePayload`
+    :   Completes a draft order, converting it to a regular order via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the draft order to complete
+            payment_pending: Whether payment is pending (true) or mark as paid (false/omit)
+            **kwargs: Additional parameters
+        
+        Returns:
+            DraftOrderCompletePayload
+
 <a id="DraftOrdersQuery"></a>
 
 `DraftOrdersQuery(connector: ShopifyConnector)`
@@ -692,6 +887,30 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, input: DraftOrdersCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderCreatePayload`
+    :   Creates a new draft order via GraphQL mutation.
+        Draft orders can be completed to become regular orders.
+        
+        
+                Args:
+                    input: DraftOrderInput object
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DraftOrderCreatePayload
+
+    `delete(self, input: DraftOrdersDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderDeletePayload`
+    :   Deletes a draft order via GraphQL mutation.
+        Only open draft orders can be deleted.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DraftOrderDeletePayload
+
     `get(self, draft_order_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrder`
     :   Retrieves a single draft order by ID
         
@@ -715,6 +934,19 @@ Classes
         
         Returns:
             DraftOrdersListResult
+
+    `update(self, input: DraftOrdersUpdateParamsInput, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderUpdatePayload`
+    :   Updates an existing draft order via GraphQL mutation.
+        Only open draft orders can be updated.
+        
+        
+                Args:
+                    id: The GraphQL GID of the draft order to update
+                    input: DraftOrderInput object with updated fields
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DraftOrderUpdatePayload
 
 <a id="FulfillmentOrdersQuery"></a>
 
@@ -842,6 +1074,26 @@ Classes
         Returns:
             FulfillmentsListResult
 
+<a id="InventoryAdjustQuery"></a>
+
+`InventoryAdjustQuery(connector: ShopifyConnector)`
+:   Query class for InventoryAdjust entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, input: InventoryAdjustCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventoryAdjustQuantitiesPayload`
+    :   Adjusts inventory quantities relatively (add/subtract) for items at locations via GraphQL mutation.
+        
+        
+        Args:
+            input: Parameter input
+            **kwargs: Additional parameters
+        
+        Returns:
+            InventoryAdjustQuantitiesPayload
+
 <a id="InventoryItemsQuery"></a>
 
 `InventoryItemsQuery(connector: ShopifyConnector)`
@@ -946,6 +1198,27 @@ Classes
         
         Returns:
             InventoryLevelsListResult
+
+<a id="InventorySetQuery"></a>
+
+`InventorySetQuery(connector: ShopifyConnector)`
+:   Query class for InventorySet entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, input: InventorySetCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventorySetQuantitiesPayload`
+    :   Sets absolute inventory quantities for items at locations via GraphQL mutation.
+        Uses the inventorySetQuantities mutation with a required reason and reference document.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    InventorySetQuantitiesPayload
 
 <a id="LocationsQuery"></a>
 
@@ -1668,6 +1941,39 @@ Classes
         Returns:
             MetafieldSmartCollectionsListResult
 
+<a id="MetafieldsQuery"></a>
+
+`MetafieldsQuery(connector: ShopifyConnector)`
+:   Query class for Metafields entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, metafields: list[MetafieldsCreateParamsMetafieldsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.MetafieldsSetPayload`
+    :   Sets (creates or updates) up to 25 metafields atomically via GraphQL mutation.
+        Works across all resource types (products, customers, orders, etc.).
+        
+        
+                Args:
+                    metafields: List of metafields to set
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    MetafieldsSetPayload
+
+    `delete(self, metafields: list[MetafieldsDeleteParamsMetafieldsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.MetafieldDeletePayload`
+    :   Deletes one or more metafields via GraphQL mutation.
+        Identifies metafields by ownerId + namespace + key.
+        
+        
+                Args:
+                    metafields: List of metafield identifiers to delete
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    MetafieldDeletePayload
+
 <a id="OrderRefundsQuery"></a>
 
 `OrderRefundsQuery(connector: ShopifyConnector)`
@@ -1779,6 +2085,36 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, order: OrdersCreateParamsOrder, options: OrdersCreateParamsOptions | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.OrderCreatePayload`
+    :   Creates a new order via GraphQL mutation.
+        Use line items with either variantId or customAttributes.
+        
+        
+                Args:
+                    order: OrderCreateOrderInput object
+                    options: OrderCreateOptionsInput
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OrderCreatePayload
+
+    `delete(self, order_id: str, reason: str, restock: bool, notify_customer: bool | None = None, refund: bool | None = None, staff_note: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.OrderCancelPayload`
+    :   Cancels an open order via GraphQL mutation.
+        This action is irreversible. Optional refund and restock parameters.
+        
+        
+                Args:
+                    order_id: The GraphQL GID of the order to cancel
+                    reason: Reason for cancellation
+                    notify_customer: Whether to notify the customer
+                    refund: Whether to refund the order
+                    restock: Whether to restock items
+                    staff_note: Staff note for the cancellation
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OrderCancelPayload
+
     `get(self, order_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Order`
     :   Retrieves a single order by ID
         
@@ -1806,6 +2142,18 @@ Classes
         
         Returns:
             OrdersListResult
+
+    `update(self, input: OrdersUpdateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.OrderUpdatePayload`
+    :   Updates simple fields on an existing order via GraphQL mutation.
+        For line item changes, use orderEditBegin/orderEditCommit instead.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OrderUpdatePayload
 
 <a id="PagesQuery"></a>
 
@@ -1846,6 +2194,28 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, page: PagesCreateParamsPage, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.PageCreatePayload`
+    :   Creates a new page on the online store via GraphQL mutation.
+        
+        
+        Args:
+            page: Parameter page
+            **kwargs: Additional parameters
+        
+        Returns:
+            PageCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.PageDeletePayload`
+    :   Deletes a page from the online store via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the page to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            PageDeletePayload
+
     `get(self, page_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Page`
     :   Retrieves a single page by ID
         
@@ -1871,6 +2241,18 @@ Classes
         
         Returns:
             PagesListResult
+
+    `update(self, page: PagesUpdateParamsPage, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.PageUpdatePayload`
+    :   Updates an existing page on the online store via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the page to update
+            page: Parameter page
+            **kwargs: Additional parameters
+        
+        Returns:
+            PageUpdatePayload
 
 <a id="PriceRulesQuery"></a>
 
@@ -2042,6 +2424,32 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, product_id: str, variants: list[ProductVariantsCreateParamsVariantsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariantsBulkCreatePayload`
+    :   Creates one or more product variants via GraphQL mutation.
+        Variants are created in bulk for a given product.
+        
+        
+                Args:
+                    product_id: The GraphQL GID of the product (e.g. gid://shopify/Product/123)
+                    variants: List of variants to create
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductVariantsBulkCreatePayload
+
+    `delete(self, product_id: str, variants_ids: list[str], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariantsBulkDeletePayload`
+    :   Deletes one or more product variants via GraphQL mutation.
+        Cannot delete the last variant of a product.
+        
+        
+                Args:
+                    product_id: The GraphQL GID of the product
+                    variants_ids: List of variant GIDs to delete
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductVariantsBulkDeletePayload
+
     `get(self, variant_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariant`
     :   Retrieves a single product variant by ID
         
@@ -2063,6 +2471,19 @@ Classes
         
         Returns:
             ProductVariantsListResult
+
+    `update(self, product_id: str, variants: list[ProductVariantsUpdateParamsVariantsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariantsBulkUpdatePayload`
+    :   Updates one or more product variants via GraphQL mutation.
+        Variants are updated in bulk for a given product.
+        
+        
+                Args:
+                    product_id: The GraphQL GID of the product
+                    variants: List of variants to update (each must include id)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductVariantsBulkUpdatePayload
 
 <a id="ProductsQuery"></a>
 
@@ -2107,6 +2528,32 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, product: ProductsCreateParamsProduct, media: list[ProductsCreateParamsMediaItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductCreatePayload`
+    :   Creates a new product via GraphQL mutation.
+        Creates the product with a default variant. Use productVariantsBulkCreate
+        to add additional variants afterwards.
+        
+        
+                Args:
+                    product: ProductCreateInput object
+                    media: Media to attach to the product
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductCreatePayload
+
+    `delete(self, input: ProductsDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductDeletePayload`
+    :   Deletes a product from the store via GraphQL mutation.
+        This action is irreversible.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductDeletePayload
+
     `get(self, product_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Product`
     :   Retrieves a single product by ID
         
@@ -2135,6 +2582,18 @@ Classes
         
         Returns:
             ProductsListResult
+
+    `update(self, product: ProductsUpdateParamsProduct, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductUpdatePayload`
+    :   Updates an existing product via GraphQL mutation.
+        All fields except id are optional for partial updates.
+        
+        
+                Args:
+                    product: ProductUpdateInput object
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductUpdatePayload
 
 <a id="ShopQuery"></a>
 
@@ -2238,47 +2697,73 @@ Classes
     ### Static methods
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    :   Add connector-specific documentation and runtime safeguards to one tool.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
         
-        Usage:
-            @mcp.tool()
-            @ShopifyConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
         
-            @mcp.tool()
-            @ShopifyConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
         
-            @mcp.tool()
-            @ShopifyConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = ShopifyConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @ShopifyConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @ShopifyConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @ShopifyConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -2323,7 +2808,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
