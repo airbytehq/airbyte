@@ -406,6 +406,43 @@ definitions:
           schema:
             $ref: "#/schemas/invoices"
 
+    invoice_payments:
+      type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'invoice_payments' in config.get('api_retention_streams', []) else '' }}"
+      $parameters:
+        name: invoice_payments
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: invoice_payments
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_headers:
+              Stripe-Version: "2025-03-31.basil"
+              Stripe-Account: '{{ config.get("account_id") }}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_payments"
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: events
+            request_headers:
+              Stripe-Version: "2025-03-31.basil"
+              Stripe-Account: '{{ config.get("account_id") }}'
+          $parameters:
+            request_parameters: "{{ {'type': 'invoice_payment.paid'} }}"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_payments"
+
     transfers:
       type: StateDelegatingStream
       api_retention_period: "{{ 'P30D' if 'transfers' in config.get('api_retention_streams', []) else '' }}"
@@ -1824,6 +1861,7 @@ streams:
   - $ref: "#/definitions/streams/balance_transactions"
   - $ref: "#/definitions/streams/files"
   - $ref: "#/definitions/streams/file_links"
+  - $ref: "#/definitions/streams/invoice_payments"
 
   ## These streams are state condition streams and have two behaviors depending on whether the state is set:
   # - No State: Runs the base stream.
@@ -1993,6 +2031,7 @@ spec:
             - external_account_cards
             - invoice_items
             - invoice_line_items
+            - invoice_payments
             - invoices
             - payment_intents
             - payment_methods
@@ -12158,6 +12197,109 @@ schemas:
         type:
           - "null"
           - integer
+  invoice_payments:
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The unique identifier for the invoice payment.
+        type:
+          - "null"
+          - string
+      object:
+        description: The object type, which is invoice_payment.
+        type:
+          - "null"
+          - string
+      amount_paid:
+        description: The amount that was paid against the invoice.
+        type:
+          - "null"
+          - integer
+      amount_requested:
+        description: The amount requested for the invoice payment.
+        type:
+          - "null"
+          - integer
+      created:
+        description: The timestamp when the invoice payment was created.
+        type:
+          - "null"
+          - integer
+      updated:
+        description: The timestamp when the invoice payment was last updated.
+        type:
+          - "null"
+          - integer
+      currency:
+        description: The currency of the invoice payment.
+        type:
+          - "null"
+          - string
+      invoice:
+        description: The invoice associated with the invoice payment.
+        type:
+          - "null"
+          - string
+      is_default:
+        description: Whether this is the default invoice payment.
+        type:
+          - "null"
+          - boolean
+      livemode:
+        description: Whether the invoice payment was created in live mode.
+        type:
+          - "null"
+          - boolean
+      payment:
+        description: The payment associated with the invoice payment.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          type:
+            description: The payment type.
+            type:
+              - "null"
+              - string
+          payment_intent:
+            description: The PaymentIntent associated with the invoice payment.
+            type:
+              - "null"
+              - string
+          charge:
+            description: The Charge associated with the invoice payment.
+            type:
+              - "null"
+              - string
+          payment_record:
+            description: The PaymentRecord associated with the invoice payment.
+            type:
+              - "null"
+              - string
+      status:
+        description: The status of the invoice payment.
+        type:
+          - "null"
+          - string
+      status_transitions:
+        description: Timestamps for invoice payment status transitions.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          canceled_at:
+            type:
+              - "null"
+              - integer
+          paid_at:
+            type:
+              - "null"
+              - integer
   invoices:
     type:
       - "null"
