@@ -3,6 +3,9 @@ plan: all
 sidebar_position: 3
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Execute operations
 
 Once you've added a connector to your workspace, you can run operations against it from Python. The SDK offers direct execution and patterns for exposing a connector as a tool to an AI agent framework.
@@ -62,9 +65,118 @@ For patterns that look up a connector ID without hard-coding it, see [Get a conn
 
 ## Expose a connector as an agent tool
 
-When you wrap a connector as a tool for an AI agent, the agent needs to know which entities and actions exist, what parameters each takes, and how pagination works. The SDK supports two styles.
+When you wrap a connector as a tool for an AI agent, the agent needs to know which entities and actions exist, what parameters each takes, and how pagination works. The recommended pattern is `build_connector_tools`, which binds ready-to-use tools that let the agent read just-in-time skill docs before it executes.
 
-### Manual docstrings
+### Recommended: build_connector_tools
+
+`build_connector_tools(connector)` returns a `ConnectorTools` object with three callables bound to one connector: `inspect_connector`, `read_skill_docs`, and `execute`. Pass `framework=` so runtime errors surface as that framework's retry signal, then register all three with `tools.as_list()`.
+
+Instead of packing the whole connector schema into one static tool description, the agent works through a progressive introspection flow:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+- `inspect_connector()` returns the connector's hosted metadata and Context Store readiness, and resolves the skill-doc ID the other tools use.
+- `read_skill_docs()` with no section returns the outline and general guidance. `read_skill_docs(section="<id>")` returns the exact entity and action guidance the agent needs before it executes.
+- `execute(entity, action, params)` runs the operation.
+
+The SDK binds the skill-doc ID internally, so the model only passes an optional `section`. This keeps the agent's context small: it reads the outline, drills into the one section it needs, then executes, instead of loading every entity and action up front. Skill docs are served by Airbyte from the same connector definition the SDK is generated from, so they stay in sync with the connector.
+
+`connect("github")` returns a typed connector when a generated submodule exists, but `build_connector_tools` also accepts a generic `HostedExecutor` for YAML-only connectors. Either works with the same three tools.
+
+:::note
+Skill docs are hosted by Airbyte and served by the platform. If you point the SDK at a connector running in open source mode (no hosted backend), `build_connector_tools` still returns the same three tools, but `inspect_connector` reports `"mode": "local"` and `read_skill_docs` falls back to the connector's generated (YAML-derived) description instead of hosted section docs. `execute` still runs directly against the connector.
+:::
+
+To expose only `execute` with a single generated description instead of the progressive flow, pass `use_progressive_docs=False`. `tools.as_list()` then returns just the `execute` tool.
+
+#### Register the tools with your framework
+
+`tools.as_list()` returns plain async callables, so you can register them with any framework. Set `framework=` to match the one you use.
+
+<Tabs groupId="agent-framework">
+<TabItem value="pydantic_ai" label="Pydantic AI" default>
+
+Pass `tools.as_list()` straight to the agent:
+
+```python title="agent.py"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import build_connector_tools, connect
+
+github = connect("github")
+tools = build_connector_tools(github, framework="pydantic_ai")
+
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+</TabItem>
+<TabItem value="openai_agents" label="OpenAI Agents SDK">
+
+Wrap each callable with `function_tool`:
+
+```python title="agent.py"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import build_connector_tools, connect
+
+github = connect("github")
+tools = build_connector_tools(github, framework="openai_agents")
+
+oai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="github-agent", model="gpt-4o", tools=oai_tools)
+```
+
+:::note
+The OpenAI Agents SDK enforces a strict JSON schema by default, which rejects `execute`'s open-ended `params` object. Pass `strict_mode=False` to `function_tool` so the tools register.
+:::
+
+</TabItem>
+<TabItem value="langchain" label="LangChain">
+
+Wrap each callable as a `StructuredTool`:
+
+```python title="agent.py"
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import build_connector_tools, connect
+
+github = connect("github")
+tools = build_connector_tools(github, framework="langchain")
+
+lc_tools = [
+    StructuredTool.from_function(coroutine=tool, name=tool.__name__, description=tool.__doc__)
+    for tool in tools.as_list()
+]
+```
+
+:::note
+LangChain 1.x re-raises tool errors by default, so a wrong `read_skill_docs` section guess aborts the run before the agent can self-correct from the returned outline. To let the agent recover, add the `wrap_tool_call` middleware shown in [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model) in the LangChain quickstart.
+:::
+
+</TabItem>
+<TabItem value="mcp" label="FastMCP">
+
+Register each callable as an MCP tool:
+
+```python title="server.py"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import build_connector_tools, connect
+
+mcp = FastMCP("github-tools")
+github = connect("github")
+
+for tool in build_connector_tools(github, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+</TabItem>
+</Tabs>
+
+### Alternatives
+
+The decorator patterns below predate `build_connector_tools`. They bind a single `execute` tool with the connector's full catalog baked into the description up front, rather than letting the agent read skill docs on demand. Prefer `build_connector_tools` for new agents. Reach for these when you want to expose a narrow set of operations, need full control over the tool description, or run a local connector without hosted skill docs.
+
+#### Manual docstrings
 
 Define one tool per operation with a hand-written docstring. Use this when you want to expose a narrow set of operations or need full control over parameters.
 
@@ -84,7 +196,7 @@ async def list_issues(owner: str, repo: str, limit: int = 10) -> str:
 
 The docstring becomes the tool description the LLM sees. Function parameters become the tool's input schema.
 
-### Auto-generated tool descriptions
+#### Auto-generated tool descriptions
 
 For broad coverage, use the `tool_utils` decorator on a typed connector. The decorator replaces the wrapped function's docstring with a generated description that includes every entity, action, required and optional parameter, and response shape. The LLM then sees every operation the connector supports with no extra wiring.
 
@@ -102,7 +214,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     return await github.execute(entity, action, params or {})
 ```
 
-#### Decorator order matters
+##### Decorator order matters
 
 The framework decorator (for example, `@agent.tool_plain` or FastMCP's `@mcp.tool`) captures `__doc__` at decoration time. `@Connector.tool_utils` must be the inner decorator so it can rewrite `__doc__` before the framework reads it.
 
@@ -115,7 +227,7 @@ async def github_execute(entity, action, params=None):
 
 If you reverse the order, the framework captures the original empty docstring and the LLM loses the generated documentation.
 
-#### Custom docstrings
+##### Custom docstrings
 
 Generated docstrings are almost always the right choice. Override them only when your agent specifically misuses the tool and a custom description fixes it.
 

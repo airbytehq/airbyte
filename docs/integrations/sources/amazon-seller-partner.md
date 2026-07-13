@@ -38,7 +38,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 ## Supported regions
 
-The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
 
 Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
 
@@ -392,11 +392,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.7.11 | 2026-07-01 | [81374](https://github.com/airbytehq/airbyte/pull/81374) | Anchor the report window of the daily `GET_SALES_AND_TRAFFIC_REPORT`, `GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`, and `GET_VENDOR_SALES_REPORT` streams to the slice's calendar day, fixing inflated/mislabeled metrics when a sync ends mid-day |
+| 5.8.1 | 2026-07-13 | [81374](https://github.com/airbytehq/airbyte/pull/81374) | Anchor the report window of the daily `GET_SALES_AND_TRAFFIC_REPORT`, `GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`, and `GET_VENDOR_SALES_REPORT` streams to the slice's calendar day, fixing inflated/mislabeled metrics when a sync ends mid-day |
+| 5.8.0 | 2026-06-25 | [80845](https://github.com/airbytehq/airbyte/pull/80845) | Add three missing vendor report streams: GET_VENDOR_TRAFFIC_REPORT, GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT, and GET_VENDOR_REAL_TIME_INVENTORY_REPORT |
+| 5.7.12 | 2026-07-07 | [80820](https://github.com/airbytehq/airbyte/pull/80820) | Add Ireland (IE) marketplace support |
+| 5.7.11 | 2026-07-07 | [77151](https://github.com/airbytehq/airbyte/pull/77151) | Update dependencies |
 | 5.7.10 | 2026-06-24 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only and seller-only streams behind account type using ConditionalStreams; use CheckDynamicStream so connectivity check works for both Seller and Vendor accounts. Added documentation for stream availability by account type. |
 | 5.7.9 | 2026-06-17 | [75470](https://github.com/airbytehq/airbyte/pull/75470) | Fix GzipXmlDecoder error handling that caused AttributeError on malformed XML responses |
 | 5.7.8 | 2026-06-16 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
-| 5.7.7 | 2026-05-21 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
+| 5.7.7 | 2026-05-26 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
 | 5.7.6 | 2026-05-20 | [78285](https://github.com/airbytehq/airbyte/pull/78285) | Promoted release candidate to GA |
 | 5.7.6-rc.4 | 2026-05-13 | [78037](https://github.com/airbytehq/airbyte/pull/78037) | Make failed report retry wait time and report creation 429 max retries visible in the source configuration |
 | 5.7.6-rc.3 | 2026-05-11 | [77837](https://github.com/airbytehq/airbyte/pull/77837) | Add configurable cooldown-aware deferred retry for FATAL reports and dedicated 429 error handler with backoff on report creation |
