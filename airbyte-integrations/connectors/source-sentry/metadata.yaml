@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 0.9.27
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   externalDocumentationUrls:
@@ -76,6 +76,21 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          The `projects` stream now uses Sentry's organization-scoped projects
+          endpoint (`/api/0/organizations/{organization}/projects/`) because
+          Sentry deprecated the legacy `/api/0/projects/` endpoint. As a result,
+          the stream returns only the projects that belong to the organization
+          configured in the connector setup, instead of every project the token
+          could access across all organizations. The org-scoped endpoint does
+          not return the `avatar`, `color`, `isInternal`, `isPublic`,
+          `organization`, and `status` fields; these are now available in the
+          new `all_projects_detail` stream, which returns full project details
+          for every project in the organization.
+        upgradeDeadline: "2026-07-15"
+        deadlineAction: disable
     rolloutConfiguration:
       enableProgressiveRollout: false
 metadataSpecVersion: "1.0"
