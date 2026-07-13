@@ -32,6 +32,28 @@ def test_check_connection(requests_mock, check_connection_url, config_raw, respo
     assert ok == expect_success
 
 
+@pytest.mark.parametrize(
+    "selected_streams",
+    [
+        pytest.param(["export"], id="export_only"),
+        pytest.param(["annotations"], id="declarative_stream_only"),
+    ],
+)
+def test_check_connection_with_filtered_catalog(requests_mock, config_raw, selected_streams):
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[])
+    config = {
+        **config_raw,
+        "start_date": "2024-01-25T00:00:00Z",
+        "end_date": "2024-02-25T00:00:00Z",
+        "streams": selected_streams,
+    }
+
+    ok, error = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(logger, config)
+
+    assert ok is True
+    assert error is None
+
+
 def test_check_connection_bad_config():
     config = {}
     source = SourceMixpanel(MagicMock(), config, MagicMock())

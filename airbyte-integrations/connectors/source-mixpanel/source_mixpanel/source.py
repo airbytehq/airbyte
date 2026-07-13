@@ -6,7 +6,7 @@ import copy
 import logging
 import os
 from functools import wraps
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 
@@ -136,6 +136,11 @@ class SourceMixpanel(YamlDeclarativeSource):
         if username and secret:
             return BasicHttpAuthenticator(username=username, password=secret)
         return TokenAuthenticatorBase64(token=credentials["api_secret"])
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        check_config: MutableMapping[str, Any] = copy.deepcopy(dict(config))
+        check_config["streams"] = ["cohorts"]
+        return super().check_connection(logger, check_config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials")
