@@ -693,7 +693,7 @@ def test_source_uses_ordered_concurrent_message_repository():
     assert source.message_repository._queue is source._concurrent_source._queue
 
 
-def _a_state_message() -> "AirbyteMessage":
+def _a_state_message():
     from airbyte_cdk.models import (
         AirbyteMessage,
         AirbyteStateMessage,
@@ -706,9 +706,7 @@ def _a_state_message() -> "AirbyteMessage":
         type=Type.STATE,
         state=AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
-            stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name="Account"), stream_state=AirbyteStateBlob()
-            ),
+            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="Account"), stream_state=AirbyteStateBlob()),
         ),
     )
 
