@@ -307,8 +307,23 @@ class ExportSchema(MixpanelStream):
     data_field: str = None
     reqs_per_hour_limit: int = 0  # see the docstring
 
+    def __init__(self, *args, event: Optional[str] = None, **kwargs):
+        self.event = event
+        super().__init__(*args, **kwargs)
+
     def path(self, **kwargs) -> str:
         return "events/properties/top"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        if self.event:
+            params["event"] = self.event
+        return params
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[str]:
         """
@@ -386,6 +401,17 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
+    def __init__(
+        self,
+        *args,
+        export_events: Optional[List[str]] = None,
+        export_properties: Optional[List[str]] = None,
+        **kwargs,
+    ):
+        self.export_events = export_events or []
+        self.export_properties = export_properties or []
+        super().__init__(*args, **kwargs)
+
     @property
     def url_base(self):
         prefix = "-eu" if self.region == "EU" else ""
@@ -458,6 +484,11 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
             yield item
 
+    def _read_schema_properties(self, event: Optional[str] = None) -> Iterable[str]:
+        for property_name in ExportSchema(event=event, **self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh):
+            if isinstance(property_name, str):
+                yield property_name
+
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -467,15 +498,23 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         Override as needed.
         """
 
-        schema = super().get_json_schema()
+        schema = dict(super().get_json_schema())
 
         # Set whether to allow additional properties for engage and export endpoints
         # Event and Engage properties are dynamic and depend on the properties provided on upload,
         #   when the Event or Engage (user/person) was created.
         schema["additionalProperties"] = self.additional_properties
 
-        # read existing Export schema from API
-        schema_properties = ExportSchema(**self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh)
+        schema_properties: Iterable[str]
+        if self.export_properties:
+            schema_properties = self.export_properties
+        elif self.export_events:
+            schema_properties = (
+                property_name for event in self.export_events for property_name in self._read_schema_properties(event=event)
+            )
+        else:
+            schema_properties = self._read_schema_properties()
+
         for result in transform_property_names(schema_properties):
             # Schema does not provide exact property type
             # string ONLY for event properties (no other datatypes)
@@ -493,6 +532,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         if cursor_param:
             timestamp = int(pendulum.parse(cursor_param).timestamp())
             params["where"] = f'properties["$time"]>=datetime({timestamp})'
+        if self.export_events:
+            params["event"] = json.dumps(self.export_events)
         return params
 
     def request_kwargs(

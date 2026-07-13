@@ -163,6 +163,28 @@
           ]
         },
         "uniqueItems": true
+      },
+      "export_events": {
+        "order": 13,
+        "title": "Export Events",
+        "description": "Optional event names to replicate from the Export stream. When provided, the connector also limits dynamic Export schema discovery to these events. If left empty, all events are replicated.",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true
+      },
+      "export_properties": {
+        "order": 14,
+        "title": "Export Properties",
+        "description": "Optional event property names to include in the Export schema. When provided, the connector skips Mixpanel's dynamic property discovery request. This setting does not remove other properties from exported records or reduce the raw response size.",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true
       }
     }
   }
