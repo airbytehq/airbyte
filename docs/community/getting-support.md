@@ -23,7 +23,7 @@ Core users don't have access to paid support but can use the [Community Slack](#
 
 Connector support depends on the connector's support level. See [Connector Support Levels](/integrations/connector-support-levels) for details.
 
-If you don't see a connector you need, submit a [connector request](https://airbyte.com/connector-requests).
+If you don't see a connector you need, see [Custom or New Connector](/integrations/custom-connectors) to request or build one.
 
 ### GitHub discussions
 
