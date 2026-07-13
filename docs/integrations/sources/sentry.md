@@ -4,41 +4,56 @@ This page contains the setup guide and reference information for the Sentry sour
 
 ## Prerequisites
 
-To set up the Sentry source connector, you'll need the Sentry [project name](https://docs.sentry.io/product/projects/), [authentication token](https://docs.sentry.io/api/auth/#auth-tokens), and [organization](https://docs.sentry.io/product/accounts/membership/).
+To set up the Sentry source connector, you need:
+
+- A Sentry [organization slug](https://docs.sentry.io/product/accounts/membership/)
+- A [project slug](https://docs.sentry.io/product/projects/) in that organization
+- A Sentry [authentication token](https://docs.sentry.io/api/auth/#auth-tokens) with the scopes required by the streams you sync
+
+For Sentry SaaS, you can create an organization-wide token with a Sentry [internal integration](https://docs.sentry.io/integrations/integration-platform/internal-integration/). Configure the integration with read access for organizations, projects, and issues and events to sync every stream.
 
 ## Set up the Sentry connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Sentry** from the Source type dropdown.
-4. Enter the name for the Sentry connector.
-5. For **Project**, enter the name of the [Sentry project](https://docs.sentry.io/product/projects/) you want to sync.
-6. For **Host Name**, enter the host name of your self-hosted Sentry API Server. If your server isn't self-hosted, leave the field blank.
-7. For **Authentication Tokens**, enter the [Sentry authentication token](https://docs.sentry.io/api/auth/#auth-tokens).
-8. For **Organization**, enter the [Sentry Organization](https://docs.sentry.io/product/accounts/membership/) the groups belong to.
-9. Click **Set up source**.
+1. In Airbyte, select **Sources**, then select **New source**.
+2. Select **Sentry**.
+3. For **Authentication Tokens**, enter your Sentry authentication token.
+4. For **Host Name**, keep `sentry.io` for Sentry SaaS, or enter the hostname of your self-hosted Sentry server without `https://` or a path. You can also use your Sentry SaaS [region-specific domain](https://docs.sentry.io/api/#choosing-the-right-api-base-domain), such as `us.sentry.io`, `us2.sentry.io`, or `de.sentry.io`.
+5. For **Organization**, enter the organization slug.
+6. For **Project**, enter the project slug. This setting determines which project the `events`, `issues`, and `project_detail` streams sync. Organization-level streams aren't limited to this project.
+7. Optionally, for **Number of concurrent workers**, enter a value from 1 through 20. The default is 5.
+8. Select **Set up source**.
 
 ## Supported sync modes
 
-The Sentry source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Sentry source connector supports these [sync modes](/platform/using-airbyte/core-concepts/sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
-- [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/)
-- [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
-- [Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/)
-- [Project Detail](https://docs.sentry.io/api/projects/retrieve-a-project/)
-- [All Projects Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) — full project details for every project in the organization
-- [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
+| Stream | Data synced | Supported sync modes |
+| :--- | :--- | :--- |
+| [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/) | Error events for the configured project | Full refresh, incremental |
+| [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/) | Issues for the configured project | Full refresh, incremental |
+| [Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/) | Projects in the configured organization | Full refresh, incremental |
+| [Project Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for the configured project | Full refresh |
+| [All Projects Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for every project in the configured organization | Full refresh |
+| [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/) | Releases in the configured organization | Full refresh, incremental |
+
+The `all_projects_detail` stream makes one project-detail request for every project returned by the organization-level list endpoint.
+
+:::note Version 1.0.0
+
+The `projects` stream now returns only projects in the configured organization. The `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` fields return `null` in this stream. Sync `all_projects_detail` to retrieve these fields for every project. For upgrade instructions, see the [Sentry migration guide](/integrations/sources/sentry-migrations).
+
+:::
 
 ## Authentication token scopes
 
-The [authentication token](https://docs.sentry.io/api/auth/#auth-tokens) you configure must include the scopes required by the streams you sync. The union of scopes required across all streams is `org:read`, `event:read`, and `project:read`.
+The authentication token must include the scopes required by the streams you sync. To sync every stream, grant `org:read`, `event:read`, and `project:read`.
 
 | Stream              | Endpoint                                                          | Required scope             |
 | :------------------ | :---------------------------------------------------------------- | :------------------------- |
@@ -51,30 +66,19 @@ The [authentication token](https://docs.sentry.io/api/auth/#auth-tokens) you con
 
 If the token is missing a scope, the corresponding stream returns an HTTP 403 error. See the Sentry [permissions and scopes](https://docs.sentry.io/api/permissions/) reference for details.
 
-## Limitations & Troubleshooting
+## Limitations and troubleshooting
 
-<details>
-<summary>
-Expand to see details about Sentry connector limitations and troubleshooting.
-</summary>
-
-### Connector limitations
+### Event retention
 
 :::warning
-**Sentry API Restriction on Events Data**: Access to the events endpoint is guaranteed only for the last 90 days by Sentry. If you use the Full Refresh Overwrite sync, be aware that any events data older than 90 days will be **deleted** from your target destination and replaced with the data from the last 90 days only. Use an Append sync mode to ensure historical data is retained.
-Please be aware: this also means that any change older than 90 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 90 days.
+
+Sentry SaaS retains error events for 30 or 90 days, depending on your plan. If you use Full Refresh - Overwrite, a sync replaces older destination records with only the events still available from Sentry. Use an append mode if you need to keep events beyond Sentry's [data retention period](https://docs.sentry.io/security-legal-pii/security/data-retention-periods/).
+
 :::
 
-</details>
+### Rate limits
 
-## Data type map
-
-| Integration Type    | Airbyte Type |
-| :------------------ | :----------- |
-| `string`            | `string`     |
-| `integer`, `number` | `number`     |
-| `array`             | `array`      |
-| `object`            | `object`     |
+Sentry applies request and concurrency limits per caller and endpoint. The limits are returned in the `X-Sentry-Rate-Limit-*` response headers and can vary by endpoint. If syncs receive HTTP 429 responses, reduce **Number of concurrent workers**. See Sentry's [rate limit documentation](https://docs.sentry.io/api/ratelimits/).
 
 ## IP allow list
 
