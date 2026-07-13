@@ -18,7 +18,8 @@ Sentry deprecated the legacy, non-org-scoped projects endpoint (`GET /api/0/proj
 
 ### Required actions
 
-- You do **not** need to run a Full Refresh - Overwrite sync for this upgrade, and there is **no risk of losing data** for the six fields: they are still retrievable from the new `all_projects_detail` stream. Enable `all_projects_detail` if you need `avatar`, `color`, `isInternal`, `isPublic`, `organization`, or `status` for your projects.
+- If you sync the `projects` stream in **Full Refresh - Overwrite** mode, back up the existing `projects` records before upgrading. After the upgrade, the next sync overwrites all previously stored records with the new ones, in which the six fields `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` return `null`.
+- The six fields remain retrievable from the new `all_projects_detail` stream. Enable `all_projects_detail` if you need `avatar`, `color`, `isInternal`, `isPublic`, `organization`, or `status` for your projects.
 - Be aware that the `projects` stream now returns information **only for the projects that belong to the organization specified during setup**. If your token previously returned projects from other organizations, those projects will no longer appear in the `projects` stream. If you need projects from more than one organization, configure a separate connection per organization.
 
 ### Required token scopes

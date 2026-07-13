@@ -88,8 +88,7 @@ data:
           not return the `avatar`, `color`, `isInternal`, `isPublic`,
           `organization`, and `status` fields; these are now available in the
           new `all_projects_detail` stream, which returns full project details
-          for every project in the organization. No Full Refresh - Overwrite is
-          required for this upgrade.
+          for every project in the organization.
         upgradeDeadline: "2026-07-15"
         deadlineAction: disable
     rolloutConfiguration:
