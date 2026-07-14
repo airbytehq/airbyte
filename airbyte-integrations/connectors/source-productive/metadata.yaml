@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 51766ab3-df25-4c8c-98a4-647440d0dfbb
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-productive
   githubIssueLabel: source-productive
   icon: icon.svg
