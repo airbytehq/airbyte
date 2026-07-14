@@ -5,7 +5,8 @@ name: "Hydra: Auto-merge (AI-gated)"
 # playbook carries the analysis prompt and the structured output schema; this
 # workflow only supplies the PR to analyze and evaluates the result
 # deterministically:
-#   pass = ALL(preconditions) AND NO(destination_changes) AND ANY(allowed_scopes)
+#   pass = ALL(preconditions) AND SUPPORT_BOT_ASSIGNED
+#          AND NO(destination_changes) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
 # Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
@@ -89,19 +90,25 @@ jobs:
             > **Auto-merge evaluation in progress...**
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-      - name: Classify changed file paths
+      - name: Classify auto-merge eligibility
         if: steps.pre-check.outputs.state == 'OPEN'
         id: validate-paths
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           script: |
+            const pullNumber = Number(process.env.PR_NUMBER);
+            const { data: pull } = await github.rest.pulls.get({
+              owner: 'airbytehq',
+              repo: 'airbyte',
+              pull_number: pullNumber,
+            });
             const files = await github.paginate(
               github.rest.pulls.listFiles,
               {
                 owner: 'airbytehq',
                 repo: 'airbyte',
-                pull_number: Number(process.env.PR_NUMBER),
+                pull_number: pullNumber,
                 per_page: 100,
               },
             );
@@ -129,7 +136,17 @@ jobs:
                 /^airbyte-integrations\/connectors\/destination-[^/]+\//.test(path)
                 || /^docs\/integrations\/destinations\//.test(path),
             );
+            const supportBotAssigned = pull.assignees.some(
+              assignee => assignee.login === 'airbyte-support-bot',
+            );
             core.setOutput('valid', String(!invalidPath));
+            core.setOutput('support_bot_assigned', String(supportBotAssigned));
+            core.setOutput(
+              'support_bot_reasoning',
+              supportBotAssigned
+                ? 'Airbyte Support Bot assignment confirms automated merge eligibility.'
+                : 'Airbyte Support Bot is not assigned; human approval and merge are required.',
+            );
             core.setOutput('no_destination_changes', String(!destinationChanges));
             core.setOutput(
               'destination_reasoning',
@@ -290,6 +307,7 @@ jobs:
         id: evaluate
         env:
           STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+          SUPPORT_BOT_ASSIGNED: ${{ steps.validate-paths.outputs.support_bot_assigned }}
           NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
         run: |
           set -euo pipefail
@@ -302,7 +320,7 @@ jobs:
           no_breaking=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.pass')
           ai_review=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.pass')
 
-          if [[ "$no_breaking" == "true" && "$ai_review" == "true" && "$NO_DESTINATION_CHANGES" == "true" ]]; then
+          if [[ "$no_breaking" == "true" && "$ai_review" == "true" && "$SUPPORT_BOT_ASSIGNED" == "true" && "$NO_DESTINATION_CHANGES" == "true" ]]; then
             preconditions_pass="true"
           else
             preconditions_pass="false"
@@ -329,11 +347,12 @@ jobs:
           fi
 
           echo "preconditions_pass=$preconditions_pass" | tee -a "$GITHUB_OUTPUT"
+          echo "support_bot_assigned=$SUPPORT_BOT_ASSIGNED" | tee -a "$GITHUB_OUTPUT"
           echo "no_destination_changes=$NO_DESTINATION_CHANGES" | tee -a "$GITHUB_OUTPUT"
           echo "scope_pass=$scope_pass" | tee -a "$GITHUB_OUTPUT"
           echo "result=$result" | tee -a "$GITHUB_OUTPUT"
 
-          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, no_destination_changes=$NO_DESTINATION_CHANGES, change_scope=$scope_pass)"
+          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, support_bot_assigned=$SUPPORT_BOT_ASSIGNED, no_destination_changes=$NO_DESTINATION_CHANGES, change_scope=$scope_pass)"
 
       # ── Post results ───────────────────────────────────────────────
       - name: Build evaluation report
@@ -342,6 +361,8 @@ jobs:
         env:
           STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
           EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
+          SUPPORT_BOT_ASSIGNED: ${{ steps.evaluate.outputs.support_bot_assigned }}
+          SUPPORT_BOT_REASONING: ${{ steps.validate-paths.outputs.support_bot_reasoning }}
           NO_DESTINATION_CHANGES: ${{ steps.evaluate.outputs.no_destination_changes }}
           DESTINATION_REASONING: ${{ steps.validate-paths.outputs.destination_reasoning }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
@@ -373,6 +394,7 @@ jobs:
               reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".preconditions.${key}.reasoning")
               echo "| $(icon "$pass") | $(pretty_label "$key") | ${reasoning} |"
             done
+            echo "| $(icon "$SUPPORT_BOT_ASSIGNED") | Airbyte Support Bot Assigned | ${SUPPORT_BOT_REASONING} |"
             echo "| $(icon "$NO_DESTINATION_CHANGES") | No Destination Changes | ${DESTINATION_REASONING} |"
             echo ""
             echo "### Change scope (at least one must pass)"
