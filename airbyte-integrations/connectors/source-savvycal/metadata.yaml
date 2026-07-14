@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a554ed06-74e2-4c60-9510-d63f7dc463b6
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-savvycal
   githubIssueLabel: source-savvycal
   icon: icon.svg
