@@ -167,7 +167,7 @@
       "export_events": {
         "order": 13,
         "title": "Export Events",
-        "description": "Optional event names to replicate from the Export stream. When provided, the connector also limits dynamic Export schema discovery to these events. If left empty, all events are replicated.",
+        "description": "Optional event names to replicate from the Export stream. When provided, the connector filters the raw Export sync to these events and scopes dynamic schema discovery to them. Note: this does NOT skip Mixpanel's schema discovery request (events/properties/top) — it still runs, just per selected event, so it can still be slow or time out on large projects. To skip discovery entirely, set Export Properties instead. If left empty, all events are replicated.",
         "type": "array",
         "items": {
           "type": "string",
@@ -178,7 +178,7 @@
       "export_properties": {
         "order": 14,
         "title": "Export Properties",
-        "description": "Optional event property names to include in the Export schema. When provided, the connector skips Mixpanel's dynamic property discovery request. This setting does not remove other properties from exported records or reduce the raw response size.",
+        "description": "Optional event property names to include in the Export schema. When provided, the connector builds the Export schema directly from this list and completely skips Mixpanel's dynamic property discovery request (events/properties/top) — this is the setting to use if schema discovery is timing out. This setting does not remove other properties from exported records or reduce the raw response size.",
         "type": "array",
         "items": {
           "type": "string",

@@ -34,8 +34,8 @@ The connector also supports [Project Secret](https://developer.mixpanel.com/refe
 15. For **Export Lookback Window**, enter the number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This helps avoid missed data due to delays in event recording. The default is 0 seconds.
 16. For **Number of concurrent threads**, enter the number of worker threads for the sync. The default is 3. Higher values may improve performance but are constrained by your Mixpanel plan's [rate limits](https://developer.mixpanel.com/reference/rate-limits).
 17. (Optional) For **Streams to Discover**, select the specific streams you want to discover and sync. If left empty, all streams are available. Use this to speed up schema discovery when your account has access to many endpoints and discovery is timing out. Available streams: `cohorts`, `engage`, `annotations`, `cohort_members`, `funnels`, `export`.
-18. (Optional) For **Export Events**, enter the exact, case-sensitive event names to replicate from the Export stream. If left empty, all events are replicated. This setting also scopes dynamic Export schema discovery to the selected events.
-19. (Optional) For **Export Properties**, enter the exact event property names to include in the Export schema. When provided, the connector skips Mixpanel's dynamic property-discovery request. This setting doesn't remove other properties from exported records or reduce the raw response size.
+18. (Optional) For **Export Events**, enter the exact, case-sensitive event names to replicate from the Export stream. If left empty, all events are replicated. This setting also scopes dynamic Export schema discovery to the selected events, but it does **not** skip discovery — the connector still calls Mixpanel's property-discovery request (`events/properties/top`) once per selected event, so discovery can still be slow or time out. To skip discovery entirely, set **Export Properties**.
+19. (Optional) For **Export Properties**, enter the exact event property names to include in the Export schema. When provided, the connector builds the Export schema directly from this list and completely skips Mixpanel's dynamic property-discovery request (`events/properties/top`) — use this setting if Export schema discovery is timing out. This setting doesn't remove other properties from exported records or reduce the raw response size.
 20. Click **Set up source**.
 
 ## Supported sync modes
@@ -73,7 +73,7 @@ Mixpanel enforces separate rate limits for different API endpoints:
 - **Query API** (Cohorts, Engage, Funnels, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
 - **Raw Data Export API** (Export): 100 concurrent queries, 60 queries per hour, 3 queries per second.
 
-Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits. Use **Export Events** to reduce the number of events returned by Mixpanel. If Export schema discovery times out, use **Export Properties** to define the required schema fields without querying Mixpanel for every available event property.
+Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits. Use **Export Events** to reduce the number of events returned by Mixpanel during syncs. Note that **Export Events** alone does not fix a schema-discovery timeout — the connector still queries `events/properties/top` for each selected event. If Export schema discovery times out, use **Export Properties** to define the required schema fields directly; this is the only setting that skips the discovery request entirely.
 
 ## Limitations
 
