@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e4285e7f-ee6c-4b8b-b231-746c9640164e
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-onfleet
   githubIssueLabel: source-onfleet
   icon: icon.svg
