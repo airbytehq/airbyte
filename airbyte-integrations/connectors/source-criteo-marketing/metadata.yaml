@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9a5346ac-42ee-485d-a791-d079f92ccdfc
-  dockerImageTag: 0.0.9
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-criteo-marketing
   githubIssueLabel: source-criteo-marketing
   icon: icon.svg
