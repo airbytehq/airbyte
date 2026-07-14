@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ae2d64c4-8282-4a44-9e0d-be29c42e558c
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-sendpulse
   githubIssueLabel: source-sendpulse
   icon: icon.svg
