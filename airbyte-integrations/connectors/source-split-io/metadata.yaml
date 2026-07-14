@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fa1994b2-d0b2-451d-807e-a9ceff9377cc
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-split-io
   githubIssueLabel: source-split-io
   icon: icon.svg
