@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5c11d431-dc5f-4b6d-9a61-d03799e1dc09
-  dockerImageTag: 0.0.35
+  dockerImageTag: 0.0.36
   dockerRepository: airbyte/source-svix
   githubIssueLabel: source-svix
   icon: icon.svg
