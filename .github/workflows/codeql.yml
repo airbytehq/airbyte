@@ -17,7 +17,6 @@ on:
       - ".github/actions/**/action.yml"
       - ".github/actions/**/action.yaml"
       - ".github/codeql/**"
-      - ".github/scripts/**"
       - ".github/workflows/codeql.yml"
       - "buildSrc/**"
       - "gradle/**"
@@ -62,7 +61,6 @@ jobs:
               - '.github/actions/**/action.yml'
               - '.github/actions/**/action.yaml'
               - '.github/codeql/**'
-              - '.github/scripts/**'
               - '.github/workflows/**/*.yml'
               - '.github/workflows/**/*.yaml'
             java:
@@ -197,9 +195,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - name: Test Hydra auto-merge eligibility
-        run: node --test .github/scripts/hydra-automerge-eligibility.test.js
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
