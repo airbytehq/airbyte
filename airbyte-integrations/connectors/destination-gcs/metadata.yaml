@@ -21,33 +21,8 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - fileName: gcs_dest_v2_avro_snappy_config.json
-          name: SECRET_DESTINATION-GCS-V2-AVRO-SNAPPY
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: gcs_dest_v2_avro_config.json
-          name: SECRET_DESTINATION-GCS-V2-AVRO
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: gcs_dest_v2_jsonl_config.json
-          name: SECRET_DESTINATION-GCS-V2-JSONL
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: gcs_dest_v2_csv_config.json
-          name: SECRET_DESTINATION-GCS-V2-CSV
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: gcs_dest_v2_csv_uncompressed_config.json
-          name: SECRET_DESTINATION-GCS-V2-CSV-UNCOMPRESSED
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: gcs_dest_v2_parquet_snappy_config.json
-          name: SECRET_DESTINATION-GCS-V2-PARQUET-SNAPPY
+        - fileName: config.json
+          name: SECRET_DESTINATION-GCS
           secretStore:
             alias: airbyte-connector-testing-secret-store
             type: GSM

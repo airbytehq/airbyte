@@ -35,8 +35,11 @@ import org.junit.jupiter.api.assertThrows
 
 /**
  * Mirror of S3V2WriteTest. Same shape: an abstract base wired to the CDK
- * [BasicFunctionalityIntegrationTest] with a config path + [GcsV2DataDumper] + [GcsV2Specification]
- * , then one concrete subclass per output format we exercise.
+ * [BasicFunctionalityIntegrationTest] with a config string + [GcsV2DataDumper] +
+ * [GcsV2Specification], then one concrete subclass per output format we exercise.
+ *
+ * Each subclass builds its config via [GcsV2TestUtils.getConfigWithFormat], which reads the single
+ * base `secrets/config.json` and injects the format section in-memory.
  *
  * Differences from S3V2WriteTest (all because GCS auth is HMAC-only, no STS):
  * - No `micronautProperties = ...assumeRoleCredentials.asMicronautProperties()`. GCS has no
@@ -46,12 +49,12 @@ import org.junit.jupiter.api.assertThrows
  * - Only STDIO/JSONL medium is exercised (no SOCKET/PROTOBUF variants) since the GCS v2 connector
  * ships the same object-storage loader as S3 and the socket path is covered by destination-s3.
  *
- * All non-file-destination tests are enabled so this runs as soon as the secrets JSON configs
- * exist. `mergesUnions`-gated tests only fire for the Avro subclass.
+ * All non-file-destination tests are enabled so this runs as soon as `secrets/config.json` exists.
+ * `mergesUnions`-gated tests only fire for the Avro subclass.
  */
 @Timeout(60, unit = TimeUnit.MINUTES)
 abstract class GcsV2WriteTest(
-    path: String,
+    configContents: String,
     expectedRecordMapper: ExpectedRecordMapper,
     stringifySchemalessObjects: Boolean,
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
@@ -65,7 +68,7 @@ abstract class GcsV2WriteTest(
     mismatchedTypesUnrepresentable: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
-        GcsV2TestUtils.getConfig(path),
+        configContents,
         GcsV2Specification::class.java,
         GcsV2DataDumper,
         NoopDestinationCleaner,
@@ -220,9 +223,23 @@ abstract class GcsV2WriteTest(
     }
 }
 
+// JSONL with the CDK default compression (GZIP) -> `.jsonl.gz`.
 class GcsV2WriteTestJsonl :
     GcsV2WriteTest(
-        GcsV2TestUtils.JSONL_CONFIG_PATH,
+        GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.JSONL_FORMAT),
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        allTypesBehavior = Untyped,
+    )
+
+// JSONL with explicit "No Compression" -> `.jsonl` (proves the compression toggle, mirrors
+// the old GcsJsonlDestinationAcceptanceTest which tested uncompressed JSONL output).
+class GcsV2WriteTestJsonlUncompressed :
+    GcsV2WriteTest(
+        GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.JSONL_UNCOMPRESSED_FORMAT),
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -233,7 +250,7 @@ class GcsV2WriteTestJsonl :
 
 class GcsV2WriteTestAvroSnappy :
     GcsV2WriteTest(
-        GcsV2TestUtils.AVRO_SNAPPY_CONFIG_PATH,
+        GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.AVRO_SNAPPY_FORMAT),
         AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
@@ -252,7 +269,7 @@ class GcsV2WriteTestAvroSnappy :
 // AVRO without file-level compression -> `.avro` (Avro is not a file-compression provider).
 class GcsV2WriteTestAvroUncompressed :
     GcsV2WriteTest(
-        GcsV2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
+        GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.AVRO_UNCOMPRESSED_FORMAT),
         AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         unionBehavior = UnionBehavior.PASS_THROUGH,
@@ -267,7 +284,7 @@ class GcsV2WriteTestAvroUncompressed :
 // CSV with the CDK default compression (GZIP) -> `.csv.gz`.
 class GcsV2WriteTestCsv :
     GcsV2WriteTest(
-        GcsV2TestUtils.CSV_CONFIG_PATH,
+        GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.CSV_FORMAT),
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -279,7 +296,7 @@ class GcsV2WriteTestCsv :
 // CSV with explicit "No Compression" -> `.csv` (proves the compression toggle).
 class GcsV2WriteTestCsvUncompressed :
     GcsV2WriteTest(
-        GcsV2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
+        GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.CSV_UNCOMPRESSED_FORMAT),
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -292,7 +309,7 @@ class GcsV2WriteTestCsvUncompressed :
 // compression lives inside the parquet container). Note unionBehavior = PROMOTE_TO_OBJECT, as S3.
 class GcsV2WriteTestParquetSnappy :
     GcsV2WriteTest(
-        GcsV2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
+        GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.PARQUET_SNAPPY_FORMAT),
         AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,

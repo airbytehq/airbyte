@@ -324,15 +324,16 @@
       },
       "gcs_path_format" : {
         "type" : "string",
-        "description" : "Format string on how data will be organized inside the GCS bucket directory.",
+        "description" : "Format string on how data will be organized inside the GCS bucket directory. Available variables: ${NAMESPACE}, ${STREAM_NAME}, ${YEAR}, ${MONTH}, ${DAY}, ${HOUR}, ${MINUTE}, ${SECOND}, ${MILLISECOND}, ${EPOCH}, ${UUID}, ${SYNC_ID}.",
         "title" : "GCS Path Format",
-        "examples" : [ "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_" ],
+        "default" : "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_",
         "order" : 5
       },
       "file_name_pattern" : {
         "type" : "string",
-        "description" : "Pattern to match file names in the bucket directory.",
+        "description" : "Pattern for output file names in the bucket directory. Available variables: {date} (yyyy_MM_dd), {date:yyyy_MM}, {timestamp}, {part_number}, {sync_id}, {format_extension}.",
         "title" : "File Name Pattern",
+        "default" : "{part_number}{format_extension}",
         "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ],
         "order" : 6
       }

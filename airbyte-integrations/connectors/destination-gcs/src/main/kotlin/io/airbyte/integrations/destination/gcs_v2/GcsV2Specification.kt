@@ -20,6 +20,8 @@ import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatS
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.integrations.destination.gcs_v2.GcsV2Specification.Companion.DEFAULT_FILE_FORMAT
+import io.airbyte.integrations.destination.gcs_v2.GcsV2Specification.Companion.DEFAULT_PATH_FORMAT
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
@@ -37,8 +39,10 @@ import jakarta.inject.Singleton
  * S3PathSpecification), so `gcs_path_format` + `file_name_pattern` are declared here and lowered to
  * the generic [ObjectStoragePathConfiguration] via [toObjectStoragePathConfiguration], using the
  * SAME [Transformations.toS3SafeCharacters] transform S3 uses — keeping path/partition behavior
- * identical to destination-s3 and to the v0.4.x directory-per-stream layout. Both new fields are
- * optional (null default) so existing v0.4.x configs remain valid.
+ * identical to destination-s3 and to the v0.4.x directory-per-stream layout. Both fields are
+ * nullable so that existing v0.4.x configs (which omit them) remain valid; when null, the
+ * [toObjectStoragePathConfiguration] method falls back to [DEFAULT_PATH_FORMAT] and
+ * [DEFAULT_FILE_FORMAT] respectively.
  */
 @Singleton
 @JsonSchemaTitle("GCS V2 Destination Spec")
@@ -69,39 +73,51 @@ class GcsV2Specification :
 
     @get:JsonSchemaTitle("GCS Path Format")
     @get:JsonPropertyDescription(
-        "Format string on how data will be organized inside the GCS bucket directory."
+        "Format string on how data will be organized inside the GCS bucket directory. " +
+            "Available variables: \${NAMESPACE}, \${STREAM_NAME}, \${YEAR}, \${MONTH}, " +
+            "\${DAY}, \${HOUR}, \${MINUTE}, \${SECOND}, \${MILLISECOND}, \${EPOCH}, " +
+            "\${UUID}, \${SYNC_ID}.",
     )
     @get:JsonSchemaInject(
         json =
-            "{\"examples\":[\"\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_\"],\"order\":5}"
+            "{\"order\":5,\"default\":\"\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_\"}",
     )
     @get:JsonProperty("gcs_path_format")
-    val gcsPathFormat: String? = null
+    val gcsPathFormat: String? = DEFAULT_PATH_FORMAT
 
     @get:JsonSchemaTitle("File Name Pattern")
-    @get:JsonPropertyDescription("Pattern to match file names in the bucket directory.")
+    @get:JsonPropertyDescription(
+        "Pattern for output file names in the bucket directory. " +
+            "Available variables: {date} (yyyy_MM_dd), {date:yyyy_MM}, " +
+            "{timestamp}, {part_number}, {sync_id}, {format_extension}.",
+    )
     @get:JsonSchemaInject(
         json =
-            "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":6}"
+            "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":6,\"default\":\"{part_number}{format_extension}\"}",
     )
     @get:JsonProperty("file_name_pattern")
-    val fileNamePattern: String? = null
+    val fileNamePattern: String? = DEFAULT_FILE_FORMAT
 
     /**
-     * Lower the GCS bucket path + (optional) path/file-name patterns to the generic object-storage
-     * path config. `path` (gcs_bucket_path) comes from [GcsCommonSpecification]. When
-     * `gcsPathFormat` is null the CDK's
-     * [io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory] applies its
-     * DEFAULT_PATH_FORMAT (${'$'}{NAMESPACE}/${'$'}{STREAM_NAME}/${'$'}{YEAR}_...), matching
-     * v0.4.x.
+     * Lower the GCS bucket path + path/file-name patterns to the generic object-storage path
+     * config. `path` (gcs_bucket_path) comes from [GcsCommonSpecification]. When `gcsPathFormat` or
+     * `fileNamePattern` is null (e.g. during migration from v0.4.x configs that omit these fields),
+     * falls back to [DEFAULT_PATH_FORMAT] / [DEFAULT_FILE_FORMAT] respectively, matching the v0.4.x
+     * directory-per-stream layout.
      */
     fun toObjectStoragePathConfiguration(): ObjectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = path,
-            pathPattern = gcsPathFormat,
-            fileNamePattern = fileNamePattern,
+            pathPattern = gcsPathFormat ?: DEFAULT_PATH_FORMAT,
+            fileNamePattern = fileNamePattern ?: DEFAULT_FILE_FORMAT,
             resolveNamesMethod = { Transformations.toS3SafeCharacters(it) },
         )
+
+    companion object {
+        const val DEFAULT_PATH_FORMAT =
+            "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_"
+        const val DEFAULT_FILE_FORMAT = "{part_number}{format_extension}"
+    }
 }
 
 @Singleton

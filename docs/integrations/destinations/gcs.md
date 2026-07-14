@@ -90,6 +90,55 @@ The rationales behind this naming pattern are: 1. Each stream has its own direct
 
 A data sync may create multiple files as the output files can be partitioned by size (targeting a size of 200MB compressed or lower) .
 
+### GCS Path Format
+
+The **GCS Path Format** field controls the directory structure under the bucket path. The default value is:
+
+```
+${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_
+```
+
+The following variables are available for path format:
+
+| Variable         | Description                                           | Example             |
+|:-----------------|:------------------------------------------------------|:--------------------|
+| `${NAMESPACE}`   | Namespace of the stream (empty if none is configured) | `public`            |
+| `${STREAM_NAME}` | Name of the stream                                    | `users`             |
+| `${YEAR}`        | Year of the sync (UTC, 4-digit)                       | `2026`              |
+| `${MONTH}`       | Month of the sync (UTC, zero-padded)                  | `07`                |
+| `${DAY}`         | Day of the sync (UTC, zero-padded)                    | `14`                |
+| `${HOUR}`        | Hour of the sync (UTC, zero-padded)                   | `09`                |
+| `${MINUTE}`      | Minute of the sync (UTC, zero-padded)                 | `30`                |
+| `${SECOND}`      | Second of the sync (UTC, zero-padded)                 | `45`                |
+| `${MILLISECOND}` | Millisecond of the day (UTC)                          | `0123`              |
+| `${EPOCH}`       | Milliseconds since Unix epoch                         | `1752489045000`     |
+| `${UUID}`        | Random UUID                                           | `a1b2c3d4-e5f6-...` |
+| `${SYNC_ID}`     | Unique ID of the sync                                 | `101`               |
+
+### File Name Pattern
+
+The **File Name Pattern** field controls the name of each output file. The default value is:
+
+```
+{part_number}{format_extension}
+```
+
+The following variables are available for file name pattern:
+
+| Variable             | Description                                  | Example         |
+|:---------------------|:---------------------------------------------|:----------------|
+| `{date}`             | Date of the sync in `yyyy_MM_dd` format      | `2026_07_14`    |
+| `{date:yyyy_MM}`     | Date of the sync in `yyyy_MM` format         | `2026_07`       |
+| `{timestamp}`        | Current wall-clock timestamp in milliseconds | `1752489045123` |
+| `{part_number}`      | File part number (0, 1, 2, ...)              | `0`             |
+| `{sync_id}`          | Unique ID of the sync                        | `101`           |
+| `{format_extension}` | File extension including compression suffix  | `.csv.gz`       |
+
+:::note
+Path format variables use the `${VARIABLE}` syntax, while file name pattern variables use the `{variable}` syntax.
+Multiple `/` characters in the resolved path are collapsed into a single `/`.
+:::
+
 ## Output Schema
 
 Each stream will be outputted to its dedicated directory according to the configuration. The complete datastore of each stream includes all the output files under that directory. You can think of the directory as equivalent of a Table in the database world.

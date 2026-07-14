@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Disabled
 @Disabled("We don't want this to run in CI")
 class GcsV2AvroSnappyPerformanceTest :
     BasicPerformanceTest(
-        configContents = GcsV2TestUtils.getConfig(GcsV2TestUtils.AVRO_SNAPPY_CONFIG_PATH),
+        configContents = GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.AVRO_SNAPPY_FORMAT),
         configSpecClass = GcsV2Specification::class.java,
         defaultRecordsToInsert = 1_000_000,
     )
@@ -37,7 +37,7 @@ class GcsV2AvroSnappyPerformanceTest :
 @Disabled("We don't want this to run in CI")
 class GcsV2AvroSnappyPerformanceTestSockets :
     BasicPerformanceTest(
-        configContents = GcsV2TestUtils.getConfig(GcsV2TestUtils.AVRO_SNAPPY_CONFIG_PATH),
+        configContents = GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.AVRO_SNAPPY_FORMAT),
         configSpecClass = GcsV2Specification::class.java,
         defaultRecordsToInsert = 1_000_000,
         dataChannelMedium = DataChannelMedium.SOCKET,

@@ -4,23 +4,68 @@
 
 package io.airbyte.integrations.destination.gcs_v2
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.integrations.destination.gcs_v2.GcsV2TestUtils.BASE_CONFIG_PATH
+import io.airbyte.integrations.destination.gcs_v2.GcsV2TestUtils.getConfigWithFormat
 import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Mirror of S3V2TestUtils, minus everything AWS-specific. GCS auth is HMAC-only, so there is no
- * assume-role secret to load and no eager init block (which would fail on a missing file and break
- * the config-independent SpecTest). Each secrets JSON file must contain a valid GCS config
- * (gcs_bucket_name, gcs_bucket_path, gcs_bucket_region, credential HMAC, format). File names MUST
- * match the testSecrets entries in metadata.yaml.
+ * Test utilities for destination-gcs v2 integration tests.
+ *
+ * Uses a single base config file (`secrets/config.json`) containing GCS credentials (bucket name,
+ * bucket path, bucket region, HMAC key) and injects the `format` section in-memory per test. This
+ * eliminates the need for per-format secret files — only one GSM secret is required in CI.
+ *
+ * The base config intentionally omits the `format` field; each test calls [getConfigWithFormat]
+ * with one of the format constants below.
  */
 object GcsV2TestUtils {
-    const val AVRO_SNAPPY_CONFIG_PATH = "secrets/gcs_dest_v2_avro_snappy_config.json"
-    const val AVRO_UNCOMPRESSED_CONFIG_PATH = "secrets/gcs_dest_v2_avro_config.json"
-    const val JSONL_CONFIG_PATH = "secrets/gcs_dest_v2_jsonl_config.json"
-    const val CSV_CONFIG_PATH = "secrets/gcs_dest_v2_csv_config.json"
-    const val CSV_UNCOMPRESSED_CONFIG_PATH = "secrets/gcs_dest_v2_csv_uncompressed_config.json"
-    const val PARQUET_SNAPPY_CONFIG_PATH = "secrets/gcs_dest_v2_parquet_snappy_config.json"
+    private val mapper = ObjectMapper()
 
+    /** Path to the single base config with GCS credentials (no format field). */
+    const val BASE_CONFIG_PATH = "secrets/config.json"
+
+    // -- Format JSON templates --------------------------------------------------
+    // Each constant is a valid JSON string for the `format` field of the GCS v2 spec.
+
+    /** Avro with Snappy internal codec. */
+    const val AVRO_SNAPPY_FORMAT =
+        """{"format_type":"Avro","compression_codec":{"codec":"snappy"}}"""
+
+    /** Avro with no compression. */
+    const val AVRO_UNCOMPRESSED_FORMAT =
+        """{"format_type":"Avro","compression_codec":{"codec":"no compression"}}"""
+
+    /** JSONL with the CDK default compression (GZIP) -> `.jsonl.gz`. */
+    const val JSONL_FORMAT = """{"format_type":"JSONL"}"""
+
+    /** JSONL with explicit "No Compression" -> `.jsonl`. */
+    const val JSONL_UNCOMPRESSED_FORMAT =
+        """{"format_type":"JSONL","compression":{"compression_type":"No Compression"}}"""
+
+    /** CSV with the CDK default compression (GZIP) -> `.csv.gz`. */
+    const val CSV_FORMAT = """{"format_type":"CSV","flattening":"No flattening"}"""
+
+    /** CSV with explicit "No Compression" -> `.csv`. */
+    const val CSV_UNCOMPRESSED_FORMAT =
+        """{"format_type":"CSV","flattening":"No flattening","compression":{"compression_type":"No Compression"}}"""
+
+    /** Parquet with Snappy internal codec -> `.parquet`. */
+    const val PARQUET_SNAPPY_FORMAT = """{"format_type":"Parquet","compression_codec":"SNAPPY"}"""
+
+    /** Reads a file as a UTF-8 string. */
     fun getConfig(configPath: String): String = Files.readString(Path.of(configPath))
+
+    /**
+     * Reads the base config from [BASE_CONFIG_PATH] and injects the given [formatJson] as the
+     * `format` field. Returns the complete config as a JSON string.
+     */
+    fun getConfigWithFormat(formatJson: String): String {
+        val config = mapper.readTree(getConfig(BASE_CONFIG_PATH)) as ObjectNode
+        config.set<JsonNode>("format", mapper.readTree(formatJson))
+        return mapper.writeValueAsString(config)
+    }
 }
