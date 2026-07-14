@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3631f862-646b-4abf-abde-dc37acf3847c
-  dockerImageTag: 0.0.47
+  dockerImageTag: 0.0.48
   dockerRepository: airbyte/source-bitly
   githubIssueLabel: source-bitly
   icon: icon.svg
