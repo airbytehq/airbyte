@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c10bae9d-398b-480a-a49b-5ae69cdc0759
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-watchmode
   githubIssueLabel: source-watchmode
   icon: icon.svg
