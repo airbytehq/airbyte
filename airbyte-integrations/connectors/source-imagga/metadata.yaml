@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3d4a824d-13a1-441a-ae9d-610b10013b49
-  dockerImageTag: 0.0.39
+  dockerImageTag: 0.0.40
   dockerRepository: airbyte/source-imagga
   githubIssueLabel: source-imagga
   icon: icon.svg
