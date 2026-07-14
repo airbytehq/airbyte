@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4c3d6bdd-dc0e-4a66-b48a-2e7956195eec
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-financial-modelling
   githubIssueLabel: source-financial-modelling
   icon: icon.svg
