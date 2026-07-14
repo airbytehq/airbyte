@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e4f70138-6f3f-4e3b-9f33-792d41ccf765
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-discord
   githubIssueLabel: source-discord
   icon: icon.svg
