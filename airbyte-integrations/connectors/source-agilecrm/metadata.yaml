@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7bdf5aaa-3dad-4ed0-9cec-4858454f3e18
-  dockerImageTag: 0.0.44
+  dockerImageTag: 0.0.45
   dockerRepository: airbyte/source-agilecrm
   githubIssueLabel: source-agilecrm
   icon: icon.svg
