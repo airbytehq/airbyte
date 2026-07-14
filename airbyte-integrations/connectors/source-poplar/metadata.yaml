@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2d9f2646-1e32-4336-abbe-7e5e113b479e
-  dockerImageTag: 0.0.42
+  dockerImageTag: 0.0.43
   dockerRepository: airbyte/source-poplar
   githubIssueLabel: source-poplar
   icon: icon.svg
