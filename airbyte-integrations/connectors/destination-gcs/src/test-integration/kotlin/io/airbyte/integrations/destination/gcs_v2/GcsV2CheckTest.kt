@@ -15,15 +15,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
 /**
- * Validates the `check` operation for the GCS v2 destination.
- *
- * Success configs verify that valid credentials + every supported output format pass the check.
- * Failure configs mirror the old v0.4.x acceptance tests (GcsDestinationAcceptanceTest):
- * - wrong HMAC key access ID
- * - wrong HMAC key secret
- * - non-existent bucket name
- *
- * All configs are built from the single `secrets/config.json` base with format injected in-memory.
+ * Check integration tests: verifies success with all formats and failure with bad credentials /
+ * bucket. Configs are built from `secrets/config.json` with format injected in-memory.
  */
 class GcsV2CheckTest :
     CheckIntegrationTest<GcsV2Specification>(
@@ -83,22 +76,10 @@ class GcsV2CheckTest :
     companion object {
         private val mapper = ObjectMapper()
 
-        /**
-         * Builds failure check configs by mutating a valid config with bad credentials or a
-         * non-existent bucket. Mirrors the old v0.4.x GcsDestinationAcceptanceTest negative check
-         * tests:
-         * - testCheckIncorrectHmacKeyAccessIdCredential
-         * - testCheckIncorrectHmacKeySecretCredential
-         * - testCheckIncorrectBucketCredential
-         *
-         * The regex patterns are intentionally broad to accommodate differences in error messages
-         * between AWS SDK versions and the GCS S3-interop endpoint.
-         */
+        /** Builds failure configs by mutating a valid config with bad credentials or bucket. */
         private fun buildFailConfigs(): Map<CheckTestConfig, Pattern> {
             val baseConfig = GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.JSONL_FORMAT)
             return mapOf(
-                // Wrong HMAC key access ID -> GCS returns InvalidAccessKeyId or
-                // SignatureDoesNotMatch
                 CheckTestConfig(
                     configContents =
                         mutateCredentialField(
@@ -112,7 +93,6 @@ class GcsV2CheckTest :
                     Pattern.compile(
                         "(?i)(InvalidAccessKeyId|SignatureDoesNotMatch|403|Forbidden|Access.?Denied)",
                     ),
-                // Wrong HMAC key secret -> GCS returns SignatureDoesNotMatch
                 CheckTestConfig(
                     configContents =
                         mutateCredentialField(
@@ -126,7 +106,6 @@ class GcsV2CheckTest :
                     Pattern.compile(
                         "(?i)(SignatureDoesNotMatch|403|Forbidden|Access.?Denied)",
                     ),
-                // Non-existent bucket -> GCS returns NoSuchBucket or 404
                 CheckTestConfig(
                     configContents =
                         mutateTopLevelField(
@@ -143,7 +122,6 @@ class GcsV2CheckTest :
             )
         }
 
-        /** Replaces a field inside the `credential` JSON object. */
         private fun mutateCredentialField(
             baseConfig: String,
             field: String,
@@ -155,7 +133,6 @@ class GcsV2CheckTest :
             return mapper.writeValueAsString(config)
         }
 
-        /** Replaces a top-level field in the config JSON. */
         private fun mutateTopLevelField(baseConfig: String, field: String, value: String): String {
             val config = mapper.readTree(baseConfig) as ObjectNode
             config.put(field, value)

@@ -34,23 +34,8 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 
 /**
- * Mirror of S3V2WriteTest. Same shape: an abstract base wired to the CDK
- * [BasicFunctionalityIntegrationTest] with a config string + [GcsV2DataDumper] +
- * [GcsV2Specification], then one concrete subclass per output format we exercise.
- *
- * Each subclass builds its config via [GcsV2TestUtils.getConfigWithFormat], which reads the single
- * base `secrets/config.json` and injects the format section in-memory.
- *
- * Differences from S3V2WriteTest (all because GCS auth is HMAC-only, no STS):
- * - No `micronautProperties = ...assumeRoleCredentials.asMicronautProperties()`. GCS has no
- * assume-role, so there is nothing to inject; the base default (empty map) is used.
- * - [GcsV2Destination.additionalMicronautEnvs] still contributes the "aws" env — see the class docs
- * there for why a GCS connector needs it (GcsClientFactory delegates to S3ClientFactory).
- * - Only STDIO/JSONL medium is exercised (no SOCKET/PROTOBUF variants) since the GCS v2 connector
- * ships the same object-storage loader as S3 and the socket path is covered by destination-s3.
- *
- * All non-file-destination tests are enabled so this runs as soon as `secrets/config.json` exists.
- * `mergesUnions`-gated tests only fire for the Avro subclass.
+ * Write integration tests. Abstract base with one concrete subclass per output format. Each
+ * subclass builds its config via [GcsV2TestUtils.getConfigWithFormat] from `secrets/config.json`.
  */
 @Timeout(60, unit = TimeUnit.MINUTES)
 abstract class GcsV2WriteTest(
@@ -152,8 +137,6 @@ abstract class GcsV2WriteTest(
 
     @Test
     fun testMappableTypesNestedInUnions() {
-        // Avro and parquet both merge unions and map complex types to other types. Validate
-        // that the behavior still works as expected when nested within a union.
         Assumptions.assumeTrue(mergesUnions)
         val stream =
             DestinationStream(
@@ -223,7 +206,7 @@ abstract class GcsV2WriteTest(
     }
 }
 
-// JSONL with the CDK default compression (GZIP) -> `.jsonl.gz`.
+// JSONL with GZIP compression (default).
 class GcsV2WriteTestJsonl :
     GcsV2WriteTest(
         GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.JSONL_FORMAT),
@@ -235,8 +218,7 @@ class GcsV2WriteTestJsonl :
         allTypesBehavior = Untyped,
     )
 
-// JSONL with explicit "No Compression" -> `.jsonl` (proves the compression toggle, mirrors
-// the old GcsJsonlDestinationAcceptanceTest which tested uncompressed JSONL output).
+// JSONL without compression.
 class GcsV2WriteTestJsonlUncompressed :
     GcsV2WriteTest(
         GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.JSONL_UNCOMPRESSED_FORMAT),
@@ -256,17 +238,13 @@ class GcsV2WriteTestAvroSnappy :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         unionBehavior = UnionBehavior.PASS_THROUGH,
-        // this is technically false. Avro + parquet do have limits on numbers.
-        // But float64 is weird, in that the actual _limits_ are unreasonably large -
-        // but at that size, you have very little precision.
-        // This is actually covered by the nested/topLevelFloatLosesPrecision test cases.
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true,
     )
 
-// AVRO without file-level compression -> `.avro` (Avro is not a file-compression provider).
+// Avro without compression.
 class GcsV2WriteTestAvroUncompressed :
     GcsV2WriteTest(
         GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.AVRO_UNCOMPRESSED_FORMAT),
@@ -281,7 +259,7 @@ class GcsV2WriteTestAvroUncompressed :
         mergesUnions = true,
     )
 
-// CSV with the CDK default compression (GZIP) -> `.csv.gz`.
+// CSV with GZIP compression (default).
 class GcsV2WriteTestCsv :
     GcsV2WriteTest(
         GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.CSV_FORMAT),
@@ -293,7 +271,7 @@ class GcsV2WriteTestCsv :
         allTypesBehavior = Untyped,
     )
 
-// CSV with explicit "No Compression" -> `.csv` (proves the compression toggle).
+// CSV without compression.
 class GcsV2WriteTestCsvUncompressed :
     GcsV2WriteTest(
         GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.CSV_UNCOMPRESSED_FORMAT),
@@ -305,8 +283,7 @@ class GcsV2WriteTestCsvUncompressed :
         allTypesBehavior = Untyped,
     )
 
-// Parquet (snappy internal codec) -> `.parquet` (Parquet is not a file-compression provider;
-// compression lives inside the parquet container). Note unionBehavior = PROMOTE_TO_OBJECT, as S3.
+// Parquet with Snappy codec.
 class GcsV2WriteTestParquetSnappy :
     GcsV2WriteTest(
         GcsV2TestUtils.getConfigWithFormat(GcsV2TestUtils.PARQUET_SNAPPY_FORMAT),

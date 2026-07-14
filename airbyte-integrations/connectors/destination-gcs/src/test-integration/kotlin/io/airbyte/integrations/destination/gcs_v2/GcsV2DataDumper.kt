@@ -12,16 +12,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 
-/**
- * Parity harness for the GCS write tests. Mirrors S3V2DataDumper: parse the spec into a
- * [GcsV2Specification], build a [GcsV2Configuration] via [GcsV2ConfigurationFactory] (seeded with a
- * single-stream [DestinationCatalog], exactly as S3 does), build the client WITHOUT DI via
- * [GcsV2ClientFactory.make], and delegate reading back to the CDK [ObjectStorageDataDumper]
- * parameterized on GcsBlob.
- *
- * GCS has no assume-role, so unlike S3 there are no credentials passed to the client factory. Avro
- * snappy is decoded by the CDK dumper's toAvroReader, so no special handling is required here.
- */
+/** Test data dumper: reads back written objects from GCS for verification. */
 object GcsV2DataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,

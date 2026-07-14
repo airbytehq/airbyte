@@ -26,23 +26,14 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
 /**
- * Mirror of S3V2Specification. Swaps the AWS mixins (AWSAccessKeySpecification /
- * AWSArnRoleSpecification / S3BucketSpecification / S3PathSpecification) for the GCS ones:
- * - [GcsCommonSpecification] -> gcs_bucket_name, gcs_bucket_path (`path`), credential (HMAC oneOf)
- * - [GcsRegionSpecification] -> gcs_bucket_region ([GcsRegion] enum, default "us")
- * - [DeprecatedObjectStorageFormatSpecificationProvider] -> Avro/CSV/JSONL/Parquet format oneOf
+ * GCS destination connector specification.
  *
- * There is no role_arn (GCS has no STS) and credential is HMAC-only, matching v0.4.x drop-in
- * config.
+ * Composes [GcsCommonSpecification] (bucket, path, HMAC credential), [GcsRegionSpecification], and
+ * [DeprecatedObjectStorageFormatSpecificationProvider] (Avro/CSV/JSONL/Parquet). Additionally
+ * declares `gcs_path_format` and `file_name_pattern` for customizable output paths.
  *
- * GAP-FILLER: legacy-task-load-gcs has no path-format / file-name-pattern spec (unlike
- * S3PathSpecification), so `gcs_path_format` + `file_name_pattern` are declared here and lowered to
- * the generic [ObjectStoragePathConfiguration] via [toObjectStoragePathConfiguration], using the
- * SAME [Transformations.toS3SafeCharacters] transform S3 uses — keeping path/partition behavior
- * identical to destination-s3 and to the v0.4.x directory-per-stream layout. Both fields are
- * nullable so that existing v0.4.x configs (which omit them) remain valid; when null, the
- * [toObjectStoragePathConfiguration] method falls back to [DEFAULT_PATH_FORMAT] and
- * [DEFAULT_FILE_FORMAT] respectively.
+ * Both path fields are nullable for backward compatibility with v0.4.x configs; when null,
+ * [toObjectStoragePathConfiguration] falls back to [DEFAULT_PATH_FORMAT] / [DEFAULT_FILE_FORMAT].
  */
 @Singleton
 @JsonSchemaTitle("GCS V2 Destination Spec")
@@ -67,9 +58,7 @@ class GcsV2Specification :
 
     @get:JsonSchemaInject(json = """{"order":4}""")
     override val format: DeprecatedObjectStorageFormatSpecification =
-    // v0.4.x default output format is AVRO; keep it the default so migrated configs behave
-    // identically.
-    DeprecatedAvroFormatSpecification()
+        DeprecatedAvroFormatSpecification()
 
     @get:JsonSchemaTitle("GCS Path Format")
     @get:JsonPropertyDescription(
@@ -98,13 +87,7 @@ class GcsV2Specification :
     @get:JsonProperty("file_name_pattern")
     val fileNamePattern: String? = DEFAULT_FILE_FORMAT
 
-    /**
-     * Lower the GCS bucket path + path/file-name patterns to the generic object-storage path
-     * config. `path` (gcs_bucket_path) comes from [GcsCommonSpecification]. When `gcsPathFormat` or
-     * `fileNamePattern` is null (e.g. during migration from v0.4.x configs that omit these fields),
-     * falls back to [DEFAULT_PATH_FORMAT] / [DEFAULT_FILE_FORMAT] respectively, matching the v0.4.x
-     * directory-per-stream layout.
-     */
+    /** Converts spec path fields to [ObjectStoragePathConfiguration], with null-safe defaults. */
     fun toObjectStoragePathConfiguration(): ObjectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = path,
@@ -122,7 +105,7 @@ class GcsV2Specification :
 
 @Singleton
 class GcsV2SpecificationExtension : DestinationSpecificationExtension {
-    // Match v0.4.x: supported_destination_sync_modes = [overwrite, append].
+
     override val supportedSyncModes =
         listOf(
             DestinationSyncMode.OVERWRITE,

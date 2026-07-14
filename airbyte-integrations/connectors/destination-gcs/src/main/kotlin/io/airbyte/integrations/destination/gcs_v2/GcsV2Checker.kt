@@ -18,17 +18,9 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
 /**
- * Mirror of S3V2Checker. Follows the [DestinationChecker] contract "do not inject configuration;
- * only use the config passed to check" by BUILDING the client from the config in-method — exactly
- * as S3V2Checker does via S3ClientFactory.make(config, ...).
- *
- * The client is built through the connector-local [GcsV2ClientFactory] (which wraps the CDK's
- * S3ClientFactory for the GCS S3-interop endpoint); the DI-scoped GcsClient bean is intentionally
- * NOT used here, per the checker contract.
- *
- * Behavior mirrors S3: streaming-upload a compressed {"data":1} probe under the resolved final
- * directory, list to confirm, delete in `finally`. Replaces v0.4.x's separate single + multipart
- * upload probe with the same real multipart round-trip destination-s3 uses.
+ * Connection checker: uploads a small probe file via [GcsV2ClientFactory], verifies it can be
+ * listed, then deletes it. Builds the client from the config directly (not via DI) per the
+ * [DestinationChecker] contract.
  */
 @Singleton
 class GcsV2Checker<T : OutputStream>(

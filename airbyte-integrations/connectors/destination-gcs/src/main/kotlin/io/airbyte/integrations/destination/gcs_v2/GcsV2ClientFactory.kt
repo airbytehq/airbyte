@@ -18,24 +18,12 @@ import io.airbyte.cdk.load.file.gcs.GcsS3Client
 import io.airbyte.cdk.load.file.s3.S3ClientFactory
 
 /**
- * Builds a [GcsClient] directly from a [GcsClientConfiguration], without going through the
- * DI-scoped `GcsClientFactory` bean.
- *
- * The main load pipeline injects the CDK's `GcsClientFactory` bean; but the [DestinationChecker]
- * contract and the integration-test data dumper must build the client from a config passed in by
- * hand ("do not inject configuration"). `destination-s3` solves the same problem with
- * [S3ClientFactory.make]. GCS talks to Google Cloud Storage over its S3-interoperability endpoint,
- * so we synthesize the AWS access-key / bucket providers from the HMAC credentials, build the CDK's
- * [S3ClientFactory], and wrap it in [GcsS3Client] — exactly what the CDK bean does internally.
- *
- * This lives in the connector (rather than as a companion on the CDK's `GcsClientFactory`) so the
- * migration is a single connector-only change: it uses only published CDK APIs and touches no
- * `airbyte-cdk` module.
+ * Builds a [GcsClient] from a [GcsClientConfiguration] without DI. Used by the checker and test
+ * data dumper which need a client built from an explicit config. Synthesizes AWS SDK providers from
+ * HMAC credentials and delegates to [S3ClientFactory] via the GCS S3-interop endpoint.
  */
 object GcsV2ClientFactory {
     fun make(config: GcsClientConfiguration): GcsClient {
-        // Bind to a local val so the smart-cast below works: config.credential is a public API
-        // property from the CDK module and cannot be smart-cast directly.
         val credential = config.credential
         return when (credential) {
             is GcsHmacKeyConfiguration ->

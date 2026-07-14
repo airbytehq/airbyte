@@ -11,11 +11,8 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
 /**
- * Mirror of S3V2ObjectLoader. Its mere presence as an [ObjectLoader] @Singleton is what activates
- * the generic ObjectLoaderPipeline (@Requires(bean = ObjectLoader::class)) — this is the whole
- * "fast" mechanism (3-stage part-format / part-load / upload-complete pipeline with a
- * memory-reserving back-pressured queue). Tuning knobs come from [GcsV2Configuration].
- * numPartWorkers is forced to 1 under legacy file transfer, identical to S3.
+ * Object loader bean that activates the CDK's parallel upload pipeline. Tuning parameters come from
+ * [GcsV2Configuration]. Part workers are forced to 1 for legacy file transfer.
  */
 @Singleton
 class GcsV2ObjectLoader(
