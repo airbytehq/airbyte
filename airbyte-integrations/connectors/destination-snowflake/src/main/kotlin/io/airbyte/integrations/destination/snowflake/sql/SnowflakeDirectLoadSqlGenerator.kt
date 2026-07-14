@@ -84,12 +84,14 @@ class SnowflakeDirectLoadSqlGenerator(
                 }
                 .joinToString(",\n    ")
 
-        // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
-        val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
+        // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate.
+        // Use CREATE TABLE IF NOT EXISTS when not replacing, to safely handle cases where
+        // the table already exists (e.g. non-truncate sync modes).
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val createTableStatement =
             """
-            |$createOrReplace TABLE ${fullyQualifiedName(tableName)} (
+            |$createPrefix ${fullyQualifiedName(tableName)} (
             |    $columnDeclarations
             |)
             """.trimMargin() // Something was tripping up trimIndent so we opt for trimMargin

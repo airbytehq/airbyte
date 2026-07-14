@@ -148,7 +148,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
@@ -506,7 +506,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
@@ -540,7 +540,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
@@ -575,7 +575,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
