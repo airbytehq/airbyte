@@ -32,6 +32,33 @@ def test_check_connection(requests_mock, check_connection_url, config_raw, respo
     assert ok == expect_success
 
 
+@pytest.mark.parametrize(
+    "configured_region,us_status,eu_status,expect_success,expected_region_in_message",
+    [
+        pytest.param("US", 403, 200, False, "EU", id="us_configured_but_project_is_eu"),
+        pytest.param("EU", 200, 403, False, "US", id="eu_configured_but_project_is_us"),
+        pytest.param("US", 200, 200, False, None, id="configured_region_authenticates_no_false_residency"),
+        pytest.param("US", 403, 403, False, None, id="no_region_authenticates_keeps_original_error"),
+    ],
+)
+def test_check_connection_region_residency(
+    requests_mock, config_raw, configured_region, us_status, eu_status, expect_success, expected_region_in_message
+):
+    config = copy.deepcopy(config_raw)
+    config["region"] = configured_region
+    valid_body = [{"a": 1, "created": "2021-02-11T00:00:00Z"}]
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=us_status, json=valid_body)
+    requests_mock.get("https://eu.mixpanel.com/api/query/cohorts/list", status_code=eu_status, json=valid_body)
+
+    ok, error = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(logger, config)
+
+    assert ok == expect_success
+    if expected_region_in_message:
+        assert f"the {expected_region_in_message} data residency region" in error
+    elif not expect_success:
+        assert error is None or "data residency region" not in str(error)
+
+
 def test_check_connection_bad_config():
     config = {}
     source = SourceMixpanel(MagicMock(), config, MagicMock())

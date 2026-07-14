@@ -6,9 +6,10 @@ import copy
 import logging
 import os
 from functools import wraps
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
+import requests
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -52,9 +53,67 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
         super().__init__(token=token, auth_method="Basic")
 
 
+SUPPORTED_REGIONS = ("US", "EU")
+REGION_PROBE_TIMEOUT_SECONDS = 30
+
+
 class SourceMixpanel(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
+    @staticmethod
+    def _region_api_base(region: str) -> str:
+        """Return the Mixpanel API base URL for a data-residency `region`, mirroring `manifest.yaml`."""
+        prefix = "" if region == "US" else f"{region}."
+        return f"https://{prefix}mixpanel.com/api/"
+
+    def _region_authenticates(self, logger: logging.Logger, config: Mapping[str, Any], region: str) -> bool:
+        """Return whether the configured credentials authenticate against a given `region`'s Mixpanel host.
+
+        Makes a single, bounded, authenticated request to the cheap `query/cohorts/list` endpoint. A `2xx`
+        response means the credentials are valid for that region; a `401`/`403` means they are not. Any other
+        outcome (network error, `5xx`, etc.) is treated as inconclusive so it never manufactures a mismatch.
+        """
+        auth = self.get_authenticator(config)
+        headers = {"Accept": "application/json", **auth.get_auth_header()}
+        project_id = config.get("credentials", {}).get("project_id")
+        params = {"project_id": project_id} if project_id else {}
+        url = f"{self._region_api_base(region)}query/cohorts/list"
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=REGION_PROBE_TIMEOUT_SECONDS)
+        except requests.RequestException as e:
+            logger.info(f"Data residency probe against the {region} region was inconclusive: {e}")
+            return False
+        return response.ok
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        """Validate the connection, failing fast with an actionable message on a data-residency mismatch.
+
+        The declarative check can return a false green when `region` is wrong, after which schema discovery
+        hangs against the wrong regional host. When the normal check fails, this probes the other supported
+        regions; if the credentials authenticate against a different region, it surfaces which `region` to set
+        instead of letting the user hit an unexplained discovery timeout.
+        """
+        connected, error = super().check_connection(logger, config)
+        if connected:
+            return connected, error
+
+        configured_region = config.get("region", "US")
+        if configured_region not in SUPPORTED_REGIONS or self._region_authenticates(logger, config, configured_region):
+            return connected, error
+
+        matching_regions = [
+            region for region in SUPPORTED_REGIONS if region != configured_region and self._region_authenticates(logger, config, region)
+        ]
+        if matching_regions:
+            region_list = " or ".join(matching_regions)
+            message = (
+                f"Mixpanel credentials authenticate against the {region_list} data residency region, "
+                f"not the configured {configured_region} region. Set Data Residency to {region_list} and retry."
+            )
+            return False, message
+
+        return connected, error
 
     @staticmethod
     def validate_date(name: str, date_str: str, default: pendulum.date) -> pendulum.date:
