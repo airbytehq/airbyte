@@ -2,12 +2,15 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const {
-  autoMergePreconditionsPass,
   classifyAutoMergeEligibility,
 } = require("./hydra-automerge-eligibility");
 
 const sourceFile = {
   filename: "airbyte-integrations/connectors/source-faker/metadata.yaml",
+};
+const destinationFile = {
+  filename:
+    "airbyte-integrations/connectors/destination-postgres/metadata.yaml",
 };
 const supportBot = { login: "airbyte-support-bot" };
 
@@ -15,6 +18,7 @@ test("allows an assigned source PR through deterministic eligibility", () => {
   const eligibility = classifyAutoMergeEligibility([sourceFile], [supportBot]);
 
   assert.equal(eligibility.valid, true);
+  assert.equal(eligibility.autoMergeEligible, true);
   assert.equal(eligibility.supportBotAssigned, true);
   assert.equal(eligibility.noDestinationChanges, true);
 });
@@ -23,25 +27,23 @@ test("rejects a source PR without the Support Bot assignment", () => {
   const eligibility = classifyAutoMergeEligibility([sourceFile], []);
 
   assert.equal(eligibility.valid, true);
+  assert.equal(eligibility.autoMergeEligible, false);
   assert.equal(eligibility.supportBotAssigned, false);
   assert.equal(eligibility.noDestinationChanges, true);
 });
 
 test("rejects destination connector and documentation changes", () => {
-  const eligibility = classifyAutoMergeEligibility(
-    [
-      {
-        filename:
-          "airbyte-integrations/connectors/destination-postgres/metadata.yaml",
-      },
-      { filename: "docs/integrations/destinations/postgres.md" },
-    ],
-    [supportBot],
-  );
+  for (const file of [
+    destinationFile,
+    { filename: "docs/integrations/destinations/postgres.md" },
+  ]) {
+    const eligibility = classifyAutoMergeEligibility([file], [supportBot]);
 
-  assert.equal(eligibility.valid, true);
-  assert.equal(eligibility.supportBotAssigned, true);
-  assert.equal(eligibility.noDestinationChanges, false);
+    assert.equal(eligibility.valid, true);
+    assert.equal(eligibility.autoMergeEligible, false);
+    assert.equal(eligibility.supportBotAssigned, true);
+    assert.equal(eligibility.noDestinationChanges, false);
+  }
 });
 
 test("rejects a rename from a destination connector path", () => {
@@ -56,6 +58,7 @@ test("rejects a rename from a destination connector path", () => {
     [supportBot],
   );
 
+  assert.equal(eligibility.autoMergeEligible, false);
   assert.equal(eligibility.noDestinationChanges, false);
 });
 
@@ -72,42 +75,19 @@ test("preserves connector-only path validation", () => {
   );
 });
 
-test("requires assignment and no destination changes in every combination", () => {
+test("short-circuits every ineligible assignment and destination combination", () => {
   for (const supportBotAssigned of [true, false]) {
     for (const noDestinationChanges of [true, false]) {
-      const result = autoMergePreconditionsPass({
-        aiReviewPassed: true,
-        noBreakingChanges: true,
-        noDestinationChanges,
-        supportBotAssigned,
-      });
+      const eligibility = classifyAutoMergeEligibility(
+        [noDestinationChanges ? sourceFile : destinationFile],
+        supportBotAssigned ? [supportBot] : [],
+      );
 
       assert.equal(
-        result,
+        eligibility.autoMergeEligible,
         supportBotAssigned && noDestinationChanges,
         `assignment=${supportBotAssigned}, noDestinationChanges=${noDestinationChanges}`,
       );
     }
   }
-});
-
-test("preserves existing AI-review and breaking-change prerequisites", () => {
-  assert.equal(
-    autoMergePreconditionsPass({
-      aiReviewPassed: false,
-      noBreakingChanges: true,
-      noDestinationChanges: true,
-      supportBotAssigned: true,
-    }),
-    false,
-  );
-  assert.equal(
-    autoMergePreconditionsPass({
-      aiReviewPassed: true,
-      noBreakingChanges: false,
-      noDestinationChanges: true,
-      supportBotAssigned: true,
-    }),
-    false,
-  );
 });

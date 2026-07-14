@@ -3,10 +3,9 @@ name: "Hydra: Auto-merge (AI-gated)"
 # Kicks off a Devin AI session using the `pr_scope_analysis` playbook
 # (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
 # playbook carries the analysis prompt and the structured output schema; this
-# workflow only supplies the PR to analyze and evaluates the result
-# deterministically:
-#   pass = ALL(preconditions) AND SUPPORT_BOT_ASSIGNED
-#          AND NO(destination_changes) AND ANY(allowed_scopes)
+# workflow first rejects PRs without the Support Bot assignment or with
+# destination changes. Eligible PRs are analyzed and evaluated deterministically:
+#   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
 # Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
@@ -133,6 +132,10 @@ jobs:
             }
             core.setOutput('valid', String(eligibility.valid));
             core.setOutput(
+              'auto_merge_eligible',
+              String(eligibility.autoMergeEligible),
+            );
+            core.setOutput(
               'support_bot_assigned',
               String(eligibility.supportBotAssigned),
             );
@@ -164,8 +167,35 @@ jobs:
             >
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
+      - name: Early exit -- auto-merge eligibility failed
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'false'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            ## Auto-merge evaluation: **FAIL**
+
+            ### Eligibility (all must pass)
+
+            | Pass | Check | Reasoning |
+            |------|-------|-----------|
+            | ${{ steps.validate-paths.outputs.support_bot_assigned == 'true' && ':white_check_mark:' || ':x:' }} | Airbyte Support Bot Assigned | ${{ steps.validate-paths.outputs.support_bot_reasoning }} |
+            | ${{ steps.validate-paths.outputs.no_destination_changes == 'true' && ':white_check_mark:' || ':x:' }} | No Destination Changes | ${{ steps.validate-paths.outputs.destination_reasoning }} |
+
+            > Scope analysis was skipped because deterministic auto-merge eligibility did not pass.
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
       - name: Fetch required checks for master branch
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
         id: required-checks
         uses: actions/github-script@v7
         with:
@@ -187,7 +217,10 @@ jobs:
             core.setOutput('checks', JSON.stringify(checks));
 
       - name: Verify required status checks pass
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
         id: verify-checks
         uses: actions/github-script@v7
         env:
@@ -236,7 +269,11 @@ jobs:
             }
 
       - name: Early exit -- required checks not passing
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true' && steps.verify-checks.outputs.ready == 'false'
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
+          && steps.verify-checks.outputs.ready == 'false'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
@@ -254,6 +291,7 @@ jobs:
         if: >
           steps.pre-check.outputs.state == 'OPEN'
           && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -261,6 +299,7 @@ jobs:
         if: >
           steps.pre-check.outputs.state == 'OPEN'
           && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         id: devin
         uses: aaronsteers/devin-action@main
@@ -301,8 +340,6 @@ jobs:
         id: evaluate
         env:
           STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
-          SUPPORT_BOT_ASSIGNED: ${{ steps.validate-paths.outputs.support_bot_assigned }}
-          NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
         run: |
           set -euo pipefail
 
@@ -314,21 +351,11 @@ jobs:
           no_breaking=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.pass')
           ai_review=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.pass')
 
-          preconditions_pass=$(
-            AI_REVIEW_PASSED="$ai_review" \
-            NO_BREAKING_CHANGES="$no_breaking" \
-            NO_DESTINATION_CHANGES="$NO_DESTINATION_CHANGES" \
-            SUPPORT_BOT_ASSIGNED="$SUPPORT_BOT_ASSIGNED" \
-            node -e "
-              const { autoMergePreconditionsPass } = require('./.github/scripts/hydra-automerge-eligibility');
-              process.stdout.write(String(autoMergePreconditionsPass({
-                aiReviewPassed: process.env.AI_REVIEW_PASSED,
-                noBreakingChanges: process.env.NO_BREAKING_CHANGES,
-                noDestinationChanges: process.env.NO_DESTINATION_CHANGES,
-                supportBotAssigned: process.env.SUPPORT_BOT_ASSIGNED,
-              })));
-            "
-          )
+          if [[ "$no_breaking" == "true" && "$ai_review" == "true" ]]; then
+            preconditions_pass="true"
+          else
+            preconditions_pass="false"
+          fi
 
           # Change scope: ANY must be true
           docs_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.docs_only_change.pass')
@@ -351,12 +378,10 @@ jobs:
           fi
 
           echo "preconditions_pass=$preconditions_pass" | tee -a "$GITHUB_OUTPUT"
-          echo "support_bot_assigned=$SUPPORT_BOT_ASSIGNED" | tee -a "$GITHUB_OUTPUT"
-          echo "no_destination_changes=$NO_DESTINATION_CHANGES" | tee -a "$GITHUB_OUTPUT"
           echo "scope_pass=$scope_pass" | tee -a "$GITHUB_OUTPUT"
           echo "result=$result" | tee -a "$GITHUB_OUTPUT"
 
-          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, support_bot_assigned=$SUPPORT_BOT_ASSIGNED, no_destination_changes=$NO_DESTINATION_CHANGES, change_scope=$scope_pass)"
+          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, change_scope=$scope_pass)"
 
       # ── Post results ───────────────────────────────────────────────
       - name: Build evaluation report
@@ -365,9 +390,9 @@ jobs:
         env:
           STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
           EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
-          SUPPORT_BOT_ASSIGNED: ${{ steps.evaluate.outputs.support_bot_assigned }}
+          SUPPORT_BOT_ASSIGNED: ${{ steps.validate-paths.outputs.support_bot_assigned }}
           SUPPORT_BOT_REASONING: ${{ steps.validate-paths.outputs.support_bot_reasoning }}
-          NO_DESTINATION_CHANGES: ${{ steps.evaluate.outputs.no_destination_changes }}
+          NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
           DESTINATION_REASONING: ${{ steps.validate-paths.outputs.destination_reasoning }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
           DRY_RUN: ${{ inputs.dry-run }}

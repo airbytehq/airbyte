@@ -23,13 +23,15 @@ function classifyAutoMergeEligibility(files, assignees) {
   const supportBotAssigned = assignees.some(
     (assignee) => assignee.login === "airbyte-support-bot",
   );
+  const noDestinationChanges = !destinationChanges;
 
   return {
+    autoMergeEligible: supportBotAssigned && noDestinationChanges,
     destinationReasoning: destinationChanges
       ? "Destination-related changes require human approval and merge."
       : "No destination-related changes detected.",
     invalidPath,
-    noDestinationChanges: !destinationChanges,
+    noDestinationChanges,
     supportBotAssigned,
     supportBotReasoning: supportBotAssigned
       ? "Airbyte Support Bot assignment confirms automated merge eligibility."
@@ -38,21 +40,6 @@ function classifyAutoMergeEligibility(files, assignees) {
   };
 }
 
-function autoMergePreconditionsPass({
-  aiReviewPassed,
-  noBreakingChanges,
-  noDestinationChanges,
-  supportBotAssigned,
-}) {
-  return [
-    aiReviewPassed,
-    noBreakingChanges,
-    noDestinationChanges,
-    supportBotAssigned,
-  ].every((value) => value === true || value === "true");
-}
-
 module.exports = {
-  autoMergePreconditionsPass,
   classifyAutoMergeEligibility,
 };
