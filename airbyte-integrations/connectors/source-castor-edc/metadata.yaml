@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2cb45514-7c10-439c-a198-aeb1ddab02cb
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-castor-edc
   githubIssueLabel: source-castor-edc
   icon: icon.svg
