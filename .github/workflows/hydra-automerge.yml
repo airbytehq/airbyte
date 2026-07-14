@@ -5,7 +5,7 @@ name: "Hydra: Auto-merge (AI-gated)"
 # playbook carries the analysis prompt and the structured output schema; this
 # workflow only supplies the PR to analyze and evaluates the result
 # deterministically:
-#   pass = ALL(preconditions) AND ANY(allowed_scopes)
+#   pass = ALL(preconditions) AND NO(destination_changes) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
 # Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
@@ -89,28 +89,51 @@ jobs:
             > **Auto-merge evaluation in progress...**
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-      - name: Validate connector-only file paths
+      - name: Classify changed file paths
         if: steps.pre-check.outputs.state == 'OPEN'
         id: validate-paths
-        env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-        run: |
-          set -e
-          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
-          valid=true
-          while IFS= read -r file; do
-            case "$file" in
-              airbyte-integrations/connectors/*) ;;
-              docs/integrations/sources/*) ;;
-              docs/integrations/destinations/*) ;;
-              docs/ai-agents/connectors/*) ;;
-              docs/developers/pyairbyte/*) ;;
-              docs/release_notes/*) ;;
-              docusaurus/src/data/*) ;;
-              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
-            esac
-          done < /tmp/changed-files.txt
-          echo "valid=$valid" | tee -a "$GITHUB_OUTPUT"
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: 'airbytehq',
+                repo: 'airbyte',
+                pull_number: Number(process.env.PR_NUMBER),
+                per_page: 100,
+              },
+            );
+            const paths = files.map(file => file.filename);
+            const allowedPaths = [
+              /^airbyte-integrations\/connectors\//,
+              /^docs\/integrations\/sources\//,
+              /^docs\/integrations\/destinations\//,
+              /^docs\/ai-agents\/connectors\//,
+              /^docs\/developers\/pyairbyte\//,
+              /^docs\/release_notes\//,
+              /^docusaurus\/src\/data\//,
+            ];
+            const invalidPath = paths.find(
+              path => !allowedPaths.some(pattern => pattern.test(path)),
+            );
+            if (invalidPath) {
+              core.warning(`Non-connector file: ${invalidPath}`);
+            }
+            const destinationChanges = paths.some(
+              path =>
+                /^airbyte-integrations\/connectors\/destination-[^/]+\//.test(path)
+                || /^docs\/integrations\/destinations\//.test(path),
+            );
+            core.setOutput('valid', String(!invalidPath));
+            core.setOutput('no_destination_changes', String(!destinationChanges));
+            core.setOutput(
+              'destination_reasoning',
+              destinationChanges
+                ? 'Destination-related changes require human approval and merge.'
+                : 'No destination-related changes detected.',
+            );
 
       - name: Early exit -- path validation failed
         if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'false'
@@ -264,6 +287,7 @@ jobs:
         id: evaluate
         env:
           STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+          NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
         run: |
           set -euo pipefail
 
@@ -275,7 +299,7 @@ jobs:
           no_breaking=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.no_breaking_changes.pass')
           ai_review=$(echo "$STRUCTURED_OUTPUT" | jq -r '.preconditions.ai_review_passed.pass')
 
-          if [[ "$no_breaking" == "true" && "$ai_review" == "true" ]]; then
+          if [[ "$no_breaking" == "true" && "$ai_review" == "true" && "$NO_DESTINATION_CHANGES" == "true" ]]; then
             preconditions_pass="true"
           else
             preconditions_pass="false"
@@ -302,10 +326,11 @@ jobs:
           fi
 
           echo "preconditions_pass=$preconditions_pass" | tee -a "$GITHUB_OUTPUT"
+          echo "no_destination_changes=$NO_DESTINATION_CHANGES" | tee -a "$GITHUB_OUTPUT"
           echo "scope_pass=$scope_pass" | tee -a "$GITHUB_OUTPUT"
           echo "result=$result" | tee -a "$GITHUB_OUTPUT"
 
-          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, change_scope=$scope_pass)"
+          echo "::notice::Auto-merge evaluation result: $result (preconditions=$preconditions_pass, no_destination_changes=$NO_DESTINATION_CHANGES, change_scope=$scope_pass)"
 
       # ── Post results ───────────────────────────────────────────────
       - name: Build evaluation report
@@ -314,6 +339,8 @@ jobs:
         env:
           STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
           EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
+          NO_DESTINATION_CHANGES: ${{ steps.evaluate.outputs.no_destination_changes }}
+          DESTINATION_REASONING: ${{ steps.validate-paths.outputs.destination_reasoning }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
@@ -343,6 +370,7 @@ jobs:
               reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".preconditions.${key}.reasoning")
               echo "| $(icon "$pass") | $(pretty_label "$key") | ${reasoning} |"
             done
+            echo "| $(icon "$NO_DESTINATION_CHANGES") | No Destination Changes | ${DESTINATION_REASONING} |"
             echo ""
             echo "### Change scope (at least one must pass)"
             echo ""
