@@ -33,8 +33,11 @@ private val log = KotlinLogging.logger {}
 private const val COUNT_TOTAL_ALIAS = "total"
 private const val COLUMN_NAME_COLUMN = "column_name"
 
-/** PostgreSQL/Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
+/** Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
 private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
+
+/** Redshift SQL state for UNDEFINED_TABLE (relation does not exist). */
+private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
 
 @Singleton
 class RedshiftAirbyteClient(
@@ -108,11 +111,7 @@ class RedshiftAirbyteClient(
                 }
             }
         } catch (e: SQLException) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. " +
-                    "Count returning null to signal a missing table."
-            }
-            null
+            if (!isTableNotFoundException(e)) throw e else null
         }
 
     /**
@@ -127,11 +126,7 @@ class RedshiftAirbyteClient(
                 rs.next() && rs.getBoolean("not_empty")
             }
         } catch (e: SQLException) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. " +
-                    "Returning null to signal a missing table."
-            }
-            null
+            if (!isTableNotFoundException(e)) throw e else null
         }
 
     override suspend fun getGenerationId(tableName: TableName): Long =
@@ -145,8 +140,7 @@ class RedshiftAirbyteClient(
                 }
             }
         } catch (e: SQLException) {
-            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
-            0L
+            if (!isTableNotFoundException(e)) throw e else 0L
         }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
@@ -393,6 +387,9 @@ class RedshiftAirbyteClient(
             throw e
         }
     }
+
+    private fun isTableNotFoundException(e: SQLException): Boolean =
+        e.sqlState == SQLSTATE_UNDEFINED_TABLE
 
     /** Executes a SQL query and processes the [ResultSet] with the given [resultProcessor]. */
     private fun <T> executeQuery(query: String, resultProcessor: (ResultSet) -> T): T {
