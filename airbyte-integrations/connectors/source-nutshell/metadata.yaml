@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8ac02323-03a3-4026-96f0-68573237c49a
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-nutshell
   githubIssueLabel: source-nutshell
   icon: icon.svg
