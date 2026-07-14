@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 488cdc64-36cd-451d-bcfa-c6478b461e94
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-justcall
   githubIssueLabel: source-justcall
   icon: icon.svg
