@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 55c7d816-ff5e-48a1-9928-acaba4243aa9
-  dockerImageTag: 0.0.41
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-printify
   githubIssueLabel: source-printify
   icon: icon.svg
