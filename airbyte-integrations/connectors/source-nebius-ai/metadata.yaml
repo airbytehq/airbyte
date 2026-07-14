@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dcbc009d-151c-4130-96d7-6734205ac5b7
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-nebius-ai
   githubIssueLabel: source-nebius-ai
   icon: icon.svg
