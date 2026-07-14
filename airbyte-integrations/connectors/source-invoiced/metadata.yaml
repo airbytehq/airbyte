@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5f43588b-998b-4398-bb15-fb6eb4fc015e
-  dockerImageTag: 0.0.59
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-invoiced
   githubIssueLabel: source-invoiced
   icon: icon.svg
