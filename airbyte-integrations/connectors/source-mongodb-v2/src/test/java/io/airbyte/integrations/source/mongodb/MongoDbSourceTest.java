@@ -13,9 +13,12 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
@@ -31,6 +34,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,10 +77,53 @@ class MongoDbSourceTest {
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    mockChangeStreamSucceeds(mongoDatabase);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, airbyteConnectionStatus.getStatus());
+  }
+
+  @Test
+  void testCheckOperationChangeStreamUnauthorized() throws IOException {
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+
+    final MongoCommandException unauthorized = new MongoCommandException(
+        new BsonDocument()
+            .append("code", new BsonInt32(13))
+            .append("errmsg", new BsonString("not authorized on " + DB_NAME + " to execute command")),
+        new ServerAddress());
+
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoDatabase.runCommand(any())).thenReturn(response);
+    when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    when(mongoDatabase.watch(eq(Collections.emptyList()), eq(BsonDocument.class))).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorized);
+
+    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
+    assertNotNull(airbyteConnectionStatus);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertNotNull(airbyteConnectionStatus.getMessage());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("changeStream"));
+    assertTrue(airbyteConnectionStatus.getMessage().contains(DB_NAME));
+  }
+
+  /**
+   * Set up the MongoDatabase mock so that opening a change stream cursor in
+   * {@link MongoDbSource#check(JsonNode)} succeeds (the cursor's {@code tryNext()} returns null and
+   * {@code close()} is a no-op).
+   */
+  @SuppressWarnings("unchecked")
+  private static void mockChangeStreamSucceeds(final MongoDatabase mongoDatabase) {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor = mock(MongoChangeStreamCursor.class);
+    when(mongoDatabase.watch(eq(Collections.emptyList()), eq(BsonDocument.class))).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenReturn(cursor);
+    when(cursor.tryNext()).thenReturn(null);
   }
 
   @Test
@@ -123,6 +171,7 @@ class MongoDbSourceTest {
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    mockChangeStreamSucceeds(mongoDatabase);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
