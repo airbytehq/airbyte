@@ -123,11 +123,15 @@ def stream_api_v2_pk_too_many_properties(stream_config):
     return mock_stream_api(stream_config, describe_response_data=describe_response_data)
 
 
-def generate_stream(stream_name, stream_config, stream_api, state=None, legacy=True):
+def generate_stream(stream_name, stream_config, stream_api, state=None, legacy=True, source=None):
     if state is None:
         state = _ANY_STATE
 
-    stream = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, state).generate_streams(stream_config, {stream_name: None}, stream_api)[0]
+    # Allow callers to reuse a specific source instance so the stream's cursor shares that source's
+    # message repository/queue (required when the same source instance also drives `read`).
+    if source is None:
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, state)
+    stream = source.generate_streams(stream_config, {stream_name: None}, stream_api)[0]
     if legacy and hasattr(stream, "_legacy_stream"):
         # Many tests are going through `generate_streams` to test things that are part of the legacy interface. To smooth the transition,
         # we will access the legacy stream through the StreamFacade private field

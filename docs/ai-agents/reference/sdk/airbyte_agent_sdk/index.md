@@ -611,6 +611,39 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="DownloadChunkResult"></a>
+
+`DownloadChunkResult(content: str, encoding: "Literal['utf-8', 'base64']", bytes_returned: int, range_requested: str, next_range_header: str | None, has_more: bool, content_type: str | None = None)`
+:   JSON-safe result for a bounded download byte range.
+
+    ### Instance variables
+
+    `bytes_returned: int`
+    :   The type of the None singleton.
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `content_type: str | None`
+    :   The type of the None singleton.
+
+    `encoding: Literal['utf-8', 'base64']`
+    :   The type of the None singleton.
+
+    `has_more: bool`
+    :   The type of the None singleton.
+
+    `next_range_header: str | None`
+    :   The type of the None singleton.
+
+    `range_requested: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `to_dict(self) ‑> dict[str, typing.Any]`
+    :
+
 <a id="EntityNotFoundError"></a>
 
 `EntityNotFoundError(*args, **kwargs)`
@@ -686,7 +719,8 @@ Classes
         success: True if execution completed successfully, False if it failed
         data: Response data from the execution
             - dict[str, Any] for standard operations (GET, LIST, CREATE, etc.)
-            - AsyncIterator[bytes] for download operations (streaming file content)
+            - AsyncIterator[bytes] for streaming download operations
+            - dict[str, Any] for structured download chunks
         error: Error message if success=False, None otherwise
         meta: Optional metadata extracted from response (e.g., pagination info)
     

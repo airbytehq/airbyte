@@ -105,6 +105,7 @@ jobs:
               docs/integrations/destinations/*) ;;
               docs/ai-agents/connectors/*) ;;
               docs/developers/pyairbyte/*) ;;
+              docs/release_notes/*) ;;
               docusaurus/src/data/*) ;;
               *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
             esac

@@ -3,11 +3,11 @@ data:
     hosts:
       - api.openweathermap.org
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.4@sha256:f63c39a8a6f28ec20ada2ddf5861f3b1fb7b6a1ef1a8a8d1d537ff684ee3f9bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.5@sha256:e18095bba3f7852bb7ae0a50d13fe532cee803cf8f273f5e8faf51fd93e401e4
   connectorSubtype: api
   connectorType: source
   definitionId: 561d7787-b45e-4f3b-af58-0163c3ba9d5a
-  dockerImageTag: 0.3.55
+  dockerImageTag: 0.3.56
   dockerRepository: airbyte/source-openweather
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   githubIssueLabel: source-openweather
