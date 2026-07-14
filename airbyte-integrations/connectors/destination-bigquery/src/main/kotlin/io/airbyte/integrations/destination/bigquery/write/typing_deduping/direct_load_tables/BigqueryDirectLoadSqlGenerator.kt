@@ -76,8 +76,6 @@ class BigqueryDirectLoadSqlGenerator(
             } else {
                 emptyList()
             }
-        // Use CREATE TABLE IF NOT EXISTS when not replacing, to safely handle
-        // cases where the table already exists (e.g. non-truncate sync modes).
         val createPrefix = if (replace) "CREATE TABLE" else "CREATE TABLE IF NOT EXISTS"
         val createTableStatement =
             listOf(
