@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2c3aa088-396d-4ee6-8096-971ecd11598c
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-google-classroom
   githubIssueLabel: source-google-classroom
   icon: icon.svg
