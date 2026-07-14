@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b461c060-9d6a-43c9-a73c-634eaf83c4bf
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-pabbly-subscriptions-billing
   githubIssueLabel: source-pabbly-subscriptions-billing
   icon: icon.svg
