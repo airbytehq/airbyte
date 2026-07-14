@@ -29,7 +29,10 @@ class ClickhouseSqlGenerator {
         tableSchema: StreamTableSchema,
         replace: Boolean,
     ): String {
-        val forceCreateTable = if (replace) "OR REPLACE" else ""
+        // Use CREATE OR REPLACE TABLE when replacing, and CREATE TABLE IF NOT EXISTS
+        // when not replacing to safely handle cases where the table already exists
+        // (e.g. non-truncate sync modes).
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val finalSchema = tableSchema.columnSchema.finalSchema
         val columnDeclarations =
@@ -71,7 +74,7 @@ class ClickhouseSqlGenerator {
             }
 
         return """
-            CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
+            $createPrefix `${tableName.namespace}`.`${tableName.name}` (
               $COLUMN_NAME_AB_RAW_ID String NOT NULL,
               $COLUMN_NAME_AB_EXTRACTED_AT DateTime64(3) NOT NULL,
               $COLUMN_NAME_AB_META String NOT NULL,
