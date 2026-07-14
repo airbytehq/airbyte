@@ -39,6 +39,7 @@ def test_check_connection(requests_mock, check_connection_url, config_raw, respo
         pytest.param("EU", 200, 403, False, "US", id="eu_configured_but_project_is_us"),
         pytest.param("US", 200, 200, False, None, id="configured_region_authenticates_no_false_residency"),
         pytest.param("US", 403, 403, False, None, id="no_region_authenticates_keeps_original_error"),
+        pytest.param("US", 500, 200, False, None, id="configured_region_5xx_is_inconclusive_no_mismatch"),
     ],
 )
 def test_check_connection_region_residency(

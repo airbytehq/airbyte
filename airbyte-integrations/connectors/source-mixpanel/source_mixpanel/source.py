@@ -67,12 +67,15 @@ class SourceMixpanel(YamlDeclarativeSource):
         prefix = "" if region == "US" else f"{region}."
         return f"https://{prefix}mixpanel.com/api/"
 
-    def _region_authenticates(self, logger: logging.Logger, config: Mapping[str, Any], region: str) -> bool:
+    def _region_authenticates(self, logger: logging.Logger, config: Mapping[str, Any], region: str) -> Optional[bool]:
         """Return whether the configured credentials authenticate against a given `region`'s Mixpanel host.
 
-        Makes a single, bounded, authenticated request to the cheap `query/cohorts/list` endpoint. A `2xx`
-        response means the credentials are valid for that region; a `401`/`403` means they are not. Any other
-        outcome (network error, `5xx`, etc.) is treated as inconclusive so it never manufactures a mismatch.
+        Makes a single, bounded, authenticated request to the cheap `query/cohorts/list` endpoint and returns:
+
+        - `True` when the credentials are valid for that region (`2xx`).
+        - `False` when the region explicitly rejects the credentials (`401`/`403`).
+        - `None` when the outcome is inconclusive (network error, `5xx`, or any other status), so a transient
+          failure never manufactures a residency mismatch.
         """
         auth = self.get_authenticator(config)
         headers = {"Accept": "application/json", **auth.get_auth_header()}
@@ -83,8 +86,13 @@ class SourceMixpanel(YamlDeclarativeSource):
             response = requests.get(url, headers=headers, params=params, timeout=REGION_PROBE_TIMEOUT_SECONDS)
         except requests.RequestException as e:
             logger.info(f"Data residency probe against the {region} region was inconclusive: {e}")
+            return None
+        if response.ok:
+            return True
+        if response.status_code in (401, 403):
             return False
-        return response.ok
+        logger.info(f"Data residency probe against the {region} region was inconclusive: HTTP {response.status_code}")
+        return None
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Validate the connection, failing fast with an actionable message on a data-residency mismatch.
@@ -99,11 +107,13 @@ class SourceMixpanel(YamlDeclarativeSource):
             return connected, error
 
         configured_region = config.get("region", "US")
-        if configured_region not in SUPPORTED_REGIONS or self._region_authenticates(logger, config, configured_region):
+        if configured_region not in SUPPORTED_REGIONS or self._region_authenticates(logger, config, configured_region) is not False:
             return connected, error
 
         matching_regions = [
-            region for region in SUPPORTED_REGIONS if region != configured_region and self._region_authenticates(logger, config, region)
+            region
+            for region in SUPPORTED_REGIONS
+            if region != configured_region and self._region_authenticates(logger, config, region) is True
         ]
         if matching_regions:
             region_list = " or ".join(matching_regions)
