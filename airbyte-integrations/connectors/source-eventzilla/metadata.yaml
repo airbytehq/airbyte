@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ba6ddcf2-00c7-44f2-9cee-2d295bd0c854
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-eventzilla
   githubIssueLabel: source-eventzilla
   icon: icon.svg
