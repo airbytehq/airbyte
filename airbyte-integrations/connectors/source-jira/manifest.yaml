@@ -10307,6 +10307,92 @@ definitions:
         additionalProperties: true
         description: Details of an issue remote link.
 
+  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-feature-flags/#api-rest-api-3-issue-issueidorkey-featureflags-get
+  issue_feature_flags_stream:
+    $ref: "#/definitions/full_refresh_stream"
+    name: issue_feature_flags
+    primary_key:
+    - "issueId"
+    - "id"
+    retriever:
+      $ref: "#/definitions/retriever_no_pagination"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/issues_stream"
+          parent_key: "key"
+          partition_field: "issue_key"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+          response_filters:
+          - http_codes: [403]
+            action: IGNORE
+            error_message: "Feature Flags integration is not enabled for this Jira site. Skipping issue {{ stream_slice.issue_key }}."
+    transformations:
+    - type: AddFields
+      fields:
+      - path: ["issueId"]
+        value_type: string
+        value: "{{ stream_slice.issue_key }}"
+    $parameters:
+      path: "issue/{{ stream_slice.issue_key }}/featureflags"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The ID of the feature flag.
+            type: string
+          issueId:
+            description: Key of the related issue.
+            type:
+            - 'null'
+            - string
+          key:
+            description: The unique key of the feature flag.
+            type: string
+          displayName:
+            description: The display name of the feature flag.
+            type:
+            - 'null'
+            - string
+          status:
+            description: The current status of the feature flag.
+            type:
+            - 'null'
+            - object
+            properties:
+              enabled:
+                description: Whether the flag is enabled.
+                type:
+                - 'null'
+                - boolean
+              environment:
+                description: The environment this status applies to.
+                type:
+                - 'null'
+                - string
+          summary:
+            description: Summary of the flag state across environments.
+            type:
+            - 'null'
+            - object
+          details:
+            description: Detailed flag evaluation data.
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: true
+        additionalProperties: true
+        description: Feature flag linked to a Jira issue via the Feature Flags integration.
+
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
   issue_transitions_stream:
     $ref: "#/definitions/full_refresh_stream"
@@ -14637,6 +14723,7 @@ streams:
 - "#/definitions/issue_custom_field_options_stream"
 - "#/definitions/issue_properties_stream"
 - "#/definitions/issue_remote_links_stream"
+- "#/definitions/issue_feature_flags_stream"
 - "#/definitions/issue_transitions_stream"
 - "#/definitions/issue_votes_stream"
 - "#/definitions/issue_watchers_stream"
