@@ -29,9 +29,6 @@ class ClickhouseSqlGenerator {
         tableSchema: StreamTableSchema,
         replace: Boolean,
     ): String {
-        // Use CREATE OR REPLACE TABLE when replacing, and CREATE TABLE IF NOT EXISTS
-        // when not replacing to safely handle cases where the table already exists
-        // (e.g. non-truncate sync modes).
         val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val finalSchema = tableSchema.columnSchema.finalSchema
