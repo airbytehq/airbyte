@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 053eb2fe-5c44-49fc-a1e4-2dc82b09318e
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-ticketmaster
   githubIssueLabel: source-ticketmaster
   icon: icon.svg
