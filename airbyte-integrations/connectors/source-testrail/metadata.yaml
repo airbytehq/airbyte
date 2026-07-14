@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ab49ae02-a22d-4c9a-b0be-f260e61a4011
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-testrail
   githubIssueLabel: source-testrail
   icon: icon.svg
