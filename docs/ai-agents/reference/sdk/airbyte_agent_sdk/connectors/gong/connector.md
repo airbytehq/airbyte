@@ -34,6 +34,12 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, filter: CallAudioDownloadParamsFilter | None = None, content_selector: CallAudioDownloadParamsContentselector | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
+        Downloads the audio media file for a call. Temporarily, the request body must be configured with:
+        \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, path: str, filter: CallAudioDownloadParamsFilter | None = None, content_selector: CallAudioDownloadParamsContentselector | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
         Downloads the audio media file for a call. Temporarily, the request body must be configured with:
@@ -49,6 +55,12 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, filter: CallAudioDownloadParamsFilter | None = None, content_selector: CallAudioDownloadParamsContentselector | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
+        Downloads the audio media file for a call. Temporarily, the request body must be configured with:
+        \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
+         and return a JSON-safe UTF-8 text chunk.
 
 <a id="CallTranscriptsQuery"></a>
 
@@ -119,6 +131,12 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, filter: CallVideoDownloadParamsFilter | None = None, content_selector: CallVideoDownloadParamsContentselector | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
+        Downloads the video media file for a call. Temporarily, the request body must be configured with:
+        \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, path: str, filter: CallVideoDownloadParamsFilter | None = None, content_selector: CallVideoDownloadParamsContentselector | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
         Downloads the video media file for a call. Temporarily, the request body must be configured with:
@@ -134,6 +152,12 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, filter: CallVideoDownloadParamsFilter | None = None, content_selector: CallVideoDownloadParamsContentselector | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
+        Downloads the video media file for a call. Temporarily, the request body must be configured with:
+        \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
+         and return a JSON-safe UTF-8 text chunk.
 
 <a id="CallsExtensiveQuery"></a>
 

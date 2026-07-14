@@ -221,6 +221,13 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of an attachment (legacy).
+        First use the list or get action to retrieve the Attachment ID and file metadata,
+        then use this action to download the actual file content.
+        Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, path: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the binary file content of an attachment (legacy).
         First use the list or get action to retrieve the Attachment ID and file metadata,
@@ -238,6 +245,13 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of an attachment (legacy).
+        First use the list or get action to retrieve the Attachment ID and file metadata,
+        then use this action to download the actual file content.
+        Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
+         and return a JSON-safe UTF-8 text chunk.
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Attachment`
     :   Get a single attachment's metadata by ID. Returns file metadata, not the file content.
@@ -706,6 +720,13 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of a content version.
+        First use the list or get action to retrieve the ContentVersion ID and file metadata (size, type, etc.),
+        then use this action to download the actual file content.
+        The response is the raw binary file data.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, path: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the binary file content of a content version.
         First use the list or get action to retrieve the ContentVersion ID and file metadata (size, type, etc.),
@@ -723,6 +744,13 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of a content version.
+        First use the list or get action to retrieve the ContentVersion ID and file metadata (size, type, etc.),
+        then use this action to download the actual file content.
+        The response is the raw binary file data.
+         and return a JSON-safe UTF-8 text chunk.
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.ContentVersion`
     :   Get a single content version's metadata by ID. Returns file metadata, not the file content.

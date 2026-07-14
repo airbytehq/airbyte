@@ -63,6 +63,9 @@ Classes
         Returns:
             AsyncIterator[bytes]
 
+    `download_base64(self, article_id: str, attachment_id: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the file content of a specific attachment and return a JSON-safe base64 chunk.
+
     `download_local(self, article_id: str, attachment_id: str, path: str, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the file content of a specific attachment and save to file.
         
@@ -75,6 +78,9 @@ Classes
         
         Returns:
             str: Path to the downloaded file
+
+    `download_text(self, article_id: str, attachment_id: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the file content of a specific attachment and return a JSON-safe UTF-8 text chunk.
 
     `get(self, article_id: str, attachment_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ArticleAttachment`
     :   Retrieves the metadata of a specific attachment for a specific article
@@ -189,6 +195,9 @@ Classes
         Returns:
             AsyncIterator[bytes]
 
+    `download_base64(self, attachment_id: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the file content of a ticket attachment and return a JSON-safe base64 chunk.
+
     `download_local(self, attachment_id: str, path: str, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the file content of a ticket attachment and save to file.
         
@@ -200,6 +209,9 @@ Classes
         
         Returns:
             str: Path to the downloaded file
+
+    `download_text(self, attachment_id: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the file content of a ticket attachment and return a JSON-safe UTF-8 text chunk.
 
     `get(self, attachment_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Attachment`
     :   Returns an attachment by its ID
