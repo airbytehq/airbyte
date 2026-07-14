@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f1d3c80a-b443-49b9-ad32-560ce3d61edb
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-rentcast
   githubIssueLabel: source-rentcast
   icon: icon.svg
