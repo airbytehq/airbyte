@@ -19,6 +19,7 @@ The Hubspot connector supports the following entities and actions.
 | Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Context Store Search](#tasks-context-store-search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
+| Associations | [List](#associations-list), [Create](#associations-create), [Delete](#associations-delete) |
 
 ## Contacts
 
@@ -4748,4 +4749,266 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 
 </details>
+
+## Associations
+
+### Associations List
+
+Retrieve all associations between a specific CRM record and a target object type using
+the v4 associations API. Returns up to 500 associations per call. Use the `after` cursor
+for pagination when there are more results. For example, retrieve all companies associated
+with a contact, or all deals associated with a company.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "associations",
+  "action": "list",
+  "params": {
+    "fromObjectType": "<str>",
+    "fromObjectId": "<str>",
+    "toObjectType": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.associations.list(
+    from_object_type="<str>",
+    from_object_id="<str>",
+    to_object_type="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "associations",
+    "action": "list",
+    "params": {
+        "fromObjectType": "<str>",
+        "fromObjectId": "<str>",
+        "toObjectType": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `fromObjectType` | `string` | Yes | Object type of the source record (e.g., contacts, companies, deals, tickets, or a custom object type ID) |
+| `fromObjectId` | `string` | Yes | ID of the source record to retrieve associations for |
+| `toObjectType` | `string` | Yes | Object type of the target records to retrieve (e.g., contacts, companies, deals, tickets, or a custom object type ID) |
+| `after` | `string` | No | Paging cursor token from a previous response for retrieving subsequent pages of results |
+| `limit` | `integer` | No | Maximum number of results to return per page (default 500, max 500) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `results` | `array<object>` |  |
+| `paging` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string` |  |
+| `next_link` | `string` |  |
+
+</details>
+
+### Associations Create
+
+Create a labeled association between two CRM records using the v4 associations API.
+Labeled associations carry an association type ID and category that describe the relationship
+(e.g., "Primary Company", "Billing Contact"). This is idempotent — calling it again with the same
+IDs and label has no effect. Use the association type ID and category from the HubSpot association
+definitions for the relevant object pair. Common association type IDs include:
+- Contact to Company: 279 (HUBSPOT_DEFINED) for default, 1 (HUBSPOT_DEFINED) for Primary
+- Company to Contact: 280 (HUBSPOT_DEFINED) for default, 2 (HUBSPOT_DEFINED) for Primary
+- Contact to Deal: 4 (HUBSPOT_DEFINED) for default
+- Deal to Contact: 3 (HUBSPOT_DEFINED) for default
+- Deal to Company: 341 (HUBSPOT_DEFINED) for default, 5 (HUBSPOT_DEFINED) for Primary
+- Company to Deal: 342 (HUBSPOT_DEFINED) for default, 6 (HUBSPOT_DEFINED) for Primary
+- Contact to Ticket: 15 (HUBSPOT_DEFINED) for default
+- Ticket to Contact: 16 (HUBSPOT_DEFINED) for default
+- Ticket to Company: 339 (HUBSPOT_DEFINED) for default, 26 (HUBSPOT_DEFINED) for Primary
+- Company to Ticket: 340 (HUBSPOT_DEFINED) for default, 25 (HUBSPOT_DEFINED) for Primary
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "associations",
+  "action": "create",
+  "params": {
+    "associationCategory": "<str>",
+    "associationTypeId": 0,
+    "fromObjectType": "<str>",
+    "fromObjectId": "<str>",
+    "toObjectType": "<str>",
+    "toObjectId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.associations.create(
+    association_category="<str>",
+    association_type_id=0,
+    from_object_type="<str>",
+    from_object_id="<str>",
+    to_object_type="<str>",
+    to_object_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "associations",
+    "action": "create",
+    "params": {
+        "associationCategory": "<str>",
+        "associationTypeId": 0,
+        "fromObjectType": "<str>",
+        "fromObjectId": "<str>",
+        "toObjectType": "<str>",
+        "toObjectId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `associationCategory` | `"HUBSPOT_DEFINED" \| "USER_DEFINED"` | Yes | Category of the association type. Use HUBSPOT_DEFINED for standard HubSpot association
+types (e.g., primary company, default contact-to-deal) or USER_DEFINED for custom
+association labels created in your HubSpot portal.
+ |
+| `associationTypeId` | `integer` | Yes | Numeric identifier for the association type. Common IDs include:
+279 = Contact to Company (default), 280 = Company to Contact (default),
+4 = Contact to Deal (default), 3 = Deal to Contact (default),
+341 = Deal to Company (default), 342 = Company to Deal (default),
+1 = Contact to Primary Company, 2 = Company to Primary Contact,
+5 = Deal to Primary Company, 6 = Primary Company to Deal,
+15 = Contact to Ticket (default), 16 = Ticket to Contact (default),
+339 = Ticket to Company (default), 340 = Company to Ticket (default),
+26 = Ticket to Primary Company, 25 = Primary Company to Ticket.
+Use the association definitions API to discover additional type IDs.
+ |
+| `fromObjectType` | `string` | Yes | Object type of the source record (e.g., contacts, companies, deals, tickets, or a custom object type ID) |
+| `fromObjectId` | `string` | Yes | ID of the source record to associate from |
+| `toObjectType` | `string` | Yes | Object type of the target record (e.g., contacts, companies, deals, tickets, or a custom object type ID) |
+| `toObjectId` | `string` | Yes | ID of the target record to associate to |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `status` | `string` |  |
+| `results` | `array<object>` |  |
+| `startedAt` | `string` |  |
+| `completedAt` | `string` |  |
+| `requestedAt` | `string \| null` |  |
+
+
+</details>
+
+### Associations Delete
+
+Delete all associations between two specific CRM records using the v4 associations API.
+This removes every association (both default and labeled) between the two specified records.
+This operation is irreversible — deleted associations must be recreated manually.
+
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "hubspot",
+  "entity": "associations",
+  "action": "delete",
+  "params": {
+    "fromObjectType": "<str>",
+    "fromObjectId": "<str>",
+    "toObjectType": "<str>",
+    "toObjectId": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await hubspot.associations.delete(
+    from_object_type="<str>",
+    from_object_id="<str>",
+    to_object_type="<str>",
+    to_object_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "associations",
+    "action": "delete",
+    "params": {
+        "fromObjectType": "<str>",
+        "fromObjectId": "<str>",
+        "toObjectType": "<str>",
+        "toObjectId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `fromObjectType` | `string` | Yes | Object type of the source record (e.g., contacts, companies, deals, tickets, or a custom object type ID) |
+| `fromObjectId` | `string` | Yes | ID of the source record |
+| `toObjectType` | `string` | Yes | Object type of the target record (e.g., contacts, companies, deals, tickets, or a custom object type ID) |
+| `toObjectId` | `string` | Yes | ID of the target record |
+
 
