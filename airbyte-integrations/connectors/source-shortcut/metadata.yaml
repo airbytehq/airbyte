@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 72b4b6ad-bf46-4113-a97e-c8e2666f7230
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-shortcut
   githubIssueLabel: source-shortcut
   icon: icon.svg
