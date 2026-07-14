@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -26,6 +27,7 @@ import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
@@ -44,15 +46,27 @@ class SnowflakeAirbyteClient(
 ) : TableOperationsClient, TableSchemaEvolutionClient {
     private val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 
+    /** Tracks temp tables materialized during this sync via [createTempTable] + [putInStage]. */
+    private val activeTempTables: MutableSet<TableName> = ConcurrentHashMap.newKeySet()
+
+    /** Stores deferred temp table creation params until [putInStage] materializes them. */
+    private val pendingTempTables = ConcurrentHashMap<TableName, StreamTableSchema>()
+
     override suspend fun countTable(tableName: TableName): Long? {
-        if (!tableExists(tableName)) {
-            return null
+        val rowCount = getTableRowCount(tableName)
+        if (rowCount != null) {
+            activeTempTables.add(tableName)
         }
+        return rowCount
+    }
+
+    override suspend fun tableExists(table: TableName): Boolean = countTable(table) != null
+
+    fun exactCountTable(tableName: TableName): Long {
         return dataSource.connection.use { connection ->
             val statement = connection.createStatement()
             statement.use {
                 val resultSet = it.executeQuery(sqlGenerator.countTable(tableName))
-
                 if (resultSet.next()) {
                     resultSet.getLong(COUNT_TOTAL_ALIAS)
                 } else {
@@ -62,7 +76,11 @@ class SnowflakeAirbyteClient(
         }
     }
 
-    override suspend fun tableExists(table: TableName): Boolean =
+    /**
+     * Runs `SHOW TABLES LIKE ? IN SCHEMA ...` and extracts the `rows` metadata column.
+     * @return the row count from Snowflake table metadata, or `null` if the table does not exist.
+     */
+    private fun getTableRowCount(table: TableName): Long? =
         dataSource.connection.use { connection ->
             val statement =
                 connection.prepareStatement(
@@ -73,7 +91,10 @@ class SnowflakeAirbyteClient(
                     """.trimIndent()
                 )
             statement.setString(1, table.name)
-            statement.use { it.executeQuery().next() }
+            statement.use {
+                val rs = it.executeQuery()
+                if (rs.next()) rs.getLong("rows") else null
+            }
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
@@ -125,11 +146,31 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
-        execute(sqlGenerator.createSnowflakeStage(tableName))
+        createTableAndStage(tableName, stream.tableSchema, replace)
+    }
+
+    /**
+     * Stores the table schema in [pendingTempTables] for lazy materialization. The actual CREATE
+     * TABLE + CREATE STAGE DDL is executed in [putInStage] on the first flush, which avoids
+     * unnecessary DDL for streams that receive no records.
+     */
+    override suspend fun createTempTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean
+    ) {
+        pendingTempTables[tableName] = stream.tableSchema
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
+        if (!isTempTableActive(sourceTableName)) {
+            log.warn {
+                "Skipping overwriteTable from ${sourceTableName.toPrettyString()} to ${targetTableName.toPrettyString()}: source temp table does not exist"
+            }
+            return
+        }
+
         // Check if the target table exists by trying to count its rows
         val targetExists = countTable(targetTableName) != null
 
@@ -162,6 +203,13 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
+        if (!isTempTableActive(sourceTableName)) {
+            log.warn {
+                "Skipping copyTable from ${sourceTableName.toPrettyString()} to ${targetTableName.toPrettyString()}: source temp table does not exist"
+            }
+            return
+        }
+
         // Get all column names from the mapping (both meta columns and user columns)
         val columnNames = buildSet {
             // Add Airbyte meta columns (using uppercase constants)
@@ -179,19 +227,44 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
+        if (!isTempTableActive(sourceTableName)) {
+            log.warn {
+                "Skipping upsertTable from ${sourceTableName.toPrettyString()} to ${targetTableName.toPrettyString()}: source temp table does not exist"
+            }
+            return
+        }
         execute(sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, targetTableName))
     }
 
     override suspend fun dropTable(tableName: TableName) {
+        if (!isTempTableActive(tableName)) {
+            log.warn {
+                "Skipping dropTable for ${tableName.toPrettyString()}: table does not exist"
+            }
+            return
+        }
         execute(sqlGenerator.dropTable(tableName))
+        activeTempTables.remove(tableName)
     }
+
+    /** Creates a table and its associated Snowflake stage. */
+    private fun createTableAndStage(
+        tableName: TableName,
+        tableSchema: StreamTableSchema,
+        replace: Boolean
+    ) {
+        execute(sqlGenerator.createTable(tableName, tableSchema, replace))
+        execute(sqlGenerator.createSnowflakeStage(tableName))
+    }
+
+    /** Checks if a table has been materialized and tracked in [activeTempTables]. */
+    private fun isTempTableActive(tableName: TableName): Boolean = tableName in activeTempTables
 
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        execute(sqlGenerator.createSnowflakeStage(tableName))
         /*
          * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
          * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
@@ -310,6 +383,10 @@ class SnowflakeAirbyteClient(
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String) {
+        pendingTempTables.remove(tableName)?.let { tableSchema ->
+            createTableAndStage(tableName, tableSchema, replace = true)
+            activeTempTables.add(tableName)
+        }
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
     }
 

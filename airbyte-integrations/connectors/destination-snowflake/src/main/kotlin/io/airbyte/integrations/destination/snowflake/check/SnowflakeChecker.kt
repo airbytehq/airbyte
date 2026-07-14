@@ -25,7 +25,7 @@ import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertB
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 import kotlinx.coroutines.runBlocking
 
 internal const val CHECK_COLUMN_NAME = "test_key"
@@ -117,7 +117,7 @@ class SnowflakeChecker(
 
                 snowflakeInsertBuffer.accumulate(data)
                 snowflakeInsertBuffer.flush()
-                val tableCount = snowflakeAirbyteClient.countTable(qualifiedTableName)
+                val tableCount = snowflakeAirbyteClient.exactCountTable(qualifiedTableName)
                 require(tableCount == 1L) {
                     "Failed to insert expected rows into check table. Actual written: $tableCount"
                 }
