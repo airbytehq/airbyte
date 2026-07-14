@@ -1,0 +1,57 @@
+name: Bad Bot Feedback Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "PR or issue number"
+        required: false
+      comment-id:
+        description: "Comment ID"
+        required: false
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+      gitref:
+        description: "Git ref (passed by slash command dispatcher)"
+        required: false
+
+run-name: "Bad Bot Feedback for #${{ inputs.pr }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  bot-feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Run Bot Feedback
+        uses: aaronsteers/devin-action@main
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          playbook-macro: "!slash_command_feedback"
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          start-message: "📝 Recording negative feedback for triage..."
+          extra-context: |
+            ## Slash Command Context
+
+            The feedback type is: `bad-bot`
+            Repository: `airbytehq/airbyte`
+          tags: |
+            bot-feedback
