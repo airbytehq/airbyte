@@ -21,8 +21,7 @@ private const val SURROGATE_COUNT = SURROGATE_HIGH - SURROGATE_LOW + 1
  * keeps positional-numeral arithmetic order-preserving and prevents surrogate code points from
  * being emitted.
  */
-private fun codePointToIndex(cp: Int): Int =
-    if (cp < SURROGATE_LOW) cp else cp - SURROGATE_COUNT
+private fun codePointToIndex(cp: Int): Int = if (cp < SURROGATE_LOW) cp else cp - SURROGATE_COUNT
 
 /** Inverse of [codePointToIndex]. */
 private fun indexToCodePoint(index: Int): Int =

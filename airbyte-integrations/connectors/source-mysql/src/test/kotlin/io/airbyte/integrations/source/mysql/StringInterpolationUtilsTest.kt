@@ -305,8 +305,7 @@ class StringInterpolationUtilsTest {
         end: String,
         steps: Int,
     ) {
-        val maxInputCodePoint =
-            (start.codePoints().toArray() + end.codePoints().toArray()).max()
+        val maxInputCodePoint = (start.codePoints().toArray() + end.codePoints().toArray()).max()
 
         val result = unicodeInterpolatedStrings(start, end, steps)
 
