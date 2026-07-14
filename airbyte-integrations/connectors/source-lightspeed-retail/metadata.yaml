@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0f242d62-dbef-49d7-8cc1-72ff7e54c9ca
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-lightspeed-retail
   githubIssueLabel: source-lightspeed-retail
   icon: icon.svg
