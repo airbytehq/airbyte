@@ -104,4 +104,10 @@ data:
     - title: monday.com Status
       url: https://status.monday.com/
       type: status_page
+    - title: monday.com API release notes
+      url: https://developer.monday.com/api-reference/docs/release-notes
+      type: api_release_history
+    - title: monday.com API versioning
+      url: https://developer.monday.com/api-reference/docs/api-versioning
+      type: api_deprecations
 metadataSpecVersion: "1.0"
