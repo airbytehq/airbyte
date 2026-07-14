@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c739daf4-71c9-4dde-b115-269bcd1b87d6
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-vwo
   githubIssueLabel: source-vwo
   icon: icon.svg
