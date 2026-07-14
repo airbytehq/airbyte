@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 03383c9d-acff-468b-9afb-444479cd7fbc
-  dockerImageTag: 0.0.30
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-ding-connect
   githubIssueLabel: source-ding-connect
   icon: icon.svg
