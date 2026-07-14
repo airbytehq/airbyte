@@ -39,9 +39,9 @@ definitions:
       inject_into: request_parameter
       field_name: "page"
     pagination_strategy:
-      type: PageIncrement
-      page_size: 100
-      start_from_page: 1
+      type: CursorPagination
+      cursor_value: "{{ headers['link']['next']['url'] | regex_search('[?&]page=([0-9]+)') }}"
+      stop_condition: "{{ 'next' not in headers['link'] }}"
 
   # Resolver streams: internal parent streams used only to drive the shared
   # partition routers below. They are not exposed in the catalog.
