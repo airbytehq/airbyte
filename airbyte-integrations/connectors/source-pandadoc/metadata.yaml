@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c5719626-6fc3-48e6-8f1d-ca5d4ecd2b5c
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-pandadoc
   githubIssueLabel: source-pandadoc
   icon: icon.svg
