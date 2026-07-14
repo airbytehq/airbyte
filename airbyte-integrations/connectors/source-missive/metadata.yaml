@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 740eadea-6f7a-49dc-a2e6-bdf935a79996
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-missive
   githubIssueLabel: source-missive
   icon: icon.svg
