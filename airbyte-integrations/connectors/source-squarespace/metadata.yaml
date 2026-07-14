@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 861e1bde-0d7c-4f15-9f96-e845df8d3544
-  dockerImageTag: 0.0.49
+  dockerImageTag: 0.0.50
   dockerRepository: airbyte/source-squarespace
   githubIssueLabel: source-squarespace
   icon: icon.svg
