@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 30ccdb61-445d-480b-8b76-8f09348f8bb9
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-tinyemail
   githubIssueLabel: source-tinyemail
   icon: icon.svg
