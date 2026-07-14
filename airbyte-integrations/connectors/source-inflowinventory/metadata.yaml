@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 139e24a8-6439-4606-8b1b-32bf6817b07d
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-inflowinventory
   githubIssueLabel: source-inflowinventory
   icon: icon.svg
