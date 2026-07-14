@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4ea87f6d-def2-4e77-8a28-7b860cd52f94
-  dockerImageTag: 0.0.49
+  dockerImageTag: 0.0.50
   dockerRepository: airbyte/source-navan
   githubIssueLabel: source-navan
   icon: icon.svg
