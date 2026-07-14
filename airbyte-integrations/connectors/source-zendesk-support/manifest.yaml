@@ -94,7 +94,8 @@ definitions:
     record_selector:
       type: RecordSelector
       extractor:
-        type: DpathExtractor
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.ForceFailExtractor
         field_path:
           ["{{ parameters.get('data_path') or parameters.get('name') }}"]
       schema_normalization: Default
@@ -214,7 +215,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.ZendeskSupportAttributeDefinitionsExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -257,6 +258,12 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/links_next_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["tags"]
+        schema_normalization: Default
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -368,7 +375,8 @@ definitions:
           type: RequestPath
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["articles"]
 
   article_attachments_stream:
@@ -396,7 +404,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["article_attachments"]
     file_uploader:
       type: FileUploader
@@ -448,7 +457,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["comments"]
     transformations:
       - type: AddFields
@@ -489,7 +499,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   article_comment_votes_stream:
@@ -524,7 +535,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   audit_logs_stream:
@@ -702,7 +714,8 @@ definitions:
         $ref: "#/definitions/links_next_paginator"
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["posts"]
         schema_normalization: None
 
@@ -738,7 +751,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["comments"]
     transformations:
       - type: AddFields
@@ -779,7 +793,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   post_comment_votes_stream:
@@ -814,7 +829,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   satisfaction_ratings_stream:
@@ -980,7 +996,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.ZendeskSupportExtractorEvents
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["ticket_events", "*", "child_events", "*"]
       paginator:
         type: DefaultPaginator
@@ -1197,7 +1213,8 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["results"]
         schema_normalization: Default
     incremental_sync:
@@ -1256,7 +1273,8 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: DpathExtractor
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ForceFailExtractor
             field_path: ["ticket_metrics"]
       transformations:
         - type: AddFields
@@ -1305,7 +1323,8 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: DpathExtractor
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ForceFailExtractor
             field_path: ["ticket_metric"]
         partition_router:
           type: SubstreamPartitionRouter
