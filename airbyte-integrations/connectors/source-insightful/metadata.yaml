@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: befe5bfb-617c-4250-9f7d-c9ad32277817
-  dockerImageTag: 0.0.41
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-insightful
   githubIssueLabel: source-insightful
   icon: icon.svg
