@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 82a2d4b1-9fe3-408a-84b4-bd690426fc15
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-flexmail
   githubIssueLabel: source-flexmail
   icon: icon.svg
