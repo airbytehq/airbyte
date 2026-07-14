@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c6d14c44-cd3e-4f94-8924-201c5615f3a7
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-lob
   githubIssueLabel: source-lob
   icon: icon.svg
