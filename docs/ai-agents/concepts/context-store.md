@@ -78,6 +78,55 @@ The Context Store supports structured search with filter operators, field select
 
 If you build agents with the SDK or API, you can call `context_store_search` directly and pass structured filters. For details on the query model, see the individual [connector reference pages](../connectors), which document the available entities, filter fields, and search parameters for each connector.
 
+## Semantic search
+
+Structured search matches records by exact or fuzzy field values. Some connectors also support **semantic search**: a similarity search that finds relevant passages by meaning rather than by keyword. Instead of matching a filter, Airbyte embeds your natural-language query and returns the most similar chunks of text, ranked by relevance.
+
+Semantic search is useful for long, unstructured text fields, such as call transcripts or issue descriptions, where the exact wording of a match isn't known in advance. For example, an agent can answer "find call passages where a customer raised pricing concerns" by searching the meaning of the transcript text, not a specific phrase.
+
+Semantic search is an evolving capability and is available for a limited set of connectors and fields today. Agents choose it automatically when a prompt calls for meaning-based retrieval over a supported field. As with structured search, you don't need to specify the search mode in your prompts.
+
+### Connectors and fields that support semantic search
+
+| Connector | Entity | Field |
+| --------- | ------ | ----- |
+| Gong | Call transcripts | Transcript text |
+| Linear | Issues | Description |
+| Linear | Comments | Body |
+
+More connectors and fields will gain semantic search over time.
+
+### Calling semantic search with the SDK or API
+
+If you build agents with the SDK or API, you can request semantic search directly by passing a `semantic` object to `context_store_search`:
+
+```json
+{
+  "entity": "call_transcripts",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {
+      "field": "transcript",
+      "prompt": "customer raised pricing concerns",
+      "context_size": 2048,
+      "dedup": "max"
+    },
+    "limit": 20
+  }
+}
+```
+
+Each hit is returned as an `{entity, metadata}` object, where `metadata` includes the similarity `score`, the matched `context` text, and connector-specific attribution fields.
+
+Keep these rules in mind when constructing a request:
+
+- **`semantic` and `query` are mutually exclusive.** Pass one or the other, never both in the same request.
+- **Results are ranked by similarity, so `sort` isn't supported.** To filter results, put the filter inside `semantic.filter` using the same operators as `query.filter`.
+- **`dedup` controls per-record deduplication.** `max` (the default) returns only the single best-scoring passage per source record. `none` returns multiple passages from the same record, still ranked by similarity and capped by `limit`.
+- **`context_size` controls how many characters of surrounding context are returned per hit,** up to the field's configured window.
+
+For the entities and fields available on each connector, see the individual [connector reference pages](../connectors).
+
 ## Initial index
 
 When the Context Store populates data for a connector, Airbyte runs an initial index. Indexing time depends on the amount of data and third-party API rate limits, and can range from minutes to days.
