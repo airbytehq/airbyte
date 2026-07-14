@@ -703,6 +703,33 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
     }
 
+    @Test
+    fun `matchSchemas skips meta update when isMetaColumnSuper is false`() {
+        val tableName = TableName(namespace = "ns", name = "tbl")
+        val sql =
+            sqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd = emptyMap(),
+                columnsToRemove = emptyMap(),
+                columnsToModify =
+                    mapOf(
+                        "num_col" to
+                            ColumnTypeChange(
+                                originalType = ColumnType("bigint", false),
+                                newType = ColumnType("decimal(38,9)", false),
+                            )
+                    ),
+                isMetaColumnSuper = false,
+            )
+
+        assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_num_col" decimal(38,9);"""))
+        assertTrue(sql.contains("""CAST("num_col" AS decimal(38,9))"""))
+        assertFalse(sql.contains("DESTINATION_TYPECAST_ERROR"))
+        assertFalse(sql.contains("_airbyte_meta"))
+        assertTrue(sql.contains("""DROP COLUMN "num_col";"""))
+        assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
+    }
+
     // ================================================================
     // Staging & schema discovery
     // ================================================================

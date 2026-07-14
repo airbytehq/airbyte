@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.redshift.sql.RedshiftSqlGenerator
@@ -167,6 +168,19 @@ class RedshiftAirbyteClient(
                 you must either delete the target table or add a prefix in the connection \
                 configuration in order to sync to a separate table in the destination.
                 """.trimIndent()
+            log.error { message }
+            throw ConfigErrorException(message)
+        }
+
+        val metaType = columnsInDb[COLUMN_NAME_AB_META]?.type
+        if (
+            metaType != null &&
+                metaType != RedshiftSqlGenerator.META_COLUMNS[COLUMN_NAME_AB_META]?.type
+        ) {
+            val message =
+                "Column \"$COLUMN_NAME_AB_META\" in table " +
+                    "${tableName.namespace}.${tableName.name} has type \"$metaType\"; " +
+                    "expected \"${RedshiftSqlGenerator.META_COLUMNS[COLUMN_NAME_AB_META]?.type}\"."
             log.error { message }
             throw ConfigErrorException(message)
         }
