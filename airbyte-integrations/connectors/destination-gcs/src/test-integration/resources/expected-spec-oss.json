@@ -326,16 +326,16 @@
         "type" : "string",
         "description" : "Format string on how data will be organized inside the GCS bucket directory. Available variables: ${NAMESPACE}, ${STREAM_NAME}, ${YEAR}, ${MONTH}, ${DAY}, ${HOUR}, ${MINUTE}, ${SECOND}, ${MILLISECOND}, ${EPOCH}, ${UUID}, ${SYNC_ID}.",
         "title" : "GCS Path Format",
-        "default" : "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_",
-        "order" : 5
+        "order" : 5,
+        "default" : "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
       },
       "file_name_pattern" : {
         "type" : "string",
         "description" : "Pattern for output file names in the bucket directory. Available variables: {date} (yyyy_MM_dd), {date:yyyy_MM}, {timestamp}, {part_number}, {sync_id}, {format_extension}.",
         "title" : "File Name Pattern",
-        "default" : "{part_number}{format_extension}",
         "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ],
-        "order" : 6
+        "order" : 6,
+        "default" : "{part_number}{format_extension}"
       }
     },
     "required" : [ "credential", "gcs_bucket_name", "gcs_bucket_path", "format" ]
