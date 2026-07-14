@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2dd8b7e-3e5b-45cb-9522-3d3025ac5796
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-simplesat
   githubIssueLabel: source-simplesat
   icon: icon.svg
