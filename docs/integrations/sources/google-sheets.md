@@ -14,13 +14,13 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 
 - **Spreadsheet Link** - The link to the Google spreadsheet you want to sync.
 <!-- env:cloud -->
-- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
+- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet.
 <!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source:**
   - A GCP project
-  - Enable the Google Sheets API in your GCP project
-  - Service Account Key with access to the Spreadsheet you want to replicate
+  - The Google Sheets API enabled in your GCP project
+  - A service account key with access to the spreadsheet you want to replicate
 <!-- /env:oss -->
 
 ## Setup guide
@@ -70,26 +70,28 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Sheets API**.
 4. Click **ENABLE**.
 
-If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
+#### Grant spreadsheet access
+
+Share the spreadsheet with the service account's email address. If the spreadsheet is public to anyone with the link, no additional sharing step is required.
 
 <!-- /env:oss -->
 
 ### Set up the Google Sheets connector in Airbyte
 
 <!-- env:cloud -->
-#### For Airbyte Cloud: 
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Google Sheets from the Source type dropdown.
+2. Click **Sources**, then click **+ New source**.
+3. On the **Set up the source** page, select **Google Sheets** from the **Source type** dropdown.
 4. Enter a name for the Google Sheets connector.
 <!-- /env:cloud -->
 <!-- env:oss -->
 ### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Google Sheets from the Source type dropdown.
+2. Click **Sources**, then click **+ New source**.
+3. On the **Set up the source** page, select **Google Sheets** from the **Source type** dropdown.
 4. Enter a name for the Google Sheets connector.
 <!-- /env:oss -->
 5. Select your authentication method:
@@ -114,17 +116,10 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
 </FieldAnchor>
 <FieldAnchor field="batch_size">
-7. For **Batch Size**, enter an integer which represents batch size when processing a Google Sheet. Default value is 1000000.
-   Batch size is an integer representing row batch size for each sent request to Google Sheets API.
-   Row batch size means how many rows are processed from the google sheet, for example default value 1000000
-   would process rows 2-1000002, then 1000003-2000003 and so on.
-   Based on [Google Sheets API limits documentation](https://developers.google.com/sheets/api/limits),
-   it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
-   otherwise the request returns a timeout error. In regards to this information, consider network speed and
-   number of columns of the google sheet when deciding a batch_size value.
+7. For **Row Batch Size**, enter the maximum number of data rows to request from each sheet at a time. The default is `1000000`. The connector reads the header row separately, then requests rows `2` through `1000002`, `1000003` through `2000003`, and so on. Lower this value if large sheets time out or if the sync frequently hits Google Sheets API rate limits.
 </FieldAnchor>
 <FieldAnchor field="names_conversion">
-8. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
+8. (Optional) Enable **Convert Column Names to SQL-Compliant Format** to convert column names to a standardized, SQL-friendly format. For example, `Café Earnings 2022` becomes `cafe_earnings_2022`. Enable this if your destination is SQL-based, such as Postgres or MySQL. This is off by default.
 9. Click **Set up source** and wait for the tests to complete.
 </FieldAnchor>
 <HideInUI>
@@ -133,7 +128,7 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 ### Stream Name Overrides (Rename Sheet/Stream Names)
 
-The Google Sheets connector allows you to optionally rename streams (sheet/tab names) as they appear in Airbyte and your destination. This is useful if your sheet names are not descriptive, contain special characters, or you want to standardize naming across sources.
+Use **Stream Name Overrides** to rename streams, which correspond to the sheet tabs in your spreadsheet, as they appear in Airbyte and your destination. This is useful if your sheet names aren't descriptive, contain special characters, or need to follow a naming convention across sources.
 
 #### How it works
 
@@ -161,65 +156,71 @@ After discovery, your streams in Airbyte will be named `sales_data`, `q1_2024`, 
 - In the Airbyte UI, add your overrides in the **Stream Name Overrides** field as an array of objects.
 - If you do not wish to rename any streams, leave this field blank.
 - **After adding or changing a stream name override, refresh your schema in Airbyte to see the new stream names take effect.**
-- **Overridden streams will default to Sync Mode: Full Refresh (Append), which does not support primary keys. If you want to use primary keys and deduplication, update the sync mode to "Full Refresh | Overwrite + Deduped" in your connection settings.**
 
 ---
 
 ### Google Sheets Connector Column Name Conversion
 
-The Google Sheets connector offers options to customize how column names from your spreadsheet are converted to be SQL-compliant. These settings can be configured in the Airbyte UI when setting up the connector.
+The Google Sheets connector can convert spreadsheet column names into SQL-compliant field names. Configure these settings in the Airbyte UI when setting up the connector.
 
 ---
 
 #### 1. Convert Column Names to SQL-Compliant Format
+
 - **Description**: When enabled, this converts column names to a format compatible with SQL databases (e.g., lowercasing, replacing spaces with underscores). This is the primary toggle required to enable any column name conversion.
 - **Default**: Off
 
 ---
 
 #### 2. Additional Conversion Options
-The following options allow you to fine-tune the column name conversion process. They only take effect if "Convert Column Names to SQL-Compliant Format" is enabled.
+
+The following options let you fine-tune column name conversion. They only take effect if **Convert Column Names to SQL-Compliant Format** is enabled.
 
 - **Remove Leading and Trailing Underscores**
   - **Description**: Removes leading and trailing underscores from column names. Note that leading underscores are preserved for column names starting with a number if "Allow Leading Numbers" is disabled.
-  - **Example**:  
-    - Input: `"  EXAMPLE Domain  "`  
+  - **Example**:
+    - Input: `"  EXAMPLE Domain  "`
     - Output: `"example_domain"`
   - **Default**: Off
 
 - **Combine Number-Word Pairs**
   - **Description**: Combines adjacent numbers and words into a single token without separators.
-  - **Example**:  
-    - Input: `"50th Percentile"`  
-    - Output: `"50th_percentile"` (if "Allow Leading Numbers" is enabled)  
-    - Output: `"_50th_percentile"` (if "Allow Leading Numbers" is disabled)
+  - **Example**:
+    - Input: `"50th Percentile"`
+    - Output: `"50th_percentile"` if **Allow Leading Numbers** is enabled
+    - Output: `"_50th_percentile"` if **Allow Leading Numbers** is disabled
   - **Default**: Off
 
 - **Remove All Special Characters**
   - **Description**: Removes all special characters (e.g., `*`, `?`, `!`, `$`, `%`, `(`, `)`) from column names.
-  - **Example**:  
-    - Input: `"Example ID*"`  
+  - **Example**:
+    - Input: `"Example ID*"`
     - Output: `"example_id"`
   - **Default**: Off
 
 - **Combine Letter-Number Pairs**
   - **Description**: Combines adjacent letters and numbers into a single token without separators.
-  - **Example**:  
-    - Input: `"Q3 2023"`  
+  - **Example**:
+    - Input: `"Q3 2023"`
     - Output: `"q3_2023"`
   - **Default**: Off
 
 - **Allow Leading Numbers**
   - **Description**: Allows column names to start with numbers. If disabled, a leading underscore is added to column names that begin with a number.
-  - **Example**:  
-    - Input: `"50th Percentile"`  
-    - Output: `"50_th_percentile"` (if enabled)  
-    - Output: `"_50_th_percentile"` (if disabled)
+  - **Example**:
+    - Input: `"50th Percentile"`
+    - Output: `"50_th_percentile"` if enabled
+    - Output: `"_50_th_percentile"` if disabled
+  - **Default**: Off
+
+- **Read Empty Header Columns**
+  - **Description**: Continues reading columns after an empty header cell. Empty headers are assigned generated names based on their column position, such as `column_C`. If disabled, the connector stops reading columns when it reaches the first empty header.
   - **Default**: Off
 
 ---
 
 #### Additional Details
+
 - All converted column names are lowercased.
 - Multiple spaces or special characters are collapsed or removed, not replaced with multiple underscores.
 - Only single underscores are used to separate tokens.
@@ -227,7 +228,7 @@ The following options allow you to fine-tune the column name conversion process.
 
 ---
 
-These options provide flexibility to tailor column name conversions to your specific database requirements. Adjust them as needed in the Airbyte UI when configuring the Google Sheets connector.
+Adjust these settings when your destination requires stricter field names than your spreadsheet headers use.
 
 ---
 
@@ -244,6 +245,7 @@ The Google Sheets connector automatically handles duplicate column headers by ap
 #### Example
 
 If your spreadsheet has a header named `stats` in both columns C and Q (positions C1 and Q1), the connector will create two distinct fields:
+
 - `stats_C1` (for the column at position C1)
 - `stats_Q1` (for the column at position Q1)
 
@@ -262,7 +264,7 @@ The Google Sheets source connector supports the following [sync modes](https://d
 
 Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
 
-Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
+Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets. The first row of each sheet is used as the header row. Data syncs start from the second row.
 
 ## Data type map
 
@@ -270,7 +272,31 @@ Airbyte only supports replicating [Grid](https://developers.google.com/sheets/ap
 |:-----------------|:-------------|:------|
 | any type         | `string`     |       |
 
-## Limitations & Troubleshooting
+## Reference
+
+This connector uses the Google Sheets API v4. It calls the `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}` endpoint to discover spreadsheet metadata and header rows, then calls `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values:batchGet` to read row values.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `spreadsheet_id` | Yes | Full Google Sheets URL or spreadsheet ID. |
+| `credentials.auth_type` | Yes | Authentication method. Valid values are `Client` for OAuth and `Service` for service account authentication. |
+| `credentials.client_id` | Required for OAuth | Google OAuth client ID. |
+| `credentials.client_secret` | Required for OAuth | Google OAuth client secret. |
+| `credentials.refresh_token` | Required for OAuth | Google OAuth refresh token. |
+| `credentials.service_account_info` | Required for service account authentication | JSON key for the service account. Share the spreadsheet with the service account email unless the spreadsheet is public. |
+| `batch_size` | No | Maximum number of data rows to request per API call. Defaults to `1000000`. Lower this value if large sheets time out. |
+| `names_conversion` | No | Converts column names to SQL-compliant format. Defaults to `false`. |
+| `remove_leading_trailing_underscores` | No | Removes leading and trailing underscores from converted column names. Requires `names_conversion`. Defaults to `false`. |
+| `combine_number_word_pairs` | No | Combines adjacent number and word tokens in converted column names. Requires `names_conversion`. Defaults to `false`. |
+| `remove_special_characters` | No | Removes special characters from converted column names. Requires `names_conversion`. Defaults to `false`. |
+| `combine_letter_number_pairs` | No | Combines adjacent letter and number tokens in converted column names. Requires `names_conversion`. Defaults to `false`. |
+| `allow_leading_numbers` | No | Allows converted column names to start with numbers. Requires `names_conversion`. Defaults to `false`. |
+| `read_empty_header_columns` | No | Reads columns after empty header cells and assigns generated names such as `column_C`. Defaults to `false`. |
+| `stream_name_overrides` | No | Array of objects with `source_stream_name` and `custom_stream_name` used to rename sheet streams in Airbyte. |
+
+## Limitations and troubleshooting
 
 <details>
 <summary>
@@ -286,7 +312,21 @@ The [Google API rate limits](https://developers.google.com/sheets/api/limits) ar
 - 300 read requests per minute per project
 - 60 requests per minute per user per project
 
-Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits. We recommend not using the same user or service account for more than 3 instances of the Google Sheets source connector to ensure high transfer speeds.
+Airbyte batches requests to the API to pull data efficiently and respect these rate limits. We recommend not using the same user or service account for more than three instances of the Google Sheets source connector to ensure high transfer speeds.
+
+Google Sheets API requests time out after 180 seconds. If you sync a wide or large sheet and see timeout errors, lower **Row Batch Size** so each API call reads fewer rows.
+
+#### Authentication and permissions
+
+- The connector requests `https://www.googleapis.com/auth/spreadsheets.readonly` and `https://www.googleapis.com/auth/drive.readonly` scopes for OAuth and service account authentication.
+- The authenticated user or service account must be able to open the spreadsheet. A `403` error usually means the account doesn't have access to the spreadsheet. A `404` error usually means the spreadsheet link or ID is invalid, or the authenticated account can't see it.
+- Sheets API scopes apply to the spreadsheet file, not to individual sheets within a spreadsheet.
+
+#### Header row behavior
+
+- The first row of each sheet is used as the header row. Data syncs start from the second row.
+- By default, the connector stops reading columns when it reaches the first empty header cell. Enable **Read Empty Header Columns** to continue reading columns after an empty header cell.
+- Duplicate headers are automatically deduplicated by appending the cell position, such as `stats_C1`.
 
 ### Troubleshooting
 
@@ -321,11 +361,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.12.25 | 2026-04-28 | [77273](https://github.com/airbytehq/airbyte/pull/77273) | Update dependencies |
 | 0.12.24 | 2026-04-21 | [76629](https://github.com/airbytehq/airbyte/pull/76629) | Update dependencies |
 | 0.12.23 | 2026-04-02 | [75578](https://github.com/airbytehq/airbyte/pull/75578) | Add `oauth_connector_input_specification` with granular scopes |
-| 0.12.23 | 2026-03-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `oauth_connector_input_specification` with granular scopes |
 | 0.12.22 | 2026-03-17 | [74660](https://github.com/airbytehq/airbyte/pull/74660) | Update dependencies |
 | 0.12.21 | 2026-02-24 | [73968](https://github.com/airbytehq/airbyte/pull/73968) | Update dependencies |
 | 0.12.20 | 2026-02-10 | [73078](https://github.com/airbytehq/airbyte/pull/73078) | Update dependencies |
-| 0.12.19 | 2026-02-03 | [72644](https://github.com/airbytehq/airbyte/pull/72644) | Update dependencies |
+| 0.12.19 | 2026-02-06 | [72644](https://github.com/airbytehq/airbyte/pull/72644) | Update dependencies |
 | 0.12.18 | 2026-01-20 | [71904](https://github.com/airbytehq/airbyte/pull/71904) | Update dependencies |
 | 0.12.17 | 2026-01-14 | [71703](https://github.com/airbytehq/airbyte/pull/71703) | Update dependencies |
 | 0.12.16 | 2025-12-18 | [70510](https://github.com/airbytehq/airbyte/pull/70510) | Update dependencies |
