@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 339a939f-b56c-48d7-9f3a-1362d6a3fdeb
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-oveit
   githubIssueLabel: source-oveit
   icon: icon.svg
