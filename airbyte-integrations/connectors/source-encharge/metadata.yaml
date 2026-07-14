@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 44a57f92-595c-4512-9983-1563b8764b63
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-encharge
   githubIssueLabel: source-encharge
   icon: icon.svg
