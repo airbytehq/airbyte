@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 30e47b8d-5132-4b24-a204-2493bda33c8d
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-zoho-bigin
   githubIssueLabel: source-zoho-bigin
   icon: icon.svg
