@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5f91a67b-57b1-450f-bb15-ab3b284628b4
-  dockerImageTag: 0.0.30
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-docuseal
   githubIssueLabel: source-docuseal
   icon: icon.svg
