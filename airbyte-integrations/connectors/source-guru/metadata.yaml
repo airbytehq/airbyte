@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 30e2d5f2-63c1-4993-8079-c8abf24e747d
-  dockerImageTag: 0.0.60
+  dockerImageTag: 0.0.61
   dockerRepository: airbyte/source-guru
   githubIssueLabel: source-guru
   icon: icon.svg
