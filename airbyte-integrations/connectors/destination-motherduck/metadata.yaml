@@ -18,6 +18,13 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges: {}
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   remoteRegistries:
     pypi:
       enabled: false
