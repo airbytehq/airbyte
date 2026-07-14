@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a60d9f16-e0bd-459f-9419-fd47f9788be1
-  dockerImageTag: 0.0.59
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-you-need-a-budget-ynab
   githubIssueLabel: source-you-need-a-budget-ynab
   icon: icon.svg
