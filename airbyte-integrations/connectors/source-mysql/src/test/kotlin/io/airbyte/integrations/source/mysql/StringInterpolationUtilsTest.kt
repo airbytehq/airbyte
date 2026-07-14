@@ -289,6 +289,53 @@ class StringInterpolationUtilsTest {
         }
     }
 
+    // Regression test for oncall#13104: interpolating between ASCII bounds (e.g. char(36) GUID
+    // primary keys) must not emit supplementary-plane characters. Such characters require utf8mb4
+    // encoding and, when bound into `WHERE pk <= ?` against a utf8/utf8mb3 column, cause MySQL /
+    // MariaDB error 1267 (Illegal mix of collations).
+    @ParameterizedTest
+    @CsvSource(
+        "00000000-0000-0000-0000-000000000000, ffffffff-ffff-ffff-ffff-ffffffffffff, 8",
+        "550e8400-e29b-41d4-a716-446655440000, 660e8400-e29b-41d4-a716-446655440000, 16",
+        "a, z, 32",
+        "0, 9, 10",
+    )
+    fun `unicodeInterpolatedStrings should not emit code points beyond the input character range`(
+        start: String,
+        end: String,
+        steps: Int,
+    ) {
+        val maxInputCodePoint =
+            (start.codePoints().toArray() + end.codePoints().toArray()).max()
+
+        val result = unicodeInterpolatedStrings(start, end, steps)
+
+        result.forEach { value ->
+            value.codePoints().forEach { cp ->
+                assertTrue(
+                    cp <= maxInputCodePoint,
+                    "Synthetic boundary '$value' contains code point U+${cp.toString(16)} " +
+                        "which exceeds the input range (max U+${maxInputCodePoint.toString(16)})",
+                )
+                assertTrue(
+                    cp < 0xD800 || cp > 0xDFFF,
+                    "Synthetic boundary '$value' contains a surrogate code point U+${cp.toString(16)}",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `unicodeInterpolatedStrings should stay within BMP for multi-byte BMP bounds`() {
+        // α (U+03B1) and ✓ (U+2713) are both BMP; interpolated values must remain BMP (<= U+FFFF).
+        val result = unicodeInterpolatedStrings("α", "\u2713", 12)
+        result.forEach { value ->
+            value.codePoints().forEach { cp ->
+                assertTrue(cp <= 0x2713, "Code point U+${cp.toString(16)} exceeded input max")
+            }
+        }
+    }
+
     @Test
     fun `unicodeInterpolatedStrings should distribute evenly across range`() {
         val result = unicodeInterpolatedStrings("a", "e", 4)

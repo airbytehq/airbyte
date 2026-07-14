@@ -231,6 +231,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.53.2      | 2026-07-14 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER)   | Fix `Illegal mix of collations` (error 1267) when partitioning string primary keys by keeping synthetic partition boundaries within the column's character set. |
 | 3.53.1      | 2026-06-25 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
 | 3.53.0      | 2026-06-29 | [80950](https://github.com/airbytehq/airbyte/pull/80950)   | Promote mysql to the latest CDK                                                                                                                  |
 | 3.52.3      | 2026-05-21 | [78318](https://github.com/airbytehq/airbyte/pull/78318)   | Fix the CDC docs link on the MySQL config page.                                                                                                  |
