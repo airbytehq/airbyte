@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 27b801a1-fd34-4470-829a-bb12c63c42f9
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-just-sift
   githubIssueLabel: source-just-sift
   icon: icon.svg
