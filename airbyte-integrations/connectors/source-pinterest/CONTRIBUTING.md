@@ -1,19 +1,34 @@
-# source-pinterest: Unique Behaviors
+# Contributing to source-pinterest
 
-## 1. Analytics Retry Wait Time Parsed from Response Body Text
-
-The `PinterestAnalyticsBackoffStrategy` extracts the retry wait time from the response body's `message` field using a regex pattern (`Retry after N seconds`), not from standard HTTP headers like `Retry-After`. Pinterest's analytics endpoints return rate limit information as human-readable text embedded in the error message rather than in response headers.
-
-**Why this matters:** Standard retry logic that only reads HTTP headers will miss Pinterest's retry guidance entirely and fall back to exponential backoff. The connector's regex-based extraction is brittle and will break if Pinterest changes the wording of their error message. If the regex fails to match, it falls back to exponential backoff capped at 120 seconds.
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
+**Connector type:** Hybrid (manifest.yaml + Python custom components for record extraction and backoff strategy)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. 32 streams analyzed. 20 use incremental sync (analytics reports with date cursors, management streams with `updated_time`). 12 are full-refresh.
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+### Incremental Streams (20)
 
-### Future incremental stream candidates
+| Category | Streams | Cursor Field | Notes |
+|----------|---------|-------------|-------|
+| Management | campaigns, ad_groups, ads | `updated_time` | Pinterest management API with cursor |
+| Analytics | user/ad_account/campaign/ad_group/ad_analytics | `DATE` | Pinterest Analytics API with date range |
+| Reports (11) | advertiser/ad_group/campaign/pin_promotion/product_group/product_item/campaign_targeting/advertiser_targeting/ad_group_targeting/pin_promotion_targeting/product_group_targeting/keyword reports | `DATE` | Pinterest Async Reporting API |
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+### Full-Refresh Streams (Not Actionable)
+
+| Stream | Reason | Evidence |
+|--------|--------|----------|
+| boards | No `updated_time` filter on list endpoint | Pinterest Boards API returns all boards; no date filter |
+| board_sections | Substream of boards; no date filter | Per-board endpoint |
+| board_pins | Substream of boards; no date filter | Per-board pins endpoint |
+| board_section_pins | Substream of board_sections; no date filter | Per-section endpoint |
+| catalogs | No date filter | Pinterest Catalogs API returns all catalogs |
+| catalogs_feeds | Substream of catalogs; no date filter | Per-catalog feeds |
+| catalogs_product_groups | No date filter | Pinterest Catalogs Product Groups API |
+| ad_accounts | Small dataset; no date filter | Returns all ad accounts for user |
+| audiences | No date filter | Pinterest Audiences API has no `updated_since` |
+| keywords | Substream of ad_groups; no date filter | Per-ad-group keywords |
+| conversion_tags | No date filter | Pinterest Conversion Tags API |
+| customer_lists | No date filter | Pinterest Customer Lists API |
