@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b58ba2a9-6335-496d-8c55-4e9d483f49a1
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-nocrm
   githubIssueLabel: source-nocrm
   icon: icon.svg
