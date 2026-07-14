@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a312f5ec-ba92-4c5b-a03c-197fbd961b91
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-salesflare
   githubIssueLabel: source-salesflare
   icon: icon.svg
