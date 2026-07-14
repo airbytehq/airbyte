@@ -182,6 +182,18 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+        Common export formats:
+        - application/pdf (all types)
+        - text/plain (Docs)
+        - text/csv (Sheets)
+        - application/vnd.openxmlformats-officedocument.wordprocessingml.document (Docs to .docx)
+        - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet (Sheets to .xlsx)
+        - application/vnd.openxmlformats-officedocument.presentationml.presentation (Slides to .pptx)
+        Note: Export has a 10MB limit. For larger files, use the Drive UI.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, file_id: str, mime_type: str, path: str, range_header: str | None = None, **kwargs) ‑> Path`
     :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
         Common export formats:
@@ -210,6 +222,18 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+        Common export formats:
+        - application/pdf (all types)
+        - text/plain (Docs)
+        - text/csv (Sheets)
+        - application/vnd.openxmlformats-officedocument.wordprocessingml.document (Docs to .docx)
+        - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet (Sheets to .xlsx)
+        - application/vnd.openxmlformats-officedocument.presentationml.presentation (Slides to .pptx)
+        Note: Export has a 10MB limit. For larger files, use the Drive UI.
+         and return a JSON-safe UTF-8 text chunk.
 
 <a id="FilesQuery"></a>
 
@@ -268,6 +292,12 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, file_id: str, alt: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary content of a file. This works for non-Google Workspace files
+        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
+        use the export action instead.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, file_id: str, alt: str, path: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the binary content of a file. This works for non-Google Workspace files
         (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
@@ -285,6 +315,12 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, file_id: str, alt: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary content of a file. This works for non-Google Workspace files
+        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
+        use the export action instead.
+         and return a JSON-safe UTF-8 text chunk.
 
     `get(self, file_id: str, fields: str | None = None, supports_all_drives: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_drive.models.File`
     :   Gets a file's metadata by ID
