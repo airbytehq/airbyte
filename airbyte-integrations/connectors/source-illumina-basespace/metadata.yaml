@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 62e9c4f2-a768-48f7-a8bf-d54bf1d96425
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-illumina-basespace
   githubIssueLabel: source-illumina-basespace
   icon: icon.svg
