@@ -33,10 +33,10 @@ private val log = KotlinLogging.logger {}
 private const val COUNT_TOTAL_ALIAS = "total"
 private const val COLUMN_NAME_COLUMN = "column_name"
 
-/** PostgreSQL/Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
+/** Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
 private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 
-/** PostgreSQL/Redshift SQL state for UNDEFINED_TABLE (relation does not exist). */
+/** Redshift SQL state for UNDEFINED_TABLE (relation does not exist). */
 private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
 
 @Singleton
