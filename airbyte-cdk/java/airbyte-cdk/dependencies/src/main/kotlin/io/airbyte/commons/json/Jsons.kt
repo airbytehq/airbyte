@@ -29,9 +29,12 @@ private val LOGGER = KotlinLogging.logger {}
 
 object Jsons {
 
-    // allow jackson to deserialize anything under 100 MiB
-    // (the default, at time of writing 2024-05-29, with jackson 2.15.2, is 20 MiB)
-    private const val JSON_MAX_LENGTH = 100 * 1024 * 1024
+    // Allow jackson to deserialize arbitrarily large string values. The Jackson default cap
+    // (20 MiB historically, then 100 MiB here) trips on legitimate CDC payloads when a single
+    // column value is large (e.g. an oversized text blob in a WAL event). Match the
+    // platform-internal precedent (Int.MAX_VALUE) so a single oversized row does not abort a
+    // sync; see oncall#12768.
+    private const val JSON_MAX_LENGTH = Int.MAX_VALUE
     private val STREAM_READ_CONSTRAINTS =
         StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
 
