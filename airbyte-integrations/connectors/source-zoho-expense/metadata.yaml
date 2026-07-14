@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9acfeefc-dad6-4887-a928-6c15ce5737b6
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-zoho-expense
   githubIssueLabel: source-zoho-expense
   icon: icon.svg
