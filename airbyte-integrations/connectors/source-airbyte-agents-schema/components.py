@@ -21,6 +21,10 @@ destination's workspace by a `SubstreamPartitionRouter` (the workspace is resolv
 genuinely cannot be expressed declaratively — multi-record expansion (one connection -> N stream
 rows) and physical-table-name derivation — live here as custom `RecordExtractor`s.
 
+The human-facing help text surfaced through `root` (and the small helpers that render it) is kept
+in the `PROMPT / DOCS CONTENT` block at the top of this module, insulated from the connector logic
+below so the docs can be reviewed and iterated on without touching extraction code.
+
 Note: annotations are intentionally NOT deferred via `from __future__ import annotations`. The
 manifest-only custom-code loader `exec`s this module before registering it in `sys.modules`, and
 deferred (string) annotations combined with `@dataclass` fail to resolve during that window.
@@ -33,6 +37,90 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+
+
+# ======================================================================================
+# PROMPT / DOCS CONTENT
+#
+# Everything in this block is human-facing help text — the `root` stream's self-describing
+# index and the free-form `skill/…` guidance an agent reads — plus the tiny helpers that
+# render it. It is intentionally hoisted to the top and insulated from the connector logic
+# below so these docs can be reviewed and iterated on independently of "real" code.
+# ======================================================================================
+
+_LANDING_CONVENTIONS_SKILL = """\
+# Querying Airbyte-landed data
+
+Airbyte writes each selected stream to a table in the destination. Use `AGENTS.AIRBYTE_STREAM` to map
+a logical stream to its physical table:
+
+- **Schema/namespace** comes from the connection's namespace configuration
+  (`destination_namespace` in `AGENTS.AIRBYTE_STREAM`). When it is null, the destination's default
+  schema is used.
+- **Table name** is `prefix` + stream name (`destination_table_name`). Final identifier casing and
+  truncation are destination-specific — Snowflake upper-cases unquoted identifiers, BigQuery
+  preserves case, Postgres lower-cases. Match casing accordingly when you write SQL.
+
+## Destinations V2 layout
+
+Modern Airbyte destinations write **typed final tables** named after the stream (the
+`destination_table_name` above) alongside raw tables in a separate internal schema
+(commonly `airbyte_internal`, table `<namespace>_raw__stream_<name>`). Prefer the typed final table.
+
+Every row carries Airbyte metadata columns:
+
+- `_airbyte_raw_id` — unique id for the record.
+- `_airbyte_extracted_at` — when the record was read from the source.
+- `_airbyte_meta` — JSON with per-row typing/change info.
+- `_airbyte_generation_id` — increments across refreshes.
+
+## Sync mode semantics
+
+- **append / append_dedup**: `append_dedup` keeps one row per primary key (latest by cursor); plain
+  `append` may contain historical duplicates — deduplicate on `primary_key` ordered by
+  `cursor_field` (or `_airbyte_extracted_at`) when you need the current state.
+- **full_refresh|overwrite**: the table is fully replaced each sync; no dedup needed.
+
+Consult `primary_key` and `cursor_field` in `AGENTS.AIRBYTE_STREAM` to write correct dedup SQL.
+"""
+
+
+def _build_root_index(destination_id: str) -> dict:
+    """Build the self-describing `index` payload emitted by the `root` stream.
+
+    The index is response-independent: the authoritative per-stream/table inventory is a cross-page
+    aggregation that lives in `AGENTS.AIRBYTE_STREAM`, so this just describes the dataset and points
+    there rather than trying to summarize counts a per-response extractor cannot compute correctly.
+    """
+    return {
+        "description": (
+            "Agents Schema materialized from Airbyte configuration metadata for destination "
+            f"{destination_id}. See AGENTS.AIRBYTE_STREAM for the full stream-to-table mapping."
+        ),
+        "destination_id": destination_id,
+        "extensions": ["AIRBYTE_STREAM"],
+    }
+
+
+def _build_root_rows(destination_id: str) -> list:
+    """Build the ordered `(provider, key, content)` rows the `root` stream emits."""
+    return [
+        {
+            "provider": "airbyte",
+            "key": "index",
+            "content": json.dumps(_build_root_index(destination_id), default=str),
+        },
+        {
+            "provider": "airbyte",
+            "key": "skill/query-airbyte-landed-data",
+            "content": _LANDING_CONVENTIONS_SKILL,
+        },
+    ]
+
+
+# ======================================================================================
+# CONNECTOR LOGIC
+# ======================================================================================
 
 
 def _resolve_namespace(connection: Mapping[str, Any], stream: Mapping[str, Any]) -> Optional[str]:
@@ -117,50 +205,12 @@ class AgentsStreamExtractor(RecordExtractor):
                 }
 
 
-_LANDING_CONVENTIONS_SKILL = """\
-# Querying Airbyte-landed data
-
-Airbyte writes each selected stream to a table in the destination. Use `AGENTS.AIRBYTE_STREAM` to map
-a logical stream to its physical table:
-
-- **Schema/namespace** comes from the connection's namespace configuration
-  (`destination_namespace` in `AGENTS.AIRBYTE_STREAM`). When it is null, the destination's default
-  schema is used.
-- **Table name** is `prefix` + stream name (`destination_table_name`). Final identifier casing and
-  truncation are destination-specific — Snowflake upper-cases unquoted identifiers, BigQuery
-  preserves case, Postgres lower-cases. Match casing accordingly when you write SQL.
-
-## Destinations V2 layout
-
-Modern Airbyte destinations write **typed final tables** named after the stream (the
-`destination_table_name` above) alongside raw tables in a separate internal schema
-(commonly `airbyte_internal`, table `<namespace>_raw__stream_<name>`). Prefer the typed final table.
-
-Every row carries Airbyte metadata columns:
-
-- `_airbyte_raw_id` — unique id for the record.
-- `_airbyte_extracted_at` — when the record was read from the source.
-- `_airbyte_meta` — JSON with per-row typing/change info.
-- `_airbyte_generation_id` — increments across refreshes.
-
-## Sync mode semantics
-
-- **append / append_dedup**: `append_dedup` keeps one row per primary key (latest by cursor); plain
-  `append` may contain historical duplicates — deduplicate on `primary_key` ordered by
-  `cursor_field` (or `_airbyte_extracted_at`) when you need the current state.
-- **full_refresh|overwrite**: the table is fully replaced each sync; no dedup needed.
-
-Consult `primary_key` and `cursor_field` in `AGENTS.AIRBYTE_STREAM` to write correct dedup SQL.
-"""
-
-
 @dataclass
 class AgentsRootExtractor(RecordExtractor):
     """Synthesize the `AGENTS.ROOT` index + guidance rows for the target destination.
 
-    Emits `(provider, key, content)` rows: a JSON `index` describing the dataset and pointing at
-    `AGENTS.AIRBYTE_STREAM` for the authoritative per-stream/table inventory, plus static `skill/…`
-    markdown guidance. This extractor is response-independent: the full stream inventory is a
+    Emits the `(provider, key, content)` rows built by `_build_root_rows` (see the `PROMPT / DOCS
+    CONTENT` block above). This extractor is response-independent: the full stream inventory is a
     cross-page aggregation that a per-response `RecordExtractor` cannot compute correctly, so it is
     deliberately left to the fully-paginated `airbyte_stream` stream rather than summarized here.
     """
@@ -169,20 +219,4 @@ class AgentsRootExtractor(RecordExtractor):
     parameters: Mapping[str, Any] = field(default_factory=dict)
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
-        destination_id = self.config["destination_id"]
-
-        index = {
-            "description": (
-                "Agents Schema materialized from Airbyte configuration metadata for destination "
-                f"{destination_id}. See AGENTS.AIRBYTE_STREAM for the full stream-to-table mapping."
-            ),
-            "destination_id": destination_id,
-            "extensions": ["AIRBYTE_STREAM"],
-        }
-
-        yield {"provider": "airbyte", "key": "index", "content": json.dumps(index, default=str)}
-        yield {
-            "provider": "airbyte",
-            "key": "skill/query-airbyte-landed-data",
-            "content": _LANDING_CONVENTIONS_SKILL,
-        }
+        yield from _build_root_rows(self.config["destination_id"])
