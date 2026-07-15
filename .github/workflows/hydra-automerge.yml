@@ -446,44 +446,9 @@ jobs:
 
       - name: Label auto-merged PR
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        with:
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          script: |
-            const label = 'hyd-automerged';
-
-            try {
-              await github.rest.issues.getLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: label,
-              });
-            } catch (error) {
-              if (error.status !== 404) {
-                throw error;
-              }
-
-              try {
-                await github.rest.issues.createLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: label,
-                  color: '0e8a16',
-                  description: 'Merged automatically by Hydra',
-                });
-              } catch (createError) {
-                if (createError.status !== 422) {
-                  throw createError;
-                }
-              }
-            }
-
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: Number(process.env.PR_NUMBER),
-              labels: [label],
-            });
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh issue edit "$PR_NUMBER" --repo airbytehq/airbyte --add-label hyd-automerged
 
       - name: Post automerge notification to Slack
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
