@@ -444,6 +444,12 @@ jobs:
           echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
           exit 1
 
+      - name: Label auto-merged PR
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh issue edit "$PR_NUMBER" --repo airbytehq/airbyte --add-label hyd-automerged
+
       - name: Post automerge notification to Slack
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
