@@ -223,6 +223,41 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         """
         _ = self._execute_sql(cmd)
 
+    @overrides
+    def _ensure_compatible_table_schema(
+        self,
+        stream_name: str,
+        table_name: str,
+    ) -> None:
+        """Add columns present in the stream schema but missing from the table.
+
+        Overrides the CDK implementation, which reflects the table through
+        SQLAlchemy. duckdb-engine's pg_catalog-based reflection has broken
+        against past DuckDB releases (1.4.x removed pg_collation);
+        information_schema is stable across DuckDB versions and MotherDuck,
+        and avoids the multi-view reflection query on every write.
+
+        Like the CDK implementation, this only adds missing columns; neither
+        checks column types for compatibility (an upstream TODO, see
+        airbytehq/airbyte#321).
+
+        Comparison is case-insensitive to match DuckDB identifier resolution:
+        a table created with column "ID" satisfies a stream column "id".
+        """
+        existing_columns = {
+            row[0].lower()
+            for row in self._execute_sql(
+                text(
+                    "SELECT column_name FROM information_schema.columns" " WHERE table_schema = :schema_name AND table_name = :table_name"
+                ).bindparams(schema_name=self.sql_config.schema_name, table_name=table_name)
+            )
+        }
+        for column_name, sql_type in self._get_sql_column_definitions(stream_name).items():
+            if column_name.lower() not in existing_columns:
+                self._execute_sql(
+                    f"ALTER TABLE {self._fully_qualified(table_name)} " f"ADD COLUMN {self._quote_identifier(column_name)} {sql_type}"
+                )
+
     def _do_checkpoint(
         self,
         connection: Connection | None = None,
