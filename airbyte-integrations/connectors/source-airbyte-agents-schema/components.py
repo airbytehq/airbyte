@@ -182,7 +182,7 @@ class AgentsStreamExtractor(RecordExtractor):
                 if not stream_name:
                     continue
                 selected_fields = [
-                    f.get("fieldPath", [None])[0] if isinstance(f, Mapping) else f for f in (stream.get("selectedFields") or [])
+                    (f.get("fieldPath") or [None])[0] if isinstance(f, Mapping) else f for f in (stream.get("selectedFields") or [])
                 ]
                 yield {
                     "connection_id": connection.get("connectionId"),

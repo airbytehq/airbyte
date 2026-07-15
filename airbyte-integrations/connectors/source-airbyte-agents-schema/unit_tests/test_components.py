@@ -111,6 +111,35 @@ def test_stream_extractor_derives_table_name_and_namespace(config):
     assert by_name["events"]["destination_table_name"] == "events"
 
 
+@pytest.mark.parametrize(
+    "selected_fields, expected",
+    [
+        pytest.param([{"fieldPath": ["id"]}, {"fieldPath": ["email"]}], ["id", "email"], id="well_formed"),
+        pytest.param([{"fieldPath": None}], [], id="null_field_path"),
+        pytest.param([{"fieldPath": []}], [], id="empty_field_path"),
+        pytest.param([{}], [], id="missing_field_path"),
+        pytest.param([{"fieldPath": ["id"]}, {"fieldPath": None}], ["id"], id="mixed_valid_and_null"),
+    ],
+)
+def test_stream_extractor_tolerates_malformed_selected_fields(config, selected_fields, expected):
+    body = {
+        "data": [
+            {
+                "connectionId": "conn-a",
+                "destinationId": DESTINATION_ID,
+                "configurations": {"streams": [{"name": "users", "selectedFields": selected_fields}]},
+            }
+        ]
+    }
+    response = Mock()
+    response.json.return_value = body
+
+    extractor = components.AgentsStreamExtractor(config=config)
+    records = list(extractor.extract_records(response))
+
+    assert records[0]["selected_fields"] == expected
+
+
 def test_root_extractor_emits_index_and_skill(config):
     extractor = components.AgentsRootExtractor(config=config)
     records = list(extractor.extract_records(_connections_response()))
