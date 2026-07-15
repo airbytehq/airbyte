@@ -20,7 +20,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 ### Requirements
 
-1. Allow connections from Airbyte server to your GCS cluster \(if they exist in separate VPCs\).
+1. Allow connections from Airbyte server to your GCS bucket \(if they exist in separate VPCs\).
 2. A GCP bucket with credentials.
 
 ### Setup guide
@@ -63,9 +63,9 @@ Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authenticat
 Both Google-managed and customer-managed encryption keys (CMEK) are supported. You can view the encryption setting under
 the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
 
-⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each
-sync. We recommend you provision a dedicated GCS bucket for this sync to prevent unexpected data deletion from
-misconfiguration. ⚠️
+⚠️ Please note that under "Full Refresh Sync" mode, existing data under each stream's output prefix will be
+overwritten before each sync. We recommend you provision a dedicated GCS bucket for this sync to prevent unexpected
+data deletion from misconfiguration. ⚠️
 
 The full path of the output data is:
 
@@ -189,14 +189,23 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 ### CSV
 
-Like most of the other Airbyte destination connectors, usually the output has three columns: a UUID, an emission timestamp, and the data blob. With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
+With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
 
-| Column                | Condition                                                                                         | Description                                                              |
-| :-------------------- | :------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
-| `_airbyte_ab_id`      | Always exists                                                                                     | A uuid assigned by Airbyte to each processed record.                     |
-| `_airbyte_emitted_at` | Always exists.                                                                                    | A timestamp representing when the event was pulled from the data source. |
-| `_airbyte_data`       | When no normalization \(flattening\) is needed, all data reside under this column as a json blob. |                                                                          |
-| root level fields     | When root level normalization \(flattening\) is selected, the root level fields are expanded.     |                                                                          |
+| Column                   | Condition                                                                                          | Description                                                                 |
+| :----------------------- | :------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| `_airbyte_raw_id`        | Always exists.                                                                                     | A uuid assigned by Airbyte to each processed record.                        |
+| `_airbyte_extracted_at`  | Always exists.                                                                                     | A timestamp representing when the event was extracted from the data source. |
+| `_airbyte_generation_id` | Always exists.                                                                                     | An integer id that increases with each new refresh.                         |
+| `_airbyte_meta`          | Always exists.                                                                                     | A structured object containing metadata about the record.                   |
+| `_airbyte_data`          | When no normalization \(flattening\) is needed, all data resides under this column as a JSON blob. |                                                                             |
+| root level fields        | When root level normalization \(flattening\) is selected, the root level fields are expanded.      |                                                                             |
+
+The schema for `_airbyte_meta` is:
+
+| Field Name | Type    | Description                             |
+| :--------- | :------ | :-------------------------------------- |
+| `changes`  | list    | A list of structured change objects.    |
+| `sync_id`  | integer | An integer identifier for the sync job. |
 
 For example, given the following json object from a source:
 
@@ -212,15 +221,15 @@ For example, given the following json object from a source:
 
 With no normalization, the output CSV is:
 
-| `_airbyte_ab_id`                       | `_airbyte_emitted_at` | `_airbyte_data`                                                |
-| :------------------------------------- | :-------------------- | :------------------------------------------------------------- |
-| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000         | `{ "user_id": 123, name: { "first": "John", "last": "Doe" } }` |
+| `_airbyte_raw_id`                      | `_airbyte_extracted_at` | `_airbyte_generation_id` | `_airbyte_meta`                     | `_airbyte_data`                                                |
+| :------------------------------------- | :---------------------- | :----------------------- | ----------------------------------- | :------------------------------------------------------------- |
+| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000           | 11                       | `{"changes":[], "sync_id": 10111 }` | `{ "user_id": 123, name: { "first": "John", "last": "Doe" } }` |
 
 With root level normalization, the output CSV is:
 
-| `_airbyte_ab_id`                       | `_airbyte_emitted_at` | `user_id` | `name`                               |
-| :------------------------------------- | :-------------------- | :-------- | :----------------------------------- |
-| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000         | 123       | `{ "first": "John", "last": "Doe" }` |
+| `_airbyte_raw_id`                      | `_airbyte_extracted_at` | `_airbyte_generation_id` | `_airbyte_meta`                     | `user_id` | `name`                               |
+| :------------------------------------- | :---------------------- | :----------------------- | ----------------------------------- | :-------- | :----------------------------------- |
+| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000           | 11                       | `{"changes":[], "sync_id": 10111 }` | 123       | `{ "first": "John", "last": "Doe" }` |
 
 Output files can be compressed. In v1.0.0 and later, CSV output is **GZIP-compressed by default** (`.csv.gz`). Set
 `format.compression.compression_type = "No Compression"` for uncompressed `.csv` output.
@@ -232,8 +241,10 @@ Output files can be compressed. In v1.0.0 and later, CSV output is **GZIP-compre
 
 ```json
 {
-  "_airbyte_ab_id": "<uuid>",
-  "_airbyte_emitted_at": "<timestamp-in-millis>",
+  "_airbyte_raw_id": "<uuid>",
+  "_airbyte_extracted_at": "<timestamp-in-millis>",
+  "_airbyte_generation_id": "<generation-id>",
+  "_airbyte_meta": "<json-meta>",
   "_airbyte_data": "<json-data-from-source>"
 }
 ```
@@ -262,8 +273,8 @@ For example, given the following two json objects from a source:
 They will be like this in the output file:
 
 ```text
-{ "_airbyte_ab_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_emitted_at": "1622135805000", "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
-{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
+{ "_airbyte_raw_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_extracted_at": "1622135805000", "_airbyte_generation_id": "11", "_airbyte_meta": { "changes": [], "sync_id": 10111 }, "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
+{ "_airbyte_raw_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
 Output files can be compressed. In v1.0.0 and later, JSONL output is **GZIP-compressed by default** (`.jsonl.gz`). Set
