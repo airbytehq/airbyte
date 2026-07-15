@@ -372,6 +372,79 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             },
         )
 
+    def _cursor_ordering(self, stream_name: str) -> str:
+        """Ordering that keeps the latest record per primary key.
+
+        Records are ordered by the stream's cursor first so that a batch
+        extracted late (e.g. a backfill) cannot beat records carrying newer
+        cursor values. Extraction time is the tiebreak. Streams without a
+        single-column cursor fall back to extraction time alone.
+        """
+        cursor_field = self.catalog_provider.get_configured_stream_info(stream_name).cursor_field
+        extracted_at_ordering = f"{AB_EXTRACTED_AT_COLUMN} DESC"
+        if cursor_field and len(cursor_field) == 1:
+            cursor = self._quote_identifier(self.normalizer.normalize(cursor_field[0]))
+            # NULLS LAST: a record without a cursor value never beats one with a value.
+            return f"{cursor} DESC NULLS LAST, {extracted_at_ordering}"
+        return extracted_at_ordering
+
+    def _merge_matched_condition(self, stream_name: str) -> str:
+        """Guard for MERGE's WHEN MATCHED: only apply records that are not older.
+
+        Without this, any batch overwrites on primary-key match regardless of
+        cursor order. NULL cursors compare as older than any value; two equal
+        (or two NULL) cursors defer to extraction time.
+        """
+        cursor_field = self.catalog_provider.get_configured_stream_info(stream_name).cursor_field
+        if not (cursor_field and len(cursor_field) == 1):
+            return ""
+        cursor = self._quote_identifier(self.normalizer.normalize(cursor_field[0]))
+        return (
+            f" AND ((final.{cursor} IS NULL AND tmp.{cursor} IS NOT NULL)"
+            f" OR tmp.{cursor} > final.{cursor}"
+            f" OR (tmp.{cursor} IS NOT DISTINCT FROM final.{cursor}"
+            f" AND tmp.{AB_EXTRACTED_AT_COLUMN} >= final.{AB_EXTRACTED_AT_COLUMN}))"
+        )
+
+    @overrides
+    def _merge_temp_table_to_final_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+    ) -> None:
+        """Native MERGE with latest-record-wins semantics.
+
+        The CDK's MERGE updates unconditionally on primary-key match, which
+        lets late-arriving batches overwrite rows carrying newer cursor
+        values. This override adds the cursor guard from
+        _merge_matched_condition.
+        """
+        primary_keys = self.catalog_provider.get_primary_keys(stream_name)
+        if not primary_keys:
+            raise exc.AirbyteInternalError(
+                message="Cannot merge tables without primary keys.",
+                context={"stream_name": stream_name},
+            )
+        columns = [self._quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)]
+        pk_columns = [self._quote_identifier(c) for c in primary_keys]
+        non_pk_columns = [c for c in columns if c not in set(pk_columns)]
+
+        join_clause = " AND ".join(f"tmp.{c} = final.{c}" for c in pk_columns)
+        set_clause = ", ".join(f"{c} = tmp.{c}" for c in non_pk_columns)
+        matched_condition = self._merge_matched_condition(stream_name)
+
+        self._execute_sql(
+            f"""
+            MERGE INTO {self._fully_qualified(final_table_name)} final
+            USING {self._fully_qualified(temp_table_name)} AS tmp
+            ON {join_clause}
+            WHEN MATCHED{matched_condition} THEN UPDATE SET {set_clause}
+            WHEN NOT MATCHED THEN INSERT ({", ".join(columns)})
+            VALUES ({", ".join(f"tmp.{c}" for c in columns)})
+            """
+        )
+
     def _drop_duplicates(self, table_name: str, stream_name: str) -> str:
         primary_keys = self.catalog_provider.get_primary_keys(stream_name)
         new_table_name = f"{table_name}_deduped"
@@ -381,7 +454,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             -- Drop duplicates from temp table
             CREATE TABLE {self._fully_qualified(new_table_name)} AS (
                 SELECT * FROM {self._fully_qualified(table_name)}
-                QUALIFY row_number() OVER (PARTITION BY ({pks}) ORDER BY {AB_EXTRACTED_AT_COLUMN} DESC) = 1
+                QUALIFY row_number() OVER (PARTITION BY ({pks}) ORDER BY {self._cursor_ordering(stream_name)}) = 1
             )
             """
             self._execute_sql(sql)
