@@ -253,7 +253,8 @@ definitions:
           error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
         - type: HttpResponseFilter
           action: RETRY
-          http_codes: [500]
+          http_codes: [500, 502, 503]
+          error_message: Retrying a transient GitLab server/gateway error (500/502/503); these are intermittent and safe to retry.
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [404]
