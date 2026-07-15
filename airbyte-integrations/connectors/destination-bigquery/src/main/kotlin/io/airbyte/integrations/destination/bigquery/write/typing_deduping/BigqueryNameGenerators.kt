@@ -20,8 +20,8 @@ import org.apache.commons.codec.digest.DigestUtils
 private val nameTransformer = BigQuerySQLNameTransformer()
 
 /**
- * BigQuery limits column names to 300 characters.
- * See https://cloud.google.com/bigquery/docs/schemas#column_names.
+ * BigQuery limits column names to 300 characters. See
+ * https://cloud.google.com/bigquery/docs/schemas#column_names.
  */
 const val BIGQUERY_MAX_COLUMN_NAME_LENGTH = 300
 
