@@ -248,9 +248,9 @@ definitions:
           action: IGNORE
           http_codes: [403]
         - type: HttpResponseFilter
-          action: FAIL
+          action: RETRY
           http_codes: [401]
-          error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
+          error_message: Retrying a transient 401 that can occur when a refreshed OAuth token races an in-flight request.
         - type: HttpResponseFilter
           action: RETRY
           http_codes: [500]
