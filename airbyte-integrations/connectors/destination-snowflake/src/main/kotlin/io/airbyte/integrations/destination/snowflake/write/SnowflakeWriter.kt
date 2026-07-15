@@ -152,7 +152,5 @@ private class CurrentGenerationTableOperationsClient(
     private val currentGenerationId: Long,
 ) : TableOperationsClient by delegate {
     override suspend fun getGenerationId(tableName: TableName): Long =
-        delegate.getGenerationId(tableName).takeIf {
-            it > 0 && it == currentGenerationId
-        } ?: 0
+        delegate.getGenerationId(tableName).takeIf { it > 0 && it == currentGenerationId } ?: 0
 }
