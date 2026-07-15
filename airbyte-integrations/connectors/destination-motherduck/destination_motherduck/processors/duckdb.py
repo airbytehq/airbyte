@@ -159,7 +159,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     so we insert as values instead.
     """
 
-    supports_merge_insert = False
+    supports_merge_insert = True
     sql_config: DuckDBConfig
 
     def _execute_sql(self, sql: str | TextClause | Executable) -> Sequence[Any]:

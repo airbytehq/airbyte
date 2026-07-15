@@ -91,8 +91,6 @@ class MotherDuckConfig(DuckDBConfig):
 class MotherDuckSqlProcessor(DuckDBSqlProcessor):
     """A cache implementation for MotherDuck."""
 
-    supports_merge_insert = False
-
     @overrides
     def _setup(self) -> None:
         """Do any necessary setup, if applicable.
