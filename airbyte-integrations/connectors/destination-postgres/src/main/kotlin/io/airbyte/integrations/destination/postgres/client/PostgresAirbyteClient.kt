@@ -472,6 +472,18 @@ class PostgresAirbyteClient(
                 log.error { message }
                 throw ConfigErrorException(message, e)
             }
+            // Handle replica identity error when logical replication is enabled
+            // with a publication that includes Airbyte-managed tables lacking replica identity
+            if (e.message?.contains("does not have a replica identity") == true) {
+                val message =
+                    "Destination Postgres has logical replication configured with a publication " +
+                        "that includes Airbyte-managed tables which lack a replica identity. " +
+                        "Either set REPLICA IDENTITY FULL on the affected tables using " +
+                        "ALTER TABLE <table> REPLICA IDENTITY FULL, or remove Airbyte tables " +
+                        "from the publication."
+                log.error { message }
+                throw ConfigErrorException(message, e)
+            }
             throw e
         }
     }
