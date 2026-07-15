@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## July 14, 2026
+
+SDK
+
+- Connector download operations can now return file content in structured, JSON-safe chunks that tell you the byte range returned and whether more content remains, so your agents can page through large downloads instead of only receiving a raw byte stream.
+
+Connectors
+
+- You can now manage associations between records with the HubSpot connector. Your agents can link records such as a contact to a deal or company, create labeled associations, list all associations for a record, and remove associations, making it easier to manage how your CRM records relate to one another.
+
 ## July 10, 2026
 
 Web app
