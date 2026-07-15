@@ -32,6 +32,10 @@ falls back to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`, e
 - A stream larger than ~200 MB is now split into multiple objects (`..._0`, `..._1`, …) using the
   S3-style part-number suffix, instead of one large file — so consumers should read **all** objects
   under a stream's prefix.
+- **Record metadata columns changed** (CSV and JSONL): `_airbyte_ab_id` is renamed to
+  `_airbyte_raw_id`, `_airbyte_emitted_at` is renamed to `_airbyte_extracted_at`, and two new
+  columns are added — `_airbyte_generation_id` and `_airbyte_meta`. Update any downstream consumer
+  that reads these columns by name. (Avro and Parquet records carry the same metadata fields.)
 - CSV and JSONL are **GZIP-compressed by default** (`.csv.gz` / `.jsonl.gz`); set
   `format.compression.compression_type = "No Compression"` for uncompressed output. Avro and Parquet
   are not affected (their compression is internal to the container).
