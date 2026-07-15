@@ -2,7 +2,7 @@
 
 ## Overview
 
-This destination writes data to GCS bucket.
+This destination writes data to a GCS bucket.
 
 The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
 
@@ -51,10 +51,10 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 |:-------------------|:------:|:--------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | GCS Bucket Name    | string |   Yes    | Name of the bucket to sync data into.                                                                                                                                                                                                                                      |
 | GCS Bucket Path    | string |   Yes    | Subdirectory under the above bucket to sync the data into.                                                                                                                                                                                                                 |
-| GCS Region         | string |    No    | GCS bucket region. Defaults to `us`. See [here](https://cloud.google.com/storage/docs/locations) for all region codes.                                                                                                                                                     |
-| HMAC Key Access ID | string |   Yes    | HMAC key access ID. The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
-| HMAC Key Secret    | string |   Yes    | The corresponding secret for the access ID. It is a 40-character base-64 encoded string.                                                                                                                                                                                   |
-| Format             | object |   Yes    | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                              |
+| GCS Bucket Region  | string |    No    | GCS bucket region. Defaults to `us`. See [here](https://cloud.google.com/storage/docs/locations) for all region codes.                                                                                                                                                     |
+| HMAC Access Key    | string |   Yes    | HMAC key access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details.                 |
+| HMAC Secret        | string |   Yes    | The corresponding secret for the access key. It is a 40-character base-64 encoded string.                                                                                                                                                                                  |
+| Output Format      | object |   Yes    | Format-specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                              |
 | GCS Path Format    | string |    No    | Format string for the directory layout under the bucket path. Defaults to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`. See [GCS Path Format](#gcs-path-format) for available variables.                                                                |
 | File Name Pattern  | string |    No    | Pattern for output file names. Defaults to `{part_number}{format_extension}`. See [File Name Pattern](#file-name-pattern) for available variables.                                                                                                                         |
 
@@ -206,6 +206,14 @@ The schema for `_airbyte_meta` is:
 | :--------- | :------ | :-------------------------------------- |
 | `changes`  | list    | A list of structured change objects.    |
 | `sync_id`  | integer | An integer identifier for the sync job. |
+
+The schema for a change object is:
+
+| Field Name | Type   | Description                                                                                                               |
+| :--------- | :----- | :------------------------------------------------------------------------------------------------------------------------ |
+| `field`    | string | The name of the field that changed.                                                                                       |
+| `change`   | string | The type of change (eg, `NULLED`, `TRUNCATED`).                                                                           |
+| `reason`   | string | The reason for the change, including its system of origin (ie, whether it was a source, destination, or platform error). |
 
 For example, given the following json object from a source:
 
