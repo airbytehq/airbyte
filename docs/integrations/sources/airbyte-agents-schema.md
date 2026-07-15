@@ -48,11 +48,13 @@ case, Postgres lower-cases) and is documented in the `root` guidance rather than
 - The Airbyte **public API** exposes stream selection, primary key, cursor, and namespace/prefix, but
   not field-level column *types*. `selected_fields` therefore carries field names, not typed columns.
 - Incremental sync is not yet implemented. A follow-up will add a cursor on connection `updatedAt`.
-- The `root` index summarizes the first page of connections (up to 100); the fully-paginated,
-  authoritative per-stream list lives in `airbyte_stream`.
+- The `root` index is intentionally response-independent (dataset description + pointer to
+  `AGENTS.AIRBYTE_STREAM`); the fully-paginated, authoritative per-stream/table inventory lives in
+  `airbyte_stream`.
 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.2.0 | 2026-07-15 | [81596](https://github.com/airbytehq/airbyte/pull/81596) | Scope `connections` to the destination's workspace (resolve via `destinations/{id}`) so enumeration no longer paginates the whole org; make the `root` index response-independent. |
 | 0.1.0 | 2026-07-08 | | Initial release: `root` and `airbyte_stream` streams from Airbyte config metadata. |
