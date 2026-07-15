@@ -19,13 +19,16 @@ internal class DebeziumPropertiesManagerTest {
                 setProperty("max.batch.size", "8")
             }
         val manager =
-            object : DebeziumPropertiesManager(
-                configuredProperties,
-                ObjectMapper().createObjectNode(),
-                ConfiguredAirbyteCatalog(),
-                emptyList(),
-            ) {
-                override fun getConnectionConfiguration(config: com.fasterxml.jackson.databind.JsonNode) = Properties()
+            object :
+                DebeziumPropertiesManager(
+                    configuredProperties,
+                    ObjectMapper().createObjectNode(),
+                    ConfiguredAirbyteCatalog(),
+                    emptyList(),
+                ) {
+                override fun getConnectionConfiguration(
+                    config: com.fasterxml.jackson.databind.JsonNode,
+                ) = Properties()
 
                 override fun getName(config: com.fasterxml.jackson.databind.JsonNode) = "test"
 
@@ -36,7 +39,8 @@ internal class DebeziumPropertiesManagerTest {
                 ) = Properties()
             }
 
-        val properties = manager.getDebeziumProperties(mock(AirbyteFileOffsetBackingStore::class.java))
+        val properties =
+            manager.getDebeziumProperties(mock(AirbyteFileOffsetBackingStore::class.java))
 
         assertEquals("8", properties.getProperty("max.queue.size"))
         assertEquals("8", properties.getProperty("max.batch.size"))
